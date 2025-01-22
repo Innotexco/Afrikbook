@@ -1,0 +1,132 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Approve Stock Quantity</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+        <div class="w-full overflow-x-auto table-responsive">
+          <table id="example" class="display" style="width:100%">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                        <th class="px-4 py-3">SN</th>
+                        <th class="px-4 py-3">Stockin Date</th>
+                        <th class="px-4 py-3">Item Code</th>
+                        <th class="px-4 py-3">Item Name</th>
+                        <th class="px-4 py-3">Qty In Stock</th>
+                        <th class="px-4 py-3">From</th>
+                        <th class="px-4 py-3">To</th>
+                        <th class="px-4 py-3">Token ID</th>
+                        <th class="px-4 py-3">Verify</th>
+                        <th class="px-4 py-3">Change Date</th>
+                        <th class="px-4 py-3">Delete</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y">
+
+                    
+                    {% for display in display_vendor %}
+                    
+                    <tr class="text-gray-700">
+
+                        <td class="text-[10px]">
+                            {{display.id}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.name}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.email}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.name}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.email}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.address}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.company_name}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.custID}}
+                        </td>
+                        <td class="text-[10px]">
+                            verify
+                        </td>
+                        <td class="text-[10px]">
+                            <input 
+                                class="block w-full px-2 text-sm bg-slate-200 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                type="date"
+                            />{{display.custID}}
+                        </td>
+                        <td class="text-[10px]">
+                            <a href="{% url 'vendor:delete_vendor' display.id %}"
+                                    class="flex items-center justify-center text-red-600"
+                                    aria-label="Delete"
+                                    >
+                                    <svg
+                                        class="w-5 h-5"
+                                        aria-hidden="true"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                    >
+                                        <path
+                                        fill-rule="evenodd"
+                                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                        clip-rule="evenodd"
+                                        ></path>
+                                    </svg>
+                                </a>
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+        
+        <div class="grid grid-cols-2  gap-6">
+
+            <a class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                href="#">
+                Print
+            </a>
+
+            <a class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                href="#">
+                Export to Excel
+            </a>
+                  
+        </div>
+
+    </div>
+
+
+{% endblock content %}

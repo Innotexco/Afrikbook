@@ -1,0 +1,92 @@
+<table  id="verifyTrans" class="display" style="width:100%">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                        <th class="py-3">SN</th>
+                        <th class="py-3">Stockin Date</th>
+                        <th class="py-3">Item Code</th>
+                        <th class="py-3">Item Name</th>
+                        <th class="py-3">Qty In Stock</th>
+                        <th class="py-3">From</th>
+                        <th class="py-3">To</th>
+                        <th class="py-3">Token ID</th>
+                        <th class="py-3">Verify</th>
+                        <th class="py-3">Change Date</th>
+                        <th class="py-3">Delete</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y default">
+                    
+                    {% for Unverified in Unverified %}
+                        <form action="" method="post">{% csrf_token %}
+                            <tr class="text-gray-700">
+
+                                <td class="text-[10px]">
+                                    {{forloop.counter}}
+                                </td>
+                                <td class="text-[10px]">
+                                    {{Unverified.datetx}}
+                                </td>
+                                <td class="text-[10px]">
+                                    {{Unverified.item_code}}
+                                    <input type="hidden" name="itemID" value="{{Unverified.id}}">
+                                    <input type="hidden" name="outlet" value="{{Unverified.outlet}}">
+                                    <input type="hidden" name="warehouse" value="{{Unverified.warehouse}}">
+                                    <input type="hidden" name="whichtrans" value="{{Unverified.transfer}}">
+                                    <input type="hidden" name="quantity" value="{{Unverified.quantity}}">
+                                    <input type="hidden" name="item_code" value="{{Unverified.item_code}}">
+                                </td>
+                                <td class="text-[10px]">
+                                    {{Unverified.item}}
+                                </td>
+                                <td class="text-[10px]">
+                                    {{Unverified.quantity}}
+                                </td>
+                                <td class="text-[10px]">
+                                    {{Unverified.warehouse}}
+                                </td>
+                                <td class="text-[10px]">
+                                    {{Unverified.outlet}}
+                                </td>
+                                <td class="text-[10px]">
+                                    {{Unverified.token_id}}
+                                </td>
+                                <td class="text-[10px]">
+                                    <button type="submit" class=" px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:shadow-outline-green active:bg-green-700" name="Verify">
+                                        Verify
+                                    </button>
+                                </td>
+                                
+                                <td class="text-[10px]">
+                                    <input 
+                                        class="block w-full px-2 text-sm bg-slate-200 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                        type="date"
+                                        name="date"
+                                    />
+                                </td>
+                                <td class="text-[10px]">
+                                    <button type="submit" name="delete_btn"
+                                        class="ml-5 flex items-center justify-center text-red-600"
+                                        aria-label="Delete"
+                                        >
+                                        <svg
+                                            class="w-5 h-5"
+                                            aria-hidden="true"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                            fill-rule="evenodd"
+                                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                            clip-rule="evenodd"
+                                            ></path>
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        </form>
+                    {% endfor %}
+
+                </tbody>
+                <tbody class="bg-white divide-y result">
+                </tbody>
+            </table>

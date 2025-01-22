@@ -1,0 +1,429 @@
+<style>
+
+.container {
+  width: 400px;
+  height: 450px;
+  margin: 2rem auto;
+  background-color: var(--white-color);
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  position: relative;
+}
+h3 {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: var(--dark-color);
+  font-size: 2rem;
+}
+.form {
+  width: 340px;
+  position: absolute;
+  top: 25px;
+  left: 20px;
+  font-family: inherit;
+  transition: 0.5s ease-in;
+}
+for input {
+  width: 100%;
+  padding: 10px 5px;
+  margin: 5px 0;
+  border: 1px solid var(--light-gray-color);
+  border-radius: 5px;
+  background: transparent;
+  font-family: inherit;
+}
+for input:focus {
+  outline: none;
+  border: 1px solid var(--dark-color);
+}
+.btn_box {
+  width: 100%;
+  margin: 30px auto;
+  text-align: center;
+}
+for button {
+  width: 110px;
+  height: 35px;
+  margin: 0 10px;
+  background-color: var(--line-border-fill);
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+  border-radius: 5px;
+  color: var(--light-gray-color);
+}
+form button:active {
+  transform: scale(0.98);
+}
+#form2 {
+  left: 450px;
+}
+#form3 {
+  left: 450px;
+}
+{% comment %} .progress_container {
+  width: 350px;
+  display: none;
+  justify-content: space-between;
+  margin: 2rem auto;
+  position: relative;
+}
+.progress_container::before {
+  content: "";
+  background-color: var(--light-gray-color);
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  height: 4px;
+  width: 100%;
+  z-index: 1;
+}
+.progress {
+  background-color: var(--line-border-fill);
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  height: 4px;
+  width: 0%;
+  z-index: 1;
+  transition: 0.4s ease-in;
+}
+.circle {
+  background-color: var(--light-gray-color);
+  height: 30px;
+  width: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  z-index: 1;
+  transition: 0.4s ease;
+}
+.circle.active {
+  border-color: var(--line-border-empty);
+  color: var(--white-color);
+  background-color: var(--line-border-fill);
+} {% endcomment %}
+@media (max-width: 1023px) {
+  .container {
+    width: 80%;
+    height: auto;
+    padding: 10px 20px;
+    
+  }
+  .form {
+    width: 100%;
+    position: initial;
+    padding: 15px ;
+    left: 0px;
+  }
+  
+}
+</style>
+<div class="lg:flex justify-center items-center h-screen m-auto">
+ <div class="container">
+  <div class="flex justify-center">
+    {% include 'messages.html' %}
+
+</div>
+      <div class="form" id="form1">
+        <h3 class="font-sans text-xl font-bold text-heading md:text-2xl text-center uppercase">Company Info</h3>
+        <label class="block text-sm">
+            <span class="text-gray-700">Company Name</span>
+            <input 
+                type="text"
+                class="block w-full p-2 mb-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input "
+                placeholder=""
+                name="company_name"
+                requireds
+            />
+        </label>
+
+        <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">Phone Number  <span id="phone_error"></span></span>
+                    <input 
+                        type="text"
+                        class="block w-full p-2 mb-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input "
+                        placeholder=""
+                        name="phone"
+                        id="phone"
+                        requireds
+                    />
+                    
+                </label>
+
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">Email  <span id="email_error"></span></span>
+                    <input 
+                        type="text"
+                        class="block w-full p-2 mb-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input "
+                        placeholder=""
+                        name="email"
+                        requireds
+                        id="email"
+                        onmouseleave=""
+                        oninput=""
+                    />
+                    
+                </label>
+         <div class="btn_box ">
+          <button class="hidden lg:block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="next1" type="button">Next</button>
+        </div>
+      </div>
+      <div class="form" id="form2">
+        <h3 class="font-sans text-xl font-bold text-heading md:text-2xl text-center uppercase">Company Address</h3>
+        <label class="block text-sm">
+            <span class="text-gray-600">Address</span>
+            <textarea
+                class="block w-full p-2 mb-2 text-sm form-textarea border-2 rounded-md focus:border-slate-300  focus:outline-none focus:shadow-outline-green text-slate-600 "
+                rows="1"
+                placeholder=""
+                name="address"
+                requireds
+                onclick="VerifyEmail()"
+            ></textarea>
+        </label>
+
+        <label class="block text-sm">
+            <span class="text-gray-700 dark:text-gray-400">City</span>
+            <input 
+                type="text"
+                class="block w-full p-2 mb-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input "
+                placeholder=""
+                name="city"
+                requireds
+            />
+        </label>
+
+        <label class="block text-sm">
+            <span class="text-gray-700 dark:text-gray-400">State</span>
+            <input 
+                type="text"
+                class="block w-full p-2 mb-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input "
+                placeholder=""
+                name="state"
+                requireds
+            />
+        </label>
+
+        <label class="block text-sm">
+          <span class="text-gray-700 dark:text-gray-400">
+              Select Country  
+          </span>
+          <select class="block w-full p-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="country">
+              <option disabled> Select Country</option>
+              {% for value in country %}
+              <option>{{value.Country}}</option>
+              {% endfor %}
+          </select>
+        </label>
+        <div class="btn_box flex items-center justify-between gap-2">
+          <button class="hidden lg:block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="back1" type="button">Prev</button>
+          <button class="hidden lg:block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="next2" type="button">Next</button>
+        </div>
+      </div>
+      <div class="form" id="form3">
+        <h3 class="font-sans text-xl font-bold text-heading md:text-2xl text-center uppercase">Sign up details</h3>
+        <label class="block text-sm">
+            <span class="text-gray-700 dark:text-gray-400">Username  <span id="username_error"></span></span>
+            <input 
+                type="text"
+                class="block w-full p-2 mb-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input "
+                placeholder=""
+                name="username"
+                id="username"
+                requireds
+            />
+            
+        </label>
+        <label class="block text-sm">
+            <span class="text-gray-700 dark:text-gray-400">Password</span>
+            <input 
+                type="password"
+                class="block w-full p-2 mb-8 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input "
+                placeholder=""
+                name="password"
+                requireds
+            />
+        </label>
+        <div class="btn_box flex items-center justify-between gap-2">
+          <button class="hidden lg:block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="back2" type="button">Prev</button>
+          <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="Submit" type="button">Submit</button>
+        </div>
+      </div>
+      <div class="progress_container hidden">
+        <div class="progress" id="progress"></div>
+        <div class="circle active">1</div>
+        <div class="circle">2</div>
+        <div class="circle">3</div>
+      </div>
+    </div>
+</div>
+<script>
+const form1 = document.getElementById("form1");
+const form2 = document.getElementById("form2");
+const form3 = document.getElementById("form3");
+const progressEl = document.getElementById("progress");
+const circles = document.querySelectorAll(".circle");
+let currectActive = 1;
+//============== Next Form===============
+function nextOne() {
+  const s_code = sessionStorage.getItem('verify_email_code')
+  if(s_code && s_code == "Verified" ){
+    form1.style.left = "-450px";
+    form2.style.left = "25px";
+    //next slide
+    increamentNumber();
+    // update progress bar
+    update();
+  }else{
+    VerifyEmail()
+  }
+}
+//=============== Back One==================
+function backOne() {
+  form1.style.left = "25px";
+  form2.style.left = "450px";
+  // back slide
+  decreametNumber();
+  // update progress bar
+  update();
+}
+//============ Second Form=============
+function nextTwo() {
+  form2.style.left = "-450px";
+  form3.style.left = "25px";
+  //next slide
+  increamentNumber();
+  // update progress bar
+  update();
+}
+//=============== Back One==================
+function backTwo() {
+  form2.style.left = "25px";
+  form3.style.left = "450px";
+  // back slide
+  decreametNumber();
+  // update progress bar
+  update();
+}
+//=============== Back One==================
+function submit() {
+  const s_code = sessionStorage.getItem('verify_email_code')
+  if(s_code == "Verified"){
+    $("#formData").submit()
+    sessionStorage.clear('verify_email_code')
+  }else{
+    alert("You have to verify you email before your can submit this form")
+  }
+}
+
+//============= Progress update====================
+function update() {
+  circles.forEach((circle, indx) => {
+    if (indx < currectActive) {
+      circle.classList.add("active");
+    } else {
+      circle.classList.remove("active");
+    }
+    // get all of active classes
+    const actives = document.querySelectorAll(".active");
+    progressEl.style.width =
+      ((actives.length - 1) / (circles.length - 1)) * 100 + "%";
+  });
+}
+//================== Increament Number===============
+function increamentNumber() {
+  // next progress number
+  currectActive++;
+  if (currectActive > circles.length) {
+    currectActive = circles.length;
+  }
+}
+//================ Decreament Number=================
+function decreametNumber() {
+  currectActive--;
+  if (currectActive < 1) {
+    currectActive = 1;
+  }
+}
+//================= btn Events===================
+const btnsEvents = () => {
+  const next1 = document.getElementById("next1");
+  const next2 = document.getElementById("next2");
+  const back1 = document.getElementById("back1");
+  const back2 = document.getElementById("back2");
+  const Submit = document.getElementById("Submit");
+  //next1
+  next1.addEventListener("click", nextOne);
+  // back1
+  back1.addEventListener("click", backOne);
+  //next 2
+  next2.addEventListener("click", nextTwo);
+  // back 2
+  back2.addEventListener("click", backTwo);
+
+  Submit.addEventListener("click", submit);
+};
+document.addEventListener("DOMContentLoaded", btnsEvents);
+
+
+
+function isexists(e, url){
+  $(`#${e.target.id}`).removeClass('border-red-500')
+  $(`#${e.target.id}_error`).removeClass('text-red-500 text-green-500')
+  $(`#${e.target.id}_error`).html("")
+
+  if(e.target.value != ""){
+    setTimeout(() => {
+      const fieldName = e.target.id
+      $.ajax({
+         url: url,
+         data: {[fieldName]: e.target.value},
+         success: function(response){
+
+            if(response.Valid){
+              if($("#email").val() != ""){
+                VerifyEmail()
+              }
+              $("#Submit").removeClass('cursor-not-allowed')
+              $(`#${e.target.id}_error`).html('Available').addClass('text-green-500')
+            }else{
+              $(`#${e.target.id}`).addClass('border-red-500')
+              $('#next1').hide()
+              $("#Submit").addClass('cursor-not-allowed')
+              $(`#${e.target.id}_error`).html(response.error_msg).addClass('text-red-500')
+            }
+         },
+         error: function(err){
+  
+         },
+      })
+      
+    }, 500);
+  }else{
+    $('#next1').hide()
+  }
+
+}
+
+$("#email").on("input", (e)=>{
+  isexists(e, '/EmailExist')
+})
+
+$("#phone").on("input", (e)=>{
+  isexists(e, '/PhoneExist')
+})
+$("#username").on("input", (e)=>{
+  isexists(e, '/UsernameExist')
+})
+
+
+
+</script>

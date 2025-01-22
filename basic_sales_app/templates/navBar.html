@@ -1,0 +1,112 @@
+
+
+
+    
+    
+      
+
+
+<div class="antialiased bg-white fixed w-full z-50 ">
+    <nav class="bg-[#B2BEB5]">
+        <div class="container px-6 mx-auto lg:px-8">
+
+            <div class="flex items-center justify-between h-6">
+                <div class="flex items-center justify-between flex-grow">
+                    <!-- <div class="lg:hidden flex-shrink-0">
+                        <h1 class="text-lg font-semibold tracking-widest text-white uppercase">
+                        <a href="#">Afrikbook S.</a>
+                        </h1>
+                    </div> -->
+                    <!--  -->
+                    
+                </div>
+              
+
+                <div class=" lg:block ml-6 ">
+                    <div class="flex items-center  main-menu-dropdown">
+                         <div class="relative" >
+                            <div class="cursor-pointer"  id='notificationBell'>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="currentColor"
+                                    class="text-white w-6 h-6"
+                                    
+                                    viewBox="0 0 16 16" >
+                                    <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"
+                                    />
+                                    {% if count != 1 or notify1  == 1 or  notify == 1 %}
+                                        <animate id="notificationAnimation" attributeName="fill" values="#FF0000;currentColor" dur="0.5s" repeatCount="indefinite"  />
+                                    {% endif %}
+                                </svg> 
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opaity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="hidden dropdown-menu absolute right-0 w-48 mt-2 origin-top-right rounded-md shadow-lg z-50" id="notification_box">
+                        <div class="py-1 bg-white rounded-md shadow-xs">
+                            {% if count != 1 %}
+                                <a href="{% url 'Basic_Sales:add_profile' %}" title="its important to set profile in order for your business currency to be recognized" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                    <span class="ml-2">Set Profile </span>
+                                </a>
+                            {% endif %}
+                                
+                            {% if notify1  == 1 %}
+                            <a href="{% url 'settings:ViewAboutToExpireItems'%}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                <span class="ml-2">Item will be expired soon</span>
+                            </a>
+                            {% endif %}
+                            
+                            {% if notify == 1 %}
+                                <a href="{% url 'settings:ViewExpiredItems' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-red-500 hover:text-red-700 hover:bg-red-100 focus:outline-none focus:text-red-700 focus:bg-red-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-log-out"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                                    <span class="ml-2">Expired Items</span>
+                                </a>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                </div>
+                
+               
+            </div>
+           
+        </div>
+
+
+</div>
+
+
+<!-- 
+please design an svg with a bell icon that beeps or spacks red trying to indicate that there is a notification
+
+
+
+<style>
+    .inset-l-full {
+        left: 100%;
+    }
+
+    .sub-menu-dropdown:hover > .sub-dropdown-menu {
+        display: block !important;
+    }
+</style> -->
+
+<script>
+    
+    $(document).ready(function(){
+        $('#notification_box').on('mouseleave', function(){
+            $(this).addClass('hidden')
+        })
+        $('#notificationBell').on('click', function(){
+            $('#notification_box').toggleClass('hidden')
+        })
+
+    })
+</script>
+
+    
+    
+      
+

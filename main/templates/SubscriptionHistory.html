@@ -1,0 +1,135 @@
+
+{% extends 'base.html' %}
+{% block content %}
+{% include 'ViewSubscriptionHistory.html' %} 
+
+
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>View Business Profile</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+    <a                        
+        href="{% url 'main:Subscription' %}"
+        class="bg-[#356464] text-center text-white mt-6 inline-flex items-center justify-end shrink-0 font-semibold leading-none rounded outline-none transition duration-300 ease-in-out focus:outline-0 focus:shadow focus:ring-1 focus:ring-slate-500  border border-transparent hover:bg-blue-300-hover px-5 py-0 h-8">
+         View Subscription
+    </a>
+
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+        <div class="gap-6 flex items-center justify-center">
+            <div class="w-full  rounded-lg shadow-xs ...">
+                <div class="w-full overflow-x-auto">
+                    <table class="w-full whitespace-no-wrap">
+                        <thead>
+                            <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                                <th class="px-4 py-3">Date</th>
+                                <th class="px-4 py-3">Plan</th>
+                                <th class="px-4 py-3">Subscription</th>
+                                <th class="px-4 py-3">Amount</th>
+                                <th class="px-4 py-3">Payment Status</th>   
+                                <th class="px-4 py-3">View</th>   
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y">
+                           {% for history in billing %}
+                            <tr class="text-gray-700">
+                                <td class="px-4 py-3">{{history.created_at}}</td>
+                                <td class="px-4 py-3">{{history.plan}}</td>
+                                <td class="px-4 py-3">{{history.subscription}} {% if history.subscription == 'Free'%} {% elif history.subscription == 1 %} years {% else %} year {% endif %}</td>
+                                <td class="px-4 py-3">{{history.amount}}</td>
+                                <td class="px-4 py-3 {% if history.payment_status == 'Verified'%} text-green-500 {% else %} text-red-500 {% endif %}">{% if history.payment_status == 'Verified'%} Paid {% else %} Unpaid {% endif %}</td>
+                                <td class="text-[10px]">
+                                    <a onclick="showModal('{{history.plan}}', '{{history.subscription}}', '{{history.users}}', '{{history.amount}}', '{{history.date}}', '{{history.remain}}', '{{history.auto_renew}}', '{{history.payment_status}}', '{{history.reference}}')" 
+                                        class="flex bg-slate-200 items-center p-1 justify-center text-gray-700 cursor-pointer"
+                                        aria-label="Edit">
+                                       View
+                                    </a>
+                                </td>
+                            </tr>
+                             {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if billing.payment_status == "Verified"%}
+                <a                        
+                    href="/Verify-Payment?reference={{billing.reference}}"
+                    class="w-full bg-[#356464] text-center text-white mt-6 inline-flex items-center justify-center shrink-0 font-semibold leading-none rounded outline-none transition duration-300 ease-in-out focus:outline-0 focus:shadow focus:ring-1 focus:ring-slate-500  border border-transparent hover:bg-blue-300-hover px-5 py-0 h-8">
+                    Verify
+                 </a>
+                {% endif %}
+                
+            </div>
+        </div>
+        
+        
+
+    </div>
+  <script>
+      function showModal(plan, sub, users, amount, date, remain, renew, status, reference){
+        
+        if(remain <= 0){ remain = 'Expired'}
+        if(remain > 0){color = 'text-green-500'}else{color = 'text-red-500'}
+        if(status == 'Verified'){color2 = 'text-green-500', status = 'Paid'}else{color2 = 'text-red-500', status = 'Unpaid'}
+        if(sub == "Free"){sub=sub}else if(sub == 1){sub = sub+" year"}else{sub = sub+" years"}
+        var content = $('#history_table tbody')
+        if(plan){
+            $("#reference").text("Reference: "+reference)
+            content.empty()
+    
+            content.html(
+                `
+                <tr class="text-gray-700">
+                    <td class="px-4 py-3">Plan</td>
+                    <td class="px-4 py-3">${plan}</td>
+                </tr>
+                <tr class="text-gray-700">
+                    <td class="px-4 py-3">Subscription</td>
+                    <td class="px-4 py-3">${sub}</td>
+                </tr>
+                <tr class="text-gray-700">
+                    <td class="px-4 py-3">Users</td>
+                    <td class="px-4 py-3">${users}</td>
+                </tr>
+                <tr class="text-gray-700">
+                    <td class="px-4 py-3">Amount</td>
+                    <td class="px-4 py-3">${amount}</td>
+                </tr>
+                <tr class="text-gray-700">
+                    <td class="px-4 py-3">Date</td>
+                    <td class="px-4 py-3">${date}</td>
+                </tr>
+               
+                <tr class="text-gray-700">
+                    <td class="px-4 py-3">Remaining Days</td>
+                    <td class="px-4 py-3 ${color}">${remain}</td>
+                </tr>
+              
+               
+                <tr class="text-gray-700">
+                    <td class="px-4 py-3">Payment Status</td>
+                    <td class="px-4 py-3 ${color2}">${status}</td>
+                </tr>
+                `
+            )
+            my_modal_view_history.showModal()
+        }
+        
+      }
+
+  </script>
+
+    
+{% endblock content %}

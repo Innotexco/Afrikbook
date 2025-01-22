@@ -1,0 +1,183 @@
+{% load static %}
+
+<dialog id="Checkout" class="modal py-3 px-3 rounded-lg">
+    
+
+    <div class="modal-box">
+
+        <!-- modal receipt -->
+        <div class="fixed w-full h-screen left-0 top-0 z-10 flex flex-wrap justify-center content-center p-24">
+            <div class="fixed glass w-full h-screen left-0 top-0 z-0"
+                x-transition:enter="transition ease-out duration-100"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-100"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0">
+                <div>
+                    <form method="dialog" class="modal-backdrop text-right p-10 cursor-pointer">
+                        <button class="py-1 px-2 rounded-full bg-pink-500 text-[11px] text-white font-semibold" id="close-btn">X</button>
+                    </form>
+                </div>
+            </div>
+            <div class="w-96 rounded-3xl bg-white shadow-xl overflow-hidden z-10"
+                x-transition:enter="transition ease-out duration-100"
+                x-transition:enter-start="opacity-0 transform scale-90"
+                x-transition:enter-end="opacity-100 transform scale-100"
+                x-transition:leave="transition ease-in duration-100"
+                x-transition:leave-start="opacity-100 transform scale-100"
+                x-transition:leave-end="opacity-0 transform scale-90">
+
+                <div id="receipt-content" class="text-left w-full text-sm p-6 overflow-auto">
+                    <div class="text-center">
+                        <img
+                            src="{% static 'img/receipt-logo.png' %}"
+                            alt="Tailwind POS"
+                            class="mb-3 w-8 h-8 inline-block"
+                        />
+                        <h2 class="text-xl font-semibold">AFRIKBOOK POS</h2>
+                        <p>BEST SALES POINT</p>
+                    </div>
+
+                    <div class="grid grid-cols-3 mt-4 text-xs">
+                        <div id="receipt-number" class="flex-grow"></div>
+                        <div id="receipt-date"></div>
+                        <div id="receipt-time"></div>
+                    </div>
+
+                    <hr class="my-2" />
+
+                    <div>
+                        <table class="w-full text-xs">
+                            <thead>
+                                <tr>
+                                    <th class="py-1 w-1/12 text-center">#</th>
+                                    <th class="py-1 text-left">Item</th>
+                                    <th class="py-1 w-2/12 text-center">Qty</th>
+                                    <th class="py-1 w-3/12 text-right">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="checkout-container">
+                                {% comment %} <article >
+                                    <tr>
+                                    <td class="py-2 text-center" x-text="index+1"></td>
+                                    <td class="py-2 text-left">
+                                        <span x-text="item.name"></span>
+                                        <br />
+                                        <small x-text="priceFormat(item.price)"></small>
+                                    </td>
+                                    <td class="py-2 text-center" x-text="item.qty"></td>
+                                    <td
+                                        class="py-2 text-right"
+                                        x-text="priceFormat(item.qty * item.price)"
+                                    ></td>
+                                    </tr>
+                                </article> {% endcomment %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <hr class="my-2" />
+
+                    <div>
+                        <div id="checkout-total-cart-container" class="flex font-semibold">
+                            {% comment %} <div class="flex-grow">TOTAL</div>
+                            <div x-text="priceFormat(getTotalPrice())"></div> {% endcomment %}
+                            
+                        </div>
+
+                        <div class="flex text-xs font-semibold">
+                            <div class="flex-grow">PAY AMOUNT</div>
+                            <div x-text="priceFormat(cash)"></div>
+                        </div>
+                        
+                        <hr class="my-2" />
+
+                        <div class="flex text-xs font-semibold">
+                            <div class="flex-grow">CHANGE</div>
+                            <div x-text="priceFormat(change)"></div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="p-4 w-full">
+                    <button class="bg-cyan-500 text-black text-lg px-4 py-3 rounded-2xl w-full focus:outline-none"
+                        onclick="printAndProceed()">
+                        PROCEED
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <script>
+        // Retrieve the CSRF token from the cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Check if the cookie contains the CSRF token
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function printAndProceed(){
+            // Retrieve items from sessionStorage
+            var items = JSON.parse(sessionStorage.getItem('Items'));
+            var payment_method = $("#payment_method").val();
+            var account = $("#account").val();
+            var cus_id = $("#id_customer").val();
+            var ven_id = $("#id_customer").val();
+            var total = $("#total-price").val();
+            var balance = $("#balance").val();
+            var accountType = document.querySelector('input[name="accountType"]:checked').value;
+           
+            
+            
+            proceedCheckout(items, total, payment_method, account, accountType, cus_id, ven_id)
+        }
+        
+        function proceedCheckout(items, total, payment_method, account, accountType, cus_id, ven_id){
+             // Check if there are items to send
+             if (items && items.length > 0) {
+                // Send data to server using AJAX
+                $.ajax({
+                    url: '{%url "main:insert_items" %}',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    data: JSON.stringify({items: items, total:total, payment_method:payment_method, account:account, accountType:accountType, cus_id:cus_id, ven_id:ven_id}), // Format data as JSON
+                    success: function(data) {
+                        if(data.type === "error"){
+                            alertify.error(data.message);
+                        }else{
+                            $('#close-btn').trigger('click');
+                            clearCart();
+                            alertify.success(data.messsage);
+                        }
+                        
+                        
+                    },
+                    error: function(xhr, status, error) {
+                        // Handle error response from server
+                        console.error('Error inserting data:', error);
+                    }
+                });
+            } else {
+                console.log('No items to send.');
+            }
+
+        }
+
+    </script>
+</dialog>

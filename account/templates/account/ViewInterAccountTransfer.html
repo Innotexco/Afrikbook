@@ -1,0 +1,93 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>View Inter Account Transfers</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    <!-- {% if messages %}
+        {% include 'messages.html' %}
+    {% endif %} -->
+
+    <div class="w-64">
+        <a class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+            href="{% url 'account:InterAccountTransfer' %}">
+            New Inter Account Transfer
+        </a>
+    </div>
+
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+        <div class="w-full overflow-x-auto table-responsive">
+          <table id="example" class="display" style="width:100%">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                        <th class="px-4 py-3">SN</th>
+                        <th class="px-4 py-3">Date</th>
+                        <th class="px-4 py-3">Description</th>
+                        <th class="px-4 py-3">Paid From</th>
+                        <th class="px-4 py-3">Recieved In</th>
+                        <th class="px-4 py-3">Amount</th>
+                        <th class="px-4 py-3">User</th>
+                        <th class="px-4 py-3">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y">
+
+                    
+                    {% for display in view_account %}
+                    
+                    <tr class="text-gray-700">
+
+                        <td class="text-[10px]">
+                            {{display.id}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.date_tx}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.description}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.paid_from}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.received_in}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.amount}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.user}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.status}}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+{% endblock content %}

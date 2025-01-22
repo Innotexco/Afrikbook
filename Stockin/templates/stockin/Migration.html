@@ -1,0 +1,55 @@
+{% load static %}     
+        <link rel="stylesheet" href="{% static 'src/styles.css' %}">
+        <link rel="stylesheet" href="{% static 'src/main.css' %}">
+        <link rel="stylesheet" href="{% static 'src/input.css' %}">
+
+
+        {% comment %} <script src="https://code.jquery.com/jquery-3.7.0.js"> </script> {% endcomment %}
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"> </script>
+        <link href="https://cdn.datatables.net/1.13.6/js/dataTables.tailwindcss.min.js" rel="stylesheet"> 
+
+
+        <!-- Jquery -->
+        <script src="{% static 'jquery/jquery.js' %}"></script>
+        <script src="{% static 'jquery/jquery.min.js' %}"></script>
+        
+
+
+{% block content %}
+<!-- {% if messages %}
+        {% include 'messages.html' %}
+{% endif %} -->
+{% include "stockin/Modal.html" %}
+    
+    
+ <script>
+ $(document).ready(
+    Migration()
+
+ )
+ function Migration(){
+    my_modal_modal.showModal(),
+    $(".modal-backdrop").html("")
+      
+    setInterval(function(){
+        $(".modal-backdrop").html('<button class="py-1 px-2 rounded-full bg-red-600 text-[14px] text-white font-semibold">X</button>')
+
+        $(".modal-backdrop button").click()
+        window.location.href = "{% url 'Stockin:Stockregister' %}"
+
+    }, 30000)
+ }
+ 
+
+ </script>
+ <script>
+  function preventBack() {
+            window.history.forward();
+        }
+        setTimeout("preventBack()", 0);
+        window.onunload = function () {
+            null
+  };
+</script>
+
+{% endblock content %}

@@ -1,0 +1,284 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+{% include 'shipping/CityPrice.html' %}
+
+
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Address Shipping Price</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+    <div class="w-64">
+        <a class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+            href="{% url 'settings:AddCity' %}">
+            Add New City
+        </a>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="px-4 py-3 my-8 bg-white rounded-lg shadow-md">
+
+            <div class="flex flex-wrap  justify-between items-center">
+                <div class="flex justify-between gap-6">
+                    <label class="block w-full text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">
+                            Select Country  
+                        </span>
+                        <select id="country" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="country">
+                            <option selected disabled> Select Country</option>
+                            {% for value in country %}
+                            <option >{{value.Country}}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    
+                    <label class="block w-full  text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">
+                            Select Item
+                        </span>
+                        <select id="item" name="item" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg">
+                            <option selected disabled>Select item</option>
+                            {% for item in items %}
+                            <option value="{{item.generated_code}}">{{item.item_name}}</option>
+                            {% endfor %}
+                        </select>
+                        
+                    </label>
+                </div>
+                 <label class="block w-2/12 text-sm hidden" id="prices">
+                    <span class="text-gray-700">All Cities</span>
+                    <input 
+                        type="number"
+                        class="block w-full px-2 m-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="same_price"
+                        id="same_price"
+                    />
+                
+                </label>
+    
+                
+            </div>
+    
+           
+    
+        </div>
+ 
+
+        <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+            <button type="button" id="edit_all"  onclick="EditAll()" class="block hidden h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                Edit All
+            </button>
+            <div class="w-full overflow-hidden rounded-lg shadow-xs my-2">
+                <div class="w-full overflow-y-auto" >
+                    <div class="mb-5" id="view_div">
+                        <div class="flex flex-wrap sm:w-ful  gap-4 items-center" id="cities">
+                            <!-- <div class="grid  md:gap-cols-5 lg:grid-cols-10  gap-5 items-center" id="cities"> -->
+                            {% for city in shipping %}
+                            <div class="px-2 py-2 my-1 bg-white rounded-lg shadow-md cursor-pointer" onclick="ViewItem('{{city.id}}','{{city.country}}', '{{city.city}}', '{{city.item_name}}', '{{city.cost}}')">
+                                <div class="flex flex-col items-center  text-sm text-center">
+                                    <span class="text-[#1b1c1f]  mb-2">{{city.city}}</span>
+                                    <!-- <span class="text-gray-700 w-6/12">Item: {{city.item_name}}</span> -->
+                                    <span class="text-gray-700">Price: <b class="text-[15px] currency"></b>{{city.cost}}</span>
+                                
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                        </div>
+                    </div>
+                    <div class="hidden mb-5" id="edit_div">
+                        <div class="flex flex-wrap sm:w-ful  gap-4 items-center" id="cities_edit">
+    
+                        </div>
+                    </div>
+                   
+                </div>
+                <button class="block hidden px-4 py-1 my-5 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                type="submit"
+                id="create">
+                Save
+            </button>
+
+        </div>
+    </form>
+    <script>
+
+      $("#item").on('change', function(){
+        fetchCities()
+      });
+      $("#country").on('change', function(){
+        fetchCities()
+      });
+
+        function fetchCities(){
+            const item = $("#item").val();
+            const country = $('#country').val();
+            
+           
+            if (item != "" && country != "") {
+              
+                $.ajax({
+                    url: '{% url "settings:fetch_cities" %}',
+                    method: 'GET',
+                    data:{'item': item, 'country': country},
+                    success: function(data) {
+                    
+                        const table1 = $('#cities');
+                        const table2 = $('#cities_edit');
+                        if (data && data.length > 0) {
+                            
+                            $('#edit_all').show('slow')
+                            table1.empty(); // Clear previous content
+                            table2.empty(); // Clear previous content
+                            // Populate table with items
+                            let num = 0
+                            let executed = false
+                            data.forEach(item => {
+
+                                const view = `
+                                    <div class="px-2 py-2 my-1 bg-white rounded-lg shadow-md cursor-pointer" onclick="ViewItem('${item.id}','${item.country}', '${item.city}', '${item.item_name}', '${item.cost}')">
+                                        <div class="flex flex-col items-center  text-sm text-center">
+                                            <span class="text-[#1b1c1f]  mb-2">${item.city}</span>
+                                            <span class="text-gray-700">Price: <b class="text-[15px] currency"></b>${item.cost}</span>
+                                        
+                                        </div>
+                                    </div>
+                                `
+                                table1.append(view);
+
+                                const edit = `
+                                    <div class="px-2 py-1 bg-white rounded-lg shadow-md"
+
+                                        <div class="text-sm text-center">
+                                            <span class="text-gray-700">${item.city}</span>
+                                            <label class="flex gap-1 mt-3 text-sm">
+                                                <span class="text-gray-700">Price</span>
+                                                <input 
+                                                    type="number"
+                                                    class="block w-full px-2  text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                                                    placeholder=""
+                                                    name="price[]"
+                                                    id="price"
+                                                    value="${item.cost}"
+                                                />
+                                                <input type="text" name="city[]" value="${item.city}" class="hidden">
+                                            </label>
+                                        </div>
+                                    </div>
+                                    `
+                        
+                                table2.append(edit);
+                                
+                            });
+
+                            
+                        }else{
+                            alertify.error('No city found in '+country)
+                            table1.empty();
+                            table2.empty();
+                        }
+                        //alert('Items found');
+                    },
+                    error: function() {
+                        //alert('Item retrieval failed');
+                        // alertify.confirm("Failed");
+                    }
+                });
+                }
+         
+        };
+
+        $("#same_price").on('input', function() {
+            var value = $(this).val();
+        
+            var prices = document.getElementsByName('price[]')
+
+            prices.forEach(price =>{
+                price.value = value
+            })
+        })
+
+        function ViewItem(id, country, city, item, cost){
+     
+            $('#city').text(country+", "+city)
+            $('#item_name').text(item)
+            $('#price').val(cost)
+            $('#item_id').val(id)
+            my_modal_view.showModal()
+
+        }
+
+        function Edititem(){
+
+            const item_id = $('#item_id').val()
+            const item_price = $('#price').val()
+
+       
+            if( item_id  && item_price){
+                $.ajax({
+                    url: '{% url "settings:update_address_shipping_price" %}',
+                    method: 'GET',
+                    data: {'item_id': item_id, 'item_price': item_price},
+                    success: function(data) {
+                        alert(data.message)
+                        //alertify.success(data.message)
+                        window.location.reload()
+                    },
+                    error: function(error){
+                        alert(error.responseJSON.message)
+                        // alertify.success(error.message)
+                    },
+                });
+
+            }
+            
+
+        }
+        function EditAll(){
+            if ($("#view_div").hasClass('hidden')){
+                $('#edit_all').text('Edit All')
+                $("#edit_div").hide('slow')
+                $("#view_div").show('slow')
+                $("#view_div").removeClass('hidden')
+                $('#prices').hide('slow')
+                $('#create').hide('slow')
+                
+                //  $("#cities").removeClass('hidden')
+                //  $("#cities_edit").addClass('hidden')
+            }else{
+                $('#edit_all').text('View All')
+                $("#view_div").hide('slow')
+                $("#edit_div").show('slow')
+                $("#view_div").addClass('hidden')
+                $('#prices').show('slow')
+                $('#create').show('slow')
+                // $("#cities").addClass('hidden')
+                // $("#cities_edit").removeClass('hidden')
+            }
+            // $("#cities").slideToggle('slow')
+            // $("#cities_edit").slideToggle('slow')
+
+        }
+    </script>
+
+    
+    {% endblock content %}

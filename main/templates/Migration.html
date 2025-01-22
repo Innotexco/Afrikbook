@@ -1,0 +1,204 @@
+{% load static %}     
+        <link rel="stylesheet" href="{% static 'src/styles.css' %}">
+        <link rel="stylesheet" href="{% static 'src/main.css' %}">
+        <link rel="stylesheet" href="{% static 'src/input.css' %}">
+
+
+        {% comment %} <script src="https://code.jquery.com/jquery-3.7.0.js"> </script> {% endcomment %}
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"> </script>
+        <link href="https://cdn.datatables.net/1.13.6/js/dataTables.tailwindcss.min.js" rel="stylesheet"> 
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+        
+        
+
+        <!-- Jquery -->
+        <script src="{% static 'jquery/jquery.js' %}"></script>
+        <script src="{% static 'jquery/jquery.min.js' %}"></script>
+        
+
+
+{% block content %}
+{% if messages %}
+        {% comment %} {% include 'messages.html' %} {% endcomment %}
+{% endif %}
+{% comment %} {% include "stockin/Modal.html" %} {% endcomment %}
+
+<style>
+    @keyframes moveRight {
+      0% { width: 0; }
+      100% { width: 100%; }
+    }
+
+    .move-right {
+      animation: moveRight 60s linear infinite;
+    }
+  </style>
+  <style>
+    /* Button Styles */
+    .btn {
+        position: relative;
+        padding: 10px 20px;
+        font-size: 20px;
+        border: none;
+        color: #fff;
+        background-color: #3498db;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+    }
+
+    /* Spinner Styles */
+    .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #fff;
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        display: none; /* Hidden by default */
+        margin-left: 10px; /* Adjust spacing between text and spinner */
+    }
+
+    /* Spinner Animation */
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+  
+</head>
+<body class=" flex justify-center  bg-neutral-700">
+  <div class=" flex justify-center flex-col  gap-2  bg-neutral-700 max-h-screen  w-[400px] mt-10 p-10 ">
+      <div class=" ">
+          <img src="{% static 'logo/AFRIKBOOK LOGO.png' %}" alt="">
+      </div>
+
+      <span id="text" class="text-center w-full  px-2 py-4 text-white"></span>
+
+      <div class="text-center w-full  px-2 py-4 hidden">
+        <div class="w-full bg-gray-100 h-1 relative">
+          <div id="progress-bar" class="h-1  bg-red-800 absolute left-0 move-right"></div>
+        </div>
+        <div id="percentage" class="mt-2 text-lg text-gray-100 ">0%</div>
+      </div>
+      <button
+      id="verify"
+      type="button"
+      class="">
+      
+      <div class="spinner" id="spinner"></div></button>
+    </body>  
+  
+
+  <script>
+    let progressBar = document.getElementById('progress-bar');
+    let percentage = document.getElementById('percentage');
+    let text = document.getElementById('text');
+    let progress = 0;
+    var timeout = 1000 * 60 //* 60
+     
+    var textContent = {
+        text1: "We are getting things ready for you",
+        text2: "Creating neccesary data",
+        text3: "Running migrations",
+        text4: "Inserting required information",
+        text5: "Preparing your experience. Thanks for waiting",
+        text6: "Our system is getting everything ready. Hang tight",
+        text7: "Loading essential components",
+        text9: "Your data is ready",
+        text8: "Retrieving information",
+        text10: "We are almost there",
+        text11: "DONE",
+    }
+
+    function updateProgress() {
+      if (progress < 100) {
+        progress++;
+        Text(progress);
+      } else {
+        progress = 0;
+      }
+      percentage.innerText = progress + '%';
+      progressBar.style.width = progress + '%';
+    }
+    
+     setInterval(updateProgress, 600); // 100 seconds to complete the progress bar
+    
+    function Text(progress){
+        if(progress == 1 ){
+            text.innerText = textContent.text1
+        }
+        else if(progress == 5){
+            text.innerText = textContent.text2
+        }
+        else if(progress == 20){
+            text.innerText = textContent.text3
+        }
+        else if(progress == 27){
+            text.innerText = textContent.text4
+        }
+        else if(progress == 40){
+            text.innerText = textContent.text5
+        }
+        else if(progress == 50){
+            text.innerText = textContent.text6
+        }
+        else if(progress == 55){
+            text.innerText = textContent.text7
+        }
+        else if(progress == 65){
+            text.innerText = textContent.text8
+        }
+        else if(progress == 72){
+            text.innerText = textContent.text9
+        }
+        else if(progress == 80){
+            text.innerText = textContent.text10
+        }
+        else if(progress == 99){
+            text.innerText = textContent.text11
+        }
+    }
+
+    setInterval(function(){
+      // window.location.href = "{% url 'main:login' %}"
+    }, timeout); //one hour
+
+  
+  
+  function preventBack() {
+      window.history.forward();
+    }
+    setTimeout("preventBack()", 0);
+    window.onunload = function () {
+        null
+    };
+
+    function spin(){
+      
+      const button = document.getElementById("verify");
+      const spinner = document.getElementById("spinner");
+  
+      // Show spinner and disable button
+      spinner.style.display = "inline-block";
+      button.disabled = true;
+  
+      // Simulate a process (e.g., API call)
+      setTimeout(() => {
+          spinner.style.display = "none"; // Hide spinner
+          button.disabled = false; // Re-enable button
+          window.location.href = "{% url 'main:login' %}"
+      }, timeout);
+    }
+    spin()
+</script>
+</div>
+
+{% endblock content %}

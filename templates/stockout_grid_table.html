@@ -1,0 +1,425 @@
+<style>
+    /* input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    input[type=number] {
+        -moz-appearance: textfield;
+    } */
+</style>
+<!---  CUSTOMER ITEM GRID VIEW ---->
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script>
+   
+    var i = 1;
+    function addRow() {    
+            i++;
+            $('#dynamic_row_add').append('<tr id="row'+i+'"><td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">'+i+'</td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><select name="item[]" id="select" onchange="" required oninvalid="this.setCustomValidity("Please delete empty row")" class="block w-full item-select px-2 text-[10px] h-4 form-select focus:outline-none focus:shadow-outline-green text-slate-600"><option value="0" >Select Item</option>{% for item in items %}<option value="{{item.generated_code}}">{{item.item_name}}</option>    {% endfor %}</select></td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="text" name="desc[]" id="desc" value=""  class="block w-full desc px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/><input type="hidden" name="item_name" id="name" value=""  class="block w-full desc px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/> <input type="hidden" name="purchaseP" id="purchseP" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input" placeholder="" value=""/></td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="number" name="qty[]" id="qty" value="" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td><td class="border hidden border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="hidden" name="unit[]" id="unit'+i+'" value="" readonly class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td><td class="border hidden border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="hidden" name="discount[]" id="discount" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td><td class="border hidden border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="hidden" name="amount[]" id="amount2'+i+'" value="" readonly class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td><td class="border border-slate-300 py-0 my-0"><button  id="'+i+'" class="remove_row flex justify-center items-center w-full h-3 px-2 py-1 text-[12px] font-semibold text-center text-gray-600 transition-colors duration-150 border border-transparent focus:outline-none focus:shadow-outline-slate"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" enable-background="new 0 0 64 64" viewBox="0 0 64 64" id="delete"><g transform="translate(232 228)"><path fill="#134563" d="M-207.5-205.1h3v24h-3zM-201.5-205.1h3v24h-3zM-195.5-205.1h3v24h-3zM-219.5-214.1h39v3h-39z"></path><path fill="#134563" d="M-192.6-212.6h-2.8v-3c0-.9-.7-1.6-1.6-1.6h-6c-.9 0-1.6.7-1.6 1.6v3h-2.8v-3c0-2.4 2-4.4 4.4-4.4h6c2.4 0 4.4 2 4.4 4.4v3"></path><path fill="#134563" d="M-191-172.1h-18c-2.4 0-4.5-2-4.7-4.4l-2.8-36 3-.2 2.8 36c.1.9.9 1.6 1.7 1.6h18c.9 0 1.7-.8 1.7-1.6l2.8-36 3 .2-2.8 36c-.2 2.5-2.3 4.4-4.7 4.4"></path></g></svg></button></td></tr></form>');
+           
+    };
+
+    $(document).on('change', '#select',function(event){
+        const itemId = $(this).val(); 
+
+        const desc = $(this).closest('tr').find('input[name="desc[]"]');
+        const name = $(this).closest('tr').find('input[name=item_name]');
+        const purchaseP = $(this).closest('tr').find('input[name=purchaseP]');
+        const qty =  $(this).closest('tr').find('input[name="qty[]"]');
+        const unit =  $(this).closest('tr').find('input[name="unit[]"]');
+        const amount =  $(this).closest('tr').find('input[name="amount[]"]');
+        
+        // Find all select elements with the class 'item-select'
+        const selectElements = document.querySelectorAll('.item-select');
+        let isValueExists = false;
+        // Loop through the select elements
+        for (let i = 0; i < selectElements.length; i++) {
+            const select = selectElements[i];
+            if (select !== event.target) {
+                // Check if the selected value matches the value of other selects
+                if (select.value === itemId) {
+                    isValueExists = true;
+                    alertify.defaults.glossary.title = "Oops";
+                    alertify.confirm("Selected item already exists, add quantity instaed.");
+                    event.target.value = "0"; // Reset the selected value
+                    break;
+
+                }
+            }
+        }
+       
+        
+        if (isValueExists) {
+            //$(this).val("0"); 
+            // Perform actions when the value already exists
+           // console.log("Value already exists in another row.");
+        } else {
+            // Perform actions when the value doesn't exist in other rows
+           // console.log("Value is unique in the table.");
+            if(itemId != 0){
+                
+                $.ajax({
+                    url: '/get_items/'+ itemId + '/',
+                    method: 'GET',
+                    
+                    success: function(data){
+                            desc.val(data.desc)
+                            name.val(data.name)
+                            purchaseP.val(data.purchase)
+                            qty.val(1)
+                            unit.val(data.unit)
+                            amount.val(data.unit)
+
+                            const inputElements = document.getElementsByName("amount[]");
+
+                            // Initialize a variable to store the sum
+                            let sum = 0;
+
+                            //alert(sum)
+                            // Loop through the input elements and add their values to the sum
+                            for (let i = 0; i < inputElements.length; i++) {
+                                const inputValue = parseFloat(inputElements[i].value);
+                                if (!isNaN(inputValue)) {
+                                    sum += inputValue;
+                                }
+                            }
+                            // Display the sum in a result div
+                            const subTotal = document.getElementById("sub-total");
+                            const total = document.getElementById("total");
+                            subTotal.value = sum;
+                            total.value = sum;
+
+                            addRow()
+                    },
+                    error: function(){
+                       // alert('Item not found');
+                        alertify.error("Item not found");
+                    }
+                    });
+
+                    
+            }else{
+                desc.val("")
+                name.val("")
+                qty.val("")
+                unit.val("")
+                amount.val("")
+            }
+        }
+
+    });
+   
+/** function CheckQuantity(value, itemcode){
+    alert(itemcode)
+    if(itemcode > 1){
+        $.ajax({
+            url:"{% url 'customer:item-qty' %}",
+            method: "GET",
+            data:{"item_id": itemcode},
+            success: function(qty){
+                console.log(qty);
+                if(qty >= value){
+                    return (true)
+                }else{
+                    return qty;
+                }
+            },
+            error: function(error){
+                console.log(error);
+                return (fa)
+            }
+        })
+    }
+    
+}*/
+
+
+//<!---  MAIN ITEM GRID QUANTITY ---->   
+$(document).on("input", "#qty", function (e) {
+    const value =  $(this).val();
+    var itemcode =  $(this).closest('tr').find('select[name="item[]"]').val();
+    
+    
+    // Retun inward select
+    const itemcode2 =  $(this).closest('tr').find('select[name="item2[]"]').val();
+    if(itemcode == undefined){
+        itemcode = itemcode2 
+    }
+    //console.log(itemcode)
+    
+    const unit =  $(this).closest('tr').find('input[name="unit[]"]');
+    const qty =  $(this).closest('tr').find('input[name="qty[]"]');
+    const discount =  $(this).closest('tr').find('input[name="discount[]"]');
+    const amount =  $(this).closest('tr').find('input[name="amount[]"]');
+    
+    const subTotal = document.getElementById("sub-total");
+    const total = document.getElementById("total");
+    const allAmount = document.getElementsByName("amount[]");
+
+    if(value > 0){
+        const unit_p = parseInt(unit.val());
+        const qty_p = parseInt(qty.val());
+        const discount_p = parseInt(discount.val());
+        if(itemcode > 1){
+            $.ajax({
+                url:"{% url 'customer:Stockitem-qty' %}",
+                method: "GET",
+                data:{"item_id": itemcode},
+                success: function(stock_qty){
+                    if(stock_qty >= value){
+                        DoCalculation(unit_p, discount_p, value, amount, subTotal, total, allAmount);
+                    }else{
+                        alertify.defaults.glossary.title = "Oops";
+                        alertify.confirm("Quantity exceeds stock level. Available quantity: "+stock_qty+" \n proceed anyway",
+                        // if proceed
+                        function(){                              
+                            DoCalculation(unit_p, discount_p, value, amount, subTotal, total, allAmount);                             
+                        },
+                        //if Cancel
+                        function(){
+                            if (value !== 1) {
+                                // Set the input value to 0
+                                qty.val(1);
+                                
+                            }
+
+                        }).set('labels',{ok:'Proceed', cancel:'Cancel'});
+                    }
+                },
+                error: function(error){
+                    console.log(error);
+                    
+                }
+            })
+        }    
+    }else{
+            unit_p = parseInt(unit.val())
+            if(!isNaN(unit_p)){
+
+                amount.val(unit_p)
+
+            let sum = 0;
+
+            //alert(sum)
+            // Loop through allAmount input elements and add their values to the sum
+            for (let i = 0; i < allAmount.length; i++) {
+                const inputValue = parseFloat(allAmount[i].value);
+                if (!isNaN(inputValue)) {
+                    sum += inputValue;
+                }
+            }
+            // Display the sum in a result div
+            
+            subTotal.value = sum;
+            total.value = sum;
+            }else{
+                amount.val("")
+            }
+
+            
+    }        
+});
+
+
+function DoCalculation(unit_p, discount_p, value, amount, subTotal, total, allAmount){
+    if(!isNaN(unit_p && discount_p)){
+
+        amount.val((unit_p - discount_p)* value)
+        //alert(unit_p)
+        //const inputElements = document.getElementsByName("amount[]");
+
+        // Initialize a variable to store the sum
+        let sum = 0;
+
+        //alert(sum)
+        // Loop through allAmount input elements and add their values to the sum
+        for (let i = 0; i < allAmount.length; i++) {
+            const inputValue = parseFloat(allAmount[i].value);
+            if (!isNaN(inputValue)) {
+                sum += inputValue;
+            }
+        }
+        // Display the sum in a result 
+        
+        subTotal.value = sum;
+        total.value = sum;
+    }else if(isNaN(discount_p)){
+        amount.val(unit_p * value)
+            // Initialize a variable to store the sum
+            let sum = 0;
+
+            //alert(sum)
+            // Loop through allAmount input elements and add their values to the sum
+            for (let i = 0; i < allAmount.length; i++) {
+                const inputValue = parseFloat(allAmount[i].value);
+                if (!isNaN(inputValue)) {
+                    sum += inputValue;
+                }
+            }
+            // Display the sum in a result 
+            
+            subTotal.value = sum;
+            total.value = sum;
+    }
+}
+
+
+//<!---  MAIN ITEM GRID DISCOUNT ---->
+$(document).on("input", "#discount", function (e) {
+        const value =  $(this).val();
+        //console.log(value)
+        
+        
+        const unit =  $(this).closest('tr').find('input[name="unit[]"]');
+        const qty =  $(this).closest('tr').find('input[name="qty[]"]');
+        const amount =  $(this).closest('tr').find('input[name="amount[]"]');
+        
+        const subTotal = document.getElementById("sub-total");
+        const total = document.getElementById("total");
+        const allAmount = document.getElementsByName("amount[]");
+
+       
+        if(value > 0){
+            const unit_p = parseInt(unit.val());
+            const qty_p = parseInt(qty.val());
+            if(!isNaN(unit_p)){
+
+                amount.val((unit_p - value) * qty_p)
+                //alert(unit_p)
+                //const inputElements = document.getElementsByName("amount[]");
+
+                // Initialize a variable to store the sum
+                let sum = 0;
+
+                //alert(sum)
+                // Loop through allAmount input elements and add their values to the sum
+                for (let i = 0; i < allAmount.length; i++) {
+                    const inputValue = parseFloat(allAmount[i].value);
+                    if (!isNaN(inputValue)) {
+                        sum += inputValue;
+                    }
+                }
+                // Display the sum in a result div
+                
+                subTotal.value = sum;
+                total.value = sum;
+            }
+        }else{
+             unit_p = parseInt(unit.val())
+             const qty_p = parseInt(qty.val());
+             if(!isNaN(unit_p)){
+
+                amount.val(unit_p * qty_p)
+
+                 let sum = 0;
+
+                //alert(sum)
+                // Loop through allAmount input elements and add their values to the sum
+                for (let i = 0; i < allAmount.length; i++) {
+                    const inputValue = parseFloat(allAmount[i].value);
+                    if (!isNaN(inputValue)) {
+                        sum += inputValue;
+                    }
+                }
+                // Display the sum in a result div
+                
+                subTotal.value = sum;
+                total.value = sum;
+                }else{
+                    amount.val("")
+                }
+
+             
+        }
+        
+});
+
+//<!---  MAIN ITEM GRID TOTAL DISCOUNT ---->
+$(document).on("input", "#total-discount", function (e) {
+        const value =  $(this).val();
+        //console.log(value)
+        
+        
+        const subTotal = document.getElementById("sub-total");
+        const total = document.getElementById("total");
+
+        const subTotal_v = parseInt(subTotal.val());
+       
+        if(value > 0){
+            if(!isNaN(subTotal_v)){
+                total.val(subTotal_v - value)  
+            }
+        }else{
+             unit_p = parseInt(unit.val())
+             const qty_p = parseInt(qty.val());
+             if(!isNaN(unit_p)){
+
+                total.val(subTotal_v)   
+            }else{
+                
+            }
+        }
+        
+});
+
+
+//<!---  MAIN ITEM GRID REMOVE ROW ---->
+$(document).on('click', '.remove_row',function(e){
+        var row_id = $(this).attr("id");
+        const amount =  $(this).closest('tr').find('input[name="amount[]"]').val();
+
+        const subTotal = document.getElementById("sub-total");
+        const total = document.getElementById("total");
+        const totalv = document.getElementById("total").value;
+
+        if(amount != ""){
+
+            subTotal.value = parseInt(subTotal.value) - parseInt(amount)
+            total.value = parseInt(total.value) - parseInt(amount)
+        }
+        if(amount != "" && row_id == "'+i+'"){
+
+            subTotal.value = amount
+            total.value = totalv
+        }
+        e.preventDefault()
+        $('#row'+row_id+'').remove();
+});
+
+//<!---  DISCOUNT CHECK ---->
+const checkbox = document.getElementById("discountcheck")
+checkbox.addEventListener("change", function () {
+        const subTotal = document.getElementById("sub-total"); 
+        const discount = document.getElementById("discount2"); 
+        const sub_Total = parseInt(subTotal.value); 
+        const total = document.getElementById("total");
+        if (checkbox.checked) {
+            //alert('checked');
+            if(!isNaN(sub_Total)){
+
+                sum = sub_Total * 0.075;
+             
+                discount.value = sum;
+                total.value = sub_Total + sum;
+
+            }else{
+                
+
+            }
+            
+            
+        } else {
+            //alert('unchecked');
+            discount.value = "";
+            if(isNaN(sub_Total)){
+
+                total.value = "";
+            }else{
+                total.value = sub_Total
+            }
+            
+        }
+})
+
+</script>

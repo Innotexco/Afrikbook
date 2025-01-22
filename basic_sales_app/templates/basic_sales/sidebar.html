@@ -1,0 +1,274 @@
+  <!-- Sidebar -->
+  {% include 'basic_sales/VATmodal.html' %}
+
+  <div  class="w-54 h-screen bg-[#B2BEB5] mt-5 overflow-y-scroll">
+    <div class="flex gap-2 mt-4 ">
+        <button @click="open = !open" class="toggle inline-flex items-center justify-center px-2 text-[#2F4F4F] rounded-md hover:text-[#335757] focus:outline-none focus:text-[#335757]" x-bind:aria-label="open ? 'Close main menu' : 'Main menu'" x-bind:aria-expanded="open" id="togle">
+            <svg class="w-6 h-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+            <path :class="{'hidden': open, 'inline-flex': !open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            <path :class="{'hidden': !open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        <h1 class="text-dark text-lg font-semibold " id="title">Afikbook Sales</h1>
+    </div>
+    <div class="p-4 close transition duration-300 ease " id="sidebar">
+        <aside>
+            <ul class="mt-4">
+                <li class="py-2  " onclick="fetchAllItems()">
+                    <div class="hs-tooltip inline-block [--placement:right] pr-4">
+                        <button type="button" class="w-40 items-center h-12 bg-[#f7fee7] hover:bg-[#ecfccb] text-dark px-5 rounded-lg ">
+                            
+                            <span class="text-sm">All</span>
+                        </button>
+                    </div>
+                </li>
+                {% for cate_name, cate_id in category %}
+                    
+                    <li class="py-2  " onclick="fetchItemsByCategory('{{ cate_id }}')">
+                        <div class="hs-tooltip inline-block [--placement:right] pr-4">
+                            <button type="button" class="w-40 items-center h-12 bg-[#f7fee7] hover:bg-[#ecfccb] text-dark px-5 rounded-lg ">
+                                <!-- <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-currency-dollar mx-auto" width="24" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M12 6v-2m0 8v-2m0 8v-2m4 0h-14c-1.104 0 -2 -.896 -2 -2v-12c0 -1.104 .896 -2 2 -2h14c1.104 0 2 .896 2 2v12c0 1.104 -.896 2 -2 2z" />
+                                </svg> -->
+                                <span class="text-sm">{{ cate_name }}</span>
+                            </button>
+                        </div>
+                    </li>
+                {% endfor %}
+                   
+             
+                <!-- <li class="py-2  ">
+                    <div class="hs-tooltip inline-block [--placement:right]">
+                        <a href="{% url 'basic_sales_app:SalesMenu' %}">
+                            <button class="w-40 items-center h-12 bg-[#f7fee7] hover:bg-[#ecfccb] text-dark px-5 rounded-lg ">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-currency-dollar mx-auto" width="24" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M12 6v-2m0 8v-2m0 8v-2m4 0h-14c-1.104 0 -2 -.896 -2 -2v-12c0 -1.104 .896 -2 2 -2h14c1.104 0 2 .896 2 2v12c0 1.104 -.896 2 -2 2z" />
+                                </svg>
+                                <span class="text-sm">Sell</span>
+                            </button>
+                        </a>
+                    </div>
+                </li>
+                <li class="py-2 ">
+                    <div class="hs-tooltip inline-block [--placement:right]">
+                        <a href="{% url 'basic_sales_app:SalesHistory' %}">
+                            <button class="w-40 items-center h-12 bg-[#f7fee7] hover:bg-[#ecfccb] text-dark px-5 rounded-lg ">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chart-line mx-auto" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M3 18v-12h18" />
+                                    <path d="M9 16l2 -2l3 3l4 -4" />
+                                </svg>
+                                <span class="text-sm">Sales History</span>
+                            </button>
+                        </a>
+                    </div>
+                </li>
+                <li class="py-2 ">
+                    <div class="hs-tooltip inline-block [--placement:right]">
+                        <a href="{% url 'basic_sales_app:CancelSales' %}">
+                            <button class="w-40 items-center h-12 bg-[#f7fee7] hover:bg-[#ecfccb] text-dark px-5 rounded-lg ">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-x mx-auto" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                                <span class="text-sm">Cancel Sales</span>
+                            </button>
+                        </a>
+                    </div>
+                </li>
+                
+                <li class="py-2 " >
+                    <button id="dropdown-toggle-2" class="flex items-center justify-between w-full px-4 py-2 h-12 text-sm font-medium text-left text-dark bg-[#f7fee7] rounded-lg focus:outline-none focus:bg-[#ecfccb] ">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-plus" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                        Add Item
+                        <svg class="w-4 h-4 ml-2 -mr-1 " fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="dropdown-menu-2" class="hidden px-4 py-2 bg-[#f7fee7] rounded-lg w-[200px]">
+                        <a href="{% url 'basic_sales_app:AddItemForSales' %}" class="block px-4 py-2 text-sm text-dark hover:bg-[#ecfccb] whitespace-normal flex">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-plus" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                            Add Item
+                        </a>
+                        <a href="{% url 'basic_sales_app:ItemCategory' %}" class="block px-4 py-2 text-sm text-dark hover:bg-[#ecfccb] whitespace-normal flex">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-plus" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                            Add Category
+                        </a>
+                    </div>
+                </li>
+                <li class="py-2 " >
+                    <button id="dropdown-toggle-1" class="flex items-center justify-between w-full px-4 py-2 h-12 text-sm font-medium text-left text-dark bg-[#f7fee7] rounded-lg focus:outline-none focus:bg-[#ecfccb] ">
+                        <svg class="size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        Customers
+                        <svg class="w-4 h-4 ml-2 -mr-1 " fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="dropdown-menu-1" class="hidden px-4 py-2 bg-[#f7fee7] rounded-lg w-[200px]">
+                        <a href="{% url 'basic_sales_app:add_customer' %}" class="block px-4 py-2 text-sm text-dark hover:bg-[#ecfccb] whitespace-normal flex">
+                            
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon fill-current" width="24" height="24" viewBox="0 0 24 24">
+                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                            </svg>
+                            Add Customer
+                        </a>
+
+                        <a href="{% url 'basic_sales_app:customer_history' %}" class="block px-4 py-2 text-sm text-dark hover:bg-[#ecfccb] whitespace-normal flex">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chart-line" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 18v-12h18" />
+                                <path d="M9 16l2 -2l3 3l4 -4" />
+                            </svg>
+                            Sales History
+                        </a>
+                        <a href="{% url 'basic_sales_app:account_recievable' %}" class="block px-4 py-2 text-sm text-dark hover:bg-[#ecfccb] whitespace-normal flex">
+                            <svg xmlns="http://www.w3.org/2000/svg" class=" fill-current text-gray-600" width="24" height="24" viewBox="0 0 24 24">
+                                <path d="M4 3H20C21.1046 3 22 3.89543 22 5V19C22 20.1046 21.1046 21 20 21H4C2.89543 21 2 20.1046 2 19V5C2 3.89543 2.89543 3 4 3ZM5 7C5 6.44772 5.44772 6 6 6H18C18.5523 6 19 6.44772 19 7V9H5V7ZM5 11H19V15H5V11Z"/>
+                            </svg>
+                            Customer Receivable
+                        </a>
+                    </div>
+                </li>
+                
+                <li class="py-2 " >
+                    <button id="dropdown-toggle-14" class="flex items-center justify-between w-full px-4 py-2 h-12 text-sm font-medium text-left text-dark bg-[#f7fee7] rounded-lg focus:outline-none focus:bg-[#ecfccb] ">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-stack" width="24" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <rect x="4" y="4" width="16" height="4" rx="2" />
+                            <rect x="4" y="10" width="16" height="4" rx="2" />
+                            <rect x="4" y="16" width="16" height="4" rx="2" />
+                        </svg>
+                        Stock
+                        <svg class="w-4 h-4 ml-2 -mr-1 " fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="dropdown-menu-14" class="hidden px-4 py-2 bg-[#f7fee7] rounded-lg w-[200px]">
+                        <a href="{% url 'basic_sales_app:stockIn' %}" class="block px-4 py-2 text-sm text-dark hover:bg-[#ecfccb] whitespace-normal flex">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-stack" width="24" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <rect x="4" y="4" width="16" height="4" rx="2" />
+                                <rect x="4" y="10" width="16" height="4" rx="2" />
+                                <rect x="4" y="16" width="16" height="4" rx="2" />
+                            </svg>
+                            Stock-in
+                        </a>
+                        <a href="{% url 'basic_sales_app:stockin_history' %}" class="block px-4 py-2 text-sm text-dark hover:bg-[#ecfccb] whitespace-normal flex">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chart-line mx-auto" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 18v-12h18" />
+                                <path d="M9 16l2 -2l3 3l4 -4" />
+                            </svg>
+                            Stock-in History
+                        </a>
+                        <a href="{% url 'basic_sales_app:OutletStockLevel'%}" class="block px-4 py-2 text-sm text-dark hover:bg-[#ecfccb] whitespace-normal flex">
+                           
+                            Stock Level
+                        </a>
+                    </div>
+                </li>
+
+
+                <li class="py-2 " >
+                    <button id="dropdown-toggle-11" class="flex items-center justify-between w-full px-4 py-2 h-12 text-sm font-medium text-left text-dark bg-[#f7fee7] rounded-lg focus:outline-none focus:bg-[#ecfccb] ">
+                        Expiration Control
+                        <svg class="w-4 h-4 ml-2 -mr-1 " fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="dropdown-menu-11" class="hidden px-4 py-2 bg-[#f7fee7] rounded-lg w-[200px]">
+                        <a href="{% url 'settings:InspirationControl' %}"  class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-[#ecfccb] focus:bg-gray-100">
+                            Dashboard
+                        </a>
+                        <a href="{% url 'settings:SetItemNotification' %}"  class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-[#ecfccb] focus:bg-gray-100">
+                            Set Item Notification
+                        </a>
+                        <a href="{% url 'settings:NotificationStatus' %}"  class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-[#ecfccb] focus:bg-gray-100">
+                            Notification status
+                        </a>
+                        <a href="{% url 'settings:ViewExpiredItems' %}"  class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-[#ecfccb] focus:bg-gray-100">
+                            Expired Items
+                        </a>
+                    </div>
+                </li> 
+
+                <li class="py-2 " >
+                    <button id="dropdown-toggle-12" class="flex items-center justify-between w-full px-4 py-2 h-12 text-sm font-medium text-left text-dark bg-[#f7fee7] rounded-lg focus:outline-none focus:bg-[#ecfccb] ">
+                        Stock Expiry Date
+                        <svg class="w-4 h-4 ml-2 -mr-1 " fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="dropdown-menu-12" class="hidden px-4 py-2 bg-[#f7fee7] rounded-lg w-[200px]">
+                        <a href="{% url 'settings:ItemExpiryDate' %}"  class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-[#ecfccb] focus:bg-gray-100">
+                            Set Expiry Date
+                        </a>
+                        <a href="{% url 'settings:UpdateItemExpiryDate' %}"  class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-[#ecfccb] focus:bg-gray-100">
+                            Edit
+                        </a>
+                    </div>
+                </li>  -->
+
+                <li class="py-2 " >
+                    
+                    <button id="dropdown-toggle-3" class="flex items-center justify-between w-40 px-4 py-2 h-12 text-sm font-medium text-left text-dark bg-[#f7fee7] rounded-lg focus:outline-none focus:bg-[#ecfccb] ">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0 size-4 feather feather-settings" width="24" height="24"  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        <span class="text-sm">Settings</span>
+                        <svg class="w-4 h-4 ml-2 -mr-1 " fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="dropdown-menu-3" class="hidden px-4 py-2 bg-[#f7fee7] rounded-lg w-[160px]">
+                        <!-- <a href="{% url 'basic_sales_app:add_user' %}" class="block px-4 py-2 text-sm text-dark hover:bg-[#ecfccb] whitespace-normal flex">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon fill-current" width="24" height="24" viewBox="0 0 24 24">
+                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                            </svg>
+                            Add User
+                        </a>
+                        <a href="{% url 'basic_sales_app:add_profile' %}" class="block px-4 py-2 text-sm text-dark hover:bg-[#ecfccb] whitespace-normal flex">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon fill-current" width="24" height="24" viewBox="0 0 24 24">
+                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                            </svg>
+                            Add Profile
+                        </a> -->
+                        <a onclick="autoVAT.showModal()" class="block px-4 py-2 text-sm text-dark hover:bg-[#ecfccb] whitespace-normal cursor-pointer">
+                            
+                            Auto VAT (7.5%)
+                        </a>
+                        <a href="{% url 'main:logout' %}" class="block px-4 py-2 text-sm text-dark hover:bg-[#ecfccb] whitespace-normal cursor-pointer">
+                            Logout
+                        </a>
+                    </div>
+                </li>
+               
+                
+            </ul>
+         
+        </aside>
+    </div>
+</div>
+
+  
+  <script>
+    $(document).ready(function() {
+      // Add click event listener to each dropdown toggle button
+      $("[id^='dropdown-toggle']").click(function() {
+        // Extract the index from the button id
+        var index = $(this).attr('id').split("-").pop();
+        // Toggle the visibility of the corresponding dropdown menu
+        $("#dropdown-menu-" + index).toggleClass("hidden");
+      });
+    });
+    
+    $(document).ready(function() {
+      // Add click event listener to each dropdown toggle button
+      $("#togle").click(function() {
+        
+        $("#title").toggleClass("hidden");
+        $("#sidebar").toggleClass("hidden");
+      });
+    });
+  </script>

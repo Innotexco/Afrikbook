@@ -1,0 +1,96 @@
+
+{% extends 'Stockbase.html' %}
+
+{% block home %}
+
+
+
+<div id="message">
+
+</div>
+
+
+
+    
+    <main class="w-full">
+
+        <div class="bg-slate-200 py-1 px-2 w-[300px] text-gray-600 text-sm rounded-sm">Stock Overview from 1-jan-2023 to 
+            <span class="text-red-500">Date</span><br>
+        </div>
+
+        
+    
+    <h4 class="my-4 text-lg font-semibold text-gray-600 dark:text-gray-300">
+       Products
+    </h4>
+
+    <div class="flex flex-wrap justify-between gap-4 my-2">
+       
+        <div class="w-full my-6 overflow-hidden rounded-lg shadow-xs">
+            <div class="w-full overflow-x-auto">
+                <table class="w-full whitespace-no-wrap" id="myTable">
+                    <thead>
+                        <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                            <th class="px-4 py-3">SN</th>
+                            <th class="px-4 py-3">Invoice No.</th>
+                            <th class="px-4 py-3">Item</th>
+                            <th class="px-4 py-3">Manufacture Date</th>
+                            <th class="px-4 py-3">Expiry Date</th>
+                            <th class="px-4 py-3">Days Before expir</th>
+                            <th class="px-4 py-3">Remaining Days</th>
+                            <th class="px-4 py-3">Notifiy Me</th>
+                            <th class="px-4 py-3">Notification Status</th>
+                            <th class="px-4 py-3">Status</th> 
+                            <th class="px-4 py-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y">
+                         {% for stockout in items|dictsort:"rdays" %}
+                            {% if stockout.rdays >= 1 %}
+                                <tr class="text-gray-700">
+                                    <td class="px-4 py-3">
+                                    {{ forloop.counter}}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                    {{stockout.item_code}}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                    {{stockout.item}}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                        {{stockout.manufacture_date}}
+                                    </td>
+                                    <td class="px-4 py-3 text-xs text-red-600">
+                                        {{stockout.expiry_date}}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                        {{stockout.days}}
+                                    </td> 
+                                    <td class="px-4 py-3 text-sm">
+                                        {{stockout.rdays}}
+                                    </td> 
+                                    <td class="px-4 py-3 text-sm">
+                                        {{stockout.notify_me}}
+                                    </td> 
+                                    <td class="px-4 py-3 text-sm">
+                                        {% if stockout.n_status == "1" %}
+                                        Enabled
+                                        {% else %}
+                                        Disabled
+                                        {% endif%}
+                                        
+                                    </td> 
+                                    <td class="px-4 py-3 text-sm">
+                                        {{stockout.status}}
+                                    </td> 
+                                </tr>
+                            {% endif %}
+                         {% endfor %}
+                         
+                    </tbody>
+                </table>
+            </div>
+           
+{% endblock home %}
+      
+  

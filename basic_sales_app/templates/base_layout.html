@@ -1,0 +1,100 @@
+{% load static %}
+
+<!-- Additional CSS Files -->
+<link rel="stylesheet" href="{% static 'src/styles.css' %}">
+<!-- <link rel="stylesheet" href="{% static 'src/main.css' %}"> -->
+
+{% include 'basic_sales/header_layout.html' %}
+
+{% include 'navBar.html' with count=count %}
+<div class="flex flex-row h-screen text-blue-gray-800 p-0 m-0">
+
+    <!-- left sidebar -->
+    {% include 'basic_sales/sidebar.html' %}
+    {% include 'printDocument.html' %}
+    
+    {% block content %}
+
+    {% endblock %}
+</div>
+<script src="{% static 'basic_sales_js/printFunction.js' %}"></script>
+<script src="{% static 'basic_sales_js/saveAsExcel.js' %}"></script>
+
+<!-- CSS -->
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
+<!-- Default theme -->
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/default.min.css"/>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+
+{% if error_message %}
+<script>
+    $(document).ready(function() {
+        toastr.options = {
+            closeButton: true,
+            positionClass: 'toast-top-right',
+            progressBar: true,
+        };
+        toastr.error("{{ error_message|escapejs }}", "Error");
+    });
+</script>
+{% endif %}
+
+{% if success_message %}
+<script>
+    $(document).ready(function() {
+        toastr.options = {
+            closeButton: true,
+            positionClass: 'toast-top-right',
+            progressBar: true,
+        };
+        toastr.success("{{ success_message|escapejs }}", "Success");
+    });
+</script>
+{% endif %}
+
+<script>
+    var j = jQuery.noConflict();
+</script>
+<script src ='{% static "basic_sales_js/JS_functions.js" %}'></script>
+<script>
+    // $(document).ready(function () {
+    //     // Function to fetch and display items
+    //     function getNotificatoin() {
+    //         get_symbol = $('#get_symbol').val()
+    //         let format = new Intl.NumberFormat()
+    //         var forBaseLayout = document.getElementById('forBaseLayout').dataset.url;
+    //         $.ajax({
+    //             type: 'GET',
+    //             url: forBaseLayout,  
+    //             dataType: 'json',
+    //             success: function (data) {
+    //                 // Clear existing items
+    //             },
+    //             error: function (error) {
+    //                 console.error('Error fetching items:', error);
+    //             }
+    //         });
+    //     }
+
+    //     getNotificatoin();
+    // });
+
+
+</script>
+<script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+<script>
+    //<!-- JavaScript -->
+    alertify.set('notifier','position', 'top-right');
+    {% for msg in messages %}
+    {% if msg.tags == "success" %}
+    alertify.success('{{msg}}');
+    {% else %}
+    alertify.error('{{msg}}');
+    {%endif%}
+    {% endfor %}
+</script>
+{% include 'basic_sales/footer_layout.html' %}
+
+    

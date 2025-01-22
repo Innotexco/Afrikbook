@@ -1,0 +1,302 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Payables</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+        {% comment %} <form method="get"> {% endcomment %}
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">FROM</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        name="from"
+                        id="from"
+                    />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">TO</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        name="to"
+                        id="to"
+                    />
+                </label>
+
+                    <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="search2" onclick="Filter()">
+                    Search
+                </button> 
+
+                <div class="text-sm grid gap-6 grid-cols-1">
+                   
+                    
+                    <label for="">
+                        <span class="text-gray-700">By Vendor</span>
+                        <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="Vendor" required onchange="filterItem(this)">
+                            <option selected disabled=true>Select Vendor</option>
+                            {% for vendor in vendors %}
+                               <option value="{{vendor.custID}}">{{vendor.custID }}_{{vendor.name}}</option>   
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div> 
+
+                
+            </div>
+        {% comment %} </form> {% endcomment %}
+        <div class="w-full overflow-x-auto table-responsive mt-6" id="payable">
+          <table id="payables" class="display" style="width:100%">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                        <th class="px-4 py-3">SN</th>
+                        <th class="px-4 py-3">Date</th>
+                        <th class="px-4 py-3">Vendor ID</th>
+                        <th class="px-4 py-3">Vendor Name</th>
+                        <th class="px-4 py-3">Tx Type</th>
+                        <th class="px-4 py-3">Amount</th>
+                        <th class="px-4 py-3">Initial Amount</th>
+                        <th class="px-4 py-3">Balance</th>
+                        <th class="px-4 py-3">Transaction ID</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y">
+
+                    
+                    {% for display in display_vendor %}
+                    
+                    <tr class="text-gray-700">
+
+                        <td class="text-[10px]">
+                            {{display.id}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.address}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.company_name}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.email}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.address}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.company_name}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.custID}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.company_name}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.custID}}
+                        </td>
+                        <td class="text-[10px]">
+                            none
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td class="py-4"></td>
+                    </tr>
+                 
+                    <tr class="text-gray-700 text-xs ">
+                        <td class="pt-6 text-right pr-3 mt-5" colspan="8">
+                            <span class="">Total Debit:</span>
+                        </td>
+                        <td class="pt-6 text-sm">
+                            <b class="mr-1 currency"></b><span class=" " id="debit">0.00</span>
+                        </td>
+                    </tr>
+                    <tr class="text-gray-700 text-xs">
+                        <td class="text-right pr-3" colspan="8">
+                            <span class="">Total Credit:</span>
+                        </td>
+                        <td class="text-sm">
+                            <b class="mr-1 currency"></b><span class="" id="credit">0.00</span>
+                        </td>
+                    </tr>
+                    <tr class="text-gray-700 text-xs">
+                        <td class="text-right pr-3" colspan="8">
+                            <span class="">Balance:</span>
+                        </td>
+                        <td class="text-sm">
+                            <b class="mr-1 currency"></b><span class="" id="balance">0.00</span>
+                        </td>
+                    </tr>
+                   
+                </tfoot>
+            </table>
+            
+        </div>
+    </div>
+
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+        <!-- Print Export To Excel and Export to Pdf template -->
+        {% include 'ModalBoxx/printbtn.html' with container="payable" table="payables" table_no="" %}
+
+    </div>
+    
+    <script>
+        $(document).ready(
+            setTimeout(function(){
+                //Filter();
+            }, 200)
+        )
+      
+        //serach by date
+        function Filter(){
+            const datas = {
+                start_date: $('#from').val(),
+                end_date: $('#to').val(),
+                vendor: $('#Vendor').val(),
+            }
+            if(datas.start_date || datas.end_date || datas.vendor){   
+                
+            // Assuming you have the start_date and end_date values
+                $.ajax({
+                    url: '{% url "filter:payables-date" %}',
+                    method: 'GET',
+                    data: datas,
+                    success: function(response) {
+                        if(response.serializer_data && response.serializer_data.length > 0){
+                            $("#credit").html(NCFormat(response.credit_total));
+                            $("#debit").html(NCFormat(response.debit_total));
+                            $("#balance").html(NCFormat(response.balance));
+                            const table = $('#payables tbody')
+                            table.empty()
+                            let num = 0;
+                            response.serializer_data.forEach(item => {
+                                num++ 
+                                const row = $('<tr id="row">').append(
+                                    $('<td class="text-[10px]">').html(num),
+                                    $('<td class="text-[10px]">').text(item.date),
+                                    $('<td class="text-[10px]">').text(item.vendor_id),
+                                    $('<td class="text-[10px]">').text(item.vendor_name),
+                                    $('<td class="text-[10px]">').text(item.type),
+                                    $('<td class="text-[10px]">').text(item.amount),
+                                    $('<td class="text-[10px]">').text(item.initial_amount),
+                                    $('<td class="text-[10px]">').text(item.balance),
+                                    $('<td class="text-[10px]">').text(item.transaction_id),
+                                    //$('<td class="text-[10px]">').text("view"),
+                                        
+                                    
+                                );
+                                table.append(row);
+                            
+                            });
+                            $("#no-data").css('display', 'none')
+                        }else{
+                            $("#example tbody").empty();
+                            $("#credit").html("0.00");
+                            $("#debit").html("0.00");
+                            $("#balance").html("0.00");
+                            $("#no-data").css('display', 'block');
+                            alertify.error("No Return data between selected category");
+                            //alertify.error("Select start_date and end_date")
+                        }
+                    },
+                    error: function(error) {
+                        // Handle the error
+                        //console.log('error')
+                    }
+                });
+            }else{
+                alertify.error("Select category to fetch data from")
+            }
+
+            
+        };
+
+    
+        //multiple filter
+        function filterItem(selected){
+              //const value = selected.value
+              const value = ""
+              if(value){ 
+                  $.ajax({
+                      url: 'payables/'+value+'/',
+                      method: 'GET',
+                      success: function(data) {
+                            if(data.item && data.item.length > 0){
+                                $("#credit").val("#"+data.credit_total);
+                                $("#debit").val("#"+data.debit_total);
+                                $("#balance").val("#"+data.balance);
+                                const table = $('#payables tbody')
+                                table.empty()
+                                let num = 0;
+                                data.item.forEach(item => {
+                                    num++ 
+            
+                                    const row = $('<tr id="row">').append(
+                                        $('<td class="text-[10px]">').html(num),
+                                            $('<td class="text-[10px]">').text(item.date),
+                                            $('<td class="text-[10px]">').text(item.vendor_id),
+                                            $('<td class="text-[10px]">').text(item.vendor_name),
+                                            $('<td class="text-[10px]">').text(item.type),
+                                            $('<td class="text-[10px]">').text(item.amount),
+                                            $('<td class="text-[10px]">').text(item.initial_amount),
+                                            $('<td class="text-[10px]">').text(item.balance),
+                                            $('<td class="text-[10px]">').text(item.transaction_id),
+                                            //$('<td class="text-[10px]">').text("view"),                        
+                                    );
+                                    table.append(row);
+                                });
+                                $("#no-data").css('display', 'none');
+                            }else{
+                                $("#credit").val("#0.00");
+                                $("#debit").val("#0.00");
+                                $("#balance").val("#.00");
+                                $('#example tbody').empty();
+                                $("#no-data").css('display', 'block');
+                                alertify.error("No Payables");
+                            }
+                      },
+                      error: function(error) {
+                          // Handle the error
+                          console.log(error)
+                      }
+                  });
+              }else{
+                  //alertify.error("Select start_date and end_date")
+              }
+  
+              
+          };
+    </script>
+
+
+{% endblock content %}

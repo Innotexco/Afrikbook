@@ -1,0 +1,862 @@
+<style>
+    div[disabled]{
+        pointer-events:none;
+        opacity:0.6;
+    }
+</style>
+<div class="antialiased bg-white fixed w-full z-50">
+    <nav class="bg-[#2F4F4F]">
+        <div class="container px-6 mx-auto lg:px-8">
+
+            <div class="flex items-center justify-between h-6">
+                <div class="flex items-center justify-between flex-grow">
+                    <div class="lg:hidden flex-shrink-0">
+                        <h1 class="text-lg font-semibold tracking-widest text-white uppercase">
+                        <a href="#">Afrikbook.</a>
+                        </h1>
+                    </div>
+                    <div class="hidden lg:block">
+                        <div class="flex items-center">
+
+                            <a href="{% url 'Stockin:Stockin' %}" class="flex flex-row items-center px-2 py-1 tracking-wide text-[10px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                <span class="ml-2">Dashboard</span>
+                            </a>
+
+                           
+
+                            
+
+                            {% comment %} <div class="relative main-menu-dropdown">
+                                <button @click="open = !open" class="flex flex-row items-center px-2 py-1 text-[12px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                    <span class="mx-1 text-[10px] tracking-wide">Vendor</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </button>
+                                <div @click.away="open = false" x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opaity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="hidden dropdown-menu absolute right-0 w-48 mt-2 origin-top-right rounded-md shadow-lg z-50">
+                                    <div class="py-1 bg-white rounded-md shadow-xs">
+                                        
+                                        
+                                        <div class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">Purchase Quotes</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="{% url 'vendor:NewPurchaseQuote' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{% url 'vendor:ViewPurchaseQuote' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">Purchase Order</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="{% url 'vendor:NewPurchaseOrder' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{% url 'vendor:ViewPurchaseOrder' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        
+
+                                        <div class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">Vendor</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-0': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="{% url 'Stock:Stockregister_vendor' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">New Vendor</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{% url 'Stock:Stockview_vendor' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View Vendor</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="relative main-menu-dropdown">
+                                <button class="flex flex-row items-center px-2 py-1 text-[12px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                    <span class="mx-1 text-[10px] tracking-wide">Customer</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </button>
+                                <div x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opaity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="hidden dropdown-menu absolute right-0 w-52 mt-2 origin-top-right rounded-md shadow-lg z-50">
+                                    <div class="py-1 bg-white rounded-md shadow-xs">
+
+
+                                        <div class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">Sales Quotes</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="{% url 'customer:NewSalesQuote' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{% url 'customer:SalesQuote' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">Sales Order</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="{% url 'customer:NewSalesOrder' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{% url 'customer:SalesOrder' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {% comment %} <div class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">Returns Inwards</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="{% url 'customer:ReturnInward' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{% url 'customer:ViewReturnsInWards' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div> 
+
+                                        <a href="{% url 'customer:CustomerOpeningBalance' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Customer Opening Balance
+                                        </a>
+
+                                        <div class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">New</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-0': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-48 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="{% url 'Stock:StockNewCustomer' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">New Customer</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{% url 'Stock:StockCustomers' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View Customers</span> </a>
+                                                        </li>
+                                                        
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {% comment %} <a href="{% url 'customer:RefundCustomer' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Refund Customer
+                                        </a>
+                                        
+                                        <div class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">Customer Incentives</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Calculate Incentive</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View Incentive</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div> 
+                                    </div>
+                                </div>
+                            </div> {% endcomment %}
+
+                            
+                            
+                            {% comment %}  STOCK {% endcomment %}
+                            <div class="relative main-menu-dropdown">
+                                <button class="flex flex-row items-center px-2 py-1 text-[12px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                    <span class="mx-1 text-[10px] tracking-wide">Stockin</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </button>
+                                <div x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opaity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="hidden dropdown-menu absolute right-0 w-48 mt-2 origin-top-right rounded-md shadow-lg z-50">
+                                    <div class="py-1 bg-white rounded-md shadow-xs">
+
+                                        <a href="{% url 'Stockin:NewStockin' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            
+                                          Add New Stockin
+                                                        
+                                                       
+                                        </a>
+
+                                        <a href="{% url 'Stockin:ViewStockin' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                             
+                                        Stockin Level
+                                                        
+                                        </a>
+
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="relative main-menu-dropdown">
+                                <button class="flex flex-row items-center px-2 py-1 text-[12px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                    <span class="mx-1 text-[10px] tracking-wide">Stockout</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </button>
+                                <div x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opaity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="hidden dropdown-menu absolute right-0 w-48 mt-2 origin-top-right rounded-md shadow-lg z-50">
+                                    <div class="py-1 bg-white rounded-md shadow-xs">
+
+                                        <a href="{% url 'Stockin:NewStockout' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            
+                                          Create New Stockout
+                                                                       
+                                        </a>
+                                        <a href="{% url 'Stockin:ReleaseOrder' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            
+                                          Stockout
+                                                                       
+                                        </a>
+
+                                        <a href="{% url 'Stockin:ViewStockout' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                             
+                                        Stockout Level
+                                                        
+                                        </a>
+
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="relative main-menu-dropdown">
+                                <button class="flex flex-row items-center px-2 py-1 text-[12px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                    <span class="mx-1 text-[10px] tracking-wide">Item</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </button>
+                                <div x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opaity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="hidden dropdown-menu absolute right-0 w-48 mt-2 origin-top-right rounded-md shadow-lg z-50">
+                                    <div class="py-1 bg-white rounded-md shadow-xs"> 
+                                        <a href="{% url 'Stockin:StockNewItem' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Add New Item
+                                        </a> 
+                                        <a href="{% url 'Stockin:StockItemCategory' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Add Item Category
+                                        </a> 
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% comment %} END STOCK {% endcomment %}
+
+                            {% comment %} <div class="relative main-menu-dropdown">
+                                <button class="flex flex-row items-center px-2 py-1 text-[12px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                    <span class="mx-1 text-[10px] tracking-wide">Report</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </button>
+                                <div x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opaity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="hidden dropdown-menu absolute right-0 w-48 mt-2 origin-top-right rounded-md shadow-lg z-50">
+                                    <div class="py-1 bg-white rounded-md shadow-xs">
+
+                                        <a href="{% url 'report:SalesReport' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Sales Report
+                                        </a>
+
+                                        <a href="{% url 'report:StockInReport' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Stock In Report
+                                        </a>
+                                        
+                                        <div class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">Purchase Report</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="{% url 'report:PurchaseInvoice' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">All Purchase</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Batch Purchase</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <a href="{% url 'report:PayrollReport' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Payroll Report
+                                        </a>
+
+                                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-400 focus:text-gray-500 hover:text-gray-500 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            PettyCash Report
+                                        </a>
+                                        
+                                        <div class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">P/L Account</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="{% url 'report:ProfitLossStatement' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Profit / Loss</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{% url 'report:AccountSeriesReport' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Other Series</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <a href="{% url 'report:Receivables' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Receivables
+                                        </a>
+
+                                        <a href="{% url 'report:Payables' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Payables
+                                        </a>
+
+                                        <a href="{% url 'report:AgedReceivables' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Aged Receivables
+                                        </a>
+
+                                        <a href="{% url 'report:AgedPayable' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Aged Payables
+                                        </a>
+
+                                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-400 focus:text-gray-500 hover:text-gray-500 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Inventory
+                                        </a>
+
+                                        <a href="{% url 'account:ViewChartOfAccount' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Chart of Account
+                                        </a>
+
+                                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-400 focus:text-gray-500 hover:text-gray-500 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Income Report
+                                        </a>
+
+                                        <a href="{% url 'report:ExpiredItems' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Expired Items
+                                        </a>
+
+                                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-400 focus:text-gray-500 hover:text-gray-500 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Liability
+                                        </a>
+                                        
+                                        <div class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">General Ledger</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="{% url 'report:CustomerLedger' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Customer Ledger</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{% url 'report:SalesLedger' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Sales Ledger</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{% url 'report:PurchaseLedger' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Purchase Ledger</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{% url 'report:VendorLedger' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Vendor Ledger</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <a href="{% url 'report:BalanceSheet' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Balance Sheet
+                                        </a>
+
+                                        <a href="{% url 'report:TrialBalance' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Trial Balance
+                                        </a>
+
+                                        <a href="{% url 'report:OutletStockinReport' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Outlet Stocking Report
+                                        </a>
+
+                                        
+
+                                    </div>
+                                </div>
+                            </div> {% endcomment %}
+
+                            <div class="relative main-menu-dropdown">
+                                <button class="flex flex-row items-center px-2 py-1 text-[12px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                    <span class="mx-1 text-[10px] tracking-wide">Settings</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </button>
+                                <div x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opaity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="hidden dropdown-menu absolute right-0 w-48 mt-2 origin-top-right rounded-md shadow-lg z-50">
+                                    <div class="py-1 bg-white rounded-md shadow-xs">
+
+                                        {% comment %} <a href="{% url 'settings:PriceManagement' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Price Management
+                                        </a> {% endcomment %}
+                                        
+                                        <div class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">User</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="{% url 'Stockin:StockNewUser' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{% url 'Stockin:StockEditUser' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Edit</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        
+
+                                        <a href="{% url 'Stockin:StockAddWarehouse' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Add Warehouse
+                                        </a>
+
+                                        
+
+                                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-400 focus:text-gray-500 hover:text-gray-500 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Backup
+                                        </a>
+
+                                        <a href="#" onclick="my_modal_stockout.showModal()" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Instant Stockout
+                                        </a>
+
+                                        
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="relative main-menu-dropdown">
+                                <button class="flex flex-row items-center px-2 py-1 text-[12px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                    <span class="mx-1 text-[10px] tracking-wide">Expiration Control</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </button>
+                                <div x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opaity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="hidden dropdown-menu absolute right-0 w-48 mt-2 origin-top-right rounded-md shadow-lg z-50">
+                                    <div class="py-1 bg-white rounded-md shadow-xs">
+
+                                        <a href="{% url 'Stockin:SInspirationControl' %}"  class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Dashboard
+                                        </a>
+                                        
+
+                                        <a href="{% url 'Stockin:SSetItemNotification' %}"  class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Set Item Notification
+                                        </a>
+                                        <a href="{% url 'Stockin:SNotificationStatus' %}"  class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Notification status
+                                        </a>
+                                       
+                                        <div class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">Stock Expiry Date</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="{% url 'Stockin:SItemExpiryDate' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Set Expiry Date</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{% url 'Stockin:SUpdateItemExpiryDate' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Edit</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            {% comment %} <div class="relative main-menu-dropdown">
+                                <button class="flex flex-row items-center px-2 py-1 text-[12px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                    <span class="mx-1 text-[10px] tracking-wide">Employee</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </button>
+                                <div x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opaity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="hidden dropdown-menu absolute right-0 w-48 mt-2 origin-top-right rounded-md shadow-lg z-50">
+                                    <div class="py-1 bg-white rounded-md shadow-xs">
+                                        
+                                        <div class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">Employee</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="{% url 'employee:NewEmployee' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">New Employee</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Edit Employee</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{% url 'employee:Employee' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View Employee</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="relative sub-menu-dropdown" x-data="{showChildren:false}" @mouseleave="showChildren=false" @mouseenter="showChildren=true">
+                                            <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">Payroll</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-28 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="{% url 'employee:NewPayroll' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">New Payroll</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{% url 'employee:Payroll' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View Payroll</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <a href="{%url 'employee:ViewUnapprovePayroll'%}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Salary Approval
+                                        </a>
+                                        <a href="{%url 'employee:ViewApprovePayroll'%}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Confirm Payment
+                                        </a>
+
+                                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-400 focus:text-gray-500 hover:text-gray-500 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Setup
+                                        </a>
+                                        
+                                    </div>
+                                </div>
+                            </div> {% endcomment %}
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hidden lg:block">
+                    <div class="flex items-center main-menu-dropdown">
+                        <div @click.away="open = false" class="relative ml-3" x-data="{ open: false }">
+                            <div>
+                                <button @click="open = !open" class="flex items-center max-w-xs text-[12px] text-white rounded-full focus:outline-none focus:shadow-solid" id="user-menu" aria-label="User menu" aria-haspopup="true" x-bind:aria-expanded="open">
+                                    <img class="w-4 h-4 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="" />
+                                </button>
+                            </div>
+                            <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opaity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="hidden dropdown-menu absolute right-0 w-48 mt-2 origin-top-right rounded-md shadow-lg z-50">
+                                <div class="py-1 bg-white rounded-md shadow-xs">
+                                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                        <span class="ml-2">Your Profile</span>
+                                    </a>
+                                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                        <span class="ml-2">Settings</span>
+                                    </a>
+                                    <a href="{% url 'Stockin:Stocklogout' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-red-500 hover:text-red-700 hover:bg-red-100 focus:outline-none focus:text-red-700 focus:bg-red-100">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-log-out"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                                        <span class="ml-2">Sign out</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class=" lg:block ml-6">
+                    <div class="flex items-center  main-menu-dropdown">
+                        
+                         <div class="relative">
+                          <a href="{% url 'Stockin:SViewExpiredItems' %}">
+                            <div class="absolute  top-0 left-5  bg-red-500 rounded-full">
+                               <span id="expired" class="text-[8px] text-white "></span>
+                            </div>
+                            <div class="p-2">
+                                <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="currentColor"
+                                class="text-white w-4 h-4"
+                                viewBox="0 0 16 16"
+                                >
+                                    <path
+                                    d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"
+                                    />
+                                </svg>
+                            </div>
+                            </a>
+                        </div>
+
+                         <div class="relative">
+                         <a href="{% url 'Stockin:SViewAboutToExpireItems'%}">
+                            <div class="absolute  top-0 left-5  bg-orange-500 rounded-full">
+                               <span id="expire" class="text-[8px] text-white "></span>
+                            </div>
+                            <div class="p-2">
+                                <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="currentColor"
+                                class="text-white w-4 h-4"
+                                viewBox="0 0 16 16"
+                                >
+                                    <path
+                                    d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"
+                                    />
+                                </svg>
+                            </div>
+                            </a>
+                        </div>
+                    </div>
+                    
+                </div>
+
+
+                <div class="flex -mr-2 lg:hidden">
+                    <button @click="open = !open" class="inline-flex items-center justify-center p-2 text-gray-400 rounded-md hover:text-white focus:outline-none focus:text-white mobile-menu-button" x-bind:aria-label="open ? 'Close main menu' : 'Main menu'" x-bind:aria-expanded="open">
+                        <svg class="w-6 h-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path :class="{'hidden': open, 'inline-flex': !open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        <path :class="{'hidden': !open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+
+
+        <div :class="{'block': open, 'hidden': !open}" class="hidden mobile-menu z-50 lg:hidden">
+            <div class="container px-6 mx-auto">
+                <div class="pt-2 pb-3">
+                
+                <a href="#" class="flex flex-row items-center px-3 py-2 mt-1 text-base font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                    <span class="ml-2">File</span>
+                </a>
+                <div class="relative main-menu-dropdown" x-data="{ open: false }">
+                    <button @click="open = true" class="flex flex-row items-center w-full px-3 py-2 mt-1 text-base font-medium text-left text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-folder"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                        <span class="mx-1 text-[10px]">Account</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div x-show="open" @click.away="open = false"  class="hidden dropdown-menu px-2 py-2 mt-2 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                        <a href="#" class="flex flex-row items-center px-3 py-2 text-base font-medium text-gray-700 rounded-md hover:text-gray-900 hover:bg-gray-200 focus:outline-none focus:text-gray-900 focus:bg-gray-200" role="menuitem">
+                            Pages-1
+                        </a>
+                        <a href="#" class="flex flex-row items-center px-3 py-2 mt-1 text-base font-medium text-gray-700 rounded-md hover:text-gray-900 hover:bg-gray-200 focus:outline-none focus:text-gray-900 focus:bg-gray-200" role="menuitem">
+                            Pages-2
+                        </a>
+                        <a href="#" class="flex flex-row items-center px-3 py-2 mt-1 text-base font-medium text-gray-700 rounded-md hover:text-gray-900 hover:bg-gray-200 focus:outline-none focus:text-gray-900 focus:bg-gray-200" role="menuitem">
+                            Pages-3
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="relative main-menu-dropdown" x-data="{ open: false }">
+                    <button @click="open = true" class="flex flex-row items-center w-full px-3 py-2 mt-1 text-base font-medium text-left text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">              
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <span class="mx-1 text-[10px]">Vendor</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div x-show="open" @click.away="open = false"  class="hidden dropdown-menu px-2 py-2 mt-2 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                        <a href="#" class="flex flex-row items-center px-3 py-2 text-base font-medium text-gray-700 rounded-md hover:text-gray-900 hover:bg-gray-200 focus:outline-none focus:text-gray-900 focus:bg-gray-200" role="menuitem">
+                            Users-1
+                        </a>
+                        <a href="#" class="flex flex-row items-center px-3 py-2 mt-1 text-base font-medium text-gray-700 rounded-md hover:text-gray-900 hover:bg-gray-200 focus:outline-none focus:text-gray-900 focus:bg-gray-200" role="menuitem">
+                            Users-2
+                        </a>
+                        <a href="#" class="flex flex-row items-center px-3 py-2 mt-1 text-base font-medium text-gray-700 rounded-md hover:text-gray-900 hover:bg-gray-200 focus:outline-none focus:text-gray-900 focus:bg-gray-200" role="menuitem">
+                            Users-3
+                        </a>
+                    </div>
+                </div>
+                
+                
+                <div class="relative main-menu-dropdown" x-data="{ open: false }">
+                    <button @click="open = true" class="flex flex-row items-center w-full px-3 py-2 mt-1 text-base font-medium text-left text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">              
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        <span class="mx-1 text-[10px]">Settings</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div x-show="open" @click.away="open = false"  class="hidden dropdown-menu px-2 py-2 mt-2 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                        <a href="#" class="flex flex-row items-center px-3 py-2 text-base font-medium text-gray-700 rounded-md hover:text-gray-900 hover:bg-gray-200 focus:outline-none focus:text-gray-900 focus:bg-gray-200" role="menuitem">
+                            Users-1
+                        </a>
+                        <a href="#" class="flex flex-row items-center px-3 py-2 mt-1 text-base font-medium text-gray-700 rounded-md hover:text-gray-900 hover:bg-gray-200 focus:outline-none focus:text-gray-900 focus:bg-gray-200" role="menuitem">
+                            Users-2
+                        </a>
+                        <a href="#" class="flex flex-row items-center px-3 py-2 mt-1 text-base font-medium text-gray-700 rounded-md hover:text-gray-900 hover:bg-gray-200 focus:outline-none focus:text-gray-900 focus:bg-gray-200" role="menuitem">
+                            Users-3
+                        </a>
+                    </div>
+                </div>
+                
+                </div>
+            </div>
+            <div class="container px-6 mx-auto main-menu-dropdown">
+                <div x-data="{ open: false }" class="py-4 border-t border-gray-700">
+                    <button @click="open = true" class="flex items-center w-full focus:outline-none">
+                        <div class="flex items-center w-full text-left">
+                            <div class="flex-shrink-0">
+                                <img class="w-10 h-10 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="" />
+                            </div>
+                            <div class="ml-3">
+                                <div class="text-base font-medium leading-none text-white">Tom Cook</div>
+                                <div class="mt-1 text-[12px] font-medium leading-none text-gray-400">tom@example.com</div>
+                            </div>
+                        </div>
+                        <div class="text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </div>
+                    </button>
+                    <div x-show="open" @click.away="open = false"  class="hidden dropdown-menu py-2 mt-4 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                        <a href="#" class="flex flex-row items-center px-3 py-2 text-base font-medium text-gray-700 rounded-md hover:text-gray-900 hover:bg-gray-200 focus:outline-none focus:text-gray-900 focus:bg-gray-200" role="menuitem">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            <span class="ml-2">Your Profile</span>
+                        </a>
+                        <a href="#" class="flex flex-row items-center px-3 py-2 mt-1 text-base font-medium text-gray-700 rounded-md hover:text-gray-900 hover:bg-gray-200 focus:outline-none focus:text-gray-900 focus:bg-gray-200" role="menuitem">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                            <span class="ml-2">Settings</span>
+                        </a>
+                        <a href="#" class="flex flex-row items-center px-3 py-2 mt-1 text-base font-medium text-red-500 rounded-md hover:text-red-700 hover:bg-red-200 focus:outline-none focus:text-red-700 focus:bg-red-200" role="menuitem">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-log-out"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                            <span class="ml-2">Sign out</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </nav>
+</div>
+
+
+
+
+
+
+
+<style>
+    .inset-l-full {
+        left: 100%;
+    }
+
+    .sub-menu-dropdown:hover > .sub-dropdown-menu {
+        display: block !important;
+    }
+</style>
+<script>
+
+    $(document).ready(
+        function SalesInter(){
+            var storedValue = sessionStorage.getItem('myValue');
+            var selectElement = document.getElementById('salesinterface');
+
+            if(storedValue === 'Sales Point'){
+                //alert(storedValue === 'Sales Point')
+                $('#sales_interface').attr("href", `{% url 'main:SalesPoint' %}`);
+                $('#side_sales_interface').attr("href", `{% url 'main:SalesPoint' %}`);
+                selectElement.querySelector('option[value="Sales Point"]').setAttribute('selected', 'selected');
+            }else{
+                $('#sales_interface').attr("href", `{% url 'customer:NewSales' %}`);
+                $('#side_sales_interface').attr("href", `{% url 'customer:NewSales' %}`);
+                selectElement.querySelector('option[value="Basic Sales Point"]').setAttribute('selected', 'selected');
+            }
+        }
+        
+            
+    )
+</script>
+
+
+    
+    
+      
+

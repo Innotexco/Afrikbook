@@ -1,0 +1,148 @@
+{% load humanize %}
+<tr class="border-0"  id="dp">
+    <td colspan="5">
+        <div class="w-full p-4  drop dp{{forloop.counter}}" id="detail{{forloop.counter}}"
+         {% if start|date:"Y-m-d" == data.date %}
+         {% else %} 
+           style="display: none;" 
+         {% endif %}> 
+          
+            {% for sale in daily_sales_data%}
+
+                {% if data.date == sale.date %}
+             
+                    <table id="example2{{forloop.counter}}" class="sale   bg-gray-50"  style="width:100%" >
+                            <thead>
+                                <tr class="text-xs font-semibold tracking-wide text-left text-gray-500">
+                                    <th class="px-0 py-1 text-[10px]">Item Code</th>
+                                    <th class="px-0 py-1 text-[10px]">Item Name</th>
+                                    <th class="px-0 py-1 text-[10px]">Item Description</th>
+                                    <th class="px-0 py-1 text-[10px]">Price</th>
+                                    <th class="px-0 py-1 text-[10px]">Qty</th>
+                                    <th class="px-0 py-1 text-[10px]">Amount</th>
+                                    <!-- <th class="px-4 py-3">TAX</th>
+                                    <th class="px-4 py-3">TOTAL</th> -->
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y">
+
+                                
+                                {% for item in sale.sales %}
+                                <tr class="text-gray-700">
+
+                                    <td class="text-[10px]">
+                                        {{item.itemcode}}
+                                    </td>
+                                    <td class="text-[10px]">
+                                        {{item.item_name}}
+                                    </td>
+                                    <td class="text-[10px]">
+                                        {{item.item_description}}
+                                        
+                                    </td>
+                                    <td class="text-[10px]">
+                                        {{item.unit_p}}
+                                    </td>
+                                    <td class="text-[10px]">
+                                        {{item.qty}}
+                                    </td>
+                                    <td class="text-[10px]">
+                                        {{item.amount}}
+                                    </td>
+                                    <td class="text-[10px]">
+                                        {{sale.amount_paid}}
+                                    </td>
+                                    <td class="text-[10px]">
+                                        {{""}}
+                                    </td>
+                                    <td class="text-[10px]">
+                                        {{sale.payment_method}}
+                                    </td>
+                                
+
+                                </tr>
+                                {% endfor %}
+                            
+                                {% for item in sale.purchase %}
+                                    
+                                    <tr class="text-red-700">
+            
+                                        <!-- <td class="text-[10px]">
+                                            {{item.itemcode}}
+                                        </td>
+                                        <td class="text-[10px]">
+                                            {{item.item_name}}
+                                        </td>
+                                        <td class="text-[10px]">
+                                            {{item.item_descriptions}}
+                                            
+                                        </td>
+                                        <td class="text-[10px]">
+                                            {{item.unit_p}}
+                                        </td>
+                                        <td class="text-[10px]">
+                                            {{item.qty}}
+                                        </td> -->
+                                        <td class="text-[10px]" colspan="5">
+                                            Expenses
+                                        </td>
+                                        <td class="text-[10px]">
+                                            {{item.amount}}
+                                        </td>
+                                        <!-- <td class="text-[10px]">
+                                            {{sale.amount_paid}}
+                                        </td>
+                                        <td class="text-[10px]">
+                                            {{""}}
+                                        </td>
+                                        <td class="text-[10px]">
+                                            {{sale.payment_method}}
+                                        </td> -->
+                                    
+            
+                                    </tr>
+            
+                                    {% endfor %}
+
+                            </tbody>
+                    </table>
+                    
+                    <div class="flex justify-end py-3 my-6 rounded-lg shadow-md">
+                        <div class="">
+                
+                            <label class="flex justify-between gap-3 mb-1 text-sm">
+                                <span class="text-gray-700">{{sale.date}} Summary</span>
+                            </label>
+                            <label class="flex justify-between gap-3  text-sm">
+                                <span class="text-gray-700">Total Sales:  </span>
+                                <span>
+                                    <b class="mr-1 currency"></b><bold class="" id="sales_total">{{sale.total_sales|floatformat:2|intcomma}}</bold>
+                                </span>
+                                
+                            </label>
+                
+                            <label class="flex justify-between gap-3  text-sm">
+                                <span class="text-gray-700 ">Total Expenses:  </span>
+                                <span>
+                                    <b class="mr-1 currency"></b><bold class="" id="purchase_total">{{sale.total_purchase|floatformat:2|intcomma}}</bold>
+                                </span>
+                                
+                            </label>
+                            <label class="flex justify-between gap-3  text-sm">
+                                <span class="text-gray-700 ">Balance:  </span>
+                                <span>
+                                    <b class="mr-1 currency"></b><bold class="" id="total">{{sale.total|floatformat:2|intcomma}}</bold>
+                                </span>
+                                
+                            </label>
+                            
+                        </div>
+                        
+                    </div>
+                        
+                {% endif %}  
+            {% endfor %}
+        </div>
+    </td>
+
+</tr>

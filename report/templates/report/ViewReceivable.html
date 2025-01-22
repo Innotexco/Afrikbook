@@ -1,0 +1,340 @@
+
+
+<dialog id="my_modal_view_receivable" class="modal py-3 px-3 rounded-lg">
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>View Receivable</span>
+        </div>
+        <span>
+            <form method="dialog" class="modal-backdrop">
+                <button class="py-1 px-2 rounded-full bg-red-600 text-[14px] text-white font-semibold" id="x">X</button>
+            </form>
+        </span>
+    </a>
+
+    <div class="modal-box">
+        <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md" id="agrv">
+            {% include 'components/Periodheader.html' %}
+
+            <h3 class="text-center text-gray-900 font-extrabold my-5 text-[24px]">Customer Details</h3>
+
+            <div class="flex items-center justify-start">
+                <dl class="md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8 ">
+                    <div class="flex">
+                        <div class="">
+                            <dt class="text-lg leading-6 font-medium text-gray-900" >
+                                Company :
+                            </dt>
+                            <dd class="mt-2 text-base text-gray-500" id="company">
+                                {% comment %} Brightify Associate {% endcomment %}
+                            </dd>
+                        </div>
+                    </div>
+    
+                    <div class="flex">
+                        <div class="">
+                            <dt class="text-lg leading-6 font-medium text-gray-900">
+                                Invoice Date :
+                            </dt>
+                            <dd class="mt-2 text-base text-gray-500" id="date">
+                                {% comment %} 09/11/2023 3:32PM {% endcomment %}
+                            </dd>
+                        </div>
+                    </div>
+    
+                    <div class="flex">
+                        <div class="">
+                            <dt class="text-lg leading-6 font-medium text-gray-900">
+                                Invoice ID :
+                            </dt>
+                            <dd class="mt-2 text-base text-gray-500" id="invoice">
+                                {% comment %} 1822065 {% endcomment %}
+                            </dd>
+                        </div>
+                    </div>
+    
+                    <div class="flex">
+                        <div class="">
+                            <dt class="text-lg leading-6 font-medium text-gray-900">
+                                Customer ID :
+                            </dt>
+                            <dd class="mt-2 text-base text-gray-500" id="code">
+                                {% comment %} 6065-123 {% endcomment %}
+                            </dd>
+                        </div>
+                    </div>
+    
+                    <div class="flex">
+                        <div class="">
+                            <dt class="text-lg leading-6 font-medium text-gray-900">
+                                Description :
+                            </dt>
+                            <dd class="mt-2 text-base text-gray-500" id="desc">
+                                {% comment %} Customer Refund {% endcomment %}
+                            </dd>
+                        </div>
+                    </div>
+    
+                    <div class="flex">
+                        <div class="">
+                            <dt class="text-lg leading-6 font-medium text-gray-900">
+                                Phone :
+                            </dt>
+                            <dd class="mt-2 text-base text-gray-500" id="phone">
+                                {% comment %} 1234567890 {% endcomment %}
+                            </dd>
+                        </div>
+                    </div>
+    
+                    <div class="flex">
+                        <div class="">
+                            <dt class="text-lg leading-6 font-medium text-gray-900">
+                                Email :
+                            </dt>
+                            <dd class="mt-2 text-base text-gray-500" id="email">
+                                {% comment %} jb@gmail.com {% endcomment %}
+                            </dd>
+                        </div>
+                    </div>
+    
+                    <div class="flex">
+                        <div class="">
+                            <dt class="text-lg leading-6 font-medium text-gray-900">
+                                Address :
+                            </dt>
+                            <dd class="mt-2 text-base text-gray-500" id="address">
+                                {% comment %} asaba {% endcomment %}
+                            </dd>
+                        </div>
+                    </div>
+    
+                    <div class="flex">
+                        <div class="">
+                            <dt class="text-lg leading-6 font-medium text-gray-900">
+                                Balance :
+                            </dt>
+                            <dd class="mt-2 text-base text-gray-500" id="balance">
+                                {% comment %} 2345678 {% endcomment %}
+                            </dd>
+                        </div>
+                    </div>
+                </dl>
+            </div>
+
+            <div class="w-full my-5 overflow-hidden shadow-xs">
+                <div class="w-full overflow-x-auto">
+                    <table id="invoiceTable" class="border-collapse border border-slate-400 w-full">
+                        <thead>
+                            <tr class="font-medium tracking-wide text-left px-4 text-gray-500 border-b bg-gray-200">
+                                <th class="border border-slate-300 px-4 text-[10px] ...">SN</th>
+                                <th class="border border-slate-300 px-4 text-[10px] ...">Description</th>
+                                <th class="border border-slate-300 px-4 text-[10px] ...">Quantity</th>
+                                <th class="border border-slate-300 px-4 text-[10px] ...">Unit Price</th>
+                                <th class="border border-slate-300 px-4 text-[10px] ...">Discount</th>
+                                <th class="border border-slate-300 px-4 text-[10px] ...">Amount</th>
+                                <th class="border border-slate-300 px-4 text-[10px] ...">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16.933 16.933" id="action"><g transform="translate(-304.8 -742.781) scale(.26458)"><path d="m 1182.0001,2833.3622 a 1.0000403,1.0001 0 0 0 -0.8319,0.4453 l -1.7031,2.5547 h -2.4647 a 1.0000403,1.0001 0 0 0 -0.8319,0.4453 l -1.9999,3 a 1.0000403,1.0001 0 0 0 0,1.1114 l 1.6307,2.4433 -1.6307,2.4453 a 1.0000403,1.0001 0 0 0 0,1.1114 l 1.9999,3 a 1.0000403,1.0001 0 0 0 0.8319,0.4433 h 2.4647 l 1.7031,2.5567 a 1.0000403,1.0001 0 0 0 0.8319,0.4433 h 3.9998 a 1.0000403,1.0001 0 0 0 0.8319,-0.4433 l 1.7031,-2.5567 h 2.4647 a 1.0000403,1.0001 0 0 0 0.8319,-0.4433 l 1.9999,-3 a 1.0000403,1.0001 0 0 0 0,-1.1114 l -1.6307,-2.4453 1.6307,-2.4433 a 1.0000403,1.0001 0 0 0 0,-1.1114 l -1.9999,-3 a 1.0000403,1.0001 0 0 0 -0.8319,-0.4453 h -2.4647 l -1.7031,-2.5547 a 1.0000403,1.0001 0 0 0 -0.8319,-0.4453 z m 0.5352,2 h 2.9294 l 1.7031,2.5567 a 1.0000403,1.0001 0 0 0 0.832,0.4433 h 2.4646 l 1.3339,2 -1.6307,2.4453 a 1.0000403,1.0001 0 0 0 0,1.1114 l 1.6307,2.4433 -1.3339,2 h -2.4646 a 1.0000403,1.0001 0 0 0 -0.832,0.4453 l -1.7031,2.5547 h -2.9294 l -1.7031,-2.5547 a 1.0000403,1.0001 0 0 0 -0.832,-0.4453 h -2.4646 l -1.332,-1.998 1.6288,-2.4453 a 1.0000403,1.0001 0 0 0 0,-1.1114 l -1.6307,-2.4453 1.3339,-2 h 2.4646 a 1.0000403,1.0001 0 0 0 0.832,-0.4433 z" style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;isolation:auto;mix-blend-mode:normal;solid-color:#000;solid-opacity:1" color="#000" enable-background="accumulate" font-family="sans-serif" font-weight="400" overflow="visible"></path><path d="m 1184,2839.3622 c -2.1973,0 -4,1.8027 -4,4 0,2.1973 1.8027,4 4,4 2.1973,0 4,-1.8027 4,-4 0,-2.1973 -1.8027,-4 -4,-4 z m 0,2 c 1.1164,0 2,0.8836 2,2 0,1.1164 -0.8836,2 -2,2 -1.1164,0 -2,-0.8836 -2,-2 0,-1.1164 0.8836,-2 2,-2 z" style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;isolation:auto;mix-blend-mode:normal;solid-color:#000;solid-opacity:1" color="#000" enable-background="accumulate" font-family="sans-serif" font-weight="400" overflow="visible" paint-order="fill markers stroke"></path><path d="M1184 2825.3622c-9.9293 0-18 8.0707-18 18 0 9.9293 8.0707 18 18 18 9.9293 0 18-8.0707 18-18 0-9.9293-8.0707-18-18-18zm0 2c8.8484 0 16 7.1516 16 16 0 8.8484-7.1516 16-16 16-8.8484 0-16-7.1516-16-16 0-8.8484 7.1516-16 16-16zM1180 2813.3622c-1.0907 0-2 .9096-2 2.0006v1.9987c0 1.0911.9093 2.0007 2 2.0007h8c1.0907 0 2-.9096 2-2.0007v-1.9987c0-1.091-.9093-2.0006-2-2.0006zm0 1.9986h8c0 0 0 0 0 0v1.9987c0 0 0 0 0 0h-8c0 0 0 0 0 0v-1.9987c0 0 0 0 0 0z" style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;isolation:auto;mix-blend-mode:normal;solid-color:#000;solid-opacity:1" color="#000" enable-background="accumulate" font-family="sans-serif" font-weight="400" overflow="visible" paint-order="fill markers stroke"></path><path d="m 1183,2818.3622 v 4 h 2 v -4 z" style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;isolation:auto;mix-blend-mode:normal;solid-color:#000;solid-opacity:1" color="#000" enable-background="accumulate" font-family="sans-serif" font-weight="400" overflow="visible"></path><path d="M1184 2821.3622c-12.1384 0-22 9.8616-22 22 0 12.1384 9.8616 22 22 22 12.1384 0 22-9.8616 22-22 0-12.1384-9.8616-22-22-22zm0 2c11.0575 0 20 8.9424 20 20 0 11.0575-8.9425 20-20 20-11.0575 0-20-8.9425-20-20 0-11.0576 8.9425-20 20-20zM1207.9762 2851.3628a.99756741.99872065 0 00-.9546.8251c-.1458.7647-.3607 1.5004-.6371 2.2019-.5527 1.4031-1.3523 2.6655-2.3358 3.7215-.4918.5279-1.0294 1.0041-1.6053 1.4218a.99756741.99872065 0 101.1689 1.617c.682-.4947 1.3175-1.057 1.8955-1.6774 1.1561-1.2412 2.0876-2.7154 2.7314-4.3495.3218-.817.5711-1.6732.7403-2.5609a.99756741.99872065 0 00-1.0033-1.1995zM1212.9727 2849.3626a1.0011502 1.0006126 0 00-.9581.8266c-.3047 1.5962-.7549 3.1343-1.3334 4.5999-1.1571 2.9313-2.8299 5.5696-4.8938 7.7814-1.032 1.1057-2.1615 2.1033-3.3727 2.98a1.0012631 1.0007252 0 101.1732 1.622c1.3176-.9538 2.5433-2.0396 3.662-3.2381 2.2372-2.3973 4.0442-5.2477 5.2927-8.4105.6241-1.5813 1.1087-3.2401 1.437-4.9595a1.0011502 1.0006126 0 00-1.0069-1.2018zM1165.03 2825.3624a.99937718.99727437 0 00-.6265.1987c-.6832.494-1.3199 1.0554-1.899 1.6749-1.1581 1.2394-2.0913 2.7114-2.7363 4.3432-.3224.8158-.5721 1.6708-.7416 2.5573a.99937718.99727437 0 101.9615.3739c.146-.7637.3612-1.4983.6381-2.1989.5538-1.401 1.3548-2.6616 2.3401-3.716.4927-.5271 1.0313-1.0027 1.6082-1.4198a.99937718.99727437 0 00-.5445-1.8133zM1165.03 2819.3623a1.0003812 1.0005755 0 00-.6271.1973c-1.3166.9539-2.5415 2.0395-3.6592 3.238-2.2354 2.3972-4.0412 5.2475-5.2886 8.4102-.6237 1.5812-1.1079 3.24-1.436 4.9594a1.0004634 1.0006577 0 101.9654.3752c.3045-1.5963.7543-3.1343 1.3324-4.5999 1.1562-2.9312 2.8277-5.5693 4.8901-7.781 1.0311-1.1057 2.1598-2.1052 3.37-2.9819a1.0003812 1.0005755 0 00-.5451-1.8173z" style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;isolation:auto;mix-blend-mode:normal;solid-color:#000;solid-opacity:1" color="#000" enable-background="accumulate" font-family="sans-serif" font-weight="400" overflow="visible" paint-order="fill markers stroke"></path><path d="m 1201.0007,2823.3622 a 0.99894731,0.9994888 0 0 0 -0.6965,1.7177 l 1.9782,1.9773 a 0.99894731,0.9994888 0 1 0 1.4125,-1.4133 l -1.9783,-1.9772 a 0.99894731,0.9994888 0 0 0 -0.7159,-0.3045 z" style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;isolation:auto;mix-blend-mode:normal;solid-color:#000;solid-opacity:1" color="#000" enable-background="accumulate" font-family="sans-serif" font-weight="400" overflow="visible"></path></g></svg>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="dynamic_row_add">
+                            <tr>
+                                <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">
+                                    1
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="text"
+                                        name="desc[]"
+                                        id="desc"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                        placeholder=""
+                                    />
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="text"
+                                        name="qty[]"
+                                        id="qty"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                        placeholder=""
+                                    />
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="text"
+                                        name="unit[]"
+                                        id="unit"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                        placeholder=""
+                                    />
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="text"
+                                        name="discount[]"
+                                        id="discount"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                        placeholder=""
+                                    />
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="text"
+                                        name="amount[]"
+                                        id="amount"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                        placeholder=""
+                                    />
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0">
+                                    <button  id="'+i+'" class="remove_row flex justify-center items-center w-full h-3 px-2 py-1 text-[12px] font-semibold text-center text-gray-600 transition-colors duration-150 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" enable-background="new 0 0 64 64" viewBox="0 0 64 64" id="delete"><g transform="translate(232 228)"><path fill="#134563" d="M-207.5-205.1h3v24h-3zM-201.5-205.1h3v24h-3zM-195.5-205.1h3v24h-3zM-219.5-214.1h39v3h-39z"></path><path fill="#134563" d="M-192.6-212.6h-2.8v-3c0-.9-.7-1.6-1.6-1.6h-6c-.9 0-1.6.7-1.6 1.6v3h-2.8v-3c0-2.4 2-4.4 4.4-4.4h6c2.4 0 4.4 2 4.4 4.4v3"></path><path fill="#134563" d="M-191-172.1h-18c-2.4 0-4.5-2-4.7-4.4l-2.8-36 3-.2 2.8 36c.1.9.9 1.6 1.7 1.6h18c.9 0 1.7-.8 1.7-1.6l2.8-36 3 .2-2.8 36c-.2 2.5-2.3 4.4-4.7 4.4"></path></g></svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                </div>
+            </div>
+           
+            <div class="block justify-end items-center w-full">
+                <label class="flex justify-end items-center gap-2 text-[11px] w-full mt-1">
+                    <span class="text-gray-700">Total Amount :</span>
+                    <input 
+                        type="text"
+                        id="total"
+                        readonly
+                        class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/>
+                </label>
+            </div>
+        
+            <div class="flex justify-end mt-3">
+                <div>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Amount Paid</span>
+                        <input 
+                            type="text"
+                            class="block w-full bg-slate-100 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            id="amount_paid"
+                            readonly
+                        />
+                    </label>
+
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Discount</span>
+                        <input 
+                            type="text"
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            id="Discount"
+                        />
+        
+                    </label>
+        
+        
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Total Cost (Credit)</span>
+                        <input 
+                            type="text"
+                            class="block w-full bg-slate-100 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            id="total-cost"
+                        />
+        
+                    </label>
+        
+                   
+                </div>
+            </div>
+    
+            
+        </div>
+        <div class="grid gap-6 md:grid-cols-2 mt-5">
+
+            <button type="button" class="block w-full px-1 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+              href="#" onclick="generatePDF('agrv')">
+               Print
+            </button >
+            <div class="block justify-end items-center w-full">
+                <button type="button" class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-green-500 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate "
+                    id="pay">
+                    Pay now
+            </button>
+            </div>
+            
+        </div>
+    </div>
+    
+</dialog>
+{% csrf_token %}
+<script>
+    $("#Discount").on("input", function(){
+        var discount = parseInt($(this).val());
+        var ex = parseInt($("#total").val());
+        var paid = parseInt($("#amount_paid").val());
+        if (discount > 0){
+            var balance = ex - (paid + discount)
+            
+            $("#total-cost").val(balance);
+        }
+        else if(isNaN(discount)){
+            var balance = ex - (paid + 0)
+            
+            $("#total-cost").val(balance);
+
+        }
+
+    });
+
+
+    $("#pay").on("click", function(){
+        var datas = {
+            Discount: parseInt($("#Discount").val()),
+            cost: parseInt($("#total-cost").val()),
+            customer: $("#code").html(),
+            invoice: $("#invoice").html(),
+            csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+        }
+        if (datas.cost != "" & datas.customer != "" & datas.invoice != ""){
+
+            $.ajax({
+                url:"#",
+                method: "POST",
+                data: datas,
+                success: function(data){
+                    if (data === true){
+                        Filter();
+                        $("#x").click();
+                        alertify.success("Payment received")
+                    }
+                    else{
+                        $("#x").click();
+                        alertify.error("Transaction Unsuccesful")
+                    }
+
+                },
+                error: function(error){
+                   
+                }
+            })
+        }
+        else {
+            alertify.error("Refresh Page")
+        }
+
+    })
+</script>
+

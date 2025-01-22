@@ -1,0 +1,66 @@
+<script>
+//     function onclickme(id){
+//     invoiceID = $('#invoiceID'+id).val()
+//     idcode = $('#idcode'+id).val()
+
+//     // MODAL INPUT'S VALUES
+//     modalItem = $('#modalItem')
+//     modalInvoiceID = $('#modalInvoiceID')
+//     modalDate = $('#modalDate')
+//     modalDescription = $('#modalDescription')
+//     modalqty = $('#modalqty')
+//     modalID = $('#modalID')
+
+//     $.ajax({
+//         type: 'GET',
+//         url: "{% url 'Stock:StockAdjustment' %}",
+//         data: {
+//             invoiceID: invoiceID,
+//             idcode: idcode,
+//         },
+//         success: function(res){
+//             modalItem.val(res.item)
+//             modalInvoiceID.val(res.invoice_no)
+//             modalDate.val(res.date)
+//             modalDescription.val(res.description)
+//             modalqty.val(res.qty)
+//             modalID.val(res.id)
+//         }
+//     })
+
+// }
+    function onclickme(id){
+        // enabledloader()
+        let subcategoriesList = $('#subcategoriesList')
+        let catImgInfo = $('#cat_img_info')
+        let category_name_info = $('#category_name_info')
+        let desc = $('#desc')
+       
+        $.ajax({
+            type: 'GET',
+            url: "{% url 'Basic_Sales:ItemCategory' %}",
+            data: {
+                categoryID: id,
+            },
+            success: function(res){
+                disabledloader()
+                subcategoriesList.empty();
+                catImgInfo.empty();
+                category_name_info.text(res.category.category_name)
+                desc.text(res.category.description)
+                // Add the new subcategories
+                res.category.subcategories.forEach(sub => {
+                    anchorTag= `<a href="#" class="inline-flex items-center px-4 mt-5 py-2 text-sm font-medium text-center text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 ms-3">${sub.description}</a>`;
+                });
+                subcategoriesList.append(anchorTag);
+
+                imgTag = `<img class="w-24 h-24 mb-3 rounded-full shadow-lg" src="${res.category.cat_img}" alt="${res.category.category_name} Image"/>`;
+                catImgInfo.append(imgTag);
+
+            }
+        })
+
+    }
+
+    
+</script>

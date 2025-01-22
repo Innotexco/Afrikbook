@@ -1,0 +1,344 @@
+
+
+<dialog id="my_modal_payroll_detail" class="modal py-3 px-3 rounded-lg  ">
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span id="detail"></span>
+        </div>
+        <span>
+            <form method="dialog" class="modal-backdrop">
+                <button class="py-1 px-2 rounded-full bg-red-600 text-[14px] text-white font-semibold" id="detail-close" >X</button>
+            </form>
+        </span>
+    </a>
+
+    <div class="modal-box mt-6">
+        <form  method="post" id="save-changes-form">
+            {% csrf_token %}
+            <div class="flex justify-between w-full gap-6">
+                <div class="mb-4">
+                    <span class="bg-white p-2 w-10">Earnings</span>
+                    <label class="block text-sm">
+                        <span class="text-gray-700" id="name"></span>
+                        
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Basic Salary</span>
+                        <input type="text" name="salary[]" id="salary" readonly
+                        class="block w-full px-2 py-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input border mb-3"/>
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Overtime</span>
+                        <input type="text" name="overtime[]" id="overtime" oninput="Earning(this, 'add1')"
+                        class="block w-full px-2 py-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input border mb-3"/>
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Allowance</span>
+                        <input type="text" name="allowance[]" id="allowance" oninput="Earning(this, 'add2')"
+                        class="block w-full px-2 py-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input border mb-3"/>
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Others</span>
+                        <input type="text" name="others[]" id="others" oninput="Earning(this, 'add3')"
+                        class="block w-full px-2 py-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input border mb-3"/>
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Gross Pay</span>
+                        <input type="text" name="gross-pay[]" id="gross-pay" readonly
+                        class="block w-full px-2 py-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input border mb-3"/>
+                    </label>
+               </div>
+               <div class="mb-4">
+                    <span class="bg-white p-2 w-10">Deductions</span>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Tax</span>
+                        <input type="text" name="tax[]" id="tax" oninput="Deduction(this, 'sub1')"
+                        class="block w-full px-2 py-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input border mb-3"/>
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Loan Repayment</span>
+                        <input type="text" name="loan-repay[]" id="loan-repay" oninput="Deduction(this, 'sub2')"
+                        class="block w-full px-2 py-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input border mb-3"/>
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Union Due</span>
+                        <input type="text" name="union-pay[]" id="union-pay" oninput="Deduction(this, 'sub3')"
+                        class="block w-full px-2 py-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input border mb-3"/>
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Sanction</span>
+                        <input type="text" name="sanction[]" id="sanction" oninput="Deduction(this, 'sub4')"
+                        class="block w-full px-2 py-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input border mb-3"/>
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">NHF</span>
+                        <input type="text" name="NHF[]" id="NHF" oninput="Deduction(this, 'sub5')"
+                        class="block w-full px-2 py-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input border mb-3"/>
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">NSIFT</span>
+                        <input type="text" name="NSIFT[]" id="NSIFT" oninput="Deduction(this, 'sub6')"
+                        class="block w-full px-2 py-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input border mb-3"/>
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Other deduction</span>
+                        <input type="text" name="other-deductions[]" id="other-deduction" oninput="Deduction(this, 'sub7')"
+                        class="block w-full px-2 py-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input border mb-3"/>
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Total Dues</span>
+                        <input type="text" name="total-dues[]" id="total-dues" readonly
+                        class="block w-full px-2 py-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input border mb-3"/>
+                    </label>
+    
+               </div>
+            </div>
+           
+           <span class="bg-white p-2 w-10 text-center m-1">Summary</span>
+           <div class="flex justify-start items-center">
+                <label class="block text-sm">
+                    <span class="text-gray-700">Net Pay</span>
+                    <input 
+                        class="block w-full px-2 mt-1 text-sm bg-slate-100 border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder="" readonly
+                        value="0"
+                        name="net-pay[]"
+                        id="net-pay"
+                    />
+                    <input 
+                        class="block w-full px-2 mt-1 text-sm bg-slate-100 border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder="" readonly
+                        value="0"
+                        name="id"
+                        id="id"
+                        type="hidden"
+                    />
+                    <input 
+                        class="block w-full px-2 mt-1 text-sm bg-slate-100 border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder="" readonly
+                        value="0"
+                        name="staff_ID[]"
+                        id="staff-id"
+                        type="hidden"
+                    />
+                    <input 
+                        class="block w-full px-2 mt-1 text-sm bg-slate-100 border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder="" readonly
+                        value="0"
+                        name="name[]"
+                        id="name2"
+                        type="hidden"
+                    />
+                    <input
+                        class="block w-full px-2 mt-1 text-sm bg-slate-100 border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder="" readonly
+                        value="0"
+                        name="month[]"
+                        id="month"
+                        type="hidden"
+                    />
+                </label>
+                
+
+           </div>
+           <div class=" items-center">
+               
+                <button class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                    type="submit">
+                    Save Changes
+                </button>
+
+           </div>
+        </form>
+    </div>
+     <div class="flex gap-4 justify-between">
+                <div class="addition">
+                
+                <input type="hidden" name="" id="add1" value="0" class="border px-1 mt-1 w-full">
+                <input type="hidden" name="" id="add2" value="0" class="border px-1 mt-1 w-full">
+                <input type="hidden" name="" id="add3" value="0" class="border px-1 mt-1 w-full">
+                </div>
+                <div class="deduction">
+                <input type="hidden" name="" id="sub1" value="0" class="border px-1 mt-1 w-full">
+                <input type="hidden" name="" id="sub2" value="0" class="border px-1 mt-1 w-full">
+                <input type="hidden" name="" id="sub3" value="0" class="border px-1 mt-1 w-full">
+                <input type="hidden" name="" id="sub4" value="0" class="border px-1 mt-1 w-full">
+                <input type="hidden" name="" id="sub5" value="0" class="border px-1 mt-1 w-full">
+                <input type="hidden" name="" id="sub6" value="0" class="border px-1 mt-1 w-full">
+                <input type="hidden" name="" id="sub7" value="0" class="border px-1 mt-1 w-full">
+                </div>
+            </div> 
+    
+</dialog>
+<script>
+   
+        function Earning(element, initial){
+            var value = $(element).val();
+
+            var gross_pay = $("#gross-pay");
+            var total_dues = $("#total-dues");
+            var net_pay = $("#net-pay");
+            var salary = $("#salary").val();
+
+            //var gross_pay = $(element).closest('tr').find('input[name="gross-pay[]"]');
+            //var total_dues = $(element).closest('tr').find('input[name="total-dues[]"]');
+            //var net_pay = $(element).closest('tr').find('input[name="net-pay[]"]');
+            //var salary = $(element).closest('tr').find('input[name="salary[]"]').val();
+            ///console.log(net_value)
+            //console.log(value)
+            const gp = parseInt(gross_pay.val())
+            const td = parseInt(total_dues.val())
+            const Value = parseInt(value)
+            const Salary = parseInt(salary)
+           // if(value > 0){
+                const Initial = parseInt($(`#${initial}`).val());
+                if(value > 0){
+                    //setTimeout(function() {
+                               // msg.hide();
+                        
+                        if(!isNaN(gp)){
+                            
+                           gross_pay.val((gp - Initial) + Value)
+                           $(`#${initial}`).val(Value)
+                           if(!isNaN(td)){
+                                const total = gross_pay.val() - td
+                                net_pay.val(total);
+                               // calculateTotal();
+                            }else{
+                                net_pay.val(gross_pay.val()) ;
+                            //calculateTotal();
+                            }
+                           
+                        }else{
+                            gross_pay.val(Salary + Value)
+                        }
+                    //}, 2000)
+                }else{
+                    //setTimeout(function() {
+                        // msg.hide();
+                 
+                        if(!isNaN(gp)){
+                            
+                            gross_pay.val((gp - Initial) + 0)
+                            $(`#${initial}`).val(0)
+                            if(!isNaN(td)){
+                                const total = gross_pay.val() - td
+                                net_pay.val(total);
+                                ////calculateTotal();
+                            }else{
+                                net_pay.val(gross_pay.val()) ;
+                                //calculateTotal();
+                            }
+                            
+                        }else{
+                            gross_pay.val(Salary + Value)
+                        }
+                    //}, 2000)
+                }
+
+            //}else{
+            //}
+        }
+        function Deduction(element, initial){
+            var value = $(element).val();
+            var gross_pay = $("#gross-pay");
+            var total_dues = $("#total-dues");
+            var net_pay = $("#net-pay");
+            var salary = $("#salary").val();
+            //var gross_pay = $(element).closest('tr').find('input[name="gross-pay[]"]');
+            //var total_dues = $(element).closest('tr').find('input[name="total-dues[]"]');
+            //var net_pay = $(element).closest('tr').find('input[name="net-pay[]"]');
+            //var salary = $(element).closest('tr').find('input[name="salary[]"]').val();
+            ///console.log(net_value)
+            //console.log(value)
+            //if(value > 0){
+                const gp = parseInt(gross_pay.val())
+                const td = parseInt(total_dues.val())
+                const Value = parseInt(value)
+                const Salary = parseInt(salary)
+                const Initial = parseInt($(`#${initial}`).val());
+                if(value > 0){
+                    //setTimeout(function() {
+                        if(!isNaN(td)){
+                            
+                           total_dues.val((td - Initial) + Value);
+                           $(`#${initial}`).val(Value);
+                           
+
+                           if(!isNaN(gp)){
+                                const total = gp - total_dues.val()
+                                net_pay.val(total);
+                                //calculateTotal();
+                            }else{
+                                net_pay.val(gp - td) ;
+                                //calculateTotal();
+                            }
+                           
+                        }else{
+                            gross_pay.val(Salary + Value)
+                        }
+                    //}, 2000)
+                }else{
+                    //setTimeout(function() {
+                        if(!isNaN(td)){
+                            
+                           total_dues.val((td - Initial) + 0);
+                           $(`#${initial}`).val(0);
+                           
+
+                           if(!isNaN(gp)){
+                                const total = gp - total_dues.val()
+                                net_pay.val(total);
+                                //calculateTotal();
+                            }else{
+                                net_pay.val(gp - td) ;
+                                //calculateTotal();
+                            }
+                           
+                        }else{
+                            gross_pay.val(Salary + Value)
+                        }
+                    //}, 2000)
+                    
+                }
+
+           // }
+        }
+    $(document).ready(
+     $("#save-changes-form").submit(function(e){
+        //alert("ok");
+         e.preventDefault();
+         var serialiderData = $(this).serialize();
+        
+         $.ajax({
+             type:"POST",
+             url:"{% url 'employee:SaveChanges' %}",
+             data: serialiderData,
+             success: function(data){
+                 if(data != null){
+                   //my_modal_payroll_detail.showModal();
+                    $("#detail-close").click();
+                    $("#details-close").click();
+                    FetchPayroll();
+                    alertify.defaults.glossary.title = "OK";
+                    alertify.confirm("Update Successfull.");
+                 }else{
+                    alertify.defaults.glossary.title = "Oops";
+                    alertify.confirm("Update was unsuccessfull");
+                 }
+             }
+         })
+     })
+    )
+ </script>

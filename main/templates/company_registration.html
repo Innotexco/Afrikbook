@@ -1,0 +1,130 @@
+{% load static %}     
+        <link rel="stylesheet" href="{% static 'src/styles.css' %}">
+        <link rel="stylesheet" href="{% static 'src/main.css' %}">
+
+        {% comment %} <script src="https://code.jquery.com/jquery-3.7.0.js"> </script> {% endcomment %}
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"> </script>
+        <link href="https://cdn.datatables.net/1.13.6/js/dataTables.tailwindcss.min.js" rel="stylesheet"> 
+
+
+        <!-- Jquery -->
+        <script src="{% static 'jquery/jquery.js' %}"></script>
+        <script src="{% static 'jquery/jquery.min.js' %}"></script>
+        
+
+
+
+
+{% include "stockin/Modal.html" %}
+{% include "VerifyEmail.html" %}
+
+{% block content %}
+  <form method="POST" id="formData">
+        {% csrf_token %}
+
+        {% include "registration_form.html" %}
+  </form>
+{% endblock content %}
+
+
+<script>
+  
+  function generateRandomNumber() {
+
+    const min = 1; // Minimum value for the random number
+    const max = 1000000; // Maximum value for the random number
+    const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+
+    return randomNumber
+  }
+
+  function set_session(code) {
+      sessionStorage.setItem('verify_email_code', code)
+      setInterval(function(){
+        sessionStorage.setItem('verify_email_code', "Expired")
+      }, 60000 * 30)
+  }
+
+  function VerifyEmail(){
+    const email = $("#email").val();
+    const code = generateRandomNumber()
+    const s_code = sessionStorage.getItem('verify_email_code')
+    if(s_code != "Verified" || s_code == null){
+      if(email && code){
+        if(validateEmail(email)){
+        
+          $.ajax({
+            url: '{% url "main:VerifyEmail" %}',
+            data:{email:email, code:code},
+            success: function(data){
+              // console.log(data)
+              if(data == true){
+                set_session(code)
+                $("#verify-message").text("We sent verification code to "+email)
+                verify.showModal()
+              }else{
+                $("#next1").hide()
+                alert("Email verification failed")
+              }
+    
+            },
+            error: function(error){
+              alert("Check internet connection and try again")
+              // $("#next1").hide()
+              // $("#email").val("")
+            }
+          })
+
+        }else{
+        alert("Please enter a valid Email address")
+      }
+      }
+    }else{
+   
+    }
+  }
+
+  function Verify(){
+    const code = $("#code").val();
+    const s_code = sessionStorage.getItem('verify_email_code')
+   
+    // console.log(s_code.length)
+    if(code.length == s_code.length){
+      if(code == s_code){
+        alert("Email Verification successful")
+        $("#email-close").click();
+        sessionStorage.setItem('verify_email_code', "Verified")
+        nextOne();
+       
+      }
+      else if(s_code == "Expired"){
+        $("#invalid-code").text("Code expired, click resend to get a new code")
+      }else{
+        $("#invalid-code").text("Invalid code")
+      }
+    }
+    // $("#code").val("")
+  }
+
+
+  function IfSession(){
+    const email = $("#email").val();
+    const s_code = sessionStorage.getItem('verify_email_code')
+    if(s_code == null && s_code != "Verified" && email){
+      verify.showModal()
+    }
+    if(email){
+      $("#next1").show()
+    }else{
+      $("#next1").hide()
+    }
+  }
+  IfSession()
+
+
+  function validateEmail(email){
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    return emailRegex.test(email)
+  }
+</script>

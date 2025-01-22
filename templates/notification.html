@@ -1,0 +1,183 @@
+<script>
+    
+    //////////NOTIFICSTION CHECKER
+    
+    function ExpiryDateReminder(){
+        
+        $.ajax({
+            url: '{% url "settings:ExpiryDateReminder" %}',
+            method: 'GET',
+            
+            success: function(data) {
+                // console.log(data.expire)
+                sessionStorage.setItem("user","{{ request.user}}")
+                sessionStorage.setItem("expire", data.expire)
+                sessionStorage.setItem("expired", data.expired)
+
+                if(data.expire > 0){
+                    //$("#expire").addClass('px-1')
+                    $("#expire").html(data.expire)                           
+                }
+                if(data.expired > 0){
+                    //$("#expired").addClass('px-1')
+                    $("#expired").html(data.expired)
+                }
+
+                var all = data.expire + data.expired
+                if(all > 0){
+                    $("#allItems").addClass('px-1')
+                    $("#allItems").html(all)
+                }
+                
+                Subscription(data.remain);
+
+                if(data.items && data.items.length > 0){
+                    //console.log(data.items)
+                    $("#msg-btn").removeClass("hidden");
+                    data.items.forEach(item => {
+                    
+                    if (item.notify_me != "not set" && item.n_status === "1" && item.status != "Sold"){
+
+                        if(parseInt(item.rdays) > 0 && parseInt(item.rdays) <= parseInt(item.notify_me)){
+                            $("#message").append(
+                                `<div id="alert-${item.id}" class="w-full flex justify-between items-center p-4 mb-4 text-orange-700 rounded-lg bg-orange-100 dark:bg-orange-800 dark:text-yellow-300" role="alert">
+                                    <div class="flex items-center gap-2 ms-3 text-sm font-medium font-bold">
+                                    <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                                    </svg>
+                                    <span class="sr-only">Info</span>
+                                    ${item.item} expires in the next ${item.rdays} days 
+                                    </div>
+                                    <button type="button" onclick="Close('alert-${item.id}')" class="ms-auto -mx-1.5 -my-1.5 bg-yellow-50 text-yellow-500 rounded-lg focus:ring-2 focus:ring-yellow-400 p-1.5 hover:bg-yellow-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-yellow-300 dark:hover:bg-gray-700" data-dismiss-target="#alert-${item.id}" aria-label="Close">
+                                        <span class="sr-only">Close</span>
+                                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                                        </svg>
+                                    </button>
+                                </div>`
+                                //alertify.error(`${item.item} expires in less than ${item.rdays} days`)
+                            );
+                            }else if(parseInt(item.rdays) <= 0 ){
+
+                            $("#message").append(
+                                `<div id="alert-${item.id}" class="w-full flex justify-between items-center p-4 mb-4 text-red-700 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-yellow-300" role="alert">
+                                    <div class=" flex items-center gap-2 ms-3 text-sm font-medium font-bold">
+                                    <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                                    </svg>
+                                    <span class="sr-only">Info</span>
+                                    ${item.item} has expired  
+                                    </div>
+                                    <button type="button" onclick="Close('alert-${item.id}')" class="ms-auto items-end -mx-1.5 -my-1.5 bg-yellow-50 text-yellow-500 rounded-lg focus:ring-2 focus:ring-yellow-400 p-1.5 hover:bg-yellow-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-yellow-300 dark:hover:bg-gray-700" data-dismiss-target="#alert-${item.id}" aria-label="Close">
+                                        <span class="sr-only">Close</span>
+                                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                                        </svg>
+                                    </button>
+                                </div>`
+                            );
+                        
+                        }
+                    }
+                    });
+                    
+                    
+                }else{
+                    // $("#msg-btn").html("");   
+                    // $("#msg-btn").addClass("hidden");   
+                    //alertify.error("No Return data between selected date")
+                    //alertify.error("Select start_date and end_date")
+                }
+            },
+            error: function(error) {
+                // Handle the error
+                console.log(error)
+            }
+        });
+     }
+     //var constant = 1
+     //sessionStorage.setItem("notification", 0)
+     var value = sessionStorage.getItem('notification')
+     var user = sessionStorage.getItem('user')
+     var loggeduser = "{{request.user}}"
+
+     
+     $(document).ready(function(){ 
+        if (user != loggeduser){
+            sessionStorage.clear('notification')
+            sessionStorage.clear('user')
+            sessionStorage.clear("expire")
+            sessionStorage.clear("expired")
+        }       
+        if(!value){
+        sessionStorage.setItem("notification", "true");
+        ExpiryDateReminder() 
+        }else{
+        var expire = parseInt(sessionStorage.getItem('expire'))
+        var expired = parseInt(sessionStorage.getItem('expired'))
+        if(expire > 0){
+            //$("#expire").addClass('px-1')
+            $("#expire").html(expire)                           
+        }
+        if(expired > 0){
+            // $("#expired").addClass('px-1')
+            $("#expired").html(expired)
+        }
+
+        var all = expire + expired
+        if(all > 0){
+            $("#allItems").addClass('px-1')
+            $("#allItems").html(all)
+        }
+        }
+     });
+
+     var timeout = 1000 * 60  * 60 * 2
+
+     //console.log(timeout)
+  
+     setInterval(ExpiryDateReminder, timeout)  
+
+    function Close(div){
+
+       // $(`#${div}`).css('display', 'none')
+        $(`#${div}`).remove();
+    }
+
+    function Subscription(days){
+        var email1 = '{{request.user.email}}'
+        var email2 = '{{request.user.company_id.email}}'
+        var renew_url = '{{request.user.company_id.id}}'
+        if(parseInt(days) < 30 && email1 == email2){
+            $("#message").append(
+                `<div id="alert-${days}" class="w-full flex justify-between items-center p-4 mb-4 text-orange-700 rounded-lg bg-orange-100 dark:bg-orange-800 dark:text-yellow-300" role="alert">
+                    <div class="flex items-center gap-2 ms-3 text-sm font-medium font-bold">
+                        <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                            </svg>
+                        <span class="sr-only">Info</span>
+                         Your  subscription expires in the next ${days} days 
+                    </div>
+                    <div class="flex justify-between gap-4 items-center">
+                        <div>
+                        <a                        
+                            href="/Billing/${renew_url}"
+                            class="w-full bg-[#356464] text-center text-white   shrink-0 font-semibold leading-none rounded outline-none transition duration-300 ease-in-out focus:outline-0 focus:shadow focus:ring-1 focus:ring-slate-500  border border-transparent hover:bg-blue-300-hover px-2 py-1">
+                            Renew
+                        </a>
+                        </div>
+                        <button type="button" onclick="Close('alert-${days}')" class="ms-auto -mx-1.5 -my-1.5 bg-yellow-50 text-yellow-500 rounded-lg focus:ring-2 focus:ring-yellow-400 p-1.5 hover:bg-yellow-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-yellow-300 dark:hover:bg-gray-700" data-dismiss-target="#alert-${days}" aria-label="Close">
+                            <span class="sr-only">Close</span>
+                            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>`
+            );
+            $("#msg-btn").removeClass("hidden");
+           
+        }
+    }
+    // $("#msg-btn").removeClass("hidden");
+</script>

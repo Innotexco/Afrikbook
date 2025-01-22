@@ -1,0 +1,216 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>New Chart of Account</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+   
+    <!-- {% if messages %}
+        {% include 'messages.html' %}
+    {% endif %} -->
+
+
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+        <form method="POST" action="/New-chart-of-account" novalidate>
+            {% csrf_token %}
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Account ID </span>
+                    <input 
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        name="account_id"
+                        type="text"
+                    />
+                    <span class="py-2 text-red-500 errors">{{form.account_id.errors}}</span>
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">Description(could be bank name)</span>
+                    <input 
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        type="text"
+                        name="account_bankname"
+                    />
+                    <span class="py-2 text-red-500 errors">{{form.account_bankname.errors}}</span>
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 ">
+                        Account Type
+                    </span>
+                    <select 
+                            type="text"
+                            name="account_type" 
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600"
+                            >
+                            <option></option>
+                            
+                            {% for display in acct_type %}
+                            <option>
+                                {{ display}}
+                            </option>
+                            {% endfor %}
+                                
+                    </select>
+                    <span class="py-2 text-red-500 errors">{{form.account_type.errors}}</span>
+                </label>
+
+                <div class="flex mt-6 text-sm">
+                    <label class="flex items-center">
+                    <input
+                        type="checkbox"
+                        name="status"
+                        class="text-slate-600 form-checkbox focus:border-[#2F4F4F] focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray"
+                    />
+                    <span class="ml-2">
+                        Inactive
+                    </span>
+                    <p class="py-2 text-red-500 errors">{{form.status.errors}}</p>
+                    </label>
+                </div>
+                
+            </div>
+
+            <button type="submit" class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                Create
+            </button>
+        </form>
+
+
+
+        <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+            <div class="w-full overflow-x-auto table-responsive">
+                <table id="chart_of_account" class="display" style="width:100%">
+                    <thead>
+                        <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                            <th class="px-4 py-3">SN</th>
+                            <th class="px-4 py-3">Period History</th>
+                            <th class="px-4 py-3">Debits</th>
+                            <th class="px-4 py-3">Credit</th>
+                            <th class="px-4 py-3">Period Activity</th>
+                            <th class="px-4 py-3">Running Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y">
+  
+                        {% for display in display %}
+                        
+                        <tr class="text-gray-700">
+    
+                            <td class="text-[10px]">
+                                {{display.id}}
+                            </td>
+                            <td class="text-[10px]">
+                                {{display.account_ID}}
+                            </td>
+                            <td class="text-[10px]">
+                                {{display.series_name}}
+                            </td>
+                            <td class="text-[10px]">
+                                {{display.account_type}}
+                            </td>
+                            <td class="text-[10px]">
+                                {{display.status}}
+                            </td>
+
+                        </tr>
+    
+                        {% endfor %}
+    
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    
+    {% endblock content %}
+
+    
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+        <div class="mt-4 text-sm">
+            <span class="text-gray-700 dark:text-gray-400">
+                Account Type
+            </span>
+            <div class="mt-2">
+                <label class="inline-flex items-center text-gray-600 dark:text-gray-400">
+                    <input
+                    type="radio"
+                    class="text-purple-600 form-radio focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray"
+                    name="accountType"
+                    value="personal"
+                    />
+                    <span class="ml-2">Personal</span>
+                </label>
+                <label class="inline-flex items-center ml-6 text-gray-600 dark:text-gray-400">
+                    <input
+                    type="radio"
+                    class="text-purple-600 form-radio focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray"
+                    name="accountType"
+                    value="busines"
+                    />
+                    <span class="ml-2">Business</span>
+                </label>
+            </div>
+        </div>
+
+        <label class="block mt-4 text-sm">
+            <span class="text-gray-700 dark:text-gray-400">
+                Requested Limit
+            </span>
+            <select class="block w-full mt-1 text-sm dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 form-select focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray">
+                <option>$1,000</option>
+                <option>$5,000</option>
+                <option>$10,000</option>
+                <option>$25,000</option>
+            </select>
+        </label>
+
+
+        <label class="block mt-4 text-sm">
+            <span class="text-gray-700 dark:text-gray-400">Message</span>
+            <textarea
+                class="block w-full mt-1 text-sm dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 form-textarea focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray"
+                rows="3"
+                placeholder="Enter some long form content."
+            ></textarea>
+        </label>
+
+        <div class="flex mt-6 text-sm">
+            <label class="flex items-center dark:text-gray-400">
+            <input
+                type="checkbox"
+                class="text-purple-600 form-checkbox focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray"
+            />
+            <span class="ml-2">
+                I agree to the
+                <span class="underline">privacy policy</span>
+            </span>
+            </label>
+        </div>
+    </div>

@@ -1,0 +1,347 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+                <path
+                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                ></path>
+            </svg>
+            <span>Edit Employee</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="grid gap-6 md:grid-cols-2">
+            
+            <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+        
+                <h1 class="text-[18px] text-slate-600 font-semibold text-center py-3">Personal Information</h1>
+
+                <div class="grid gap-6 md:grid-cols-2">
+
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Full Name</span>
+                        <input 
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            name="fullname"
+                            value="{{employee.fullname}}"
+                        />
+                    </label>
+
+                    <label class="block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">Email Address</span>
+                        <input 
+                            type="email"
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            name="email"
+                            value="{{employee.email}}"
+                        />
+                    </label>
+
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Phone Number</span>
+                        <input 
+                            type="text"
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            name="phone"
+                            value="{{employee.phone}}"
+                        />
+                    </label>
+
+                    <label class="block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">
+                            Gender
+                        </span>
+                        <select class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg"
+                        name="gender" >
+                            <option value="{{employee.gender}}">{{employee.gender}}</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </label>
+                
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Date Of Birth</span>
+                        <input 
+                            type="date"
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            name="date_of_birth"
+                            value="{{employee.date_of_birth|date:'Y-m-d'}}"
+                        />
+                    </label>
+
+                    <label class="block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">
+                            Marital Status
+                        </span>
+                        <select class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="marital_status" >
+                            <option value="{{employee.marital_status}}">{{employee.marital_status}}</option>
+                            <option value="Single">Single</option>
+                            <option value="Married">Married</option>
+                            <option value="Divorced">Divorced</option>
+                            <option value="Widow/Widower">Widow/Widower</option>
+                        </select>
+                    </label>
+                    
+                </div>
+
+                <label class="block text-sm mt-5">
+                    <span class="text-gray-600">Address</span>
+                    <textarea
+                        class="block w-full mt-1 px-2 text-sm form-textarea border-2 rounded-md focus:border-slate-300  focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg"
+                        rows="1"
+                        placeholder=""
+                        name="address"
+                    >{{employee.address}}</textarea>
+                </label>
+
+            </div>
+            
+            <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+        
+                <h1 class="text-[18px] text-slate-600 font-semibold text-center py-3">Job Information</h1>
+
+                <div class="grid gap-6 md:grid-cols-2">
+
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Staff ID</span>
+                        <input 
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            name="staff_ID"
+                            value="employee.staff_ID"
+                            disabled
+                        />
+                    </label>
+
+                    <label class="block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">Basic Salary</span>
+                        <input 
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            name="basic_salary"
+                            value="{{employee.basic_salary}}"
+                        />
+                    </label>
+
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Job Title</span>
+                        <input 
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            name="job_title"
+                            value="{{employee.job_title}}"
+                        />
+                    </label>
+
+                    <label class="block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">Department</span>
+                        <input 
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            name="department"
+                            value="{{employee.department}}"
+                        />
+                    </label>
+
+                    <label class="block text-sm">
+                        <span class="text-gray-700">
+                            C Category
+                        </span>
+                        <select class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="category" value="{{employee.category}}">
+                            <option value="{{employee.category}}">{{employee.category}}</option>
+                            <option value="Full-time">Full-time</option>
+                            <option value="Part-time">Part-time</option>
+                            <option value="Contract">Contract</option>
+                        </select>
+                    </label>
+                    
+                    <label class="block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">Supervisor</span>
+                        <input 
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            name="supervisor"
+                            value="{{employee.supervisor}}"
+                        />
+                    </label>
+                    
+                    <label class="block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">Start Date</span>
+                        <input type="date"
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            name="start_date"
+                            value="{{employee.start_date|date:'Y-m-d'}}"
+                            required
+                        />
+                    </label>
+                    
+                    <label class="block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">Work Location</span>
+                        <input 
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            name="work_location"
+                            value="{{employee.work_location}}"
+                        />
+                    </label>
+                
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+            
+            <h1 class="text-[18px] text-slate-600 font-semibold text-center py-3">Bank Account Details</h1>
+
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Account Number</span>
+                    <input 
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="account_no"
+                        value="{{account.account_no}}"
+                        required
+                    />
+                </label>
+
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">Account Name</span>
+                    <input 
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="account_name"
+                        value="{{account.account_name}}"
+                        required
+                    />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Bank Name</span>
+                    <input 
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="bank_name"
+                        value="{{account.bank_name}}"
+                        required
+                    />
+                </label>
+
+            </div>
+
+        </div>
+        <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+            
+            <h1 class="text-[18px] text-slate-600 font-semibold text-center py-3">Guarantor Information</h1>
+
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Full Name</span>
+                    <input 
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="g_fullname"
+                        value="{{employeeg.g_fullname}}"
+                    />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Relationship
+                    </span>
+                    <select class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="relationship" value="{{employeeg.relationship}}">
+                        <option value="{{employeeg.relationship}}">{{employeeg.relationship}}</option>
+                        <option value="Father">Father</option>
+                        <option value="Mother">Mother</option>
+                        <option value="Uncle">Uncle</option>
+                        <option value="Aunty">Aunty</option>
+                        <option value="Brother">Brother</option>
+                        <option value="Sister">Sister</option>
+                        <option value="Friend">Friend</option>
+                    </select>
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">Residential Address</span>
+                    <input 
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="residential_address"
+                        value="{{employeeg.residential_address}}"
+                        required
+                    />
+                    {% comment %} {{eg_form.errors}} {% endcomment %}
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Phone</span>
+                    <input 
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="g_phone"
+                        value="{{employeeg.g_phone}}"
+                    />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">Email</span>
+                    <input 
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        type="email"
+                        name="g_email"
+                        value="{{employeeg.g_email}}"
+                        required
+                    />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">Work Address</span>
+                    <input 
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="work_address"
+                        value="{{employeeg.work_address}}"
+                    />
+                </label>
+            
+                <button class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                    type="submit">
+                    Update
+                </button>
+
+
+            </div>
+
+        </div>
+    </form>
+   
+
+    
+{% endblock content %}

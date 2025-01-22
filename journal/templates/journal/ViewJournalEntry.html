@@ -1,0 +1,175 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+{% include "customer/ReturnInwardsChangeDate.html" %}
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>View Journal Entry</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+        {% comment %} <form > {% endcomment %}
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mb-3">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">FROM</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        name="from"
+                        id="from"
+                    />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">TO</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        name="to"
+                        id="to"
+                    />
+                </label>
+
+                <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="search" onclick="Filter()">
+                Search
+                </button>   
+            </div>
+        {% comment %} </form> {% endcomment %}
+        <div class="w-full overflow-x-auto table-responsive mt-4">
+          <table id="example" class="display" style="width:100%">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                        <th class="px-4 py-3">SN</th>
+                        <th class="px-4 py-3">Date</th>
+                        <th class="px-4 py-3">Invoice</th>
+                        <th class="px-4 py-3">Narration</th>
+                        <th class="px-4 py-3">Total Amount</th>
+                        <th class="px-4 py-3">Tnx Type</th>
+                        <th class="px-4 py-3">View</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y">
+
+                    
+                    {% for display in journals %}
+                    
+                    <tr class="text-gray-700">
+
+                        <td class="text-[10px]">
+                            {{forloop.counter}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.date}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.invoice_no}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.narration}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.total}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.transaction_type}}
+                        </td>
+                        <td class="text-[10px] bg-gray-50 w-3">
+                            <a href="{% url 'journal:ViewJournalItem' display.invoice_no %}"
+                                class="flex items-center justify-center text-blue-500 border px-3"
+                                aria-label="Edit">
+                                View
+                            </a>
+                        </td>
+
+                    </tr>
+                    
+
+                    {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        $(() => {
+            $('#from').datepicker()
+            $('#to').datepicker()
+        })
+         $(document).on('change', 'input[type="month"]', function(){
+           
+           let date1 = $('#from').val()
+           let date2 = $('#to').val()
+           let duration = $('#duration').val()
+           if(date1 != '' && date2 != '' ){
+               $('#search2').removeClass('hidden')
+           }else{
+               $('#search2').addClass('hidden')
+           }
+       })
+
+        function Filter(){
+            const from = $('#from').val()
+            const to = $('#to').val()
+            if(from && to){
+                $.ajax({
+                    url: '{% url "filter:journal-entry-date" %}',
+                    method: 'GET',
+                    data: {
+                        'start_date': from,
+                        'end_date': to,
+                    },
+                    success: function(response) {
+                        if(response && response.length > 0){
+                            const table = $('#example tbody')
+                            table.empty()
+                            let num = 0;
+                            response.forEach(item => {
+                                num++
+
+                                const row = $('<tr id="row">').append(
+                                    $('<td class="text-[10px]">').html(num),
+                                    $('<td class="text-[10px]">').text(item.date),
+                                    $('<td class="text-[10px]">').text(item.invoice_no),
+                                    $('<td class="text-[10px]">').text(item.narration),
+                                    $('<td class="text-[10px]">').text(item.total),
+                                    $('<td class="text-[10px]">').text(item.transaction_type),
+                                    $('<td class="text-[10px] bg-gray-50 w-3">').append('<a href="/ViewJournalItem/'+item.invoice_no+'/" class="flex items-center justify-center text-blue-500 border px-3"  aria-label="Edit">View</a>'),
+                                        
+                                );
+                                table.append(row);
+                            });
+                        }else{
+                            alertify.error("No Journal Entry between selected date");
+                            //alertify.error("Select start_date and end_date")
+                        }
+                    },
+                    error: function(error) {
+                        //console.log(error)
+                    }
+                });
+            }else{
+                alertify.error("Select start_date and end_date")
+            }   
+        };
+    </script>
+
+
+{% endblock content %}

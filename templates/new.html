@@ -1,0 +1,1073 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Server</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="../node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    
+    
+
+
+
+
+
+<div class="flex min-h-screen flex-col bg-gray-100 transition-colors duration-150">
+
+    <header class="site-header-with-search bg-white top-0 z-50 w-full h-10 sticky lg:fixed text-center">
+        <div class="fixed inset-0 -z-10 h-[100vh] w-full bg-black/50 hidden"></div>
+        
+        <nav class="py-1 shadow-sm bg-white">
+
+            <div class="container flex items-center justify-between gap-4 md:gap-20">
+
+                <div class="flex mr-2 lg:hidden">
+                    <button class="inline-flex items-center justify-center transition-all p-2 text-[#B2BEB5] rounded-md hover:text-primary focus:outline-none focus:text-primary mobile-menu-button">
+                        <svg class="w-6 h-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path :class="{'hidden': open, 'inline-flex': !open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        <path :class="{'hidden': !open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <a href="#" class="text-[22px] font-bold text-primary uppercase">
+                    Afrikbook
+                </a>
+
+                <div class="hidden lg:flex items-center px-4 py-1 h-6 bg-primary cursor-pointer relative group">
+                    <span class="text-white">
+                        <i class="fa-solid fa-bars"></i>
+                    </span>
+                    <span class="capitalize ml-2 text-white hiddn">Categories</span>
+    
+                    <!-- dropdown -->
+                    <div class="absolute w-full left-0 top-full rounded-md bg-white shadow-lg py-3 divide-y divide-gray-300 divide-dashed opacity-0 group-hover:opacity-100 transition duration-300 invisible group-hover:visible">
+                        
+                        <div class="relative sub-menu-dropdown">
+                            <a href="#" class="flex items-center justify-between px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                <div class="flex items-center" >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                    <span class="ml-2">Item</span>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 right-0 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </a>
+                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                    <ul class="list-reset">
+                                        <li>
+                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New Item</span> </a>
+                                        </li>
+                                        <li>
+                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Item Category</span> </a>
+                                        </li>
+                                    
+                                        <li class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-start px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">Level</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Brand</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Price</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Item</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="relative sub-menu-dropdown">
+                            <a href="#" class="flex items-center justify-between px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                <div class="flex items-center" >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                    <span class="ml-2">Item</span>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 right-0 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </a>
+                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                    <ul class="list-reset">
+                                        <li>
+                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New Item</span> </a>
+                                        </li>
+                                        <li>
+                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Item Category</span> </a>
+                                        </li>
+                                    
+                                        <li class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-start px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">Level</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Brand</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Price</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Item</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="flex items-center px-4 py-1 gap-2 relative group">
+                    <button class="inline-flex justify-center hover:text-primary transition w-full py-2 text-sm font-medium text-gray-700 bg-white border-none focus:outline-none ">
+                        Company
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ml-1 -mr-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M6.293 9.293a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div class="absolute w-full left-0 top-full rounded-md bg-white shadow-lg py-3 divide-y divide-gray-300 divide-dashed opacity-0 group-hover:opacity-100 transition duration-300 invisible group-hover:visible">
+                        
+                        <div class="relative sub-menu-dropdown">
+                            <a href="#" class="flex items-center justify-between px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                <div class="flex items-center" >
+                                    <span class="ml-2">Item</span>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 right-0 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </a>
+                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                    <ul class="list-reset">
+                                        <li>
+                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New Item</span> </a>
+                                        </li>
+                                        <li>
+                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Item Category</span> </a>
+                                        </li>
+                                    
+                                        <li class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-start px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">Level</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Brand</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Price</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Item</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-full max-w-xl relative flex">
+                    <span class="absolute left-4 top-3 text-lg text-gray-400">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" name="search" id="search"
+                        class="w-full border border-primary border-r-0 pl-12 py-1 h-6 pr-3 rounded-l-md focus:outline-none hidden md:flex md:pl-5"
+                        placeholder="search">
+                    <button class="items-center bg-primary border h-6 border-primary text-center text-white px-8 rounded-r-md hover:bg-transparent hover:text-primary transition hidden md:flex">Search</button>
+                </div>
+    
+                <div class="hidden lg:flex items-center gap-2 space-x-4">
+
+                    <div class="relative inline-block text-left">
+                        <div class="flex justify-center items-center gap-2">
+                           
+                            <button id="dropdown-button" class="inline-flex justify-center hover:text-primary transition w-full py-2 text-sm font-medium text-gray-700 bg-white border-none focus:outline-none ">
+                                Account
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ml-2 -mr-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M6.293 9.293a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div id="dropdown-menu" class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden">
+                            <div class="py-2 p-2" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-button">
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Dashboard</a>
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">My Order</a>
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Invoices</a>
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Account</a>
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Profile</a>
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Sign Out</a>
+                                
+                                <!-- submit button inside the dropdown -->
+                                <button id="submit-button" class="w-full px-4 py-2 bg-primary text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">Become a seller</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative main-menu-dropdown inline-block text-left">
+                        <button class="inline-flex justify-center hover:text-primary transition w-full py-2 text-sm font-medium text-gray-700 bg-white border-none focus:outline-none ">
+                            Help
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ml-1 -mr-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M6.293 9.293a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <div  class="origin-top-right dropdown-menu absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden">
+                            <div class="py-2 p-2" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-button">
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Item 1</a>
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Item 2</a>
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Item 3</a>
+                                
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative main-menu-dropdown inline-block text-left">
+                        <button class="inline-flex justify-center hover:text-primary transition w-full py-2 text-sm font-medium text-gray-700 bg-white border-none focus:outline-none ">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48" id="wishlist"><path d="M 24 0 C 10.751089 0 -7.1054274e-015 10.751088 0 24 C 0 37.248912 10.751088 48 24 48 C 37.248912 48 48 37.248912 48 24 C 48 10.751088 37.248912 0 24 0 z M 24 1 C 36.708472 1 47 11.291528 47 24 C 47 36.708472 36.708472 47 24 47 C 11.291529 47 1 36.708472 1 24 C 1 11.291529 11.291529 1 24 1 z M 17.5 13 C 17.224 13 17 13.224 17 13.5 L 17 37.414062 C 17 37.585062 17.08747 37.743938 17.230469 37.835938 C 17.375469 37.928938 17.552984 37.939144 17.708984 37.869141 L 24 34.966797 L 30.289062 37.869141 C 30.356063 37.899141 30.429 37.914063 30.5 37.914062 C 30.594 37.914062 30.687531 37.888947 30.769531 37.835938 C 30.913531 37.743945 31 37.585063 31 37.414062 L 31 13.5 C 31 13.224 30.776 13 30.5 13 L 17.5 13 z M 18 14 L 30 14 L 30 36.634766 L 24.210938 33.960938 C 24.143937 33.930937 24.071 33.914062 24 33.914062 C 23.929 33.914062 23.856063 33.930937 23.789062 33.960938 L 18 36.634766 L 18 14 z M 24 14.9375 C 23.817875 14.9375 23.636234 15.02141 23.552734 15.191406 L 22.855469 16.603516 L 21.298828 16.828125 C 21.110828 16.855125 20.954484 16.987922 20.896484 17.169922 C 20.837484 17.350922 20.886433 17.550594 21.023438 17.683594 L 22.148438 18.78125 L 21.880859 20.330078 C 21.848859 20.518078 21.926079 20.707359 22.080078 20.818359 C 22.233078 20.929359 22.435469 20.947425 22.605469 20.857422 L 24 20.126953 L 25.392578 20.857422 C 25.465578 20.896422 25.546 20.914062 25.625 20.914062 C 25.729 20.914062 25.832922 20.882359 25.919922 20.818359 C 26.073922 20.707359 26.149188 20.517078 26.117188 20.330078 L 25.851562 18.78125 L 26.976562 17.683594 C 27.113564 17.550594 27.162516 17.350922 27.103516 17.169922 C 27.044516 16.987922 26.888172 16.856125 26.701172 16.828125 L 25.144531 16.603516 L 24.447266 15.191406 C 24.363266 15.021406 24.182125 14.9375 24 14.9375 z M 24 16.544922 L 24.363281 17.283203 C 24.435281 17.430203 24.578234 17.532641 24.740234 17.556641 L 25.554688 17.673828 L 24.964844 18.246094 C 24.846844 18.361095 24.793313 18.527453 24.820312 18.689453 L 24.960938 19.5 L 24.230469 19.117188 C 24.159469 19.080187 24.08 19.060547 24 19.060547 C 23.92 19.060547 23.839578 19.081141 23.767578 19.119141 L 23.039062 19.501953 L 23.179688 18.691406 C 23.206688 18.529406 23.152198 18.363047 23.033203 18.248047 L 22.445312 17.675781 L 23.259766 17.556641 C 23.421766 17.532641 23.564719 17.430203 23.636719 17.283203 L 24 16.544922 z M 22.5 22.914062 C 22.224 22.914062 22 23.138063 22 23.414062 C 22 23.690062 22.224 23.914063 22.5 23.914062 L 27.5 23.914062 C 27.776 23.914062 28 23.690062 28 23.414062 C 28 23.138063 27.776 22.914062 27.5 22.914062 L 22.5 22.914062 z M 20.349609 22.925781 C 20.253359 22.943281 20.162656 22.988592 20.097656 23.058594 C 20.007656 23.159595 19.949219 23.277969 19.949219 23.417969 C 19.949219 23.477969 19.968281 23.548422 19.988281 23.607422 C 20.019281 23.667422 20.049611 23.717578 20.099609 23.767578 C 20.149609 23.817578 20.200766 23.856958 20.259766 23.876953 C 20.319766 23.896953 20.389219 23.917969 20.449219 23.917969 C 20.518219 23.917969 20.579672 23.895953 20.638672 23.876953 C 20.699672 23.855953 20.758594 23.816573 20.808594 23.767578 C 20.848594 23.717578 20.889924 23.667422 20.919922 23.607422 C 20.939922 23.547422 20.949219 23.476968 20.949219 23.417969 C 20.949219 23.347969 20.937203 23.288516 20.908203 23.228516 C 20.887203 23.168516 20.848594 23.108595 20.808594 23.058594 C 20.758594 23.018594 20.708674 22.978984 20.638672 22.958984 C 20.548672 22.918984 20.445859 22.908281 20.349609 22.925781 z M 22.5 24.914062 C 22.224 24.914062 22 25.138063 22 25.414062 C 22 25.690062 22.224 25.914063 22.5 25.914062 L 27.5 25.914062 C 27.776 25.914062 28 25.690062 28 25.414062 C 28 25.138063 27.776 24.914062 27.5 24.914062 L 22.5 24.914062 z M 20.451172 24.923828 C 20.319922 24.923828 20.190109 24.968599 20.099609 25.058594 C 20.009609 25.159595 19.949219 25.277968 19.949219 25.417969 C 19.949219 25.477969 19.970244 25.548422 19.990234 25.607422 C 20.020234 25.667422 20.049614 25.717578 20.099609 25.767578 C 20.189609 25.868578 20.320172 25.917968 20.451172 25.917969 C 20.520172 25.917969 20.581625 25.906953 20.640625 25.876953 C 20.701625 25.855953 20.760547 25.816573 20.810547 25.767578 C 20.850547 25.717578 20.889927 25.667422 20.919922 25.607422 C 20.939922 25.547422 20.949219 25.476969 20.949219 25.417969 C 20.949219 25.347969 20.939156 25.288516 20.910156 25.228516 C 20.889156 25.168516 20.848596 25.108594 20.808594 25.058594 C 20.714094 24.968594 20.582422 24.923828 20.451172 24.923828 z M 22.5 26.914062 C 22.224 26.914062 22 27.138063 22 27.414062 C 22 27.690062 22.224 27.914063 22.5 27.914062 L 27.5 27.914062 C 27.776 27.914062 28 27.690062 28 27.414062 C 28 27.138063 27.776 26.914062 27.5 26.914062 L 22.5 26.914062 z M 20.455078 26.921875 C 20.324953 26.921875 20.194609 26.966646 20.099609 27.056641 C 20.009609 27.157641 19.949219 27.277968 19.949219 27.417969 C 19.949219 27.547968 20.000609 27.677578 20.099609 27.767578 C 20.189609 27.867578 20.318219 27.917969 20.449219 27.917969 C 20.518219 27.917969 20.579672 27.895953 20.638672 27.876953 C 20.699672 27.855953 20.758594 27.816573 20.808594 27.767578 C 20.898594 27.677578 20.949219 27.547969 20.949219 27.417969 C 20.949219 27.287969 20.898589 27.156641 20.808594 27.056641 C 20.714094 26.966641 20.585203 26.921875 20.455078 26.921875 z M 22.5 28.914062 C 22.224 28.914062 22 29.138063 22 29.414062 C 22 29.690062 22.224 29.914063 22.5 29.914062 L 27.5 29.914062 C 27.776 29.914062 28 29.690062 28 29.414062 C 28 29.138063 27.776 28.914062 27.5 28.914062 L 22.5 28.914062 z M 20.455078 28.921875 C 20.324953 28.921875 20.194609 28.966646 20.099609 29.056641 C 20.049609 29.106641 20.019239 29.157562 19.990234 29.226562 C 19.969234 29.287562 19.949219 29.347969 19.949219 29.417969 C 19.949219 29.547968 20.000609 29.677578 20.099609 29.767578 C 20.189609 29.867578 20.318219 29.917969 20.449219 29.917969 C 20.518219 29.917969 20.579672 29.895953 20.638672 29.876953 C 20.699672 29.855953 20.758594 29.816573 20.808594 29.767578 C 20.898594 29.677578 20.949219 29.547969 20.949219 29.417969 C 20.949219 29.287969 20.898589 29.156641 20.808594 29.056641 C 20.714094 28.966641 20.585203 28.921875 20.455078 28.921875 z M 22.5 30.914062 C 22.224 30.914062 22 31.138063 22 31.414062 C 22 31.690062 22.224 31.914063 22.5 31.914062 L 27.5 31.914062 C 27.776 31.914062 28 31.690062 28 31.414062 C 28 31.138063 27.776 30.914062 27.5 30.914062 L 22.5 30.914062 z M 20.455078 30.921875 C 20.324953 30.921875 20.194609 30.966646 20.099609 31.056641 C 20.049609 31.106641 20.019239 31.157562 19.990234 31.226562 C 19.969234 31.287562 19.949219 31.347968 19.949219 31.417969 C 19.949219 31.547968 20.000609 31.677578 20.099609 31.767578 C 20.189609 31.867578 20.318219 31.917969 20.449219 31.917969 C 20.518219 31.917969 20.579672 31.895953 20.638672 31.876953 C 20.699672 31.855953 20.758594 31.816573 20.808594 31.767578 C 20.898594 31.677578 20.949219 31.547969 20.949219 31.417969 C 20.949219 31.287969 20.898589 31.156641 20.808594 31.056641 C 20.714094 30.966641 20.585203 30.921875 20.455078 30.921875 z "></path></svg>
+                        </button>
+                        <div  class="origin-top-right dropdown-menu absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden">
+                            <div class="py-2 p-2" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-button">
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Item 1</a>
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Item 2</a>
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Item 3</a>
+                                
+                            </div>
+                        </div>
+                        <div class="absolute left-2 ml-2 -top-1 w-4 h-4 rounded-full flex items-center justify-center bg-primary text-red-500 text-xs">
+                            8
+                        </div>
+                    </div>
+
+                    <div class="relative main-menu-dropdown inline-block text-left">
+                        <button class="inline-flex justify-center hover:text-primary transition w-full py-2 text-sm font-medium text-gray-700 bg-white border-none focus:outline-none ">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 32 32" id="cart"><path fill="#010101" d="M27.854 7.273a1.671 1.671 0 0 0-1.371-.702H9.832c-.012 0-.021.006-.033.007L9.206 4.27A1.69 1.69 0 0 0 7.568 3H4.325a.5.5 0 0 0 0 1h3.243a.69.69 0 0 1 .669.519l4.418 17.208a1.69 1.69 0 0 0 1.637 1.271h10.764a.5.5 0 0 0 0-1H14.292a.69.69 0 0 1-.668-.519l-.82-3.193h10.901a1.69 1.69 0 0 0 1.604-1.156l2.778-8.333a1.673 1.673 0 0 0-.233-1.524zm-4.148 10.013H12.547l-2.494-9.715h16.43a.68.68 0 0 1 .56.287.685.685 0 0 1 .095.622l-.554 1.663H17.42a.5.5 0 0 0 0 1h8.831l-.857 2.571h-6.783a.5.5 0 0 0 0 1h6.449l-.7 2.099a.687.687 0 0 1-.654.473zm-9.262 7.143a2.288 2.288 0 0 0-2.286 2.285c0 1.261 1.025 2.286 2.286 2.286s2.286-1.025 2.286-2.286a2.288 2.288 0 0 0-2.286-2.285zm0 3.571a1.287 1.287 0 1 1 1.286-1.286c0 .709-.577 1.286-1.286 1.286zm9.524-3.571a2.288 2.288 0 0 0-2.286 2.285c0 1.261 1.025 2.286 2.286 2.286s2.286-1.025 2.286-2.286a2.288 2.288 0 0 0-2.286-2.285zm0 3.571a1.287 1.287 0 1 1 1.286-1.286c0 .709-.577 1.286-1.286 1.286z"></path></svg>
+                        </button>
+                        <div  class="origin-top-right dropdown-menu absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden">
+                            <div class="py-2 p-2" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-button">
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Item 1</a>
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Item 2</a>
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Item 3</a>
+                                
+                            </div>
+                        </div>
+                        <div class="absolute -right-3 ml-2 -top-1 w-4 h-4 rounded-full flex items-center justify-center bg-primary text-red-500 text-xs">
+                            2
+                        </div>
+                    </div>
+                    
+                </div>
+
+                <div class="lg:hidden flex items-center w-full gap-4 ">
+
+                    <div class="relative main-menu-dropdown inline-block text-left">
+                        <div>
+                            <button class="flex items-center max-w-xs text-[12px] text-white rounded-full focus:outline-none focus:shadow-solid" id="user-menu" aria-label="User menu" aria-haspopup="true" x-bind:aria-expanded="open">
+                                <img class="w-6 h-6 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="" />
+                            </button>
+                        </div>
+                        <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opaity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="hidden dropdown-menu absolute right-0 w-48 mt-2 origin-top-right rounded-md shadow-lg z-50">
+                            <div class="py-1 bg-white rounded-md shadow-xs">
+                                <div class="" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-button">
+                                    <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Dashboard</a>
+                                    <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">My Order</a>
+                                    <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Invoices</a>
+                                    <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Account</a>
+                                    <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Profile</a>
+                                    <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Sign Out</a>
+                                    
+                                    <!-- submit button inside the dropdown -->
+                                    <button id="submit-button" class="w-full px-4 py-2 bg-primary text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">Become a seller</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative main-menu-dropdown inline-block text-left">
+                        <button class="inline-flex justify-center hover:text-primary transition w-full py-2 text-sm font-medium text-gray-700 bg-white border-none focus:outline-none ">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48" id="wishlist"><path d="M 24 0 C 10.751089 0 -7.1054274e-015 10.751088 0 24 C 0 37.248912 10.751088 48 24 48 C 37.248912 48 48 37.248912 48 24 C 48 10.751088 37.248912 0 24 0 z M 24 1 C 36.708472 1 47 11.291528 47 24 C 47 36.708472 36.708472 47 24 47 C 11.291529 47 1 36.708472 1 24 C 1 11.291529 11.291529 1 24 1 z M 17.5 13 C 17.224 13 17 13.224 17 13.5 L 17 37.414062 C 17 37.585062 17.08747 37.743938 17.230469 37.835938 C 17.375469 37.928938 17.552984 37.939144 17.708984 37.869141 L 24 34.966797 L 30.289062 37.869141 C 30.356063 37.899141 30.429 37.914063 30.5 37.914062 C 30.594 37.914062 30.687531 37.888947 30.769531 37.835938 C 30.913531 37.743945 31 37.585063 31 37.414062 L 31 13.5 C 31 13.224 30.776 13 30.5 13 L 17.5 13 z M 18 14 L 30 14 L 30 36.634766 L 24.210938 33.960938 C 24.143937 33.930937 24.071 33.914062 24 33.914062 C 23.929 33.914062 23.856063 33.930937 23.789062 33.960938 L 18 36.634766 L 18 14 z M 24 14.9375 C 23.817875 14.9375 23.636234 15.02141 23.552734 15.191406 L 22.855469 16.603516 L 21.298828 16.828125 C 21.110828 16.855125 20.954484 16.987922 20.896484 17.169922 C 20.837484 17.350922 20.886433 17.550594 21.023438 17.683594 L 22.148438 18.78125 L 21.880859 20.330078 C 21.848859 20.518078 21.926079 20.707359 22.080078 20.818359 C 22.233078 20.929359 22.435469 20.947425 22.605469 20.857422 L 24 20.126953 L 25.392578 20.857422 C 25.465578 20.896422 25.546 20.914062 25.625 20.914062 C 25.729 20.914062 25.832922 20.882359 25.919922 20.818359 C 26.073922 20.707359 26.149188 20.517078 26.117188 20.330078 L 25.851562 18.78125 L 26.976562 17.683594 C 27.113564 17.550594 27.162516 17.350922 27.103516 17.169922 C 27.044516 16.987922 26.888172 16.856125 26.701172 16.828125 L 25.144531 16.603516 L 24.447266 15.191406 C 24.363266 15.021406 24.182125 14.9375 24 14.9375 z M 24 16.544922 L 24.363281 17.283203 C 24.435281 17.430203 24.578234 17.532641 24.740234 17.556641 L 25.554688 17.673828 L 24.964844 18.246094 C 24.846844 18.361095 24.793313 18.527453 24.820312 18.689453 L 24.960938 19.5 L 24.230469 19.117188 C 24.159469 19.080187 24.08 19.060547 24 19.060547 C 23.92 19.060547 23.839578 19.081141 23.767578 19.119141 L 23.039062 19.501953 L 23.179688 18.691406 C 23.206688 18.529406 23.152198 18.363047 23.033203 18.248047 L 22.445312 17.675781 L 23.259766 17.556641 C 23.421766 17.532641 23.564719 17.430203 23.636719 17.283203 L 24 16.544922 z M 22.5 22.914062 C 22.224 22.914062 22 23.138063 22 23.414062 C 22 23.690062 22.224 23.914063 22.5 23.914062 L 27.5 23.914062 C 27.776 23.914062 28 23.690062 28 23.414062 C 28 23.138063 27.776 22.914062 27.5 22.914062 L 22.5 22.914062 z M 20.349609 22.925781 C 20.253359 22.943281 20.162656 22.988592 20.097656 23.058594 C 20.007656 23.159595 19.949219 23.277969 19.949219 23.417969 C 19.949219 23.477969 19.968281 23.548422 19.988281 23.607422 C 20.019281 23.667422 20.049611 23.717578 20.099609 23.767578 C 20.149609 23.817578 20.200766 23.856958 20.259766 23.876953 C 20.319766 23.896953 20.389219 23.917969 20.449219 23.917969 C 20.518219 23.917969 20.579672 23.895953 20.638672 23.876953 C 20.699672 23.855953 20.758594 23.816573 20.808594 23.767578 C 20.848594 23.717578 20.889924 23.667422 20.919922 23.607422 C 20.939922 23.547422 20.949219 23.476968 20.949219 23.417969 C 20.949219 23.347969 20.937203 23.288516 20.908203 23.228516 C 20.887203 23.168516 20.848594 23.108595 20.808594 23.058594 C 20.758594 23.018594 20.708674 22.978984 20.638672 22.958984 C 20.548672 22.918984 20.445859 22.908281 20.349609 22.925781 z M 22.5 24.914062 C 22.224 24.914062 22 25.138063 22 25.414062 C 22 25.690062 22.224 25.914063 22.5 25.914062 L 27.5 25.914062 C 27.776 25.914062 28 25.690062 28 25.414062 C 28 25.138063 27.776 24.914062 27.5 24.914062 L 22.5 24.914062 z M 20.451172 24.923828 C 20.319922 24.923828 20.190109 24.968599 20.099609 25.058594 C 20.009609 25.159595 19.949219 25.277968 19.949219 25.417969 C 19.949219 25.477969 19.970244 25.548422 19.990234 25.607422 C 20.020234 25.667422 20.049614 25.717578 20.099609 25.767578 C 20.189609 25.868578 20.320172 25.917968 20.451172 25.917969 C 20.520172 25.917969 20.581625 25.906953 20.640625 25.876953 C 20.701625 25.855953 20.760547 25.816573 20.810547 25.767578 C 20.850547 25.717578 20.889927 25.667422 20.919922 25.607422 C 20.939922 25.547422 20.949219 25.476969 20.949219 25.417969 C 20.949219 25.347969 20.939156 25.288516 20.910156 25.228516 C 20.889156 25.168516 20.848596 25.108594 20.808594 25.058594 C 20.714094 24.968594 20.582422 24.923828 20.451172 24.923828 z M 22.5 26.914062 C 22.224 26.914062 22 27.138063 22 27.414062 C 22 27.690062 22.224 27.914063 22.5 27.914062 L 27.5 27.914062 C 27.776 27.914062 28 27.690062 28 27.414062 C 28 27.138063 27.776 26.914062 27.5 26.914062 L 22.5 26.914062 z M 20.455078 26.921875 C 20.324953 26.921875 20.194609 26.966646 20.099609 27.056641 C 20.009609 27.157641 19.949219 27.277968 19.949219 27.417969 C 19.949219 27.547968 20.000609 27.677578 20.099609 27.767578 C 20.189609 27.867578 20.318219 27.917969 20.449219 27.917969 C 20.518219 27.917969 20.579672 27.895953 20.638672 27.876953 C 20.699672 27.855953 20.758594 27.816573 20.808594 27.767578 C 20.898594 27.677578 20.949219 27.547969 20.949219 27.417969 C 20.949219 27.287969 20.898589 27.156641 20.808594 27.056641 C 20.714094 26.966641 20.585203 26.921875 20.455078 26.921875 z M 22.5 28.914062 C 22.224 28.914062 22 29.138063 22 29.414062 C 22 29.690062 22.224 29.914063 22.5 29.914062 L 27.5 29.914062 C 27.776 29.914062 28 29.690062 28 29.414062 C 28 29.138063 27.776 28.914062 27.5 28.914062 L 22.5 28.914062 z M 20.455078 28.921875 C 20.324953 28.921875 20.194609 28.966646 20.099609 29.056641 C 20.049609 29.106641 20.019239 29.157562 19.990234 29.226562 C 19.969234 29.287562 19.949219 29.347969 19.949219 29.417969 C 19.949219 29.547968 20.000609 29.677578 20.099609 29.767578 C 20.189609 29.867578 20.318219 29.917969 20.449219 29.917969 C 20.518219 29.917969 20.579672 29.895953 20.638672 29.876953 C 20.699672 29.855953 20.758594 29.816573 20.808594 29.767578 C 20.898594 29.677578 20.949219 29.547969 20.949219 29.417969 C 20.949219 29.287969 20.898589 29.156641 20.808594 29.056641 C 20.714094 28.966641 20.585203 28.921875 20.455078 28.921875 z M 22.5 30.914062 C 22.224 30.914062 22 31.138063 22 31.414062 C 22 31.690062 22.224 31.914063 22.5 31.914062 L 27.5 31.914062 C 27.776 31.914062 28 31.690062 28 31.414062 C 28 31.138063 27.776 30.914062 27.5 30.914062 L 22.5 30.914062 z M 20.455078 30.921875 C 20.324953 30.921875 20.194609 30.966646 20.099609 31.056641 C 20.049609 31.106641 20.019239 31.157562 19.990234 31.226562 C 19.969234 31.287562 19.949219 31.347968 19.949219 31.417969 C 19.949219 31.547968 20.000609 31.677578 20.099609 31.767578 C 20.189609 31.867578 20.318219 31.917969 20.449219 31.917969 C 20.518219 31.917969 20.579672 31.895953 20.638672 31.876953 C 20.699672 31.855953 20.758594 31.816573 20.808594 31.767578 C 20.898594 31.677578 20.949219 31.547969 20.949219 31.417969 C 20.949219 31.287969 20.898589 31.156641 20.808594 31.056641 C 20.714094 30.966641 20.585203 30.921875 20.455078 30.921875 z "></path></svg>
+                        </button>
+                        <div  class="origin-top-right dropdown-menu absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden">
+                            <div class="py-2 p-2" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-button">
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Item 1</a>
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Item 2</a>
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Item 3</a>
+                                
+                            </div>
+                        </div>
+                        <div class="absolute left-2 ml-1 -top-1 w-5 h-5 rounded-full flex items-center justify-center bg-primary text-red-500 text-xs">
+                            8
+                        </div>
+                    </div>
+
+                    <div class="relative main-menu-dropdown inline-block text-left">
+                        <button class="inline-flex justify-center hover:text-primary transition w-full py-2 text-sm font-medium text-gray-700 bg-white border-none focus:outline-none ">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32" id="cart"><path fill="#010101" d="M27.854 7.273a1.671 1.671 0 0 0-1.371-.702H9.832c-.012 0-.021.006-.033.007L9.206 4.27A1.69 1.69 0 0 0 7.568 3H4.325a.5.5 0 0 0 0 1h3.243a.69.69 0 0 1 .669.519l4.418 17.208a1.69 1.69 0 0 0 1.637 1.271h10.764a.5.5 0 0 0 0-1H14.292a.69.69 0 0 1-.668-.519l-.82-3.193h10.901a1.69 1.69 0 0 0 1.604-1.156l2.778-8.333a1.673 1.673 0 0 0-.233-1.524zm-4.148 10.013H12.547l-2.494-9.715h16.43a.68.68 0 0 1 .56.287.685.685 0 0 1 .095.622l-.554 1.663H17.42a.5.5 0 0 0 0 1h8.831l-.857 2.571h-6.783a.5.5 0 0 0 0 1h6.449l-.7 2.099a.687.687 0 0 1-.654.473zm-9.262 7.143a2.288 2.288 0 0 0-2.286 2.285c0 1.261 1.025 2.286 2.286 2.286s2.286-1.025 2.286-2.286a2.288 2.288 0 0 0-2.286-2.285zm0 3.571a1.287 1.287 0 1 1 1.286-1.286c0 .709-.577 1.286-1.286 1.286zm9.524-3.571a2.288 2.288 0 0 0-2.286 2.285c0 1.261 1.025 2.286 2.286 2.286s2.286-1.025 2.286-2.286a2.288 2.288 0 0 0-2.286-2.285zm0 3.571a1.287 1.287 0 1 1 1.286-1.286c0 .709-.577 1.286-1.286 1.286z"></path></svg>
+                        </button>
+                        <div  class="origin-top-right dropdown-menu absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden">
+                            <div class="py-2 p-2" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-button">
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Item 1</a>
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Item 2</a>
+                                <a href="#" class="block px-4 py-2 mb-1 text-sm text-gray-700 rounded-md bg-white hover:bg-gray-100" role="menuitem">Item 3</a>
+                                
+                            </div>
+                        </div>
+                        <div class="absolute -right-3 ml-2 -top-1 w-5 h-5 rounded-full flex items-center justify-center bg-primary text-red-500 text-xs">
+                            2
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </nav>
+        
+        <div class="hidden absolute left-0 w-[160px] transition bg-white shadow-lg mobile-menu z-50 lg:hidden">
+            
+            <div class="pt-2 pb-3">
+                
+                <div class="relative main-menu-dropdown">
+                    <button class="flex flex-row items-center w-full px-3 py-2 mt-1 text-base font-medium text-left text-slate-500 rounded-md hover:text-primary focus:outline-none focus:text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-folder"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                        <span class="mx-1 text-[10px]">Category 1</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 ml-6 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div class="hidden dropdown-menu px-2 py-2 mt-2 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                        
+                        <div class="relative sub-menu-dropdown">
+                            <a href="#" class="flex items-center justify-between ml-3 px-3 w-full py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                <div class="flex items-center" >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                    <span class="ml-2">Item</span>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 ml-6 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </a>
+                            <div class="ml-2 hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                    <ul class="list-reset">
+                                        <li>
+                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New Item</span> </a>
+                                        </li>
+                                        <li>
+                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Item Category</span> </a>
+                                        </li>
+                                    
+                                        <li class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-start px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">Level</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Brand</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Price</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Item</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="relative main-menu-dropdown">
+                    <button class="flex flex-row items-center w-full px-3 py-2 mt-1 text-base font-medium text-left text-slate-500 rounded-md hover:text-primary focus:outline-none focus:text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-folder"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                        <span class="mx-1 text-[10px]">Category 1</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 ml-6 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div class="hidden dropdown-menu px-2 py-2 mt-2 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                        
+                        <div class="relative sub-menu-dropdown">
+                            <a href="#" class="flex items-center justify-between ml-3 px-3 w-full py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                <div class="flex items-center" >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                    <span class="ml-2">Item</span>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 ml-6 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </a>
+                            <div class="ml-2 hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                    <ul class="list-reset">
+                                        <li>
+                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New Item</span> </a>
+                                        </li>
+                                        <li>
+                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Item Category</span> </a>
+                                        </li>
+                                    
+                                        <li class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-start px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">Level</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Brand</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Price</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Item</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="relative main-menu-dropdown">
+                    <button class="flex flex-row items-center w-full px-3 py-2 mt-1 text-base font-medium text-left text-slate-500 rounded-md hover:text-primary focus:outline-none focus:text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-folder"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                        <span class="mx-1 text-[10px]">Category 1</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 ml-6 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div class="hidden dropdown-menu px-2 py-2 mt-2 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                        
+                        <div class="relative sub-menu-dropdown">
+                            <a href="#" class="flex items-center justify-between ml-3 px-3 w-full py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                <div class="flex items-center" >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                    <span class="ml-2">Item</span>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 ml-6 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </a>
+                            <div class="ml-2 hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                    <ul class="list-reset">
+                                        <li>
+                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New Item</span> </a>
+                                        </li>
+                                        <li>
+                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Item Category</span> </a>
+                                        </li>
+                                    
+                                        <li class="relative sub-menu-dropdown">
+                                            <a href="#" class="flex flex-row items-start px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                                <span class="flex-1">Level</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                            </a>
+                                            <div class="hidden sub-dropdown-menu bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-full top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                                <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                                <div class="bg-white rounded w-full relative z-10 py-1">
+                                                    <ul class="list-reset">
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Brand</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Price</span> </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Item</span> </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+            </div>
+        </div>
+
+    </header>
+
+    <!-- categories -->
+    <div class="container w-10/12 py-5">
+        {% comment %} <h2 class="text-2xl font-medium text-gray-800 uppercase mb-10"></h2> {% endcomment %}
+        <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 py-3">
+            <div class="relative rounded-sm overflow-hidden group">
+                <img src="{% static 'assets/images/category/category-1.jpg' %}" alt="category 1" class="w-full">
+                <a href="#"
+                    class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-xl text-white font-roboto font-medium group-hover:bg-opacity-60 transition">Bedroom</a>
+            </div>
+            <div class="relative rounded-sm overflow-hidden group">
+                <img src="{% static 'assets/images/category/category-2.jpg' %}" alt="category 1" class="w-full">
+                <a href="#"
+                    class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-xl text-white font-roboto font-medium group-hover:bg-opacity-60 transition">Mattrass</a>
+            </div>
+            <div class="relative rounded-sm overflow-hidden group">
+                <img src="{% static 'assets/images/category/category-3.jpg' %}" alt="category 1" class="w-full">
+                <a href="#"
+                    class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-xl text-white font-roboto font-medium group-hover:bg-opacity-60 transition">Outdoor
+                </a>
+            </div>
+            <div class="relative rounded-sm overflow-hidden group">
+                <img src="{% static 'assets/images/category/category-4.jpg' %}" alt="category 1" class="w-full">
+                <a href="#"
+                    class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-xl text-white font-roboto font-medium group-hover:bg-opacity-60 transition">Sofa</a>
+            </div>
+            <div class="relative rounded-sm overflow-hidden group">
+                <img src="{% static 'assets/images/category/category-5.jpg' %}" alt="category 1" class="w-full">
+                <a href="#"
+                    class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-xl text-white font-roboto font-medium group-hover:bg-opacity-60 transition">Living
+                    Room</a>
+            </div>
+            <div class="relative rounded-sm overflow-hidden group">
+                <img src="{% static 'assets/images/category/category-6.jpg' %}" alt="category 1" class="w-full">
+                <a href="#"
+                    class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-xl text-white font-roboto font-medium group-hover:bg-opacity-60 transition">Kitchen</a>
+            </div>
+        </div>
+    </div>
+    <!-- ./categories -->
+    
+
+    <div class="container min-h-screen w-full mx-10 md:w-10/12 lg:w-10/12 xl:w-10/12">
+    
+        <div class="sticky bg-white top-[45px] mb-3 z-10 lg:hidden md:hidden sm:flex flex h-10 items-center justify-between border-t border-b border-border-200 bg-light py-6 px-2">
+
+            <div class="w-full max-w-xl relative flex">
+                <span class="absolute left-4 top-3 text-lg text-gray-400">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" name="search" id="search"
+                    class="w-full border border-primary h-8 border-r-0 pl-12 py-1 pr-3 rounded-l-md focus:outline-none "
+                    placeholder="search">
+                <button class="items-center bg-primary border border-primary text-center text-white px-3 rounded-r-md hover:bg-transparent hover:text-primary transition">Search</button>
+            </div>
+
+        </div>
+
+
+        <div name="grid" class="flex border-t border-solid border-border-200 border-opacity-70">
+    
+            <div class="w-full pb-8 lg:p-8">
+
+                <div class="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] sm:grid-cols-3 gap-3">
+
+                    <article  class="product-card cart-type-neon h-full transform overflow-hidden rounded border border-border-200 bg-light shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+                        <div class="relative flex h-32 w-auto cursor-pointer items-center justify-center sm:h-36">
+                            <span class="sr-only">Product Image</span>
+                            <img
+                                alt="product"
+                                class="product-image object-contain w-full"
+                                style="
+                                position: absolute;
+                                height: 100%;
+                                width: 100%;
+                                left: 0;
+                                top: 0;
+                                right: 0;
+                                bottom: 0;
+                                color: transparent;
+                                "
+                                sizes="(max-width: 768px) 100vw"
+                                src="{% static 'img/product1.jpg' %}"
+                            />
+                            <div class="absolute top-3 rounded bg-accent px-1.5 text-xs font-semibold leading-6 text-light ltr:right-3 rtl:left-3 sm:px-2 md:top-4 md:px-2.5 ltr:md:right-4 rtl:md:left-4">
+                                20%
+                            </div>
+                        </div>
+                        <header class="p-3 md:p-6">
+                            <div class="mb-2 flex items-center">
+                                <span class="text-sm font-semibold text-heading md:text-base">
+                                $1.60
+                                </span>
+                                <del class="text-xs text-muted ltr:ml-2 rtl:mr-2 md:text-sm">
+                                $2.00
+                                </del>
+                            </div>
+                            <h3 class="mb-4 cursor-pointer truncate text-xs text-body md:text-sm">
+                                product name
+                            </h3>
+                        </header>
+                        <button class="group flex h-7 w-full items-center justify-between rounded bg-blue-100 text-xs text-body-dark transition-colors hover:border-accent hover:bg-accent hover:text-light focus:border-accent focus:bg-accent focus:text-light focus:outline-0 md:h-9 md:text-sm">
+                            <span class="flex-1">Add</span>
+                            <span class="grid h-7 w-7 place-items-center bg-gray-200 transition-colors duration-200 group-hover:bg-accent-600 group-focus:bg-accent-600 ltr:rounded-tr ltr:rounded-br rtl:rounded-tl rtl:rounded-bl md:h-9 md:w-9">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-4 w-4 stroke-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </span>
+                        </button>
+                    </article>
+
+                    <article class="product-card cart-type-neon h-full transform overflow-hidden rounded border border-border-200 bg-light shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow">
+                        <div class="relative flex h-32 w-auto cursor-pointer items-center justify-center sm:h-36">
+                            <span class="sr-only">Product Image</span>
+                            <img
+                                alt="Baby Spinach"
+                                loading="lazy"
+                                decoding="async"
+                                data-nimg="fill"
+                                class="product-image object-contain w-full"
+                                style="
+                                position: absolute;
+                                height: 100%;
+                                width: 100%;
+                                left: 0;
+                                top: 0;
+                                right: 0;
+                                bottom: 0;
+                                color: transparent;
+                                "
+                                sizes="(max-width: 768px) 100vw"
+                                src="{% static 'img/product2.jpg' %}"
+                            />
+                        </div>
+                        <header class="p-3 md:p-6">
+                            <div class="mb-2 flex items-center">
+                                <span class="text-sm font-semibold text-heading md:text-base">
+                                $0.60
+                                </span>
+                            </div>
+                            <h3
+                                class="mb-4 cursor-pointer truncate text-xs text-body md:text-sm"
+                            >
+                                Product Name
+                            </h3>
+                        </header>
+                        <button class="group flex h-7 w-full items-center justify-between rounded bg-blue-100 text-xs text-body-dark transition-colors hover:border-accent hover:bg-accent hover:text-light focus:border-accent focus:bg-accent focus:text-light focus:outline-0 md:h-9 md:text-sm">
+                            <span class="flex-1">Add</span>
+                            <span class="grid h-7 w-7 place-items-center bg-gray-200 transition-colors duration-200 group-hover:bg-accent-600 group-focus:bg-accent-600 ltr:rounded-tr ltr:rounded-br rtl:rounded-tl rtl:rounded-bl md:h-9 md:w-9">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-4 w-4 stroke-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </span>
+                        </button>
+                    </article>
+
+                    <article  class="product-card cart-type-neon h-full transform overflow-hidden rounded border border-border-200 bg-light shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+                        <div class="relative flex h-32 w-auto cursor-pointer items-center justify-center sm:h-36">
+                            <span class="sr-only">Product Image</span>
+                            <img
+                                alt="product"
+                                class="product-image object-contain w-full"
+                                style="
+                                position: absolute;
+                                height: 100%;
+                                width: 100%;
+                                left: 0;
+                                top: 0;
+                                right: 0;
+                                bottom: 0;
+                                color: transparent;
+                                "
+                                sizes="(max-width: 768px) 100vw"
+                                src="{% static 'img/product3.jpg' %}"
+                            />
+                            <div class="absolute top-3 rounded bg-accent px-1.5 text-xs font-semibold leading-6 text-light ltr:right-3 rtl:left-3 sm:px-2 md:top-4 md:px-2.5 ltr:md:right-4 rtl:md:left-4">
+                                20%
+                            </div>
+                        </div>
+                        <header class="p-3 md:p-6">
+                            <div class="mb-2 flex items-center">
+                                <span class="text-sm font-semibold text-heading md:text-base">
+                                $1.60
+                                </span>
+                                <del class="text-xs text-muted ltr:ml-2 rtl:mr-2 md:text-sm">
+                                $2.00
+                                </del>
+                            </div>
+                            <h3 class="mb-4 cursor-pointer truncate text-xs text-body md:text-sm">
+                                product name
+                            </h3>
+                        </header>
+                        <button class="group flex h-7 w-full items-center justify-between rounded bg-blue-100 text-xs text-body-dark transition-colors hover:border-accent hover:bg-accent hover:text-light focus:border-accent focus:bg-accent focus:text-light focus:outline-0 md:h-9 md:text-sm">
+                            <span class="flex-1">Add</span>
+                            <span class="grid h-7 w-7 place-items-center bg-gray-200 transition-colors duration-200 group-hover:bg-accent-600 group-focus:bg-accent-600 ltr:rounded-tr ltr:rounded-br rtl:rounded-tl rtl:rounded-bl md:h-9 md:w-9">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-4 w-4 stroke-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </span>
+                        </button>
+                    </article>
+
+                    <article class="product-card cart-type-neon h-full transform overflow-hidden rounded border border-border-200 bg-light shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow">
+                        <div class="relative flex h-32 w-auto cursor-pointer items-center justify-center sm:h-36">
+                            <span class="sr-only">Product Image</span>
+                            <img
+                                alt="Baby Spinach"
+                                loading="lazy"
+                                decoding="async"
+                                data-nimg="fill"
+                                class="product-image object-contain w-full"
+                                style="
+                                position: absolute;
+                                height: 100%;
+                                width: 100%;
+                                left: 0;
+                                top: 0;
+                                right: 0;
+                                bottom: 0;
+                                color: transparent;
+                                "
+                                sizes="(max-width: 768px) 100vw"
+                                src="{% static 'img/product4.jpg' %}"
+                            />
+                        </div>
+                        <header class="p-3 md:p-6">
+                            <div class="mb-2 flex items-center">
+                                <span class="text-sm font-semibold text-heading md:text-base">
+                                $0.60
+                                </span>
+                            </div>
+                            <h3
+                                class="mb-4 cursor-pointer truncate text-xs text-body md:text-sm"
+                            >
+                                Product Name
+                            </h3>
+                        </header>
+                        <button class="group flex h-7 w-full items-center justify-between rounded bg-blue-100 text-xs text-body-dark transition-colors hover:border-accent hover:bg-accent hover:text-light focus:border-accent focus:bg-accent focus:text-light focus:outline-0 md:h-9 md:text-sm">
+                            <span class="flex-1">Add</span>
+                            <span class="grid h-7 w-7 place-items-center bg-gray-200 transition-colors duration-200 group-hover:bg-accent-600 group-focus:bg-accent-600 ltr:rounded-tr ltr:rounded-br rtl:rounded-tl rtl:rounded-bl md:h-9 md:w-9">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-4 w-4 stroke-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </span>
+                        </button>
+                    </article>
+
+                    <article  class="product-card cart-type-neon h-full transform overflow-hidden rounded border border-border-200 bg-light shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+                        <div class="relative flex h-32 w-auto cursor-pointer items-center justify-center sm:h-36">
+                            <span class="sr-only">Product Image</span>
+                            <img
+                                alt="product"
+                                class="product-image object-contain w-full"
+                                style="
+                                position: absolute;
+                                height: 100%;
+                                width: 100%;
+                                left: 0;
+                                top: 0;
+                                right: 0;
+                                bottom: 0;
+                                color: transparent;
+                                "
+                                sizes="(max-width: 768px) 100vw"
+                                src="{% static 'img/product1.jpg' %}"
+                            />
+                            <div class="absolute top-3 rounded bg-accent px-1.5 text-xs font-semibold leading-6 text-light ltr:right-3 rtl:left-3 sm:px-2 md:top-4 md:px-2.5 ltr:md:right-4 rtl:md:left-4">
+                                20%
+                            </div>
+                        </div>
+                        <header class="p-3 md:p-6">
+                            <div class="mb-2 flex items-center">
+                                <span class="text-sm font-semibold text-heading md:text-base">
+                                $1.60
+                                </span>
+                                <del class="text-xs text-muted ltr:ml-2 rtl:mr-2 md:text-sm">
+                                $2.00
+                                </del>
+                            </div>
+                            <h3 class="mb-4 cursor-pointer truncate text-xs text-body md:text-sm">
+                                product name
+                            </h3>
+                        </header>
+                        <button class="group flex h-7 w-full items-center justify-between rounded bg-blue-100 text-xs text-body-dark transition-colors hover:border-accent hover:bg-accent hover:text-light focus:border-accent focus:bg-accent focus:text-light focus:outline-0 md:h-9 md:text-sm">
+                            <span class="flex-1">Add</span>
+                            <span class="grid h-7 w-7 place-items-center bg-gray-200 transition-colors duration-200 group-hover:bg-accent-600 group-focus:bg-accent-600 ltr:rounded-tr ltr:rounded-br rtl:rounded-tl rtl:rounded-bl md:h-9 md:w-9">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-4 w-4 stroke-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </span>
+                        </button>
+                    </article>
+
+                    <article class="product-card cart-type-neon h-full transform overflow-hidden rounded border border-border-200 bg-light shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow">
+                        <div class="relative flex h-32 w-auto cursor-pointer items-center justify-center sm:h-36">
+                            <span class="sr-only">Product Image</span>
+                            <img
+                                alt="Baby Spinach"
+                                loading="lazy"
+                                decoding="async"
+                                data-nimg="fill"
+                                class="product-image object-contain w-full"
+                                style="
+                                position: absolute;
+                                height: 100%;
+                                width: 100%;
+                                left: 0;
+                                top: 0;
+                                right: 0;
+                                bottom: 0;
+                                color: transparent;
+                                "
+                                sizes="(max-width: 768px) 100vw"
+                                src="{% static 'img/product2.jpg' %}"
+                            />
+                        </div>
+                        <header class="p-3 md:p-6">
+                            <div class="mb-2 flex items-center">
+                                <span class="text-sm font-semibold text-heading md:text-base">
+                                $0.60
+                                </span>
+                            </div>
+                            <h3
+                                class="mb-4 cursor-pointer truncate text-xs text-body md:text-sm"
+                            >
+                                Product Name
+                            </h3>
+                        </header>
+                        <button class="group flex h-7 w-full items-center justify-between rounded bg-blue-100 text-xs text-body-dark transition-colors hover:border-accent hover:bg-accent hover:text-light focus:border-accent focus:bg-accent focus:text-light focus:outline-0 md:h-9 md:text-sm">
+                            <span class="flex-1">Add</span>
+                            <span class="grid h-7 w-7 place-items-center bg-gray-200 transition-colors duration-200 group-hover:bg-accent-600 group-focus:bg-accent-600 ltr:rounded-tr ltr:rounded-br rtl:rounded-tl rtl:rounded-bl md:h-9 md:w-9">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-4 w-4 stroke-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </span>
+                        </button>
+                    </article>
+                
+                </div>
+
+                <div class="flex justify-center mt-8 lg:mt-12">
+                    <button
+                        data-variant="normal"
+                        class="inline-flex items-center justify-center shrink-0 font-semibold leading-none rounded outline-none transition duration-300 ease-in-out focus:outline-0 focus:shadow focus:ring-1 focus:ring-accent-700 bg-primary text-light border border-transparent hover:bg-accent-hover px-5 py-0 h-12 text-sm md:text-base"
+                    >
+                        Load More
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        
+    </div>
+
+  
+
+<style>
+    .inset-l-full {
+        left: 100%;
+    }
+
+    .sub-menu-dropdown:hover > .sub-dropdown-menu {
+        display: block !important;
+    }
+</style>
+
+
+
+
+    <script>
+        const dropdownButton = document.getElementById('dropdown-button');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        let isDropdownOpen = true;
+
+        function toggleDropdown() {
+            isDropdownOpen = !isDropdownOpen;
+            if (isDropdownOpen) {
+                dropdownMenu.classList.remove('hidden');
+            } else {
+                dropdownMenu.classList.add('hidden');
+            }
+        }
+
+        toggleDropdown();
+
+        dropdownButton.addEventListener('click', toggleDropdown);
+
+        window.addEventListener('click', (event) => {
+            if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                dropdownMenu.classList.add('hidden');
+                isDropdownOpen = false;
+            }
+        });
+    </script>
+
+    <script>
+        $(document).ready(function(){
+            // Show hide popover
+            $(".main-menu-dropdown").click(function(){
+                $(this).find(".dropdown-menu").slideToggle("fast");
+            });
+        });
+        $(document).on("click", function(event){
+            var $trigger = $(".main-menu-dropdown");
+            if($trigger !== event.target && !$trigger.has(event.target).length){
+                $(".dropdown-menu").slideUp("fast");
+            }            
+        });
+    </script>
+
+    
+
+    <script>
+        const btn = document.querySelector("button.mobile-menu-button");
+        const menu = document.querySelector(".mobile-menu");
+        let isDropdownOpen2 = true;
+    
+        btn.addEventListener("click", () => {
+            menu.classList.toggle("hidden");
+        });
+
+
+        window.addEventListener('click', (event) => {
+            if (!btn.contains(event.target) && !menu.contains(event.target)) {
+                menu.classList.add('hidden');
+                isDropdownOpen2 = false;
+            }
+        });
+        
+    </script> 
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dynamic Add Input Field</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-
+F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <div class="container text-center bg-dark text-light my-5 p-3">
+      <h1>Dynamic Table Row Add/Remove</h1>
+      <h3>Using Jquery</h3>
+    </div>
+    <div class="container">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Email</th>
+            <th scope="col">Phone</th>
+            <th scope="col">Photo</th>
+            <th scope="col">Action</th>
+          </tr>
+        </thead>
+        <tbody id="dynamicadd">
+          <tr>
+            <td>
+              <input type="text" name="name[]" id="name" class="form-control" />
+            </td>
+            <td>
+              <input
+                type="email"
+                name="email[]"
+                id="email"
+                class="form-control"
+              />
+            </td>
+            <td>
+              <input
+                type="text"
+                name="phone[]"
+                id="phone"
+                class="form-control"
+              />
+            </td>
+            <td>
+              <input
+                type="file"
+                name="photo[]"
+                id="photo"
+                class="form-control"
+              />
+            </td>
+            <td>
+              <button type="button" id="add" class="btn btn-success">+</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function () {
+        var i = 1;
+        $("#add").click(function () {
+          alert('ok');
+          i++;
+          $(
+            "#dynamicadd"
+          ).append('<tr id="row'+i+'"><td><input type="text" name="name[]" id="name" class="form-control"></td><td><input type="email" name="email[]" id="email" class="form-control"></td><td><input type="text" name="phone[]" id="phone" class="form-control"></td><td><input type="file" name="photo[]" id="photo" class="form-control"></td><td><button type="button" id="'+i+'" class="btn btn-danger remove_row">-</button></td></tr>');
+        });
+        $(document).on("click", ".remove_row", function () {
+          var row_id = $(this).attr("id");
+          $("#row" + row_id + "").remove();
+        });
+      });
+    </script>
+  </body>
+</html>

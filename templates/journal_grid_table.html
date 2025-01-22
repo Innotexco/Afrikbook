@@ -1,0 +1,216 @@
+<!---  JOURNAL ITEM GRID VIEW ---->
+<script>
+    document.getElementById('myInput').addEventListener('input', function() {
+        // Get the current input value
+        const inputValue = this.value;
+        
+        if (inputValue){
+            // console.log(inputValue)
+            document.getElementById('phone').setAttribute('required', true)
+        }else{
+            // console.log("empty")
+            document.getElementById('phone').setAttribute('required', false)
+        }
+        // Find the option with the matching value in the datalist
+        const option = Array.from(this.list.options).find(opt => opt.value === inputValue);
+        
+        // If the option is found, trigger the Vendor function with the phone number
+        if (option) {
+            const phone = option.getAttribute('data-phone');
+            document.getElementById('phone').value = phone
+            
+        }else{
+            document.getElementById('phone').value = "" 
+        }
+    });
+
+    var i = 1;
+    function JournaladdRow2() {
+        const select = document.getElementById('select');
+            i++;
+            $('#journal_row_add').append('<tr id="row'+i+'"><td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">'+i+'</td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide .."><input type="text" name="item[]" id="item" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="text" name="desc[]" id="desc" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="text" name="dbt[]" id="dbt" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td><td class="border border-slate-300 py-0 my-0"><a  id="'+i+'" class="journal_remove_row flex justify-center items-center w-full h-3 px-2 py-1 text-[12px] font-semibold text-center text-gray-600 transition-colors duration-150 border border-transparent focus:outline-none focus:shadow-outline-slate"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" enable-background="new 0 0 64 64" viewBox="0 0 64 64" id="delete"><g transform="translate(232 228)"><path fill="#134563" d="M-207.5-205.1h3v24h-3zM-201.5-205.1h3v24h-3zM-195.5-205.1h3v24h-3zM-219.5-214.1h39v3h-39z"></path><path fill="#134563" d="M-192.6-212.6h-2.8v-3c0-.9-.7-1.6-1.6-1.6h-6c-.9 0-1.6.7-1.6 1.6v3h-2.8v-3c0-2.4 2-4.4 4.4-4.4h6c2.4 0 4.4 2 4.4 4.4v3"></path><path fill="#134563" d="M-191-172.1h-18c-2.4 0-4.5-2-4.7-4.4l-2.8-36 3-.2 2.8 36c.1.9.9 1.6 1.7 1.6h18c.9 0 1.7-.8 1.7-1.6l2.8-36 3 .2-2.8 36c-.2 2.5-2.3 4.4-4.7 4.4"></path></g></svg></a></td></tr>');
+        
+    };
+    $(document).on('change', '#item',function(event){
+        const itemId = $(this).val();
+        
+        const desc = $(this).closest('tr').find('input[name="desc[]"]');
+        const credit = $(this).closest('tr').find('input[name="cr[]"]');
+        const debit =  $(this).closest('tr').find('input[name="dbt[]"]');
+
+        const name = $(this).closest('tr').find('input[name=item_name]');
+        const unit =  $(this).closest('tr').find('input[name="unit[]"]');
+        const amount =  $(this).closest('tr').find('input[name="amount[]"]');
+        
+        // Find all select elements with the class 'item-select'
+        const selectElements = document.querySelectorAll('.item-select');
+        let isValueExists = false;
+        // Loop through the select elements
+        for (let i = 0; i < selectElements.length; i++) {
+            const select = selectElements[i];
+            if (select !== event.target) {
+                // Check if the selected value matches the value of other selects
+                if (select.value === itemId) {
+                    isValueExists = true;
+                    alertify.defaults.glossary.title = "Oops"
+                    alertify.confirm("Selected item already exists in the table")
+                    //alert("Selected item already exists in the table");
+                    event.target.valule = "0"; // Reset the selected value
+                    break;
+
+                }
+            }
+        }
+       
+        
+        if (isValueExists) {
+            $(this).val("0"); 
+            // Perform actions when the value already exists
+           // console.log("Value already exists in another row.");
+        } else {
+            // Perform actions when the value doesn't exist in other rows
+            JournaladdRow2();
+        }
+
+    });
+    $(document).on('click', '.journal_remove_row',function(){
+        var row_id = $(this).attr("id");
+        const debit =  $(this).closest('tr').find('input[name="dbt[]"]').val();
+        // const credit =  $(this).closest('tr').find('input[name="cr[]"]').val();
+
+    
+
+        
+        // const total_c = document.getElementById("total-c");
+        const total_d = document.getElementById("total-d");
+
+        // if(credit != ""){
+        //     total_c.value = parseInt(total_c.value) - parseInt(credit);
+        // }
+        if(debit != ""){
+            $('#row'+row_id+'').remove();
+            total_d.value = parseInt(total_d.value) - parseInt(debit);
+        }
+    });
+    $(document).on('input', '#cr',function(event){
+        const creditInput = document.getElementsByName("cr[]");
+
+        // Initialize a variable to store the sum
+        let sum = 0;
+
+        // Loop through the input elements and add their values to the sum
+        for (let i = 0; i < creditInput.length; i++) {
+            const inputValue = parseFloat(creditInput[i].value);
+            if (!isNaN(inputValue)) {
+                sum += inputValue;
+            }
+        }
+        // Display the sum in a result div
+        const Total_c = document.getElementById("total-c");
+        Total_c.value = sum
+    })
+    $(document).on('input', '#dbt',function(event){
+        const debitInput = document.getElementsByName("dbt[]");
+
+        // Initialize a variable to store the sum
+        let sum = 0;
+
+        //alert(sum)
+        // Loop through the input elements and add their values to the sum
+        for (let i = 0; i < debitInput.length; i++) {
+            const inputValue = parseFloat(debitInput[i].value);
+            if (!isNaN(inputValue)) {
+                sum += inputValue;
+            }
+        }
+        // Display the sum in a result div
+        const Total_c = document.getElementById("total-d");
+        Total_c.value = sum
+    })
+
+     
+     function fetchAccounts(selected){
+        // preventDefault()
+        const value = $("#selector :selected").parent().attr('label');
+        //   alert(value)
+          if(value){   
+          // Assuming you have the start_date and end_date values
+              $.ajax({
+                  url: '/account/'+value+'/',
+                  method: 'GET',
+                  success: function(data) {
+                    console.log(data)
+                    if(data && data.length > 0){
+                            const select = $('#accounts')
+                            select.empty();
+                            select.append('<option>')
+                            data.forEach(item =>{
+
+                                select.append('<option value='+item.account_id+'>'+ item.account_bankname +'('+item.series_name+')'+'</option>');
+                            });
+                            
+
+                        }else{
+                            $('#accounts').empty();
+                            //alertify.error("No Recivable yet");
+                        }
+                  },
+                  error: function(error) {
+                      // Handle the error
+                      console.log(error);
+                  }
+              });
+          }else{
+              alertify.error("Select Operating Account")
+          }
+
+          
+      };
+
+      
+     function fetchName(selected){
+        // preventDefault()
+        const value = selected.value;
+          
+          if(value){   
+          // Assuming you have the start_date and end_date values
+              $.ajax({
+                  url: '/account-name/'+value+'/',
+                  method: 'GET',
+                  success: function(data) {
+                   
+                       if(data){  
+                            $('#myInput').val(data)
+
+                            const inputValue = document.getElementById('myInput');
+                            inputValue.dispatchEvent(new Event("input"));
+                            
+                        }else{
+                           
+                        }
+                  },
+                  error: function(error) {
+                      // Handle the error
+                    //  console.log(error);
+                  }
+              });
+          }else{
+              alertify.error("Select Operating Account")
+          }
+
+          
+      };
+</script>
+<script>
+// Get all input elements with type "date"
+    var dateInputs = document.querySelectorAll('input[type="date"]');
+
+    // Get the current date
+    var currentDate = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+
+    // Set the value of each input to the current date
+    dateInputs.forEach(function(input) {
+    input.value = currentDate;
+    });
+
+</script>

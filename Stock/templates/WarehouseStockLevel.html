@@ -1,0 +1,243 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Warehouse Stock Level</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+    <div class="px-4 py-2 my-5 bg-white rounded-lg shadow-md">
+        <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-1 p-2 border-r">
+              <!-- Content for the first column -->
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3 ">
+                 <!-- <div class="grid grid-cols-2  md:grid-cols-2 xl:grid-cols-4 mt-5"> -->
+                    
+    
+                    <label class="block text-sm">
+                        <span class="text-gray-700">
+                            Search(item code)
+                        </span>
+                        <input 
+                            type="text"
+                            class="block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            id="Itemcode"
+                        />
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">
+                            Search(item)
+                        </span>
+                        <input 
+                            type="text"
+                            class="block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            id="searchItem"
+                        />
+                    </label>
+                    <div class="block text-sm mt-5"> 
+                        <button  type='button' class="Search w-full py-2 px-2 mt-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                            Search
+                        </button>
+                    </div>
+
+                </div>  
+            </div>
+            
+            <div class="col-span-1">
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3 ">
+                    <!-- <div class="grid grid-cols-2  md:grid-cols-2 xl:grid-cols-4 mt-5"> -->
+                    <label class="block text-sm">
+                        <span class="text-gray-700">
+                            From Date ?
+                        </span>
+                        <input 
+                            type="date"
+                            class="block w-full py-2 px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            id="fromdate"
+                        />
+                    </label>
+        
+                    <label class="block text-sm">
+                        <span class="text-gray-700">
+                            To Data ?
+                        </span>
+                        <input 
+                            type="date"
+                            class="block w-full py-2 px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            id="todate"
+                        />
+                    </label>
+                    <div class="block text-sm mt-5"> 
+                        <button  type='button' class="Search w-full py-2 px-2 mt-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                            Search Date
+                        </button>
+                    </div>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">
+                            Select by Warehouse
+                        </span>
+                        <select class="commonClass block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="store">
+                            <option selected disabled>_ _Choose Warehouse_ _</option>
+                            {% for w in warehouse %}
+                                <option >{{w.warehouse_name}}</option>
+                            {% endfor %}
+                         
+                        
+                        </select>
+                    </label>
+                </div>  
+            </div>
+        </div>
+      
+    </div>
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+        <div class="w-full overflow-x-auto table-responsive">
+          <table id="storestocklevel" class="display" style="width:100%">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                        <th class="py-3">SN</th>
+                        <!-- <th class="py-3">Date</th> -->
+                        <th class="py-3">Category</th>
+                        <th class="py-3">Item Name</th>
+                        <th class="py-3">Qty In Outlet</th>
+                        <th class="py-3">Item ID</th>
+                        <th class="py-3">Warehouse</th>
+                        <!-- <th class="py-3">Low Stock Level</th> -->
+                        <th class="py-3">Unit Cost</th>
+                        <th class="py-3">Total Cost</th>
+                        <th class="py-3">Selling Price</th>
+                        <th class="py-3">Total Selling Price</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y default" id="">                 
+                    {% for stock in stock %}
+                    <tr class="text-gray-700">
+
+                        <td class="text-[10px]">
+                            {{forloop.counter}}
+                        </td>
+                        <!-- <td class="text-[10px]">
+                            {{stock.datetx}}
+                        </td> -->
+                        <td class="text-[10px]">
+                            {{stock.category.category_name}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{stock.item_name}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{stock.qty}} 
+                            <!-- {% if level == 'YES' %}
+                            {% endif %}
+                            {% if level == 'NO' %}
+                                {{total}} 
+                            {% endif %} -->
+                        </td>
+                        <td class="text-[10px]">
+                            {{stock.generated_code}}
+                        </td>
+                        
+                        <td class="text-[10px]">
+                            {{stock.warehouse}}
+                        </td>
+                        <!-- <td class="text-[10px]">
+                            {{stock.low_stock_level}}
+                        </td> -->
+                        <td class="text-[10px]">
+                            {{stock.wholesale_price}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{stock.wholesale_price}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{stock.selling_price}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{stock.selling_price}}
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+                </tbody>
+                <tbody class=" result bg-white divide-y" id=""> </tbody>
+                
+            </table>
+            
+        </div>
+    </div>
+
+
+    <div class="grid grid-cols-2 gap-4">
+        <div class="col-span-1 p-2 ">
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3 ">
+                <a class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                    href="#">
+                    Print
+                </a>
+
+            <a class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                href="#">
+                Export to Excel
+            </a>     
+
+            </div>  
+        </div>
+        
+        <div class="col-span-1">
+            <div class="grid gap-6 ">
+                <div class="block justify-end items-center w-full">
+                    <label class="flex justify-end items-center hidden gap-2 text-[11px] w-full">
+                        <span class="ml-2 text-gray-700 font-bold">
+                            Total warehouse quantity: <span class="text-gray-700"></span>
+                        </span>
+                        <input 
+                            type="text"
+                            class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            readonly
+                            id="totalqty"
+                        />
+                    </label>
+                    
+                    </label>
+                </div>
+            </div>  
+        </div>
+    </div>
+
+
+<script>
+
+       
+    $(document).on('click', '.Search', function(){
+        getStocklevel("{% url 'Stock:WarehouseStockLevel' %}")
+    }); 
+    
+    $(document).on('change', '.commonClass', function(){
+        getStocklevel("{% url 'Stock:WarehouseStockLevel' %}")
+    }) 
+      
+        
+    </script>
+
+
+{% endblock content %}

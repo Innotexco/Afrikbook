@@ -1,0 +1,32 @@
+<script>
+ function onclickme(id){
+    invoiceID = $('#invoiceID'+id).val()
+    idcode = $('#idcode'+id).val()
+
+    // MODAL INPUT'S VALUES
+    modalItem = $('#modalItem')
+    modalInvoiceID = $('#modalInvoiceID')
+    modalDate = $('#modalDate')
+    modalDescription = $('#modalDescription')
+    modalqty = $('#modalqty')
+    modalID = $('#modalID')
+
+    $.ajax({
+        type: 'GET',
+        url: "{% url 'Stock:StockAdjustment' %}",
+        data: {
+            invoiceID: invoiceID,
+            idcode: idcode,
+        },
+        success: function(res){
+            modalItem.val(res.item)
+            modalInvoiceID.val(res.invoice_no)
+            modalDate.val(res.date)
+            modalDescription.val(res.description)
+            modalqty.val(res.qty)
+            modalID.val(res.id)
+        }
+    })
+
+}
+</script>

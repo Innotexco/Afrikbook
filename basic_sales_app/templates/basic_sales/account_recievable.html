@@ -1,0 +1,182 @@
+{% extends 'base_layout.html' %}
+{% load humanize %}
+
+{% load static %}
+
+{% block content %}
+    {% include 'basic_sales/account_recievable_payment.html' %}
+
+
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+        <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+        href="#">
+            <div class="flex items-center">
+                <svg
+                    class="w-5 h-5 mr-2"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                >
+                <path
+                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                ></path>
+                </svg>
+                <span>Account Receivable</span>
+            </div>
+            
+        </a>
+        <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+                <label class="block text-sm">
+                    <span class="text-gray-700">
+                        Search by (Customer name, CustomerID)
+                    </span>
+                    <input 
+                        type="text"
+                        class="block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        id="search"
+                    />
+                </label>
+            </div>
+        </div>
+        <input type="hidden" value="{{currency}}" id="currency_symbol">
+        <div class="w-full overflow-x-auto" id="printContent">
+            <table class="w-full whitespace-no-wrap" id="acct_receivable">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                        <th class="px-4 py-3">SN</th>
+                        <th class="py-3">Customer ID</th>
+                        <th class="py-3">Customer Name</th>
+                        <th class="py-3">Debt Amount</th>
+                        <th class="py-3">Contact Information</th>
+                        <th class="py-3">Address</th>
+                        <th class="py-3">Debt Status</th>
+                        <!-- <th class="py-3">Upate Status</th> -->
+                        <th class="py-3">Add Amount</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y old">
+                    {% for customer_sales in page.object_list %}
+                        <!-- <form action="" method="post">{% csrf_token %} -->
+                            <tr class="text-gray-700 dark:text-gray-400">
+
+                                <td class="px-4 py-1">
+                                {{ forloop.counter }}
+                                </td>
+                                <td class="px-4 py-1 text-sm">
+                                    {{customer_sales.customer_code}}
+                                </td>
+                                <td class="px-4 py-1 text-sm">
+                                    {{customer_sales.name}}
+                                </td>
+                                <td class="px-4 py-1 text-sm">
+                                   {{currency}}{{customer_sales.Balance}}
+                                </td>
+                                <td class="px-4 py-1 text-sm">
+                                    {{customer_sales.phone}}
+                                </td>
+                                <td class="px-4 py-1 text-sm">
+                                    {{customer_sales.address}}
+                                </td>
+                                
+                                <td class="py-1 text-sm">
+                                    <a class="items-left justify-left py-2 px-4 mb-12 mt-5 cursor-pointer font-bold font-semibold bg-[#fcd34d] text-white rounded-full">Owing</a>
+                                </td>
+                                <!-- <td class="py-1 text-sm">
+                                    <input type="hidden" name="customer_code" value="{{customer_sales.customer_code}}">
+                                    <button type="submit" name="clear_debt" class="items-left justify-left py-2 px-4  cursor-pointer text-[12px] font-semibold bg-[#4ade80] hover:bg-[#86efac] text-dark rounded-full">Payed</button>
+                                </td> -->
+                                <td class="py-1 text-sm">
+                                    <button type="button" onclick="get_account_recievable('{{customer_sales.customer_code}}')" class="items-left justify-left py-2 px-2 mx-2 cursor-pointer text-[12px] font-semibold bg-[#86efac] text-dark rounded-md">Make Payment</button>
+                                </td>
+                            </tr>
+                        <!-- </form> -->
+                    {% endfor %}
+                </tbody>
+                <tbody class="bg-white divide-y new">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="grid px-4 py-3 text-xs font-semibold tracking-wide text-gray-500 uppercase border-t bg-gray-50 sm:grid-cols-9">
+            <span class="flex items-center col-span-3">
+                Showing {{ page.number }} of {{ page.paginator.num_pages }}.
+            </span>
+          
+            <span class="col-span-2"></span>
+            <!-- Pagination -->
+            <span class="flex col-span-4 mt-2 sm:mt-auto sm:justify-end">
+                <nav aria-label="Table navigation">
+                <ul class="inline-flex items-center">
+                    <li>
+                        {% if page.has_previous %}
+                            <a  href="?page=1" class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple" >&laquo;
+                                First
+                            </a>
+                            <a href="?page={{ page.previous_page_number }}">Previous</a>
+                        {% endif %}
+                    </li>
+                    <li>
+                    {% if page.has_next %}
+                        <a class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple" href="?page={{ page.next_page_number }}">Next</a>
+                        <a class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple" href="?page={{ page.paginator.num_pages }}">Last &raquo;</a>
+                    {% endif %}
+
+                    </li>
+                   
+                </ul>
+                </nav>
+            </span>
+            
+        </div>
+                
+        <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-1 p-2 ">
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3 ">
+                    <a class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                        href="#" onclick="printModal.showModal()"  id="openModalButton">
+                        Print
+                    </a>
+
+                <a class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                    onclick="convertTableToExcel('printContent', 'account_receivables')">
+                    Export to Excel
+                </a>     
+
+                </div>  
+            </div>
+            
+            <div class="col-span-1">
+                <div class="grid gap-6 ">
+                    <div class="block justify-end items-center w-full">
+                        <label class="flex justify-end items-center gap-2 text-[11px] w-full py-3">
+                            <div class="flex justify-center items-center gap-6">
+                                
+                                <label class="flex items-center">
+                                    
+                                    <span class="ml-2 text-gray-700 font-bold">
+                                        Total Debts : {{currency}} <span class="text-gray-700"></span>
+                                    </span>
+                                </label>
+                            </div>
+                            <input 
+                                type="text"
+                                class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                placeholder=""
+                                value="{{totalBalance|floatformat:2|intcomma}}"
+                                readonly
+                                id="totalqty"
+                            />
+                        </label>
+                    </div>
+                </div>  
+            </div>
+        </div>
+    </div>
+    <button id="AccountReceivableURL" data-url="{% url 'Basic_Sales:get_account_receiables'%}" class="hidden"></button>
+    <button id="AccountReceivableURL2" data-url="{% url 'Basic_Sales:account_recievable' %}" class="hidden"></button>
+
+    <script src ='{% static "js/account_receivable.js" %}'></script>
+    
+
+{% endblock %}

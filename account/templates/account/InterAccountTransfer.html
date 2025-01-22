@@ -1,0 +1,353 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Inter Account Transfer</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    <!-- {% if messages %}
+        {% include 'messages.html' %}
+    {% endif %} -->
+
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+        {% comment %} <form id="transferForm1" action="InterAccountTransfer1" method="POST" novalidate>
+            {% csrf_token %}
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Date</span>
+                    <input 
+                        type="date"
+                        name="date_tx"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder="" 
+                        required
+                    />
+                    <span class="py-2 text-red-500 errors">{{AccountTransfer.date_tx.errors}}</span>
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Description</span>
+                    <input 
+                        type="text"
+                        name="description"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        required 
+                    />
+                    <span id="errorMessage" style="color: red;"></span>
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Transfer From
+                    </span>
+                    <select name="paid_from"  class="selectAcount block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" required>
+                        <option></option>
+                        {% for display in chart_info %}
+                        <option value="{{ display.account_id }}">{{ display.account_id }}-({{display.account_type}})</option>
+                        {% endfor %}
+                    </select>
+                    <span class="py-2 text-red-500 errors">{{AccountTransfer.paid_from.errors}}</span>
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Received In
+                    </span>
+                    <select name="received_in" id="transferT" class="selectAcount block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" required>
+                        <option></option>
+                        {% for display in chart_info %}
+                        <option value="{{ display.account_id }}">{{ display.account_id }}-({{display.account_type}})</option>
+                        {% endfor %}
+                    </select>
+                    
+
+                    <span id="errorMessage" style="color: red;"></span>
+                </label>
+
+            </div>
+
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Amount</span>
+                    <input 
+                        type="number"
+                        name="amoun0t"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder="" 
+                    />
+                </label>
+
+                <button type="submit" class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                    Create
+                </button>
+
+                <button type="submit" class="block w-full px-8 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 border border-slate-200  rounded-lg hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                    Create and New
+                </button>
+                
+            </div>
+
+        </form> {% endcomment %}
+
+        <form id="transferForm" action="InterAccountTransfer" method="POST" novalidate>
+            {% csrf_token %}
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+                <label class="block text-sm">
+                    <span class="text-gray-700">Date</span>
+                    <input 
+                        type="date"
+                        name="date_tx"
+                        id="date_tx"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder="" 
+                        required
+                    />
+                    <span id="dateError" class="py-2 text-red-500 errors"></span>
+                </label>
+        
+                <label class="block text-sm">
+                    <span class="text-gray-700">Description</span>
+                    <input 
+                        type="text"
+                        name="description"
+                        id="description"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        required 
+                    />
+                    <span id="descriptionError" class="py-2 text-red-500 errors"></span>
+                </label>
+        
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Transfer From
+                    </span>
+                    <select name="paid_from" id="paid_from" class="selectAcount block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" required>
+                        <option></option>
+                        {% for display in account_detail %}
+                        <option value="{{ display.account_id }}">{{ display.account_id }}-({{display.account_type}})</option>
+                        {% endfor %}
+                    </select>
+                    <span id="paidFromError" class="py-2 text-red-500 errors"></span>
+                </label>
+        
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Received In
+                    </span>
+                    <select name="received_in" id="received_in" class="selectAcount block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" required>
+                        <option></option>
+                        {% for display in account_detail %}
+                        <option value="{{ display.account_id }}">{{ display.account_id }}-({{display.account_type}})</option>
+                        {% endfor %}
+                    </select>
+                    <span class="text-red-600" id="err"></span>
+                    <span id="receivedInError" class="py-2 text-red-500 errors"></span>
+                </label>
+            </div>
+        
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+                <label class="block text-sm">
+                    <span class="text-gray-700">Amount</span>
+                    <input 
+                        type="number"
+                        name="amount"
+                        id="amount"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder="" 
+                        
+                    />
+                    <span id="amountError" class="py-2 text-red-500 errors"></span>
+                </label>
+        
+                <button type="submit" id="allowed" class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-300 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-200 focus:outline-none focus:shadow-outline-slate">
+                    Create
+                </button>
+        
+                <!-- <button type="submit" class="block w-full px-8 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 border border-slate-200  rounded-lg hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                    Create and New
+                </button> -->
+            </div>
+        </form>
+        
+        
+
+    </div>
+
+  
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+
+<script>
+    function disabledbutton(){
+        $('#allowed').addClass('bg-slate-200 cursor-not-allowed');
+        $('#allowed').removeClass('bg-slate-300');
+        $("#allowed").attr('disabled', true);
+    }
+    function enabledbutton(){
+        $("#allowed").removeAttr('disabled');
+        $('#allowed').removeClass('bg-slate-200 cursor-not-allowed');
+        $('#allowed').addClass('bg-slate-300');
+    }
+
+    $(document).on('change', '.selectAcount', function(){
+        let from  =  $('#paid_from').val();
+        let to  =  $('#received_in').val();
+        let err  =  $('#err');
+        if(!from == '' && !to == ''){
+            if(from == to){
+                err.text("Account should not be the same")
+                disabledbutton()
+            }else{
+                err.text('')
+                enabledbutton()
+            }
+        }else{
+            err.text("Please select account")
+            disabledbutton()
+
+        }       
+    })
+
+
+
+
+
+
+    document.getElementById("transferForm").addEventListener("submit", function(event) {
+        var dateTx = document.getElementById("date_tx").value;
+        var description = document.getElementById("description").value;
+        var paidFrom = document.getElementById("paid_from").value;
+        var receivedIn = document.getElementById("received_in").value;
+        var amount = document.getElementById("amount").value;
+        // alert(amount)
+        var isValid = true;
+
+        // Validate Date
+        if (dateTx.trim() === "") {
+            document.getElementById("dateError").innerText = "Date is required";
+            isValid = false;
+        } else {
+            document.getElementById("dateError").innerText = "";
+        }
+
+        // Validate Description
+        if (description.trim() === "") {
+            document.getElementById("descriptionError").innerText = "Description is required";
+            isValid = false;
+        } else {
+            document.getElementById("descriptionError").innerText = "";
+        }
+
+        // Validate Transfer From
+        if (paidFrom.trim() === "") {
+            document.getElementById("paidFromError").innerText = "Transfer From is required";
+            isValid = false;
+        } else {
+            document.getElementById("paidFromError").innerText = "";
+        }
+
+        // Validate Received In
+        if (receivedIn.trim() === "") {
+            document.getElementById("receivedInError").innerText = "Received In is required";
+            isValid = false;
+        } else {
+            document.getElementById("receivedInError").innerText = "";
+        }
+
+        // Validate Amount
+        // if (amount.trim() === "") {
+        //     document.getElementById("amountError").innerText = "Amount is required";
+        //     isValid = false;
+        // } else {
+        //     document.getElementById("amountError").innerText = "";
+        // }
+
+        if (!isValid) {
+            event.preventDefault();
+            // Serialize the form data
+            var formData = $(this).serialize();
+
+            var form = $(this);
+
+            $.ajax({
+                url: 'InterAccountTransfer', 
+                type: 'POST',
+                data: formData,
+                success: function (data) {
+                    if ('success' in data) {
+                        alert(data.success);
+
+                        // Reset the form
+                        form[0].reset();
+                    } else {
+                        alert('Failed to perform inter-account transfer');
+                    }
+                },
+                error: function () {
+                    alert('An error occurred during the AJAX request');
+                }
+            });
+        }
+    });
+</script>
+
+
+{% comment %} <script>
+    $(document).ready(function () {
+        
+        $('#transferForm').submit(function (e) {
+            e.preventDefault(); 
+
+            // Serialize the form data
+            var formData = $(this).serialize();
+
+            var form = $(this);
+
+            $.ajax({
+                url: 'InterAccountTransfer', 
+                type: 'POST',
+                data: formData,
+                success: function (data) {
+                    if ('success' in data) {
+                        alert(data.success);
+
+                        // Reset the form
+                        form[0].reset();
+                    } else {
+                        alert('Failed to perform inter-account transfer');
+                    }
+                },
+                error: function () {
+                    alert('An error occurred during the AJAX request');
+                }
+            });
+        });
+    });
+</script>  {% endcomment %}
+   
+ 
+
+{% endblock content %}

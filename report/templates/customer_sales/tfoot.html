@@ -1,0 +1,22 @@
+{% load humanize %}
+<tfoot class="hidden">
+    <tr class="text-gray-700 text-xs ">
+        <td class="pt-6 text-right pr-3" colspan="4">
+            <span class="">Total Sales:</span>
+        </td>
+        <td class="pt-6">
+            <b class="mr-1 currency"></b><span class=" " id="sales_total">{{total_sales|floatformat:2|intcomma}}</span>
+        </td>
+    </tr>
+    <tr class="text-gray-700 text-xs">
+        <td class="text-right pr-3" colspan="4">
+            <span class="">Total Item:</span>
+        </td>
+        <td>
+           
+            <span class="" id="purchase_total">{{total_qty}}</span>
+        </td>
+    </tr>
+    
+   
+</tfoot>

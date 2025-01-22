@@ -1,0 +1,349 @@
+{% include 'basic_sales/header_layout.html' %}
+        
+
+    <div class="flex flex-row h-screen text-blue-gray-800">
+
+        <!-- left sidebar -->
+        <div class="flex flex-row w-auto flex-shrink-0 pl-4 pr-2 py-4">
+            <!-- Navigation Toggle -->
+            <div class="flex justify-end p-2 mr-5">
+                <button type="button" class="p-2 inline-flex justify-center items-center gap-x-2 rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-gray-700 dark:text-white dark:hover:bg-white/10 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600" data-hs-overlay="#sidebar-mini" aria-controls="sidebar-mini" aria-label="Toggle navigation">
+                <span class="sr-only">Toggle Navigation</span>
+                <svg class="flex-shrink-0 size-4" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+                </svg>
+                </button>
+            </div>
+            <!-- End Navigation Toggle -->
+            
+            <!-- Sidebar -->
+            <div id="sidebar-mini" class="hs-overlay hs-overlay-open:translate-x-0 -translate-x-full transition-all duration-300 transform hidden fixed top-0 start-0 bottom-0 z-[60] w-20 bg-white border-e border-gray-200 lg:block lg:translate-x-0 lg:end-auto lg:bottom-0 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-slate-700 dark:[&::-webkit-scrollbar-thumb]:bg-slate-500 dark:bg-gray-800 dark:border-gray-700">
+                <div class="flex flex-col justify-center items-center gap-y-2 py-4">
+                <div class="mb-4">
+                    <a class="flex-none" href="#">
+                    <svg class="w-10 h-auto" width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="100" height="100" rx="10" fill="black"/>
+                        <path d="M37.656 68V31.6364H51.5764C54.2043 31.6364 56.3882 32.0507 58.1283 32.8793C59.8802 33.696 61.1882 34.8146 62.0523 36.2351C62.9282 37.6555 63.3662 39.2654 63.3662 41.0646C63.3662 42.5443 63.0821 43.8108 62.5139 44.8643C61.9458 45.906 61.1823 46.7524 60.2235 47.4034C59.2646 48.0544 58.1934 48.522 57.0097 48.8061V49.1612C58.2999 49.2322 59.5369 49.6288 60.7206 50.3509C61.9162 51.0611 62.8927 52.0672 63.6503 53.3693C64.4079 54.6714 64.7867 56.2457 64.7867 58.0923C64.7867 59.9744 64.3309 61.6671 63.4195 63.1705C62.508 64.6619 61.1349 65.8397 59.3002 66.7038C57.4654 67.5679 55.1572 68 52.3754 68H37.656ZM44.2433 62.4957H51.3279C53.719 62.4957 55.4413 62.04 56.4948 61.1286C57.5601 60.2053 58.0928 59.0215 58.0928 57.5774C58.0928 56.5002 57.8264 55.5296 57.2938 54.6655C56.7611 53.7895 56.0035 53.103 55.021 52.6058C54.0386 52.0968 52.8667 51.8423 51.5054 51.8423H44.2433V62.4957ZM44.2433 47.1016H50.7597C51.896 47.1016 52.92 46.8944 53.8314 46.4801C54.7429 46.054 55.459 45.4562 55.9798 44.6868C56.5125 43.9055 56.7789 42.9822 56.7789 41.9169C56.7789 40.5083 56.2817 39.3482 55.2874 38.4368C54.3049 37.5253 52.843 37.0696 50.9017 37.0696H44.2433V47.1016Z" fill="white"/>
+                    </svg>
+                    </a>
+                </div>
+            
+                <div class="hs-tooltip inline-block [--placement:right]">
+                    <button type="button" class="hs-tooltip-toggle w-[2.375rem] h-[2.375rem] inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-full border border-transparent text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600">
+                    <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <span class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 inline-block absolute invisible z-20 py-1.5 px-2.5 bg-gray-900 text-xs text-white rounded-lg whitespace-nowrap dark:bg-neutral-700" role="tooltip">
+                        Home
+                    </span>
+                    </button>
+                </div>
+            
+                <div class="hs-tooltip inline-block [--placement:right]">
+                    <button type="button" class="hs-tooltip-toggle w-[2.375rem] h-[2.375rem] inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-full border border-transparent text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600">
+                    <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 inline-block absolute invisible z-20 py-1.5 px-2.5 bg-gray-900 text-xs text-white rounded-lg whitespace-nowrap dark:bg-neutral-700" role="tooltip">
+                        Users
+                    </span>
+                    </button>
+                </div>
+            
+                <div class="hs-tooltip inline-block [--placement:right]">
+                    <button type="button" class="hs-tooltip-toggle w-[2.375rem] h-[2.375rem] inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-full border border-transparent text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600">
+                    <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+                    <span class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 inline-block absolute invisible z-20 py-1.5 px-2.5 bg-gray-900 text-xs text-white rounded-lg whitespace-nowrap dark:bg-neutral-700" role="tooltip">
+                        Notifications
+                    </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- End Sidebar -->
+        </div>
+
+        <!-- page content -->
+        <div class="flex-grow flex" id="app">
+            <!-- store menu -->
+            <div class="flex flex-col bg-blue-gray-50 h-full w-full py-4">
+
+                <div class="flex px-2 flex-row relative">
+                    <div onclick="showFilter()" class="absolute left-5 top-3 px-2 py-2 rounded-full bg-cyan-500 text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input
+                        type="text"
+                        class="bg-white rounded-3xl shadow text-lg full w-full h-16 py-4 px-16 transition-shadow focus:shadow-2xl focus:outline-none"
+                        placeholder="Serach menu ..."
+                        x-model="keyword"
+                        oninput="searchItems()"
+                    />
+                    <div onclick="showFilter()" class="absolute right-5 top-3 px-2 py-2 rounded-full bg-cyan-500 text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" id="filter">
+                            <path fill="#ffffff" fill-rule="evenodd" d="M20 5h-1.17a3.001 3.001 0 0 0-5.66 0H4a1 1 0 0 0 0 2h9.17a3.001 3.001 0 0 0 5.66 0H20a1 1 0 1 0 0-2zm-4 2a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM3 12a1 1 0 0 1 1-1h1.17a3.001 3.001 0 0 1 5.66 0H20a1 1 0 1 1 0 2h-9.17a3.001 3.001 0 0 1-5.66 0H4a1 1 0 0 1-1-1zm5 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-4 4a1 1 0 1 0 0 2h9.17a3.001 3.001 0 0 0 5.66 0H20a1 1 0 1 0 0-2h-1.17a3.001 3.001 0 0 0-5.66 0H4zm13 1a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Categories will be dynamically populated here -->
+                
+                <div id="filterMenu" class="m-2 max-w-screen">
+                    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-lg">
+                        <h2 class="text-stone-700 text-xl font-bold">Apply filters</h2>
+                        <p class="mt-1 text-sm">Use filters to further refine search</p>
+                            
+                        <div id="categoryMenu" class="mt-5 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                            <div onclick="fetchAllItems()" class="py-2 px-4 bg-cyan-500 rounded-md text-white text-center cursor-pointer">
+                                All
+                            </div>
+                            {% for display in category %}
+                                <div onclick="fetchItemsByCategory('{{ display.category_name }}')" class="py-2 px-4 bg-cyan-500 rounded-md text-white text-center cursor-pointer">
+                                    {{ display.category_name }}
+                                </div>
+                            {% endfor %}
+
+                                
+                        </div> 
+                    </div>
+                </div>
+                 
+                <a href="" class="flex items-center justify-center py-2 px-10 mb-12 cursor-pointer text-[12px] font-semibold bg-blue-500 text-slate-200 rounded-full">
+                    <span class="text-slate-200">Basic Sales Point</span>
+                </a>
+
+
+
+                <div class="h-full overflow-hidden mt-4">
+                    <div class="h-full overflow-y-auto px-2">
+                        
+                        
+                        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8 gap-4 pb-3" id="items-container"></div>
+
+                        <div class="select-none bg-blue-gray-100 rounded-3xl flex flex-wrap content-center justify-center h-full opacity-25">
+                            <div class="w-full text-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                                </svg>
+                                <p class="text-xl py-5">
+                                    YOU DON'T HAVE
+                                    <br/>
+                                    ANY PRODUCTS TO SHOW
+                                </p>
+                                
+                            </div>
+                        </div>
+
+                        <div class="select-none bg-blue-gray-100 rounded-3xl flex flex-wrap content-center justify-center h-full opacity-25"
+                            x-show="filteredProducts().length === 0 && keyword.length > 0">
+                            <div class="w-full text-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <p class="text-xl">
+                                    EMPTY SEARCH RESULT
+                                    <br/>
+                                    "<span x-text="keyword" class="font-semibold"></span>"
+                                </p>
+                            </div>
+                        </div>
+                            
+
+                    </div>
+                </div>
+
+            </div>
+            <!-- end of store menu -->
+
+            <!-- right sidebar -->
+            <div class="w-5/12 flex flex-col w bg-blue-gray-50 h-full bg-white pr-4 pl-2 py-4">
+                <div class="bg-white rounded-3xl flex flex-col h-full shadow">
+                    
+                    <!-- SCANNER AND CUSTOMER ENTRY -->
+                    
+                    <div class="px-4 py-3 my-2 bg-white rounded-lg">
+                        <div class="flex flex-wrap text-lg font-semibold">
+                            <input id="scannerInput" x-model="keyword" type="text" autofocus class="w-full border bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none">
+                            <input id="AddScannerItem" onclick="scannerItems()" type="button" value="Add Scanner item to cart" class="mx-5 hidden bg-gray-200 rounded-r-lg px-2 py-1 cursor-pointer"/>
+                            <div class="items-center hidden">
+                                <button id="reduce_qty" class="bg-gray-200 rounded-l-lg px-2 py-1" disabled>-</button>
+                                <input type="text" class="w-6 qty px-2 py-1 text-gray-600" id="qty" value="1" />
+                                <button id="add_qty" class="bg-gray-200 rounded-r-lg px-2 py-1 cursor-pointer" disabled>+</button>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+                        <label class="block mt-2 text-sm">
+                            <span class="text-gray-700 dark:text-gray-400">
+                                Payment Method
+                            </span>
+                            <select class="block w-full mt-1 text-sm border py-1 bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none" id="payment_method">
+                                <option selected disabled></option>
+                                <option>Cash</option>
+                                <option>POS</option>
+                                <option>Transfer</option>
+                                <option>Cheque</option>
+                                <option>Cash and POS</option>
+                                <option>POS and Transfer</option>
+                                <option>Transfer and Cash</option>
+                                <option>From Customer account</option>
+                            </select>
+                        </label>
+                        <div class="flex gap-4 mt-2" id="more-inputs">
+                            {% comment %} <label class="block mt-2 text-sm">
+                                <span class="text-gray-700 dark:text-gray-400">
+                                    Requested Limit
+                                </span>
+                                <input type="text" name="" id="" class="w-full border bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none">
+                            </label>
+                            <label class="block mt-2 text-sm">
+                                <span class="text-gray-700 dark:text-gray-400">
+                                    Requested Limit
+                                </span>
+                                <input type="text" name="" id="" class="w-full border bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none">
+                            </label> {% endcomment %}
+                        </div>
+
+                        <label class="block mt-2 text-sm mb-2">
+                            <span class="text-gray-700 dark:text-gray-400">
+                                Account
+                            </span>
+                            <select class="block w-full mt-1 text-sm border py-1 bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none" id="account">
+                                <option selected disabled></option>
+                                {% for account in accounts %}
+                                    {% comment %} {% if  account.series_name|upper == "EXPENSES" %} {% endcomment %}
+                                    <option value="{{account.account_id}}">{{account.account_id}}({{account.series_name}})</option>
+                                    {% comment %} {% endif %} {% endcomment %}
+                                {% endfor %}
+                            </select>
+                        </label>
+
+                        <div class="text-sm">
+
+                            <label class="inline-flex items-center text-gray-600">
+                                <input
+                                    type="radio"
+                                    class="text-slate-600 form-radio focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                    name="accountType"
+                                    value="Customer"
+                                    id="Customer"
+                                    checked="checked"
+                                />
+                                <span class="ml-1">Customer</span>
+                            </label>
+        
+                            <label class="inline-flex items-center ml-6 text-gray-600">
+                                <input
+                                    type="radio"
+                                    class="text-slate-600 form-radio focus:border-slate-400 focus:outline-none focus:shadow-outline-slate"
+                                    name="accountType"
+                                    value="Vendor"
+                                    id="Vendor"
+                                />
+                                <span class="ml-1">Vendor</span>
+                            </label>
+        
+                            <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="id_customer" name="cusID" >
+                                <option>Casual Customer</option>
+                                {% for customer in customers%}
+                                <option value="{{customer.customer_code}}">{{customer.name}}</option>   
+                                {% endfor %}
+                            </select>
+                            <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="id_vendor" name="venID" >
+                                <option selected disabled>Select Vendor</option>
+                                {% for vendor in vendor%}
+                                <option value="{{vendor.custID}}">{{vendor.name}}</option>   
+                                {% endfor %}
+                            </select>
+        
+                        </div>
+                        <label class="block mt-2 text-sm">
+                            <span class="text-gray-700 dark:text-gray-400">
+                                Customer Balance
+                            </span>
+                            <input type="text" id="balance" name="genby" value=""  class="focus:outline-none"/>
+                        </label>
+
+                        
+
+                    </div>
+        
+                    <!-- cart items -->
+                    <div class="flex-1 flex flex-col overflow-auto">
+                        <div class="h-16 text-center flex justify-center">
+                            <div class="pl-8 text-left text-lg py-4 relative">
+                                <!-- cart icon -->
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                <div class="text-center absolute bg-cyan-500 text-white w-5 h-5 text-xs p-0 leading-5 rounded-full -right-2 top-3"><span id="cart-item-count">0</span></div>
+                            </div>
+                            <div class="flex-grow px-8 text-right text-lg py-4 relative">
+                                <!-- trash button -->
+                                <button onclick="clearCart()" class="text-blue-gray-300 hover:text-pink-500 focus:outline-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+        
+                        <div id="cart-container" class="flex-1 w-full px-4 overflow-auto">
+                            
+                        </div>
+                    </div>
+                    <!-- end of cart items -->
+        
+                    <!-- payment info -->
+                    <div class="h-auto w-full text-center pt-3 pb-4 px-4">
+                        <div id="total-cart-container" class="flex mb-3 text-lg font-semibold text-blue-gray-700">
+                            
+                        </div>
+                        
+                        <div class="mb-3 text-blue-gray-700 px-3 pt-2 pb-3 rounded-lg bg-blue-gray-50">
+                            <div class="flex text-lg font-semibold">
+                                <div class="flex-grow text-left">CASH</div>
+                                <div class="flex text-right">
+                                    <div class="mr-2">#</div>
+                                    <input id="cashInput" type="text" class="w-28 text-right bg-white shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <hr class="my-2">
+
+                            <div class=" mt-2">
+                                <div class="money in moneys">
+                                    <button onclick="calculateChange()" class=" bg-cyan-50 w-full text-gray-700 font-semibold rounded-lg px-3 py-1 focus:outline-none">
+                                        Cash Payment
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="changeDisplay" class="flex mb-3 text-lg font-semibold bg-cyan-50 text-blue-gray-700 rounded-lg py-2 px-3">
+                            <div class="text-cyan-800">CHANGE</div>
+                            <div
+                                class="text-right flex-grow text-cyan-600"
+                                x-text="priceFormat(change)">
+                            </div>
+                        </div>
+
+
+                        <div onclick="generateReceipt()"  id="checkou" class="flex justify-center mb-3 text-lg font-semibold bg-cyan-50 text-cyan-700 rounded-lg py-2 px-3">
+                            <button  id="checkout" class="bg-slate-600 rounded-2xl text-lg w-full py-2 font-semibold focus:outline-none">
+                                CHECKOUT
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block text-right" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                                </svg>
+                            </button>
+                        </div>
+                        
+                    </div>
+                    <!-- end of payment info -->
+                    
+                </div>
+            </div>
+            <!-- end of right sidebar -->
+        </div>
+    </div>
+    
+
+    {% include 'basic_sales/footer_layout.html' %}

@@ -1,0 +1,289 @@
+
+{% extends 'Stockbase.html' %}
+
+
+{% block content %}
+
+    {% include 'stockin_grid_table.html' %}
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+        href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Edit Stockin Expiry date</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+   
+
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+                
+
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Invoice No.
+                    </span>
+                    <select name="invoice_no" onchange="filterItem(this)" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+                        <option></option>
+                        {% for display in logs %}
+                        <option>{{display.invoice_no}}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+            </div>
+
+           
+
+            
+
+            <div class="w-full my-5 overflow-hidden shadow-xs">
+                <div class="w-full overflow-x-auto">
+                    <table id="item_table" class="border-collapse border border-slate-400 w-full">
+                        <thead>
+                            <tr class="font-medium tracking-wide text-left px-4 text-gray-500 border-b bg-gray-200">
+                                <th class="border border-slate-300 px-4 text-[10px] ...">SN</th>
+                                <th class="border border-slate-300 px-4 text-[10px] ...">Item</th>
+                                <th class="border border-slate-300 px-4 text-[10px] ...">Item Code</th>
+                                <th class="border border-slate-300 px-4 text-[10px] ...">Manufacture date</th>
+                                <th class="border border-slate-300 px-4 text-[10px] ...">Expiry date</th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody id="dynamic_row_add hidden">
+                            {% comment %} <tr>
+                                <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">
+                                    1
+                                </td>
+                                
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="text"
+                                        name="item[]"
+                                        id="desc"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                        placeholder=""
+                                    />
+                                    
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="text"
+                                        name="item_code[]"
+                                        id="desc"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                        placeholder=""
+                                    />
+                                    
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="date"
+                                        name="m_date[]"
+                                        id="qty"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    />
+                                </td>
+                                <td class="border hidden border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="date"
+                                        name="e_date[]"
+                                        id="unit"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                        placeholder=""
+                                    />
+                                </td>
+                                
+                                
+                            </tr> {% endcomment %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        
+            <div class="grid gap-6 md:grid-cols-2">
+                
+                <button type="submit" id="submit" class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                    Update
+                </button>
+        
+                
+        
+            </div>
+
+
+        </form>
+
+    </div>
+
+<script>
+   function filterItem(selected){
+          // preventDefault()
+
+            const value = selected.value
+           // alertify.success(value)
+            
+            if(value){   
+            // Assuming you have the start_date and end_date values
+                $.ajax({
+                    url: 'SUpdateItemExpiryDate_filter/'+value,
+                    method: 'GET',
+                    success: function(data) {
+                        if(data.items && data.items.length > 0 ){
+                        
+                            const table = $('#item_table tbody')
+                            table.empty()
+                            let num = 0;
+                            data.items.forEach(item => {
+                                num++
+                                var items = '<input  type="text" name="item[]" value="'+item.item+'" id="item" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/>'
+                                var itemcode = '<input  type="text" name="item_code[]" value="'+item.item_code+'" id="item_code" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/>'
+                                var m_date = '<input  type="date" name="m_date[]" value="'+item.manufacture_date+'" id="manu" class="block m_dates w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/>'
+                                var e_date = '<input  type="date" name="e_date[]" value="'+item.expiry_date+'" id="expiry" class="block e_dates w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/>'
+                                const row = $('<tr id="row">').append(
+                                    $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').html(num),
+                                    $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').html(items),
+                                    $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').html(itemcode),
+                                    $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').html(m_date),
+                                    $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').html(e_date),
+                                      
+                                
+                                );
+                                table.append(row);
+                                ManuDateInput()
+                                ExpiryDateInput()
+                            //}
+                            });
+                            $("#no-data").css('display', 'none');
+                        }else{
+                            $("#example2 tbody").empty();
+                            $("#no-data").css('display', 'block');
+                        //    alertify.error("No Return data between selected date")
+                     }
+                    },
+                    error: function(error) {
+                        // Handle the error
+                        console.log(error)
+                    }
+                });
+            }else{
+                alertify.error("Select invoice")
+            }
+            
+            
+};
+function ManuDateInput(){
+       
+
+        // Find all select elements with the class 'item-select'
+        const dateElements = document.querySelectorAll('.m_dates');
+        const button = document.getElementById('submit');
+
+        // Loop through the select elements
+        for (let i = 0; i < dateElements.length; i++) {
+            const date = dateElements[i];
+            if (date.value === "") {
+               date.classList.add("border")
+               date.classList.add("border-red-500")
+               button.classList.add("hidden")
+
+           
+            }else{
+               date.classList.remove("border")
+               date.classList.remove("border-red-500")
+               button.classList.remove("hidden")
+            }
+        }
+        
+       
+   }
+function ExpiryDateInput(){
+       
+
+        // Find all select elements with the class 'item-select'
+        const dateElements = document.querySelectorAll('.e_dates');
+        const button = document.getElementById('submit');
+     
+        // Loop through the select elements
+        for (let i = 0; i < dateElements.length; i++) {
+            const date = dateElements[i];
+            if (date.value === "") {
+               date.classList.add("border")
+               date.classList.add("border-red-500")
+               button.classList.add("hidden")
+
+           
+            }else{
+               date.classList.remove("border")
+               date.classList.remove("border-red-500")
+               button.classList.remove("hidden")
+            }
+        }
+   }
+
+   $(document).on('change', '#manu', function() {
+       
+       const e_date = $(this).closest('tr').find('input[name="e_date[]"]').val();
+       const m_date = $(this).val();
+
+       const manufacturingDate = new Date(m_date);
+       const expiryDate = new Date(e_date);
+     
+
+        if (manufacturingDate > expiryDate) {
+            $(this).addClass('border border-red-500')
+            alertify.error('Manufacturing date is greater than expiry date');
+            $('#submit').addClass('hidden')
+        } else if (manufacturingDate < expiryDate) {
+            ManuDateInput()
+            ExpiryDateInput()
+        } else {
+            $(this).addClass('border border-red-500')
+            alertify.error('Manufacturing date is equal to expiry date');
+            $('#submit').addClass('hidden')
+        }
+   })
+   $(document).on('change', '#expiry', function() {
+       
+       const m_date = $(this).closest('tr').find('input[name="m_date[]"]').val();
+       const e_date = $(this).val();
+
+       const manufacturingDate = new Date(m_date);
+       const expiryDate = new Date(e_date);
+     
+
+        if (manufacturingDate > expiryDate) {
+            $(this).addClass('border border-red-500')
+            alertify.error('Manufacturing date is greater than expiry date');
+            $('#submit').addClass('hidden')
+        } else if (manufacturingDate < expiryDate) {
+            ManuDateInput()
+            ExpiryDateInput()
+        } else {
+            $(this).addClass('border border-red-500')
+            alertify.error('Manufacturing date is equal to expiry date');
+            $('#submit').addClass('hidden')
+        }
+   })
+     
+</script>    
+
+{% endblock %}
+
+    

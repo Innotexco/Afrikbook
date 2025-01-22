@@ -1,0 +1,125 @@
+
+{% extends 'base.html' %}
+{% block content %}
+
+
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>View Business Profile</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+    <a                        
+        href="{% url 'main:SubscriptionHistory' %}"
+        class="bg-[#356464] text-center text-white mt-6 inline-flex items-center justify-end shrink-0 font-semibold leading-none rounded outline-none transition duration-300 ease-in-out focus:outline-0 focus:shadow focus:ring-1 focus:ring-slate-500  border border-transparent hover:bg-blue-300-hover px-5 py-0 h-8">
+         View History
+    </a>
+
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+        <div class="gap-6 flex items-center justify-center">
+            <div class="sm:w-full md:w-7/12   rounded-lg shadow-xs py-6 ...">
+                <div class="w-full overflow-x-auto border" id="sub">
+                    <div class="hidde">
+                        <p class="text-center hhh my-1 text-[#2F4F4F] text-2xl font-bold whitespace-nowrap">{{company.company_name| title}}</p>
+                        <address class="text-center  text-sm font-light whitespace-nowrap">{{company.address}}, {{company.city}}, {{company.state}}, {{company.country}}</address>
+                    
+                        <p class="text-center  text-sm font-light whitespace-nowrap">{{company.email}}, {{company.phone}}</p>
+                        <hr class="my-3">
+                        <div class="flex justify-between items-center shadow">
+                            <div class="flex-col space-y-2  mb-4">
+                            </div>
+                            <div class="flex-col space-y-1  mb-4 px-4">
+                                <p class="self-center  text-sm font-light whitespace-nowrap report_date">Date:</p>
+                                <p class="self-center  text-sm font-light whitespace-nowrap" id="receipt">Reference.: {{billing.reference}}</p>
+                                <!-- <p class="self-center  text-sm font-light whitespace-nowrap" id="cus_name">Company: {{company.company_name| title}}</p> -->
+                                <!-- <p class="self-center  text-sm font-light whitespace-nowrap" id="cus_no">Phone No.: {{company.phone}}</p> -->
+                                <!-- <p class="self-center  text-sm font-light whitespace-nowrap" id="sales_p">Sales Person: {{company.phone}}</p> -->
+                            </div>
+                        </div>
+                    </div>
+                    <table class="w-full whitespace-no-wrap border">
+                        <thead>
+                            <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                                <th class="px-4 py-3">Subscription</th>
+                                <th class="px-4 py-3">Details</th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y">
+                            <tr class="text-gray-700">
+                                <td class="px-4 py-3">Plan</td>
+                                <td class="px-4 py-3">{{billing.plan}}</td>
+                            </tr>
+                            <tr class="text-gray-700">
+                                <td class="px-4 py-3">Subscription</td>
+                                <td class="px-4 py-3">{{billing.subscription}} {% if billing.subscription == 'Free'%} {% elif billing.subscription == 1 %} years {% else %} year {% endif %}</td>
+                            </tr>
+                            <tr class="text-gray-700">
+                                <td class="px-4 py-3">Users</td>
+                                <td class="px-4 py-3">{{billing.users}}</td>
+                            </tr>
+                            <tr class="text-gray-700">
+                                <td class="px-4 py-3">Amount</td>
+                                <td class="px-4 py-3">{{billing.amount}}</td>
+                            </tr>
+                            <tr class="text-gray-700">
+                                <td class="px-4 py-3">Date</td>
+                                <td class="px-4 py-3">{{billing.updated_at}}</td>
+                            </tr>
+                            {% if billing.payment_status == "Verified"%}
+                            <tr class="text-gray-700">
+                                <td class="px-4 py-3">Remaining Days</td>
+                                <td class="px-4 py-3">{{remain}}</td>
+                            </tr>
+                            {% endif %}
+                            <!-- <tr class="text-gray-700">
+                                <td class="px-4 py-3">Auto renew</td>
+                                <td class="px-4 py-3">{{billing.auto_renew}}</td>
+                            </tr> -->
+                            <tr class="text-gray-700">
+                                <td class="px-4 py-3">Payment Status</td>
+                                <td class="px-4 py-3 {% if billing.payment_status == 'Verified'%} text-green-500 {% else %} text-red-500 {% endif %}">{% if billing.payment_status == 'Verified'%} Paid {% else %} Unpaid {% endif %}</td>
+                            </tr>
+                            <!-- <tr class="text-gray-700">
+                                <td class="px-4 py-3">Reference</td>
+                                <td class="px-4 py-3">{{billing.reference}}</td>
+                            </tr> -->
+                             
+                        </tbody>
+                    </table>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
+                    <button type="button" class="w-full bg-slate-200 text-center text-gray-600 mt-6 shrink-0 font-semibold leading-none rounded outline-none transition duration-300 ease-in-out focus:outline-0 focus:shadow focus:ring-1 focus:ring-slate-500  border border-transparent hover:bg-blue-300-hover px-5 py-0 h-8"
+                        href="#" onclick="generatePDF('sub')">
+                        Print
+                    </button>
+                    {% if billing.payment_status != "Verified"%}
+                        <a                        
+                            href="/Verify-Payment?reference={{billing.reference}}"
+                            class="w-full bg-[#356464] text-center text-white mt-6  shrink-0 font-semibold leading-none rounded outline-none transition duration-300 ease-in-out focus:outline-0 focus:shadow focus:ring-1 focus:ring-slate-500  border border-transparent hover:bg-blue-300-hover px-5 py-1 h-8">
+                            Pay now
+                        </a>
+                    {% endif %}
+            </div>
+                
+            </div>
+        </div>
+        
+        
+
+    </div>
+
+    
+{% endblock content %}

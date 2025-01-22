@@ -1,0 +1,326 @@
+
+{% extends 'Stockbase.html' %}
+
+
+{% block content %}
+
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>New Item</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    
+
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+        <form id="itemForm" action="/StockNew-Item" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">
+                        Select Category
+                    </span>
+                    <select name="category" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+                        <option>--Choose An Option--</option>
+                        {% for show_item in item_category %}
+                        <option value="{{show_item.id}}">{{ show_item.category_name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">
+                        Select Sub-Category
+                    </span>
+                    <select name="sub_category" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+                        <option>--Choose An Option--</option>
+                        {% for show_item in sub_category %}
+                        <option value="{{show_item.id}}">{{ show_item.name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Item Name</span>
+                    <input 
+                        type="text"
+                        name="item_name"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+                </label>
+
+                
+                <label class="block text-sm relative">
+                    <span class="text-gray-700">Generate / Scan Code</span>
+                    <input 
+                        type="text"
+                        name="generated_code"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        id="randomNumber"
+                    />
+                    <a id="generateButton" onclick="generateRandomNumber(event)" class="absolute items-center right-0 top-6 h-6 px-2 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate cursor-pointer">
+                        Generate
+                    </a>
+                </label>
+
+            </div>
+            
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Attribute (Optional)</span>
+                    <input 
+                        type="text"
+                        name="attribute"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Size</span>
+                    <input 
+                        type="text"
+                        name="size"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Purchase Price (Optional)</span>
+                    <input 
+                        type="text"
+                        name="purchase_price"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-600">Description (Optional)</span>
+                    <textarea
+                        class="block w-full mt-1 px-2 text-sm form-textarea border-2 rounded-md focus:border-slate-300  focus:outline-none focus:shadow-outline-green text-slate-600"
+                        rows="1"
+                        name="description"
+                        placeholder=""
+                    ></textarea>
+                </label>
+
+            </div>
+
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Selling Price (Retail)</span>
+                    <input 
+                        type="text"
+                        name="selling_price"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Selling Price (Wholesale)</span>
+                    <input 
+                        type="text"
+                        name="wholesale_price"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Item Image</span>
+                    <input 
+                        type="file"
+                        name="image"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+
+                </label>
+
+                {% comment %} <a id="submitItem" class="block w-full h-8 px-4 py-1 mt-6 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate cursor-pointer">
+                    Create
+                </a> {% endcomment %}
+
+                <button type="submit" id="submit" class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                    Create
+                </button>
+                
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+        <div class="w-full overflow-x-auto table-responsive">
+            <table id="example" class="display" style="width:100%">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                        <th class="px-4 py-3">SN</th>
+                        <th class="px-4 py-3">Name</th>
+                        <th class="px-4 py-3">Item Code</th>
+                        <th class="px-4 py-3">Category</th>
+                        <th class="px-4 py-3">Sub-Category</th>
+                        <th class="px-4 py-3">Retail Price</th>
+                        <th class="px-4 py-3">Wholesale Price</th>
+                        <th class="px-4 py-3">Item Image</th>
+                        <th class="px-4 py-3">discount price</th>
+                        <th class="px-4 py-3">discount_percentage</th>
+                        <th class="px-4 py-3">Edit</th>
+                        <th class="px-4 py-3">Delete</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y">
+
+                    {% for display in item %}
+                    
+                    <tr class="text-gray-700">
+
+                        <td class="text-[10px]">
+                            {{display.id}}
+                        </td>
+                        <td class="text-[10px]">
+                            <a href="{% url 'Stock:item_detail' display.id %}" class="text-blue-500 font-semibold text-sm">
+                                {{display.item_name}}
+                            </a>
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.generated_code}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.category.id}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.sub_category.id}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.selling_price}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.wholesale_price}}
+                        </td>
+                        <td class="text-[10px]">
+                            {% if display.image %}
+                            <img src="{{display.image.url }}" alt="{{display.item_name }} Image" class="h-8 w-8 rounded-md">
+                            {% else %}
+                            <p>No image available</p>
+                            {% endif %}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.discount_price}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.discount_percentage}}
+                        </td>
+                        <td class="text-[10px]">
+                            <a href="{% url 'Stockin:Stockupdate_item' display.id %}"
+                                class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-blue-500 rounded-lg focus:outline-none focus:shadow-outline-gray"
+                                aria-label="Edit"
+                                >
+                                <svg
+                                    class="w-5 h-5"
+                                    aria-hidden="true"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path
+                                    d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+                                    ></path>
+                                </svg>
+                            </a>
+                        </td>
+                        <td class="text-[10px]">
+                            <a href="{% url 'Stockin:Stockdelete_item' display.id %}"
+                                class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-red-600 rounded-lg focus:outline-none focus:shadow-outline-gray"
+                                aria-label="Delete"
+                                >
+                                <svg
+                                    class="w-5 h-5"
+                                    aria-hidden="true"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path
+                                    fill-rule="evenodd"
+                                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                    clip-rule="evenodd"
+                                    ></path>
+                                </svg>
+                            </a>
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <script>
+        
+        function generateRandomNumber(e) {
+
+            if(e.isTrusted){
+                e.preventDefault();
+                const min = 1; // Minimum value for the random number
+                const max = 1000000000000000000; // Maximum value for the random number
+                const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+        
+                document.getElementById('randomNumber').value = randomNumber;
+            }else {
+                document.getElementById('randomNumber').value;
+            }
+            
+        }
+    </script>
+
+
+
+
+
+
+    <script>
+        //$(document).ready(function() {
+            $('#submitItem').click(function() {
+                alert('okayooo')
+                // Manually trigger the form submission
+                $('#itemForm').submit();
+            });
+        //});
+    </script>
+    
+    
+
+    
+{% endblock content %}

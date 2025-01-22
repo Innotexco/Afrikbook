@@ -1,0 +1,21 @@
+<!-- Modal Structure -->
+    
+<dialog id="printModal" class="modal py-3 px-3 rounded-lg" >
+    <!-- <div id="myModal" class="modal" > -->
+        <div class="modal-content">
+            <!-- <button class="close float-right text-right h-8 px-4  m-3 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">&times;</button> -->
+            <span class="float-right text-right my-3">
+                <form method="dialog" class="modal-backdrop">
+                    <button class="py-1 px-2  bg-red-600 text-[14px] text-white font-semibold">close</button>
+                </form>
+            </span>
+            <!-- <span class="close float-right text-right">&times;</span> -->
+            <div id="modalContent">
+                <!-- Modal content will be dynamically populated here -->
+            </div>
+            <!-- Print Button in Modal -->
+            <button id="printModalContentButton" class="h-8  px-4  mt-5 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">Print Content</button>
+        </div>
+    <!-- </div> -->
+    </dialog>
+    

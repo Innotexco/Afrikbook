@@ -1,0 +1,741 @@
+{% load static %}
+
+
+
+
+
+
+{% comment %} <script>
+
+
+
+    $(document).ready(function() {
+        var i = 1;
+        $('#add').click(function() {
+            i++;
+            $('#dynamic_row_add').append(`'<tr id="row'+i+'">
+                <td class="border border-slate-300 ...">
+                </td>
+                <td class="border border-slate-300 ...">
+                    <select name="item[]" id="item" class="block w-full px-2 mt-1 text-sm form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+                        <option>$1,000</option>
+                        <option>$5,000</option>
+                        <option>$10,000</option>
+                        <option>$25,000</option>
+                    </select>
+                </td>
+                <td class="border border-slate-300 ...">
+                    <input 
+                        type="text"
+                        name="desc[]"
+                        id="desc"
+                        class="block w-full px-2 mt-1 text-sm border-3 border-blue-400 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+                </td>
+                <td class="border border-slate-300 ...">
+                    <input 
+                        type="text"
+                        name="qty[]"
+                        id="qty"
+                        class="block w-full px-2 mt-1 text-sm focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+                </td>
+                <td class="border border-slate-300 ...">
+                    <input 
+                        type="text"
+                        name="unit[]"
+                        id="unit"
+                        class="block w-full px-2 mt-1 text-sm focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+                </td>
+                <td class="border border-slate-300 ...">
+                    <input 
+                        type="text"
+                        name="discount[]"
+                        id="discount"
+                        class="block w-full px-2 mt-1 text-sm focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+                </td>
+                <td class="border border-slate-300 ...">
+                    <input 
+                        type="text"
+                        name="amount[]"
+                        id="amount"
+                        class="block w-full px-2 mt-1 text-sm focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+                </td>
+                <td class="border border-slate-300">
+                    <button id="'+i+'" class="flex justify-center items-center remove_row w-full h-4 px-4 py-1 text-[18px] font-semibold leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                        href="#">
+                        -
+                    </button>
+                </td></tr>'`);
+        });
+        $(document).on('click', '.remove_row', function() {
+            var row_id = $(this).attr("id");
+            $('#row'+row_id+' ').remove();
+        });
+    });
+</script> {% endcomment %}
+
+
+
+<!---  SIDEBAR TOGGLER ---->
+<!-- <script> 
+    const body = document.querySelector("body")
+        sidebar = body.querySelector(".sidebar")
+        toggle = body.querySelector(".toggle")
+
+        toggle.addEventListener("click", () => {
+           // alert("here")
+            sidebar.classList.toggle("close");
+            //sidebar.rnoveclass("close");
+        });
+</script>  -->
+
+
+<!---  MAIN MENU DROPDOWN ---->
+<script>
+    $(document).ready(function(){
+        // Show hide popover
+        $(".main-menu-dropdown").click(function(){
+            $(this).find(".dropdown-menu").slideToggle("fast");
+        });
+    });
+    $(document).on("click", function(event){
+        var $trigger = $(".main-menu-dropdown");
+        if($trigger !== event.target && !$trigger.has(event.target).length){
+            $(".dropdown-menu").slideUp("fast");
+        }            
+    });
+</script>
+
+<!---  MOBILE  MAIN MENU DROPDOWN ---->
+<script>
+    $(document).ready(function(){
+        // Show hide popover
+        $(".main-menu-dropdown-mobile").click(function(){
+            var data = $(this).data("id")
+             
+             $("#"+ data +"").slideToggle("fast");
+        });
+    });
+    // $(document).on("click", function(event){
+    //     var $trigger = $(".main-menu-dropdown-mobile");
+    //     var data = $trigger.data("id")
+    //     if($trigger !== event.target && !$trigger.has(event.target).length){
+            
+    //         $("#"+ data +"g").slideUp("fast");
+    //     }            
+    // });
+</script>
+
+
+
+<!---  SUB MENU DROPDOWN ---->
+<script>
+    $(document).ready(function(){
+        // Show hide popover
+        $(".sub-menu-dropdown").click(function(){
+            $(this).find(".sub-dropdown-menu").slideToggle("fast");
+        });
+    });
+    $(document).on("click", function(event){
+        var $trigger = $(".sub-menu-dropdown");
+        if($trigger !== event.target && !$trigger.has(event.target).length){
+            $(".sub-dropdown-menu").slideUp("fast");
+        }            
+    });
+</script>
+
+<!--- MOBILE SUB MENU DROPDOWN ---->
+<script>
+    $(document).ready(function(){
+        // Show hide popover
+        $(".sub-menu-dropdown-mobile").click(function(){
+            $(this).find(".sub-dropdown-menu-mobile").slideToggle("fast");
+        });
+    });
+    // $(document).on("click", function(event){
+    //     var $trigger = $(".sub1-menu-dropdown-mobile");
+    //     if($trigger !== event.target && !$trigger.has(event.target).length){
+    //         $(".sub-dropdown-menu-mobile").slideUp("fast");
+    //     }            
+    // });
+</script>
+<!--- MOBILE SUB SUB MENU DROPDOWN ---->
+<script>
+    $(document).ready(function(){
+        // Show hide popover
+        $(".sub-sub-menu-dropdown-mobile").click(function(){
+            $(this).find(".sub-sub-dropdown-menu-mobile").slideToggle("fast");
+        });
+    });
+    // $(document).on("click", function(event){
+    //     var $trigger = $(".sub1-menu-dropdown-mobile");
+    //     if($trigger !== event.target && !$trigger.has(event.target).length){
+    //         $(".sub-dropdown-menu-mobile").slideUp("fast");
+    //     }            
+    // });
+</script>
+
+<!---  MOBILE MENU ---->
+<script>
+    const btn = document.querySelector("button.mobile-menu-button");
+    const menu = document.querySelector(".mobile-menu");
+
+    btn.addEventListener("click", () => {
+        menu.classList.toggle("hidden");
+    });
+    
+</script>
+
+
+<!---  JOURNAL ITEM GRID VIEW ---->
+<script>
+    var i = 1;
+    function JournaladdRow() {
+        const select = document.getElementById('select');
+            i++;
+            $('#journal_row_add').append('<tr id="row'+i+'"><td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">*</td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><select name="item[]" onchange="" id="j-select" class="block w-full item-select  px-2 text-[10px] h-4 form-select focus:outline-none focus:shadow-outline-green text-slate-600"><option value="1">Select Item</option>{% for loan in loan %}<option value="{{loan.id}}">{{loan.debtor_name}}</option>{% endfor %}</select></td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="text" name="desc[]" id="desc" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="text" name="dbt[]" id="dbt" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="text" name="cr[]" id="cr" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td><td class="border border-slate-300 py-0 my-0"><button  id="'+i+'" class="journal_remove_row flex justify-center items-center w-full h-3 px-2 py-1 text-[12px] font-semibold text-center text-gray-600 transition-colors duration-150 border border-transparent focus:outline-none focus:shadow-outline-slate"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" enable-background="new 0 0 64 64" viewBox="0 0 64 64" id="delete"><g transform="translate(232 228)"><path fill="#134563" d="M-207.5-205.1h3v24h-3zM-201.5-205.1h3v24h-3zM-195.5-205.1h3v24h-3zM-219.5-214.1h39v3h-39z"></path><path fill="#134563" d="M-192.6-212.6h-2.8v-3c0-.9-.7-1.6-1.6-1.6h-6c-.9 0-1.6.7-1.6 1.6v3h-2.8v-3c0-2.4 2-4.4 4.4-4.4h6c2.4 0 4.4 2 4.4 4.4v3"></path><path fill="#134563" d="M-191-172.1h-18c-2.4 0-4.5-2-4.7-4.4l-2.8-36 3-.2 2.8 36c.1.9.9 1.6 1.7 1.6h18c.9 0 1.7-.8 1.7-1.6l2.8-36 3 .2-2.8 36c-.2 2.5-2.3 4.4-4.7 4.4"></path></g></svg></button></td></tr>');
+        
+    };
+    $(document).on('change', '#j-select',function(event){
+        const itemId = $(this).val(); 
+        
+        const desc = $(this).closest('tr').find('input[name="desc[]"]');
+        const credit = $(this).closest('tr').find('input[name="cr[]"]');
+        const debit =  $(this).closest('tr').find('input[name="dbt[]"]');
+
+        const name = $(this).closest('tr').find('input[name=item_name]');
+        const unit =  $(this).closest('tr').find('input[name="unit[]"]');
+        const amount =  $(this).closest('tr').find('input[name="amount[]"]');
+        
+        // Find all select elements with the class 'item-select'
+        const selectElements = document.querySelectorAll('.item-select');
+        let isValueExists = false;
+        // Loop through the select elements
+        for (let i = 0; i < selectElements.length; i++) {
+            const select = selectElements[i];
+            if (select !== event.target) {
+                // Check if the selected value matches the value of other selects
+                if (select.value === itemId) {
+                    isValueExists = true;
+                    alertify.defaults.glossary.title = "Oops"
+                    alertify.confirm("Selected item already exists in the table")
+                    //alert("Selected item already exists in the table");
+                    event.target.valule = "0"; // Reset the selected value
+                    break;
+
+                }
+            }
+        }
+       
+        
+        if (isValueExists) {
+            $(this).val("0"); 
+            // Perform actions when the value already exists
+           // console.log("Value already exists in another row.");
+        } else {
+            // Perform actions when the value doesn't exist in other rows
+           // console.log("Value is unique in the table.");
+            if(itemId != 0){
+                
+                $.ajax({
+                    url: '/item/'+ itemId + '/',
+                    method: 'GET',
+                    
+                    success: function(data){
+                            desc.val(data.desc)
+                            credit.val(data.credit)
+                            debit.val(data.debit)
+                            //qty.val(1)
+                            //unit.val(data.unit)
+                            //amount.val(data.unit)
+
+                            const inputElements = document.getElementsByName("amount[]");
+
+                            // Initialize a variable to store the sum
+                            let sum = 0;
+
+                            //alert(sum)
+                            // Loop through the input elements and add their values to the sum
+                            //for (let i = 0; i < inputElements.length; i++) {
+                            //    const inputValue = parseFloat(inputElements[i].value);
+                            //    if (!isNaN(inputValue)) {
+                            //        sum += inputValue;
+                            //    }
+                            //}
+                            // Display the sum in a result div
+                            //const subTotal = document.getElementById("sub-total");
+                            //const total = document.getElementById("total");
+                            //subTotal.value = sum;
+                            //total.value = sum;
+
+                            JournaladdRow();
+                    },
+                    error: function(){
+                        //alert('Item not found');
+                        alertify.error("Item not found");
+                    }
+                    });
+
+                    
+            }else{
+                desc.val("")
+                name.val("")
+                qty.val("")
+                unit.val("")
+                amount.val("")
+            }
+        }
+
+    });
+    $(document).on('click', '.journal_remove_row',function(){
+        var row_id = $(this).attr("id");
+        $('#row'+row_id+'').remove();
+    });
+</script>
+
+
+
+<!---  STOCK ITEM GRID VIEW ---->
+<script>
+    function StockaddRow() {
+        const select = document.getElementById('select');
+        var i = 1;
+            i++;
+            $('#stock_row_add').append('<tr id="row'+i+'"><td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">*</td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><select name="item[]" onchange="StockaddRow()" class="block w-full px-2 text-[10px] h-4 form-select focus:outline-none focus:shadow-outline-green text-slate-600"><option value="1">Select Item</option><option value="1">$5,000</option></select></td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="text" name="desc[]" id="desc" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="text" name="qty[]" id="qty" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td><td class="border border-slate-300 py-0 my-0"><button  id="'+i+'" class="journal_remove_row flex justify-center items-center w-full h-3 px-2 py-1 text-[12px] font-semibold text-center text-gray-600 transition-colors duration-150 border border-transparent focus:outline-none focus:shadow-outline-slate"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" enable-background="new 0 0 64 64" viewBox="0 0 64 64" id="delete"><g transform="translate(232 228)"><path fill="#134563" d="M-207.5-205.1h3v24h-3zM-201.5-205.1h3v24h-3zM-195.5-205.1h3v24h-3zM-219.5-214.1h39v3h-39z"></path><path fill="#134563" d="M-192.6-212.6h-2.8v-3c0-.9-.7-1.6-1.6-1.6h-6c-.9 0-1.6.7-1.6 1.6v3h-2.8v-3c0-2.4 2-4.4 4.4-4.4h6c2.4 0 4.4 2 4.4 4.4v3"></path><path fill="#134563" d="M-191-172.1h-18c-2.4 0-4.5-2-4.7-4.4l-2.8-36 3-.2 2.8 36c.1.9.9 1.6 1.7 1.6h18c.9 0 1.7-.8 1.7-1.6l2.8-36 3 .2-2.8 36c-.2 2.5-2.3 4.4-4.7 4.4"></path></g></svg></button></td></tr>');
+        
+    };
+    $(document).on('click', '.stock_remove_row',function(){
+        var row_id = $(this).attr("id");
+        $('#row'+row_id+'').remove();
+    });
+</script>
+
+<!-- Additional Scripts -->
+<script>
+
+    new DataTable('#example');
+    new DataTable('#chart_of_account');
+    new DataTable('#chart_of_account_details');
+    new DataTable('#Newcustomer');
+    new DataTable('#customer');
+    new DataTable('#view_customer_details');
+    new DataTable('#SalesQuote');
+    new DataTable('#SalesOrder');
+    new DataTable('#CustomerIncentives');
+    new DataTable('#ViewCustomerIncentives');
+    new DataTable('#example11');
+
+    new DataTable('#customeryearly');
+    new DataTable('#customerquaterly');
+    new DataTable('#customermonthly');
+    new DataTable('#personyearly');
+    new DataTable('#personquaterly');
+    new DataTable('#personmonthly');
+
+    
+
+</script>
+
+
+<!-- Additional Scripts -->
+<script src="{% static 'js/main.js' %}"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+    
+    let customer = document.getElementById("Customer");
+   
+
+    let vendor = document.getElementById("Vendor");
+
+    let customerSelect = document.getElementById("id_customer");
+    
+
+    let vendorSelect = document.getElementById("id_vendor");
+    if(vendorSelect != null){
+
+        vendorSelect.style.display = "none";
+    }
+    
+    let details = document.getElementById("details");
+ 
+    
+   if(customer){
+    customer.addEventListener('click',() => {
+        // Display customer select menu    
+        customerSelect.style.display = "inline"
+        // Hide vendor select menu
+        vendorSelect.style.display = "none"
+        // Remove required attribute from vendor select menu
+        vendorSelect.removeAttribute('required');
+        if (details !=null){
+            details.textContent = 'Customer Details'
+
+        }
+
+        $("#text").html("");
+        $("#genby").val("");
+        $("#cusID").val("");
+        $("#email").val("");
+        $("#id_vendor").val("");
+        
+    });
+   }
+   if(vendor){
+    vendor.addEventListener('click',() => {   
+        // Display vendor select menu 
+        vendorSelect.style.display = "inline"
+        // Hide customer select menu
+        customerSelect.style.display = "none"
+        // Remove required attribute from customer select menu
+        customerSelect.removeAttribute('required');
+        if (details !=null){
+            details.textContent = 'Vendor Details'
+
+        }
+
+        $("#text").html("");
+        $("#genby").val("");
+        $("#cusID").val("");
+        $("#email").val("");
+        $("#id_customer").val("");
+    });
+
+    
+   }
+
+ 
+    $("#id_customer").on('change', function() {
+        
+        const customerId = $(this).val();
+        
+        
+        if (customerId != ""){
+            $.ajax({
+                url: '/get_customer/'+ customerId + '/',
+                method: 'GET',
+                data: {cusID:customerId},
+                success: function(data){
+                    $("#text").html("Name:  "+data.name +"\n"+
+                    "Code:  "+data.code+"\n"+
+                    "Phone:  "+data.phone+"\n"+
+                    "Email:  "+data.email +"\n"+
+                    "Category:  "+data.category+"\n"+
+                    "Company:  "+data.company +"\n"+
+                    "Delivery Address :  "+data.address)
+                    
+                
+                    $("#genby").val(data.name)
+                    $("#cusID").val(data.code);
+
+                    if(data.instant_email === "1"){
+                        // input inside email modal 
+                        $("#email").val(data.email);
+                        
+                    }else{
+                        $("#email").val(""); 
+                        
+                    }
+
+                    $("#cus_name").text("Customer: "+data.name);
+                    $("#cus_no").text("Phone No.: "+data.phone);
+
+                  
+                },
+                error: function(){
+                    //alert('Item not found');
+                    //alertify.error("Item not found");
+                }
+             });
+        }
+    
+       
+    });
+    
+    $("#id_vendor").on('change', function() {          
+        const vendorId = $(this).val();
+        /// alert(vendorId);
+        if (vendorId != ""){
+            $.ajax({
+                url: '/get_vendor/'+ vendorId + '/',
+                method: 'GET',
+                data: {venID:vendorId},
+                success: function(data){
+                    $("#text").html("Name:  "+data.name +"\n"+
+                    "Code:  "+data.code+"\n"+
+                    "Phone:  "+data.phone+"\n"+
+                    "Email:  "+data.email +"\n"+
+                    //"Category: "+data.category+"\n"+
+                    "Company:  "+data.company +"\n"+
+                    "Delivery Address  : "+data.address)
+
+                    $("#genby").val(data.name);
+                    $("#cusID").val(data.code);
+                    // $("#email").val(data.email);
+
+                    $("#cus_name").text("Customer: "+data.name);
+                    $("#cus_no").text("Phone No.: "+data.phone);
+                },
+                error: function(){
+                    alert('Item not found');
+                   //alertify.error("Item not found");
+                }
+             });
+        }
+    
+       
+    });
+
+   
+</script>
+
+
+
+<script>
+    // Get all input elements with type "date"
+     var datereport = document.querySelectorAll('.report_date');
+
+     // Get the current date
+     var currentDate = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+
+     // Set the value of each input to the current date
+     datereport.forEach(function(input) {
+        // input.value = currentDate;
+         input.textContent = "Date: "+currentDate;
+     });
+    </script>
+
+
+    <script>
+
+     $(document).ready( function(){
+        
+       $.ajax({
+        url: '{% url "settings:get_user_currency" %}',
+        success: function(data){
+            var currency = document.querySelectorAll('.currency');
+            
+            currency.forEach(function(item) {
+               
+               item.textContent = data.cur
+            })
+           
+            if(data.cn === ""){
+                profile.showModal();
+               
+            }
+            if( data.pp != null){
+                $('#profile_pics').html(
+                    ` <img class="w-5 h-5 rounded-full"  src="${data.pp}" alt="" />`
+                )
+                $('#user-menu').html(
+                    ` <img class="w-5 h-5 rounded-full"  src="${data.pp}" alt="" />`
+                )
+                
+                
+            }
+        },
+        error: function(error){
+
+        }
+
+       })
+     })
+    
+    
+     $(document).ready(function(){
+        // Show and hide more fileds
+        $(".more-fields").click(function(){
+            
+            $("#more-fields").slideToggle("slow");
+            if ($(this).find('.block').text() === 'More fields'){
+                $(this).find('.block').html('Less fields') 
+            }else{
+                $(this).find('.block').html('More fields')
+            }
+        });
+    });
+     $(document).ready(function(){
+        // Show and hide more fileds
+        $(".shipping").click(function(){
+            
+            
+           $("#shipping").slideToggle("slow");
+           
+            if ($(this).text() === 'To be shipped'){
+                $(this).html('Cancel Shipping') 
+                AddShippingMethod()
+                
+            }else{
+                $(this).html('To be shipped')
+                RemoveShippingMethod()
+            }
+        });
+    });
+    
+    function AddShippingMethod(){
+       $("#cost").removeClass('hidden')
+       fetch_shipping_address()
+
+    }
+    function RemoveShippingMethod(){
+        $("#cost").addClass('hidden')
+        $("#shipping_cost").val('')
+        $("#shiipping_method").empty()
+        $("#shiipping_address").empty()
+
+        var sub_total = $("#sub-total").val();
+        var discount = $("#discount2").val();
+
+        if(discount == ''){discount=0.0}
+        if(sub_total == ''){sub_total=0.0}
+       
+        sum = parseFloat(sub_total)  + parseFloat(discount)  
+                          
+        $("#total").val(sum);
+    }
+    
+
+    function fetch_shipping_address(){
+        
+      
+        var customer = $("#id_customer").val();
+        var shipping_address = $('#shipping_address')
+        if(customer!= ""){
+            $.ajax({
+                url: "/get_shipping_address/"+customer+"/",
+                method: "GET",
+                success: function(response){
+                //console.log(response)
+                if(response.data && response.data.length > 0){
+                    shipping_address.empty()
+                    // shipping_address.append(
+                    //         '<option>Select Sub Category</option>'
+                    //     )
+                    response.data.forEach(element => {
+                        
+                        shipping_address.append(
+                            '<option value="'+element.id+'">'+element.city+'</option>'
+                        )
+                    });
+
+                    sum_all_item_cost()
+                    
+                }else{
+                    $("#shiipping_method").empty()
+                    $("#shiipping_address").empty()
+                    $(".shipping").click();
+                    alert("Selected customer has no shipping address")
+                }
+
+
+                },
+                error: function(error){
+                    // console.log(error);
+                }
+            })
+        }else{
+            $("#shiipping_method").empty()
+            $("#shiipping_address").empty()
+            $(".shipping").click();
+            alert("Select a customer before you can use this option")
+        }    
+    }
+
+    $('#shipping_address').on('change', function(){
+        sum_all_item_cost()
+    })
+
+    function sum_all_item_cost(){
+        const items = document.querySelectorAll('.item-select')
+        var done = false
+        items.forEach(function(item) {
+            const itemcode = item.value
+            if(itemcode!= '0'){
+                if (done == false){
+                    var cost = $("#shipping_cost").val();
+                    var total = $("#total").val();
+                    if(cost != ''){
+                        let sum2 = parseFloat(total)  - parseFloat(cost) 
+                        $("#shipping_cost").val('')
+                        $("#total").val(sum2);
+                        done = true
+                    }
+                }
+                const qty =  $(item).closest('tr').find('input[name="qty[]"]').val();
+                
+                shipping_cost(itemcode, qty)
+            }
+        })
+    }
+
+    function shipping_cost(itemcode, qty){
+        var city = $("#shipping_address").val();
+        // console.log(qty)
+        if (city){
+            var shipping_cost = $("#shipping_cost").val();
+            var sub_total = $("#sub-total").val();
+            var discount = $("#discount2").val();
+            var total = $("#total").val();
+            $.ajax({
+                url: "/get_shipping_cost/"+itemcode+"/"+city+"/",
+                method: "GET",
+                data:{
+                    'itemcode':itemcode,
+                    'city':city,
+                    'qty': qty
+                },
+                success: function(response){
+                    if(sub_total == ''){sub_total=0.0}
+                    if(shipping_cost == ''){shipping_cost=0.0}
+                    if(discount == ''){discount=0.0}
+                    //  console.log(response.data)
+                    // console.log("ship cost"+shipping_cost)
+                    // console.log("suc "+sub_total)
+                    // console.log("dis "+discount)
+                    // console.log("total "+total)
+                    if(response.data){
+                      let sum = 0
+                      let cost = 0
+                      if(shipping_cost == 0.0){
+                          sum = parseFloat(shipping_cost)  + parseFloat(sub_total)  + parseFloat(discount)  + parseFloat(response.data)
+                          cost = parseFloat(shipping_cost) + parseFloat(response.data)
+                          $("#shipping_cost").val(cost)
+                          $("#total").val(sum);
+                      }else{
+                           sum_all_item_cost()
+                           //sum = parseFloat(shipping_cost)  + parseFloat(sub_total)  + parseFloat(discount)  + parseFloat(response.data)
+                      }
+    
+                    }
+                },
+                error: function(error){
+                    //  console.log(error);
+                }
+            })    
+        }
+    }
+</script>

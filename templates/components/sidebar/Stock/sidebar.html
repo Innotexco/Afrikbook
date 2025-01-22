@@ -1,0 +1,140 @@
+
+
+{% comment %} <div className='bg-[#f7f6fb] h-screen'>
+
+    <div className="px-[25px] py-[20px] gap-[25px] flex items-center border-b-[1px] border-[#EDEDED]/[0.3]">
+        <div className="z-10">
+        </div>
+        <h1 className='text-blueColor text-[18x] leading-[24px] font-extrabold cursor-pointer z-20'>
+            <strong className='text-[#1b1c1f]'>AFRIKBOOK</strong>
+        </h1>
+    </div>
+
+    <div className='group flex items-center px-[25px] gap-[25px] py-[20px] border-b-[2px] border-[#EDEDED]/[0.3] hover:bg-white'>
+        
+        <p className='text-[16px] leading-[22px] font-bold duration-300 group-hover:translate-x-4'>Dashboard</p>
+    </div>
+
+    <div className='group flex items-center px-[25px] gap-[25px] py-[20px] border-b-[2px] border-[#EDEDED]/[0.3] hover:bg-white'>
+        
+        <p className={`text-[16px] leading-[22px] font-bold duration-300 group-hover:translate-x-4 ${open ? "hidden" : ""}`}>Account</p>
+    </div>
+
+    <div className='pt-[15px] border-b-[px] border-[#EDEDED]/[0.3]'>
+        <p className='text-[10px] px-[25px] py-3 font-extrabold leading-[16px] tex-orange/[0.4]'>MAIN MENU</p>
+        
+        <div className='group flex items-center justify-between gap-[10px] px-[25px] py-[20px] border-b-[2px] border-[#EDEDED]/[0.3] hover:bg-white'>
+            <div className='flex items-center gap-[25px]'>
+                <p className='duration-300 group-hover:translate-x-3'>Components</p>
+            </div>
+
+        </div>
+        
+        <div className='group flex items-center justify-between gap-[10px] px-[25px] py-[20px] border-b-[2px] border-[#EDEDED]/[0.3] hover:bg-white'>
+            <div className='flex items-center gap-[25px]'>
+                <p className='duration-300 group-hover:translate-x-3'>Utilities</p>
+            </div>
+            
+        </div>
+        
+        <div className='group flex items-center justify-between gap-[10px] px-[25px] py-[20px] border-b-[2px] border-[#EDEDED]/[0.3] hover:bg-white'>
+            <div className='flex items-center gap-[25px]'>
+                <p className='duration-300 group-hover:translate-x-3'>Pages</p>
+            </div>
+            
+        </div>
+
+    </div>
+    
+</div> {% endcomment %}
+
+
+<div class="sidebar close transition duration-300 ease">
+    
+    <div class="flex flex-col fixed px-4 h-screen overflow-y-hidden border-r shadow-lg">
+
+        <div class="flex gap-2">
+            <button @click="open = !open" class="toggle inline-flex items-center justify-center p-2 text-[#2F4F4F] rounded-md hover:text-[#335757] focus:outline-none focus:text-[#335757]" x-bind:aria-label="open ? 'Close main menu' : 'Main menu'" x-bind:aria-expanded="open">
+                <svg class="w-6 h-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                <path :class="{'hidden': open, 'inline-flex': !open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                <path :class="{'hidden': !open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h2 class="text-[22px] font-bold text-center txt mt-1 text-[#2F4F4F]">AFRIKBOOK</h2>
+        </div>
+
+        <div class="flex flex-col justify-between mt-6">
+            <aside>
+                <ul>
+                    <li>
+                        <a class="flex items-center px-3 text-[13px] py-2 text-gray-700 bg-gray-100 rounded-md " href="{% url 'Stockin:Stockin' %}">
+                            <svg viewBox="0 0 20 20" fill="currentColor" class="h-6 w-6 flex-shrink-0">
+                                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                            </svg>
+
+                            <span class="mx-4 font-medium txt">Dashboard</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="flex items-center px-3 text-[13px] py-2 mt-5 text-gray-600 rounded-md hover:bg-gray-200" href="{% url 'Stockin:NewStockout' %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" id="sales" fill="currentColor" class="h-6 w-6 flex-shrink-0">
+                                <path d="M7.6 44.4c.4.4.9.6 1.4.6s1-.2 1.4-.6l8.1-8.1 5.1 5.1c.8.8 2 .8 2.8 0L53 14.8V19c0 1.1.9 2 2 2s2-.9 2-2v-9c0-1.1-.9-2-2-2h-9c-1.1 0-2 .9-2 2s.9 2 2 2h4.2L25 37.2l-5.1-5.1c-.8-.8-2-.8-2.8 0l-9.5 9.5c-.8.8-.8 2 0 2.8z"></path><path d="M51 54V34c0-2.8-2.2-5-5-5s-5 2.2-5 5v20c0 2.8 2.2 5 5 5s5-2.2 5-5zm-6 0V34c0-.6.4-1 1-1s1 .4 1 1v20c0 .6-.4 1-1 1s-1-.4-1-1zm-6 0v-8c0-2.8-2.2-5-5-5s-5 2.2-5 5v8c0 2.8 2.2 5 5 5s5-2.2 5-5zm-6 0v-8c0-.6.4-1 1-1s1 .4 1 1v8c0 .6-.4 1-1 1s-1-.4-1-1zm-6 0v-3c0-2.8-2.2-5-5-5s-5 2.2-5 5v3c0 2.8 2.2 5 5 5s5-2.2 5-5zm-6 0v-3c0-.6.4-1 1-1s1 .4 1 1v3c0 .6-.4 1-1 1s-1-.4-1-1zm-4-36h11c1.1 0 2-.9 2-2s-.9-2-2-2H17c-1.1 0-2 .9-2 2s.9 2 2 2zm0-6h4c1.1 0 2-.9 2-2s-.9-2-2-2h-4c-1.1 0-2 .9-2 2s.9 2 2 2zm18.7 2.9c-.1-.1-.1-.2-.2-.3-.8-.7-2.1-.7-2.8 0-.1.1-.2.2-.2.3-.1.1-.1.2-.2.4-.1.1-.1.2-.1.4v.8c0 .1.1.2.1.4 0 .1.1.2.2.3s.1.2.2.3c.3.3.8.5 1.3.5s1-.2 1.4-.6c.1-.1.2-.2.2-.3.1-.1.1-.2.2-.3.1-.1.1-.2.1-.4v-.8c0-.1-.1-.2-.1-.4 0-.1-.1-.2-.1-.3z"></path>
+                            </svg>
+
+                            <span class="mx-4 font-medium txt">New Stockout</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="flex items-center px-3 text-[13px] py-2 mt-5 text-gray-600 rounded-md hover:bg-gray-200" href="{% url 'Stockin:NewStockin' %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="h-6 w-6 flex-shrink-0" enable-background="new 206 -206 512 512" viewBox="206 -206 512 512" id="purcharge"><path d="M670.5-0.2H349l-5.7-34.4c-3.3-19.9-20.5-34.6-40.7-34.6h-49c-5.5,0-10,4.5-10,10s4.5,10,10,10h49
+                                c10.4,0,19.3,7.6,21,17.9l7.2,43.8L356,164.3l8.7,52.3c1.6,9.9,10.2,17.2,20.2,17.2h8.2c5.7,19.1,25.8,29.9,44.9,24.2
+                                c11.6-3.5,20.7-12.6,24.2-24.2H560c5.8,19.1,25.9,29.8,45,24c19.1-5.8,29.8-25.9,24-45c-4.6-15.2-18.6-25.6-34.5-25.6
+                                c-16.2,0.2-30.3,11-34.7,26.5h-97.3c-5.3-19.2-25.2-30.4-44.4-25.1c-12.2,3.4-21.7,12.9-25.1,25.1h-8c-0.2,0-0.4-0.4-0.5-0.6
+                                l-6.8-41.4h245.5c4.4,0,8.2-2.8,9.5-6.9L680,12.7c1.6-5.3-1.3-10.8-6.6-12.5C672.5-0.1,671.5-0.2,670.5-0.2z"></path><path d="M401.8-21.8c3.9 3.9 10.2 3.9 14.1 0l0 0 30.8-30.8c3.9-3.8 4-10.2.2-14.1s-10.2-4-14.1-.2l-.1.1L419-53.1v-96.5c0-5.5-4.5-10-10-10s-10 4.5-10 10v96.5l-13.8-13.7c-3.9-3.9-10.2-3.9-14.2 0-3.9 3.9-3.9 10.2 0 14.2L401.8-21.8zM506.5-21.8c3.9 3.9 10.2 3.9 14.1 0l0 0 30.8-30.8c3.9-3.9 3.9-10.2 0-14.1-3.8-3.8-10-3.9-13.8-.1l-.1.1L524-53.1v-96.5c0-5.5-4.5-10-10-10-5.5 0-10 4.5-10 10v96.5l-13.9-13.7c-3.9-3.9-10.3-3.9-14.2 0-3.9 3.9-4 10.2-.1 14.1L506.5-21.8zM611.3-21.8c3.9 3.9 10.2 3.9 14.1 0l0 0 30.8-30.8c3.9-3.9 3.9-10.2 0-14.1-4-3.9-10.4-3.9-14.3 0L628-53.1v-96.5c0-5.5-4.5-10-10-10s-10 4.5-10 10v96.5l-13.5-13.7c-3.8-3.9-10.1-3.9-14-.1 0 0 0 0-.1.1-3.9 3.9-3.9 10.2 0 14.1L611.3-21.8z"></path>
+                            </svg>
+
+                            <span class="mx-4 font-medium txt">New Stockin</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="flex items-center px-3 text-[13px] py-2 mt-5 text-gray-600 rounded-md hover:bg-gray-200" href="{% url 'Stockin:StockNewItem' %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="h-6 w-6 flex-shrink-0" enable-background="new 0 0 64 64" viewBox="0 0 64 64" id="customer"><path d="M61.23 43.59c-.37-1.88-1.12-3.63-2.15-5.18l1.96-1.95L57 32.41l-1.97 1.96c-1.54-1.03-3.29-1.77-5.17-2.14v-2.77h-5.73v2.77c-1.88.38-3.63 1.12-5.17 2.15L37 32.42l-1.24 1.24-2.8 2.81 1.96 1.96c-1.03 1.54-1.77 3.29-2.14 5.17h-2.77v5.73h2.77c.19.95.48 1.87.84 2.74.36.86.8 1.67 1.31 2.43l-1.96 1.96 4.05 4.05 1.96-1.96c1.54 1.02 3.29 1.76 5.17 2.14v2.77h5.73v-2.77c1.88-.38 3.63-1.12 5.17-2.15l1.96 1.96 4.05-4.05-1.97-1.96c1.03-1.55 1.77-3.3 2.15-5.18H64v-5.72H61.23zM47.01 52.78c-3.49 0-6.32-2.83-6.32-6.32 0-3.49 2.83-6.32 6.32-6.32 3.49 0 6.31 2.83 6.31 6.32C53.32 49.95 50.5 52.78 47.01 52.78zM22.63 29.46c5.85 0 10.6-4.75 10.6-10.6 0-5.85-4.74-10.6-10.6-10.6-5.85 0-10.6 4.75-10.6 10.6C12.03 24.71 16.77 29.46 22.63 29.46z"></path><path d="M29.01 50.33V42.6h2.97c.36-1.42.92-2.77 1.67-4.03l-2.1-2.1 3.37-3.38c-3.53-2.29-7.76-3.63-12.29-3.63C10.13 29.46 0 39.59 0 52.08h8.49v-7.62c0-.28.22-.5.5-.5.27 0 .5.22.5.5v7.62h23.07c-.23-.58-.42-1.17-.58-1.75H29.01zM41.46 18.9L40 23.73l5.31-2.98c1.49.46 3.11.73 4.81.73 7.3 0 13.22-4.69 13.22-10.47 0-5.78-5.92-10.47-13.22-10.47-7.3 0-13.22 4.69-13.22 10.47C36.91 14.16 38.68 16.98 41.46 18.9zM43.11 6.97h14.03c.28 0 .5.22.5.5 0 .28-.22.5-.5.5H43.11c-.28 0-.5-.22-.5-.5C42.61 7.2 42.83 6.97 43.11 6.97zM43.11 10.5h14.03c.28 0 .5.22.5.5 0 .28-.22.5-.5.5H43.11c-.28 0-.5-.22-.5-.5C42.61 10.73 42.83 10.5 43.11 10.5zM43.11 14.04h14.03c.28 0 .5.22.5.5 0 .28-.22.5-.5.5H43.11c-.28 0-.5-.22-.5-.5C42.61 14.26 42.83 14.04 43.11 14.04z"></path>
+                            </svg>
+
+                            <span class="mx-4 font-medium txt">Add Item</span>
+                        </a>
+                    </li>
+
+                    {% comment %} <li>
+                        <a class="flex items-center px-3 text-[13px] py-2 mt-5 text-gray-600 rounded-md hover:bg-gray-200" href="{% url 'Stock:Stockregister_vendor' %}">
+                            {% comment %} <svg viewBox="0 0 20 20" fill="currentColor" class="h-6 w-6 flex-shrink-0">
+                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                            </svg> 
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="h-6 w-6 flex-shrink-0" data-name="Line Gradient" viewBox="0 0 64 64" id="vendor"><defs><linearGradient id="a" x1="4.186" x2="59.814" y1="32" y2="32" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff81ff"></stop><stop offset="1" stop-color="#a93aff"></stop></linearGradient></defs><path fill="url(#a)" d="M58.81445,34.062H58.044V19.73193h.70068a1,1,0,0,0,1-1V12.25342a.98572.98572,0,0,0-.50122-.84754L55.90918,4.562A1.00021,1.00021,0,0,0,55.01025,4H8.98975a1.00021,1.00021,0,0,0-.89893.562L4.65869,11.60693a.983.983,0,0,0-.24121.63037v6.47852c.036.88569.79421,1.069,1.53859.99995l0,14.34624h-.7705a1.00005,1.00005,0,0,0-1,1v4.82471c.05923,1.34453,1.62024.94386,2.50539,1L6.69092,59a1,1,0,0,0,1,1H56.30908a1,1,0,0,0,1-1V40.88672h1.50537a1.00005,1.00005,0,0,0,1-1V35.062A1.00005,1.00005,0,0,0,58.81445,34.062ZM42.5127,13.25342v4.47851H36.90479V13.25342Zm-7.62354.00683v4.41846h-5.6084V13.26025ZM14.041,13.2373h5.60839v4.47852H14.041Zm7.624,0h5.6084v4.47852H21.665Zm22.86328.02295h5.6084v4.47168h-5.6084Zm7.6084,4.47168V13.25342h5.60791v4.47851ZM6.41748,17.71582V13.2373h5.6084v4.47852Zm6.6084,2c12.24855-.02464,25.86207.0046,38.11084.01617l.8374-.00006V34.05957H37.5a5.62778,5.62778,0,1,0-11.16006,0l-14.26181,0V19.71582ZM35.5,34.05957H28.33984A3.6454,3.6454,0,1,1,35.5,34.05957Zm20.544,0H53.97412V19.73193H56.044ZM9.61475,6h44.7705l2.54865,5.23193H7.0661Zm.46338,13.71582V34.05957H7.95605V19.71582ZM55.30908,58H8.69092V40.88672H55.30908Zm2.50537-19.11328H6.18555V36.062h51.6289ZM32.02588,26.92236a3.00019,3.00019,0,0,0-.00009-6A3.00019,3.00019,0,0,0,32.02588,26.92236Zm0-4a1.00019,1.00019,0,0,1-.00006,2A1.00019,1.00019,0,0,1,32.02588,22.92236Z"></path>
+                            </svg>
+
+                            <span class="mx-4 font-medium txt">Add Vendor</span>
+                        </a>
+                    </li> {% endcomment %}
+
+                    {% comment %} <li>
+                        <a class="flex items-center px-3 text-[13px] py-2 mt-5 text-gray-600 rounded-md hover:bg-gray-200" href="{% url 'report:SalesReport' %}">
+                            <svg viewBox="0 0 20 20" fill="currentColor" class="h-6 w-6 flex-shrink-0">
+                                <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v3a1 1 0 102 0v-3zm2-3a1 1 0 011 1v5a1 1 0 11-2 0v-5a1 1 0 011-1zm4-1a1 1 0 10-2 0v7a1 1 0 102 0V8z" clip-rule="evenodd" />
+                            </svg>
+
+                            <span class="mx-4 font-medium txt">Sales Report</span>
+                        </a>
+                    </li> {% endcomment %}
+
+                </ul>
+
+            </aside>
+            
+        </div>
+
+    </div>
+</div>

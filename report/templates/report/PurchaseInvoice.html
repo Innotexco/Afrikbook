@@ -1,0 +1,389 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+{% include 'report/ViewPurchase.html'%}
+
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Purchase Invoices</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+      
+            <div class="grid gap-6 md:grid-cols-6 xl:grid-cols-4 mb-3">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">FROM</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        name="from"
+                        id="from"
+                    />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">TO</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        name="to"
+                        id="to"
+                    />
+                </label>
+
+               
+               
+                <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="search2" onclick="Filter()">
+                    Search
+                </button> 
+                <label for="">
+                    <span class="text-gray-700">By Supplier</span>
+                    <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="Supplier" required onchange="">
+                        <option selected disabled=true>Select Supplier</option>
+                        {% for invoice in supplier %}
+                           <option value="{{invoice.custID}}">{{invoice.name}}</option>   
+                        {% endfor %}
+                    </select>
+                </label>
+                
+            </div>
+
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+
+                
+
+                <label for="">
+                    <span class="text-gray-700">By Operator</span>
+                    <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="Operator" required onchange="">
+                        <option selected disabled=true>Select Operator</option>
+                        {% for customer in operator %}
+                           <option value="{{customer.Userlogin}}">{{customer.Userlogin }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                
+                <label for="">
+                    <span class="text-gray-700">By Item</span>
+                    <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="item" required onchange="">
+                        <option selected disabled=true>Select Item</option>
+                        {% for item in item_name %}
+                            <option>{{item.item_name}}</option>   
+                        {% endfor %}
+                    </select>
+                </label>
+            </div> 
+        <div class="w-full overflow-x-auto table-responsive mt-4" id="pi">
+            {% include 'components/Periodheader.html' %}
+          <table id="purchase-report" class="display" style="width:100%">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                        <th class="px-0 py-3">SN</th>
+                        <th class="px-0 py-3">Invoice Date</th>
+                        <th class="px-0 py-3">Item Name</th>
+                        <th class="px-0 py-3">Supplier</th>
+                        <th class="px-0 py-3">Quantity</th>
+                        <th class="px-0 py-3">Total Amount</th>
+                        <th class="px-0 py-3">Operator</th>
+                        <th class="px-0 py-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y" id="'+i+'">
+
+                    
+                    {% for display in display_vendor %}
+                    
+                    <tr class="text-gray-700" >
+
+                        <td class="text-[10px]">
+                            {{display.id}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.email}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.address}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.company_name}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.email}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.address}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.company_name}}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+            </table>
+            <div class="text-center  text-gray-500 py-2 font-semibold" id="no-data" style="display: none;">No data found</div>
+        </div>
+    </div>
+
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+        <div class="flex justify-between items-center gap-6">
+
+            <button class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+            type="button" onclick="generatePDF('pi')">
+            Print
+            </button>
+            <button class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+            type="button" onclick="convertTableToExcel('pi', 'purchase-report')">
+            Export to Excel
+            </button>
+            <button class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+            type="button" onclick="generatePDF('pi')">
+            Export to PDF
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        $(document).ready(
+            setTimeout(function(){
+                //Filter()
+            }, 500)
+        )
+        //serach by date
+        function Filter(){
+            
+            const from = $('#from').val()
+            const to = $('#to').val()
+
+            const datas = {
+                start_date: from,
+                end_date: to,
+                supplier: $('#Supplier').val(),
+                operator: $('#Operator').val(),
+                item: $('#item').val(),
+            }
+           
+            if(from || to || datas.supplier || datas.operator || datas.item){   
+                // Assuming you have the start_date and end_date values
+                $.ajax({
+                    url: '{% url "filter:purchase-report-date" %}',
+                    method: 'GET',
+                    data: datas,
+                    success: function(response) {
+                      
+                        if(response && response.length > 0){
+                            // Handle the response data
+                        
+                            // $("#sales_total").val(response.sales_total);
+                            // $("#qty_total").val(response.qty_total);
+                            const table = $('#purchase-report tbody')
+                            table.empty()
+                            let num = 0;
+                            response.forEach(item => {
+                                num++ 
+                                const uniqueInvoiceIDs = []; // To store unique invoice IDs
+                                //console.log(item.invoiceID)
+                                //if (!uniqueInvoiceIDs.includes(item.invoiceID)) {
+                                //    uniqueInvoiceIDs.push(item.invoiceID);
+        
+                                    const row = $('<tr id="row">').append(
+                                        $('<td class="text-[10px]">').html(num),
+                                        $('<td class="text-[10px]">').text(item.invoice_date),
+                                        $('<td class="text-[10px]">').text(item.item_name),
+                                        $('<td class="text-[10px]">').text(item.vendor_name),
+                                        $('<td class="text-[10px]">').text(item.qty),
+                                        $('<td class="text-[10px]">').text(item.amount),
+                                        $('<td class="text-[10px]">').text(item.Userlogin),
+                                        $('<td class="text-[10px]">').append('<a onclick="showModal(\'' + item.invoiceID + '\', \'' + item.cusID + '\')" class="flex items-center justify-center text-blue-500 border px-3 bg-gray-50 cursor-pointer"  aria-label="Edit">View</a>'),
+                                        
+                                    
+                                    );
+                                    table.append(row);
+                                //}
+                                $("#no-data").css('display', 'none');
+                            });
+                        }else{
+                            // $("#example2 tbody").empty();
+                            // $("#no-data").css('display', 'block');
+                            alertify.error("No data between selected category")
+                            //alertify.error("Select start_date and end_date")
+                        }
+                    },
+                    error: function(error) {
+                        // Handle the error
+                        console.log('error')
+                    }
+                });
+            }else{
+                alertify.error("Select category  to fetch data from")
+            }
+
+            
+        };
+
+    
+        //multiple filter
+        function filterItem(selected){
+          // preventDefault()
+
+            //const value = selected.value
+            const value = ""
+           // alertify.success(value)
+            //console.log(from)
+            //console.log(to)
+            if(value){   
+            // Assuming you have the start_date and end_date values
+                $.ajax({
+                    url: 'purchase-report/'+value+'/',
+                    method: 'GET',
+                    success: function(data) {
+                        if(data.item && data.item.length > 0 ){
+                         
+                            $("#sales_total").val(data.sales_total);
+                            $("#qty_total").val(data.qty_total);
+                                const table = $('#purchase-report tbody')
+                                table.empty()
+                                let num = 0;
+                                data.item.forEach(item => {
+                                    num++ 
+                                    const uniqueInvoiceIDs = []; // To store unique invoice IDs
+                                    //console.log(item.invoiceID)
+                                    //if (!uniqueInvoiceIDs.includes(item.invoiceID)) {
+                                    //    uniqueInvoiceIDs.push(item.invoiceID);
+            
+                                    const row = $('<tr id="row">').append(
+                                        $('<td class="text-[10px]">').html(num),
+                                        $('<td class="text-[10px]">').text(item.invoice_date),
+                                        $('<td class="text-[10px]">').text(item.item_name),
+                                        $('<td class="text-[10px]">').text(item.vendor_name),
+                                        $('<td class="text-[10px]">').text(item.qty),
+                                        $('<td class="text-[10px]">').text(item.amount),
+                                        $('<td class="text-[10px]">').text(item.Userlogin),
+                                        $('<td class="text-[10px]">').append('<a onclick="showModal(\'' + item.invoiceID + '\', \'' + item.cusID + '\')" class="flex items-center justify-center text-blue-500 border px-3 bg-gray-50 cursor-pointer"  aria-label="Edit">View</a>'),
+                                    
+                                    );
+                                    table.append(row);
+                                    $("#no-data").css('display', 'none');
+                                });
+                            }else{
+                                $("#example2 tbody").empty();
+                                $("#no-data").css('display', 'block');
+                                //alertify.error("No Return data between selected date")
+                                //alertify.error("Select start_date and end_date")
+                            }
+                        },
+                    error: function(error) {
+                        // Handle the error
+                        console.log(error)
+                    }
+                });
+            }else{
+                //alertify.error("Select start_date and end_date")
+            }
+
+            
+        };
+    </script>
+    <script>
+        function showModal(invoiceId, cusID){
+            
+                //const invoiceId = $(this).val();
+               
+             
+                if (invoiceId != "") {
+                    $.ajax({
+                        url: '/view-purchase/'+ invoiceId + '/',
+                        method: 'GET',
+                        data:{'cusID':cusID},
+                        success: function(data) {
+                          
+                            if(data.vendor && data.serialized_data.length  > 0){
+                              
+                                my_modal_view_purchase.showModal()
+                                const table = $('#purchseLadgerView tbody'); 
+                                table.empty(); // Clear previous content
+                                var total = parseFloat(data.amount_total)
+                                if(data.vat != null){$("#discount2").html(NCFormat(data.vat)), total = parseFloat(data.amount_total) + parseFloat(data.vat)}
+                                $("#sub-total").text(NCFormat(data.amount_total))
+                                if(data.vat != null){$("#discount2").html(NCFormat(data.vat))}
+                                $("#total").text(NCFormat(total))
+                                // $("#cusID").text(data.vendor.code);
+                                // $("#item_name").text(data.vendor.name);
+                                // $("#company").text(data.vendor.company);
+                                // $("#invoice_date").text(data.vendor.balance);
+                                $("#total2").text(NCFormat(total))
+                                $("#sales_total").text(NCFormat(total))
+                                $("#cus_no").text("Customer Phone: "+data.vendor.phone);
+                                $("#cus_name").text("Customer Name: "+data.vendor.company);
+                            
+                                let num = 0
+                                let executed = false
+                                data.serialized_data.forEach(item => {
+                                    num++ 
+    
+                                    const row = $('<tr class="text-gray-700">').append(
+                                        $('<td class="text-[10px]">').text(num),
+                                        $('<td class="text-[10px]">').text(item.invoice_date),
+                                        $('<td class="text-[10px]">').text(item.cusID),
+                                        $('<td class="text-[10px]">').text(item.item_name),
+                                        $('<td class="text-[10px]">').text(item.unit_p),
+                                        $('<td class="text-[10px]">').text(item.qty),
+                                        $('<td class="text-[10px]">').text(item.amount),
+                                        //$('<td class="text-[10px]">').append('<a onclick="showEditDateModal(\'' + item.cusID + '\', \'' + item.item_name + '\', \'' + item.unit_p + '\', \'' + item.invoice_date + '\', \'' + item.invoiceID + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer"  aria-label="Edit">Edit</a>'),
+                                    );
+                                    
+                                    table.append(row);
+                                    if (executed == false){
+                                        // $("#receipt").text(item.invoiceID)
+                                        // $("#receipt_date").text(item.invoice_date)
+                                        // $("#due_date").text(item.due_date);
+                                        $("#receipt").text("Invoice No.: "+item.invoiceID)
+                                        $("#sales_p").text("Sales Perosn: "+item.Userlogin);
+                                        executed = true
+                                    }
+                                });
+                              
+                            }else{
+                                alertify.defaults.glossary.title = "Oops";
+                                alertify.error("Customer Does noy exists in the database");
+                            }
+                            //alert('Items found');
+                        },
+                        error: function() {
+                            alertify.defaults.glossary.title = "Oops";
+                            alertify.confirm("Customer Does not exists in database");
+                        }
+                    });
+                }
+               
+        };
+
+        
+        //   console.log(NCFormat(num))
+
+
+        
+    </script>
+
+{% endblock content %}

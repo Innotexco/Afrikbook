@@ -1,0 +1,942 @@
+
+    function get_element_value(key){
+        const keyval = $(key).val();
+        return keyval;
+    }
+    function set_element_text(key, text_value){
+        const keyval =$(key).text(text_value);
+        return keyval;
+    }
+    function set_element_value(key, value){
+        const keyval =$(key).val(value);
+        return keyval;
+    }
+    function clearCart() {
+        // Clear the cart items from session storage
+        sessionStorage.removeItem('Items');
+    
+        displayCartItems();
+        $('#customersOnly').addClass('hidden')
+        $('#changeDisplay').addClass('hidden')
+        set_element_text('#change', '')
+        set_element_text('#Balance', '')
+        set_element_value('#cashInput', '')
+        set_element_value('#amount_expected', '')
+    }
+
+    // function showFilter() {
+    
+    //     var x = document.getElementById("filterMenu");
+    //     if (x.style.display === "none") {
+    //         x.style.display = "block";
+    //     } else {
+    //         x.style.display = "none";
+    //     }
+    // }
+
+    $('#showFilter').click(function() {
+        $('#filterMenu').toggleClass('hidden');
+    });
+
+    function confirmCheckOut() {
+       
+        const cartItems = JSON.parse(sessionStorage.getItem('Items'));
+        const confirmData = $('#confirmData');
+        // Check if there are items in the cart
+        
+        if (cartItems && cartItems.length > 0) {
+
+            set_element_value('#cusIDcusID', null)
+            VAT = get_element_value('#VAT')
+            generateid = generateID2()
+            const payment_method = get_element_value('#payment_method');
+            // const customer_name = get_element_value('#customer_name');
+            const method = set_element_text('#method', payment_method);
+            let cashInput=''
+            if (!$('#partpayPrice').hasClass('hidden') && !$('#changeDisplay').hasClass('hidden')) {
+                cashInput = get_element_value('#cashInput');
+            }
+
+            var selectedOption = $('#customer_name').children("option:selected");
+            // Get the value of the selected option
+            var CID = selectedOption.val();
+            // Get the display data (text content) of the selected option
+            var customerN = selectedOption.text();
+            const customer = set_element_text('#customer', customerN);
+            
+
+       
+            //(customerN == 'Casual Customer') ? null : set_element_value('#cusIDcusID', CID)
+            set_element_value('#invoiceID', "invoice_"+ generateid)
+            set_element_value('#order_ID', "order_"+ generateid)
+            set_element_value('#cusIDcusID', CID)
+
+            confirmData.empty();
+            $('#prices').removeClass('hidden')
+            $('#checkoutbtn').removeClass('hidden')
+            var format = new Intl.NumberFormat()
+            get_symbol = $('#get_symbol').val()
+          
+            let itemCount = 0;
+            let totalPrice = 0;
+
+                cartItems.forEach(function (item) {
+                total_price_withoutVAT = item[3] * item[4]
+                VATvalue  = 0.075 * total_price_withoutVAT
+
+                total_price_withVAT = VATvalue + total_price_withoutVAT
+                total_price_with_or_without_vat = (VAT == 'Yes') ? totalPrice += total_price_withVAT : totalPrice += total_price_withoutVAT; // Assuming item[3] is the price and item[4] is the quantity
+
+                // console.log(item[0], item[1], item[2], item[3], item[4], 'item[1]item[1]item[1]item[1]')
+                // let AddedItems = [generated_code, image, item_name, selling_price, qty]
+                let amount_per_item = item[3] * item[4]; 
+                total_amount_per_item= format.format(amount_per_item)
+                per_item= format.format(item[3])
+
+                const cartData = `
+                    <tr class="text-gray-700 dark:text-gray-400">
+                        <td class="px-4 py-1 text-sm">
+                            ${itemCount +=1} 
+                        </td>
+                        <td class="px-4 py-1 text-sm">
+                            <img src="media/${item[1]}" alt="" class="rounded-lg h-10 w-10 bg-white shadow mr-2"/>
+                        </td>
+                        <td class="px-4 py-1 text-sm">
+                            ${item[2]} 
+                        </td>
+                        <td class="px-4 py-1 text-sm">
+                            ${item[4]}
+                        </td>
+                        <td class="px-4 py-1 text-sm">
+                            ${get_symbol + per_item} 
+                        </td>
+                        <td class="px-4 py-1 text-sm">
+                            ${get_symbol + total_amount_per_item} 
+                        </td>
+                    </tr>
+                    <input type="hidden" name="generated_code[]" value="${item[0]}">
+                    <input type="hidden" name="item_name[]" value="${item[2]}">
+                    <input type="hidden" name="selling_price[]" value="${item[3]}">
+                    <input type="hidden" name="quantity[]" value="${item[4]}">
+                    <input type="hidden" name="amount[]" value="${amount_per_item}">
+                    
+
+                `;
+                confirmData.append(cartData);
+                
+            });
+            total_Sum = format.format(total_price_with_or_without_vat)
+            // // DISPLAY TOTAL IN THE CONFIRM CHECKOUT DIALOG
+            totalPrice_Cart = $('#totalPrice_Cart').text(get_symbol+total_Sum)
+            set_element_value('#hidden_payment_method', payment_method)
+            set_element_value('#hidden_customer_name', customerN)
+            ammount_paid = total_price_with_or_without_vat
+
+            if(cashInput != ''){
+                ammount_paid = cashInput
+            }
+            AM_P = format.format(ammount_paid)
+
+            set_element_value('#price_paid', ammount_paid)
+            set_element_text('#amount_paid',get_symbol+AM_P);
+        } else {
+            $('#prices').addClass('hidden')
+            $('#checkoutbtn').addClass('hidden')
+            confirmData.empty();
+
+            // Display a message if the cart is empty
+            const emptyCart = `
+                <div class="flex-1 w-full p-4 opacity-25 select-none flex flex-col flex-wrap content-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <p>
+                        CART IS EMPTY
+                    </p>
+                </div>
+            `;
+            confirmData.append(emptyCart);
+        }
+
+
+
+
+        // set_element_value('#hidden_amount', totalPrice)
+    }
+
+    // Get the checkbox element for part payment
+    const checkbox = document.getElementById('checkBforpartPay');
+
+    // Add an event listener to listen for changes in the checkbox state
+    checkbox.addEventListener('change', function() {
+        
+        // Check if the checkbox is checked
+
+        if (checkbox.checked) {
+            // Remove the 'hidden' class from elements with ids 'partpayPrice' and 'changeDisplay'
+            document.getElementById('partpayPrice').classList.remove('hidden');
+            document.getElementById('changeDisplay').classList.remove('hidden');
+        } else {
+            // Add the 'hidden' class to elements with ids 'partpayPrice' and 'changeDisplay'
+            document.getElementById('partpayPrice').classList.add('hidden');
+            document.getElementById('changeDisplay').classList.add('hidden');
+            $('#amount_expected').val('0')
+            $('#Balance').text('')
+            $('#change').text('')
+            $('#cashInput').val('')
+        }
+    });
+    $(document).ready(function(){
+        
+        // SEARCH BY BARCODE
+        $('#scannerInput').on('input', function() {
+            let searchItem      =  $('#scannerInput').val();
+            var Scanned_code    = document.getElementById('Scanned_code').dataset.url;
+
+            $.ajax({
+                type: 'GET',
+                url: Scanned_code,
+                data: {
+                    searchItem: searchItem, 
+                },
+                success: function(data){
+                    AddToCart(data.id, data.code, data.image, data.item, data.price);
+                    $('#scannerInput').val('');
+
+                }
+            });
+        });
+
+
+        // SEARCH BY BARCODE, ITEM NAME IN THE SALES MENU SEARCH BAR
+        $('#searchItem').keyup(function() {
+            
+            let searchItem    =  $('#searchItem').val();
+            var itemSearch = document.getElementById('itemSearch').dataset.url;
+
+            var format = new Intl.NumberFormat()
+            $.ajax({
+                type: 'GET',
+                url: itemSearch,
+                data: {
+                    searchItem: searchItem, 
+                },
+                success: function(data){
+                    itemlist(data, format)
+
+                }
+            });
+        });
+
+           // GET SALES BY DATE IN CANCEL SALES PAGE(CSD(DATE))
+           $('#cashInput').keyup(function() {
+            get_symbol = $('#get_symbol').val()
+               // Get the total price
+            const totalPrice = parseFloat($('#total_price').val());
+
+            // Get the cash input value
+            const cashInput = parseFloat(document.getElementById('cashInput').value);
+
+            // Calculate the change
+            const change = totalPrice -  cashInput;
+           
+            // Display the change
+            if (change > 0) {
+                var format = new Intl.NumberFormat()
+                total_change = format.format(change)
+                $('#changeDisplay').removeClass('hidden')
+
+                // Change is positive
+                document.getElementById('change').innerHTML = `
+                    ${get_symbol +total_change}
+                `;
+                $('#amount_expected').val(change)
+                $('#Balance').text(get_symbol+total_change)
+            }  else {
+                // Change is zero
+                $('#changeDisplay').addClass('hidden')
+                $('#amount_expected').val('')
+                $('#Balance').text('')
+                $('#change').text('')
+                toastr.options = {
+                closeButton: true,
+                positionClass: 'toast-top-right',
+                progressBar: true,
+            };
+            toastr.error("Invalid Check Cash Paid", "Error");
+
+            }
+        });
+
+
+
+
+        // GET SALES BY SEARCH IN CANCEL SALES PAGE(CSD_SEARCH)
+        var selectedOption = $('#customer_name').children("option:selected");
+
+        $('#customer_name').on('change', function() {
+            var selectedOption = $('#customer_name').children("option:selected")
+            get_text = selectedOption.text()
+            if(get_text === 'Casual Customer'){
+                $('#customersOnly').addClass('hidden')
+                $('#changeDisplay').addClass('hidden')
+                set_element_text('#change', '')
+                set_element_text('#Balance', '')
+                set_element_value('#cashInput', '')
+                set_element_value('#amount_expected', '')
+
+            }else{
+                $('#customersOnly').removeClass('hidden')
+            }
+        });
+
+        
+    });
+
+
+    // SEARCH BY FILTER CATEGORIES
+    function fetchItemsByCategory(category) {
+       
+        var SaleMenu = document.getElementById('SaleMenu').dataset.url;
+        let format = new Intl.NumberFormat()
+        $.ajax({
+            type: 'GET',
+            url: SaleMenu,  
+            data: {
+                'category_id': category
+            },
+            dataType: 'json',
+            success: function (data) {
+                itemlist(data, format)
+                // console.log(itemlist(data, format))
+                // Clear existing items
+                // $('#items-container').empty();
+
+                // // Append fetched items dynamically
+                // data.items.forEach(function (item) {
+                //     var itemHtml = `
+                //         <div class="p-2 border rounded-md shadow-md" id="AddCart${item.generated_code}" onclick="AddToCart('${item.id}', '${item.generated_code}', '${item.image}', '${item.item_name}', '${item.selling_price}')">
+                //             <img class="h-12 w-auto" src="media/${item.image}" alt="${item.item_name}" class="mb-2" />
+                //             <div class="mt-4 md:mt-0">
+                //                 <h2 class="text-sm font-semibold item_name line-clamp-1 truncate">${item.item_name}</h2>
+                //                 <p class="mt-2 text-sm text-gray-600 hidden">${item.generated_code}</p>
+                //                 <div class="mt-1 flex items-center">
+                //                     <div class="flex items-center hidden">
+                //                         <button id="reduce_qty" class="bg-gray-200 rounded-l-lg px-2 py-1" disabled>-</button>
+                //                         <input type="text" class="w-6 qty px-2 py-1 text-gray-600" id="qty${item.id}" value="1" />
+                //                         <button id="add_qty" class="bg-gray-200 rounded-r-lg px-2 py-1 cursor-pointer" disabled>+</button>
+                //                     </div>
+                //                     <span id="selling_price" class="font-medium text-sm item_price">$${item.selling_price}</span>
+                //                 </div>
+                //                 <div class="w-full px-2 hidden">
+                //                     <button id="AddCart${item.generated_code}" onclick="AddToCart('${item.id}', '${item.generated_code}', '${item.image}', '${item.item_name}', '${item.selling_price}')"
+                //                         class="add-to-cart-button w-10 bg-gray-900 dark:bg-gray-600 text-white p-2 rounded-full font-bold hover:bg-gray-800 dark:hover:bg-gray-700">
+                //                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 inline-block " fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                //                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                //                         </svg>
+                //                     </button>
+                //                 </div>
+                //             </div>
+                //         </div>
+                //     `;
+                //     $('#items-container').append(itemHtml);
+                // });
+            },
+            error: function (error) {
+                // console.error('Error fetching items by category:', error);
+            }
+        });
+    }
+    
+    function itemlist(data, format){
+        
+        $('#items-container').empty();
+        $('#items-container').removeClass('hidden')
+        $('#noProduct').addClass('hidden')
+        if(data){
+            // Append fetched items dynamically
+            data.items.forEach(function (item) {
+                var itemHtml = `
+                <div class="p-2 border rounded-md shadow-md" id="AddCart`+item.generated_code+`" onclick="AddToCart('`+item.id+`', '`+item.generated_code+`', '`+item.image+`', '`+item.item_name+`', '`+item.selling_price+`')">
+                    <img class="h-20 w-full rounded-md" src="media/${item.image}" alt="${item.item_name}" class="mb-2" />
+                    <div class="mt-4 md:mt-0">
+                        <h2 class="text-sm font-semibold item_name line-clamp-1 truncate">${item.item_name}</h2>
+                        <p class="mt-1 text-sm text-gray-600 hidden">${item.generated_code}</p>
+                        <div class="mt-1 flex items-center">
+                            <div class="flex items-center hidden">
+                                <button id="reduce_qty" class="bg-gray-200 rounded-l-lg px-2 py-1" disabled>-</button>
+                                <input type="text" class="w-6 qty px-2 py-1 text-gray-600" id="qty${item.id}" value="1" />
+                                <button id="add_qty" class="bg-gray-200 rounded-r-lg px-2 py-1 cursor-pointer" disabled>+</button>
+                            </div>
+                            <span id="selling_price" class="font-medium text-sm item_price">${get_symbol + format.format(item.selling_price)}</span>
+                        </div>
+                        <div class="w-full px-2 hidden">
+                            <button id="AddCart`+item.generated_code+`" onclick="AddToCart('`+item.id+`', '`+item.generated_code+`', '`+item.image+`', '`+item.item_name+`', '`+item.selling_price+`')"
+                                class="add-to-cart-button w-10 bg-gray-900 dark:bg-gray-600 text-white p-2 rounded-full font-bold hover:bg-gray-800 dark:hover:bg-gray-700">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 inline-block " fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                `;
+                $('#items-container').append(itemHtml);
+            });
+        }else{
+            $('#items-container').addClass('hidden')
+            $('#noProduct').removeClass('hidden')
+        }
+        
+    }
+     
+    
+    // DEFAULT ITEM SEARCH 
+     $(document).ready(function () {
+    
+        // Function to fetch and display items
+        function fetchAndDisplayItems() {
+            
+            get_symbol = $('#get_symbol').val()
+            
+            let format = new Intl.NumberFormat()
+            var fetch_default = document.getElementById('fetch_default').dataset.url;
+            $.ajax({
+                type: 'GET',
+                url: fetch_default,  
+                dataType: 'json',
+                success: function (data) {
+                    // Clear existing items
+                    itemlist(data, format)
+                },
+                error: function (error) {
+                    console.error('Error fetching items:', error);
+                }
+            });
+        }
+
+        // Initial fetch and display items
+        fetchAndDisplayItems();
+    });
+
+    //    FETCH ALL ITEMS FROM ITEM TABLE
+    function fetchAllItems() {
+       
+        var fetch_all_items = document.getElementById('fetch_all_items').dataset.url;
+        let format = new Intl.NumberFormat()
+        $.ajax({
+            type: 'GET',
+            url: fetch_all_items,  
+            
+            dataType: 'json',
+            success: function (data) {
+                itemlist(data, format)
+            },
+            error: function (error) {
+                console.error('Error fetching items by category:', error);
+            }
+        });
+    }
+    function ReduceQty(id, generated_code, image, item_name, selling_price) {
+        
+        const cartItems = JSON.parse(sessionStorage.getItem('Items'));
+  
+          let list;
+  
+          if (cartItems === null) {
+              list = [];
+          } else {
+              list = cartItems; 
+          }
+      
+          // Find the index of the existing item in the cart
+          const existingItemIndex = list.findIndex(item => item[0] === generated_code);
+      
+          // Increment the quantity of the existing item
+          if (existingItemIndex !== -1 && list[existingItemIndex] && list[existingItemIndex][4] !== undefined) {
+              list[existingItemIndex][4] = Number(list[existingItemIndex][4]) - 1 || 1;
+      
+              
+              sessionStorage.setItem('Items', JSON.stringify(list));
+      
+              displayCartItems();
+          } else {
+              console.error("Error: Item not found or missing required properties.");
+          }
+      }
+     
+      var skip = false  
+
+      function AddQty(id, generated_code, image, item_name, selling_price) {
+   
+        const cartItems = JSON.parse(sessionStorage.getItem('Items'));
+
+        let list;
+
+        if (cartItems === null) {
+            list = [];
+        } else {
+            list = cartItems; 
+        }
+    
+        // Find the index of the existing item in the cart
+        const existingItemIndex = list.findIndex(item => item[0] === generated_code);
+    
+        // Increment the quantity of the existing item
+        if (existingItemIndex !== -1 && list[existingItemIndex] && list[existingItemIndex][4] !== undefined) {
+            CheckQuantity(generated_code,  function(result){
+                if (result > list[existingItemIndex][4]){
+                    QtyPlusOne(list, existingItemIndex)
+                }else{
+                    if(skip){
+                        QtyPlusOne(list, existingItemIndex) 
+                    }else{
+                        // alert("Quantity exceeds stock level. Available quantity: "+result)
+                        alertify.defaults.glossary.title = "Oops";
+                        alertify.confirm("Quantity exceeds stock level. Available quantity: "+result+" proceed anyway<br><br>Skip next time <input type='checkbox' id='skip'/>",
+                        // if proceed
+                        function(){
+                            skip = document.getElementById('skip').checked   
+                            QtyPlusOne(list, existingItemIndex)                        
+                            // list[existingItemIndex][4] = Number(list[existingItemIndex][4]) + 1 || 1;
+                            // sessionStorage.setItem('Items', JSON.stringify(list));
+            
+                            // displayCartItems();                             
+                        },
+                        //if Cancel
+                        function(){
+    
+    
+                        }).set('labels',{ok:'Proceed', cancel:'Cancel'});
+
+                    }
+                }
+               
+            });
+            // list[existingItemIndex][4] = Number(list[existingItemIndex][4]) + 1 || 1;
+    
+            
+            // sessionStorage.setItem('Items', JSON.stringify(list));
+    
+            // displayCartItems();
+        } else {
+            console.error("Error: Item not found or missing required properties.");
+        }
+    }
+    
+    function QtyPlusOne(list, existingItemIndex){
+        list[existingItemIndex][4] = Number(list[existingItemIndex][4]) + 1 || 1;
+        sessionStorage.setItem('Items', JSON.stringify(list));
+
+        displayCartItems();
+    }
+    
+    // DELETE FROM CART
+    function RemoveItem(id, generated_code, image, item_name, selling_price) {
+        
+        // alert(generated_code + "Eyia K Egia");
+        confirmval = confirm("Are you sure you want to delete " + item_name)
+        const cartItems = JSON.parse(sessionStorage.getItem('Items'));
+        if(confirmval){
+            let list;
+
+            if (cartItems === null) {
+                list = [];
+            } else {
+                list = cartItems; 
+            }
+        
+            // Find the index of the existing item in the cart
+            const selectedIndex = list.findIndex(item => item[0] === generated_code);
+
+            if (selectedIndex !== null && selectedIndex !== undefined && cartItems && cartItems.length > selectedIndex) {
+                // Remove the selected item from the cartItems array
+                cartItems.splice(selectedIndex, 1);
+
+                // Save the updated cartItems array back to sessionStorage
+                sessionStorage.setItem('Items', JSON.stringify(cartItems));
+
+                // Refresh the displayed cart items
+                displayCartItems();
+            }
+        }
+        
+
+    }
+    // COUNT ITEM IN CART
+    function CartItemCount() {
+        const cartItems = JSON.parse(sessionStorage.getItem('Items')) || [];
+        const itemCountElement = document.getElementById('cart-item-count');
+    
+        // Count the number of items in the cart
+        const itemCount = cartItems.length;
+    
+        // Display the item count on your HTML template
+        if (itemCountElement) {
+            itemCountElement.textContent = itemCount.toString();
+        }
+    }
+    
+    // Get Currency
+    function currency(){
+        $.ajax({
+            url: '/get_user_currency',
+            success: function(data){
+               var currency =  $('#get_symbol');
+               currency.val(data.cur)
+                // alert(data.cur)
+               
+            },
+            error: function(error){
+       
+            }
+       
+           })
+    }
+    
+    // DISPLAY CART(ITEM ADDED TO CART)
+    
+     currency();
+    function displayCartItems() {
+        const cartContainer = document.getElementById('cart-container');
+        const totalcartContainer = document.getElementById('total-cart-container');
+        // const checkoutContainer = document.getElementById('checkout-container');
+        // const totalcheckoutContainer = document.getElementById('total-cart-container');
+        const cartItems = JSON.parse(sessionStorage.getItem('Items'));
+        
+        get_symbol = $('#get_symbol').val()
+      
+        VAT = get_element_value('#VAT')
+        var format = new Intl.NumberFormat()
+
+        
+        // Clear existing cart items
+        cartContainer.innerHTML = '';
+        totalcartContainer.innerHTML = '';
+        // checkoutContainer.innerHTML = '';
+        // totalcheckoutContainer.innerHTML = '';
+    
+        let itemCount = 0;
+        let totalPrice = 0;
+        total_price_with_or_without_vat =0
+    
+        // Check if there are items in the cart
+        if (cartItems && cartItems.length > 0) {
+            cartItems.forEach(function (item) {
+                total_price_withoutVAT = item[3] * item[4]
+                VATvalue  = 0.075 * total_price_withoutVAT
+
+                total_price_withVAT = VATvalue + total_price_withoutVAT
+
+                itemCount += item[4]; // Assuming item[4] represents the quantity
+                total_price_with_or_without_vat = (VAT == 'Yes') ? totalPrice += total_price_withVAT : totalPrice += total_price_withoutVAT; // Assuming item[3] is the price and item[4] is the quantity
+                // console.log(item[0], item[1], item[2], item[3], item[4], 'item[1]item[1]item[1]item[1]')
+                // let AddedItems = [generated_code, image, item_name, selling_price, qty]
+                
+                const cartItemHtml = `
+                    <div class="card sm:overflow-x">
+                        <div class="mb-3 bg-blue-gray-50 rounded-lg w-full text-blue-gray-700 py-2 px-2 flex justify-between items-center">
+                            <div class="flex justify-between items-center">
+                                <div class="w-16 sm:w-24 md:w-32 flex gap-2">
+                                    <img src="media/${item[1]}" alt="" class="rounded-lg h-10 w-10 bg-white shadow mr-2"/>
+                                    <article>
+                                        <h5 class="text-sm font-semibold">${item[2]}</h5>
+                                        <p class="text-xs hidden">${get_symbol + format.format(item[3])}</p>
+                                        <p class="text-xs block font-semibold"> ${get_symbol + format.format((item[3] * item[4]))}</p>
+                                    </article>
+                                </div>
+                                <div class="w-28 grid grid-cols-3 justify-center gap-2 ml-12 sm:ml-12 md:ml-12 xl:ml-24">
+                                    
+                                    <span class="text-center" onclick="ReduceQty('`+item.id+`', '`+item[0]+`', '`+item[1]+`', '`+item[2]+`', '`+item[3]+`')">  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 icon icon-tabler icon-tabler-minus" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <line x1="5" y1="12" x2="19" y2="12" />
+                                        </svg> 
+                                    </span>
+
+                                    <input type="text" id="qty${item[0]}" value="${item[4]}" name="" class="bg-white rounded-lg text-center shadow focus:outline-none focus:shadow-lg text-sm">
+                                    <input type="hidden" name="generated_code[]" value="${item[0]}">
+                                    <input type="hidden" name="item_name[]" value="${item[2]}">
+                                    <input type="hidden" name="selling_price[]" value="${item[3]}">
+
+                                    <span class="text-center" onclick="AddQty('`+item.id+`', '`+item[0]+`', '`+item[1]+`', '`+item[2]+`', '`+item[3]+`')"> <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                        </svg> 
+                                    </span>
+
+                                  
+                                </div>
+                            </div>
+                            <div class="flex-grow text-right text-lg p-1 w-8">
+                                <button id="RmvFromCart`+item[0]+`" onclick="RemoveItem('`+item.id+`', '`+item[0]+`','`+item[1]+`', '`+item[2]+`', '`+item[3]+`')" class="text-blue-gray-300 hover:text-pink-500 focus:outline-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                cartContainer.innerHTML += cartItemHtml;
+
+                // const checkoutReceiptHtml = `
+                //     <article >
+                //         <tr class="text-center">
+                //             <td class="py-2 text-center" >*</td>
+                //             <td class="py-2 text-left">
+                //                 <span >${item[2]}</span>
+                //                 <br />
+                //                 <small >${get_symbol + item[3]}</small>
+                //             </td>
+                //             <td class="py-2 text-center">${item[4]}</td>
+                //             <td class="py-2 text-right">${get_symbol + (item[3] * item[4]).toFixed(2)}</td>
+                            
+                //         </tr>
+                //     </article>
+
+                // `;
+                
+                // checkoutContainer.innerHTML += checkoutReceiptHtml;
+
+            });
+        } else {
+            // Display a message if the cart is empty
+            const emptyCartHtml = `
+                <div class="flex-1 w-full p-4 opacity-25 select-none flex flex-col flex-wrap content-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <p>
+                        CART IS EMPTY
+                    </p>
+                </div>
+            `;
+            cartContainer.innerHTML = emptyCartHtml;
+        }
+
+        var format = new Intl.NumberFormat()
+        total_Sum = format.format(total_price_with_or_without_vat)
+       
+        document.getElementById('vat_value').value = VATvalue
+        // Display the count and total price
+        const cartSummaryHtml = `
+            ${(VAT == 'Yes') ? `<b class="">TOTAL <span class="text-sm ">VAT(7.5%) </span></b> ` : `<b>TOTAL:</b>`} 
+            <p id="totalPrice" class="text-right w-full">${get_symbol + total_Sum}</p>
+            <input type="hidden" name="" id="total_price" value="${total_price_with_or_without_vat.toFixed(2)}">
+        `;
+        totalcartContainer.innerHTML += cartSummaryHtml;
+
+        // Display Chectout total price 
+        // const checkoutSummaryHtml = `
+        //     <b>TOTAL:</b>
+        //     <p class="text-right w-full">${get_symbol + total_price_with_or_without_vat.toFixed(2)}</p>
+        // `;
+        // totalcheckoutContainer.innerHTML += checkoutSummaryHtml;
+
+        CartItemCount();
+
+        // calculateChange();
+
+    }
+   
+    // INITIALISE FUNCTION
+    currency();
+    displayCartItems()
+
+    // CHECK IF SESSION ITEM EXISTS
+    function CheckIfItemExist(Itemlist, generated_code){
+        const entry = Itemlist.find(([CART]) => CART === generated_code);
+        if(entry){
+            return true;
+        }
+    }
+
+    //  ADD TO CART
+    function AddToCart(id, generated_code, image, item_name, selling_price){
+       
+        const FormalItem = sessionStorage.getItem('Items');
+        let list;
+
+        if(FormalItem === null){
+            list = [];
+        }else{
+            list = JSON.parse(FormalItem);
+        }
+       
+        // Usage
+       
+       
+        if(!CheckIfItemExist(list, generated_code)){
+            let qty = document.getElementById('qty'+id).value;
+            let AddedItems = [generated_code, image, item_name, selling_price, qty]
+            CheckQuantity(generated_code,  function(result){
+                // console.log(result)
+                if (result > qty){
+    
+        
+                    list.push(AddedItems);
+        
+                    sessionStorage.setItem('Items', JSON.stringify(list));
+        
+                    // console.log(JSON.parse(sessionStorage.getItem('Items')));
+                    // console.log(JSON.parse(sessionStorage.getItem('Items'[4])));
+                    // alert(JSON.parse(sessionStorage.getItem('Items')));
+        
+                    displayCartItems();
+                }else{
+                    if(skip){
+                        list.push(AddedItems);
+                        sessionStorage.setItem('Items', JSON.stringify(list));  
+                        displayCartItems();
+                    }else{
+
+                        // alert("Item not in logged in user oulet")
+                        alertify.defaults.glossary.title = "Oops";
+                        alertify.confirm("Quantity exceeds stock level. Available quantity: "+result+" proceed anyway<br><br>Skip next time <input type='checkbox' id='skip'/>",
+                        // if proceed
+                        function(){
+                            skip = document.getElementById('skip').checked                              
+            
+                            list.push(AddedItems);
+                            sessionStorage.setItem('Items', JSON.stringify(list));  
+                            displayCartItems();                          
+                        },
+                        //if Cancel
+                        function(){
+                           
+                        }).set('labels',{ok:'Proceed', cancel:'Cancel'});
+                    }
+                }
+               
+            });
+
+
+        }else {
+            CheckQuantity(generated_code,  function(result){
+                const existingItemIndex = list.findIndex(item => item[0] === generated_code);
+                if (result > list[existingItemIndex][4] + 1){
+    
+                    QtyPlusOne(list, existingItemIndex)
+                    // // Increment the quantity of the existing item
+                    // //list[existingItemIndex][4] += 1;
+                    
+                    
+                    // list[existingItemIndex][4] = Number(list[existingItemIndex][4]) + 1 || 1;
+                    // sessionStorage.setItem('Items', JSON.stringify(list));
+        
+                    // displayCartItems();
+                }else{
+                    if(skip){
+                        QtyPlusOne(list, existingItemIndex) 
+                    }else{
+                        // alert("Quantity exceeds stock level. Available quantity: "+result)
+                        alertify.defaults.glossary.title = "Oops";
+                        alertify.confirm("Quantity exceeds stock level. Available quantity: "+result+" proceed anyway<br><br>Skip next time <input type='checkbox' id='skip'/>",
+                        // if proceed
+                        function(){
+                            skip = document.getElementById('skip').checked   
+                            QtyPlusOne(list, existingItemIndex)                        
+                            // list[existingItemIndex][4] = Number(list[existingItemIndex][4]) + 1 || 1;
+                            // sessionStorage.setItem('Items', JSON.stringify(list));
+            
+                            // displayCartItems();                             
+                        },
+                        //if Cancel
+                        function(){
+    
+    
+                        }).set('labels',{ok:'Proceed', cancel:'Cancel'});
+
+                    }
+                }
+               
+            });
+            
+           
+        }
+
+    }
+
+
+    function CheckQuantity(itemcode,  callback){
+      
+        $.ajax({
+            url:"/get_items_qty",
+            method: "GET",
+            data:{"item_id": itemcode},
+            success: function(stock_qty){
+                // alert(stock_qty)
+               
+                callback(stock_qty) 
+            
+            },
+            error: function(error){
+                callback(0)
+                
+            }
+        })
+        // console.log(result)
+        // return result
+
+    }
+
+    function checkout() {
+        const customer = $("#customer_name option:selected").text()
+        const customer_bal = $("#balance").val()
+        const payment_method = $("#payment_method").val()
+        var transfer = $("#transfer").val()
+        var cash = $("#cash").val()
+        const amount = $("#total_price").val()
+        const account = $("#account").val()
+        
+        
+
+        if(customer == "Casual Customer"){
+            const customer_id = $("#customer_name").val()
+           
+            runcheck();
+        }else{
+            if(customer_bal < amount){
+                alert("Insufficient balance") 
+            }else{
+               runcheck();
+            }
+        }
+
+        function runcheck(){
+            if(payment_method == "Transfer and Cash"){
+                if(transfer == ""){transfer = 0}
+                if(cash == ""){cash = 0}
+                
+                const tran_cash = parseInt(transfer) + parseInt(cash)
+               
+                if(tran_cash != amount){
+                    alert("Transfer and Cash amount does not correspond with total amount")
+                }else if(account == null || account == ""){
+                    alert("Make sure account is selected")
+                }else{
+                    showmodal()
+                }
+
+            }else if(payment_method == "Transfer"){
+                // alert(account)
+                if(account == null || account == ""){
+                    alert("Make sure account is selected")
+                }else{
+                    showmodal()
+                }
+            }else{
+                showmodal()
+            }
+        }
+
+        function showmodal(){
+            $("#t_account").val(account)
+            $("#transfer_amount").val(transfer)
+            $("#cash_amount").val(cash)
+            checkout_summary.showModal()
+            confirmCheckOut()
+        };
+
+        }
+

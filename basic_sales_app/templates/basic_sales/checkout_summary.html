@@ -1,0 +1,100 @@
+<dialog id="checkout_summary" class="modal py-3 px-3 rounded-lg w-full">
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span> Check-out Summary </span>
+        </div>
+        <span>
+            <form method="dialog" class="modal-backdrop">
+                <button class="py-1 px-2 rounded-full bg-red-600 text-[14px] text-white font-semibold">X</button>
+            </form>
+        </span>
+    </a>
+
+    <div class="modal-box">
+        <div class="px-4 py-3  bg-white rounded-lg shadow-md">
+            <h4 class="text-center text-green-900 my-2 text-[24px]"> Payment Method: <span class="text-green-500 font-extrabold" id="method">  </span></h4>
+            <div class="flex items-center justify-center">
+                <h3 class="text-center text-gray-900 font-extrabold my-2 text-[24px]">Customer:  <span class=" font-extrabold" id="customer">  </span></h3>
+            </div>
+
+            <form action="" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="w-full overflow-auto mt-5">
+                    <table class="w-full whitespace-no-wrap">
+                        <thead>
+                            <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                                <th class="px-4 py-3">SN</th>
+                                <th class="px-4 py-3">Item Image</th>
+                                <th class="px-4 py-3">Item Name</th>
+                                <th class="px-4 py-3">Quantity</th>
+                                <th class="px-4 py-3">Uniit Price</th>
+                                <th class="px-4 py-3">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y" id="confirmData">
+                           
+                        </tbody>
+                    </table>
+                    <input type="hidden" id="hidden_amount" name="" value="">
+                    <input type="hidden" id="hidden_payment_method" name="payment_method" value="">
+                    <input type="hidden" id="hidden_customer_name" name="customer_name" value="">
+                    <input type="hidden" id="amount_expected" name="amount_expected" value="0">
+                    <input type="hidden"  name="invoiceID" value="" id="invoiceID">
+                    <input type="hidden"  name="order_ID" value="" id="order_ID">
+                    <input type="hidden"  name="cusID" value="" id="cusIDcusID">
+                    <input type="hidden"  name="t_account" value="" id="t_account">
+                    <input type="hidden"  name="transfer_amount" value="" id="transfer_amount">
+                    <input type="hidden"  name="cash_amount" value="" id="cash_amount">
+                    <input type="hidden" name="vat_value" id="vat_value" value="">
+                    <!-- <input type="text"  name="" value="{{get_symbol}}" id="get_symbo"> -->
+
+                    <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-2 mt-5" id="prices">
+                        <div class="text-left">
+                            <label class=" text-sm flex">
+                                <b>TOTAL:</b>
+                                <p id="totalPrice_Cart" class="text-right w-full"></p>
+                                <input type="hidden" name="" id="total-price" value="">
+                            </label>
+                            <hr>
+                            <label class=" text-sm flex mt-3">
+                                <b>Ammount Paid:</b>
+                                <p id="amount_paid" class="text-right w-full"></p>
+                                <input type="hidden" name="amount_paid" id="price_paid" value="">
+                            </label>
+                            <hr>
+                            <label class=" text-sm flex mt-3">
+                                <b>Balance:</b>
+                                <p id="Balance" class="text-right w-full"></p>
+                            </label>
+                            <hr>
+                        </div>
+                     
+                    </div>
+
+                    <div class="grid cols-1 mt-5" id="checkoutbtn">
+                        <button type="submit" class="p-3 mt-45 bg-gray-900 float-right text-white rounded-lg">Check-Out</button>
+                    </div>
+
+                </div>    
+            </form>
+    
+        </div>
+
+    </div>
+
+</dialog>
+
+
+

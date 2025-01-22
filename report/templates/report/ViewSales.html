@@ -1,0 +1,322 @@
+
+
+<dialog id="my_modal_view_sales" class="modal py-3 px-3 rounded-lg">
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>View Sales </span>
+        </div>
+        <span>
+            <form method="dialog" class="modal-backdrop">
+                <button class="py-1 px-2 rounded-full bg-red-600 text-[14px] text-white font-semibold">X</button>
+            </form>
+        </span>
+    </a>
+
+    <div class="modal-box px-4" id="">
+        <div class="px-4 py- my-4 bg-white rounded-lg shadow-md">
+            <div class="w-full my-2 overflow-hidden rounded-lg shadow-xs">
+                <div class="w-full overflow-x-auto table-responsive" id="sales_table">
+                    {% include 'components/header.html' %}
+                  <table id="salesLadgerView" class="display borde mt-3" style="width:100%">
+                        <thead>
+                            <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                                <th class="px-0 py-3">SN</th>
+                                <th class="px-0 py-3">Date</th>
+                                <th class="px-0 py-3">Customer ID</th>
+                                <th class="px-0 py-3">Item Name</th>
+                                <th class="px-0 py-3">Price</th>
+                                <th class="px-0 py-3">Quantity</th>
+                                <th class="px-0 py-3">Total</th>
+                              {% comment %}  <th class="px-4 py-3">
+                                     <a onclick="my_modal_sales_ledger_edit_date.showModal()"  href="#"
+                                        class="flex items-center justify-center text-blue-500"
+                                        aria-label="Edit">
+                                        <svg
+                                            class="w-5 h-5"
+                                            aria-hidden="true"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                            d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+                                            ></path>
+                                        </svg>
+                                    </a> 
+                                    Action
+                                </th>{% endcomment %}
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y">
+        
+                            
+                            {% for display in display_vendor %}
+                            
+                            <tr class="text-gray-700">
+        
+                                <td class="text-[10px]">
+                                    {{display.id}}
+                                </td>
+                                <td class="text-[10px]">
+                                    {{display.address}}
+                                </td>
+                                <td class="text-[10px]">
+                                    {{display.company_name}}
+                                </td>
+                                <td class="text-[10px]">
+                                    {{display.custID}}
+                                </td>
+                                <td class="text-[10px]">
+                                    {{display.company_name}}
+                                </td>
+                                <td class="text-[10px]">
+                                    {{display.custID}}
+                                </td>
+                                <td class="text-[10px]">
+                                    none
+                                </td>
+        
+                            </tr>
+        
+                            {% endfor %}
+        
+                        </tbody>
+                        <tfoot>
+                            <tr class="text-gray-700 text-xs ">
+                                <td class="pt-6 text-right pr-3" colspan="6">
+                                    <!-- <span class="">Total Debit:</span> -->
+                                </td>
+                                <td class="pt-6 text-sm">
+                                    <b class="currency"></b><span class=" " id="sub-total">0.00</span>
+                                </td>
+                            </tr>
+                            <tr class="text-gray-700 text-xs">
+                                <td class="text-right pr-3" colspan="6">
+                                    <!-- <span class="">Total Credit:</span> -->
+                                </td>
+                                <td class="text-sm">
+                                    <b class="currency"></b><span class="" id="discount2">0.00</span>
+                                </td>
+                            </tr>
+                            <tr class="text-gray-700 text-xs">
+                                <td class="text-right pr-3" colspan="6">
+                                    <!-- <span class="">Balance:</span> -->
+                                </td>
+                                <td class="text-sm">
+                                    <b class="currency"></b><span class="" id="total">0.00</span>
+                                </td>
+                            </tr>
+                           
+                        </tfoot>
+                    </table>
+                    
+                    <!-- <div class="block justify-end items-center w-full ">
+                        <label class="flex justify-end items-center gap-2 text-[11px] w-full">
+                            <!-- <span class="text-gray-700">Sub Total</span>
+                            <input 
+                                type="text"
+                                class="bloc w-[100px] px-2 text-[10px] border-r border-l flex justify-end pr-9   focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                placeholder=""
+                                id="sub-total"
+                                value=""
+                                disabled
+                            />
+                        </label>
+            
+                        <label class="flex justify-end items-center gap-2 text-[11px] w-full">
+                            <div class="flex justify-center items-center gap-6">
+                                <!-- <span class="text-gray-700">
+                                    Discount
+                                </span>
+                                <label class="flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        class="text-gray-700 form-checkbox focus:border-slate-200 focus:outline-none focus:shadow-outline-slate"
+                                        id="discountcheck"
+                                        
+                                    />
+                                    <span class="ml-2 text-gray-700">
+                                        Include VAT 7.5%
+                                    </span>
+                                </label> 
+                            </div>
+                            <input 
+                                type="text"
+                                class="block w-[100px] px-2 text-[10px] border-r border-l border-b flex justify-end pr-9  focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                placeholder=""
+                                id="discount2"
+                                value="0.00"
+                                name="discount"
+                                disabled
+                            />
+                        </label>
+            
+                        <label class="flex justify-end items-center gap-2 text-[11px] w-full">
+                            <!-- <span class="text-gray-700">Total</span> 
+                            <input 
+                                type="text"
+                                class="block w-[100px] px-2 text-[10px] border-r border-l border-b flex justify-end pr-9  focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                id="total"
+                                name="total"
+                                value=""
+                                disabled/>
+                        </label>
+                        <label class="flex justify-between gap-3  text-sm hidden">
+                            <span class="text-gray-700">Sub Total:  </span>
+                            <bold class="font-semibold" id="sales_total">{{sale.total_sales}}</bold>
+                           
+                        </label>
+            
+                        <label class="flex justify-between gap-3  text-sm hidden">
+                            <span class="text-gray-700 ">Diacount  </span>
+                            <bold class="font-semibold" id="purchase_total">{{sale.total_purchase}}</bold>
+                           
+                        </label>
+                        <label class="flex justify-between gap-3  text-sm hidden">
+                            <span class="text-gray-700 ">Total:  </span>
+                            <bold class="font-semibold" id="total2">{{sale.total}}</bold>
+                           
+                        </label>
+                    </div> -->
+                </div>
+            </div>
+            
+            <form action="" method="post" id="post-form">
+                {% csrf_token %}
+                <div class="block justify-end items-center py-2 w-full">
+                    <div class="flex justify-between items-center gap-6">
+                        <button class="block w-full px-1 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                        type="button" onclick="generatePDF('sales_table')">
+                        Print
+                        </button>
+                        <button class="block w-full px-1 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                        type="button" onclick="EditSales()">
+                        Edit Sales
+                        </button>
+                        <!-- <button type="button" id="supply" class="block w-full px-1 py-1 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-blue-600 border border-transparent rounded-lg active:bg-blue-600 hover:bg-blue-700 focus:outline-none focus:shadow-outline-slate"
+                            onclick="Supply()">
+                            Supply 
+                        </button > -->
+                        <button type="button" class="block w-full px-1 py-1 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-red-600 border border-transparent rounded-lg active:bg-red-600 hover:bg-red-700 focus:outline-none focus:shadow-outline-slate"
+                            onclick="CancelSales()">
+                            Cancel 
+                        </button >
+                        
+                    </div>
+
+                    <!-- <div class="flex justify-between items-center gap-6">
+
+                        <button class="block w-full px-1 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                        type="button" onclick="generatePDF('sales_table')">
+                        Print
+                        </button>
+                        <button type="button" class="block w-full px-1 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                            onclick="exportTableToExcel('salesLadgerView')">
+                            Export to excel
+                        </button >
+                        <button class="block w-full px-1 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                        type="button" onclick="generatePDF('sales_table')">
+                        Export to Pdf
+                        </button>
+                    </div> -->
+                   
+
+               
+                 
+                </div>
+            </form>
+    
+        </div>
+    </div>
+    
+    <input type="text" name="" id="invoice">
+</dialog>
+
+{%csrf_token%}
+<script>
+    function EditSales(){
+        
+        var iv = $("#invoice").val();
+        sessionStorage.setItem("edit_invoice", iv)
+        window.location.href = "{% url 'customer:ReturnInward' %}"
+    }
+
+
+    function CancelSales(){
+        const invoice = $("#invoice").val();
+        const cusID = $("#cusID").html();
+        if (invoice){
+
+            alertify.defaults.glossary.title = "Hey {{request.user.username}}";
+            alertify.confirm("Are you sure you want to cancel this sales",
+            // if proceed
+            function(){
+                $.ajax({
+                url: "{% url 'customer:CancelSales'%}",
+                method: "POST",
+                data:{invoice:invoice, cusID:cusID, csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},
+                success: function(data){
+                    if (data == true){
+                        alertify.success("Invoice Cancellation successful")
+                    }else{
+                        alertify.success("Invoice Cancellation unsuccessful")
+                    }
+                },
+                error: function(err){
+
+                }
+            })                              
+            },
+            //if Cancel
+            function(){
+
+            }).set('labels',{ok:'Proceed', cancel:'Cancel'});
+            
+        }
+    }
+
+
+    // function Supply(){
+    //     const invoice = $("#invoice").val();
+    //     const cusID = $("#cusID").html();
+    //     if (invoice){
+
+    //         alertify.defaults.glossary.title = "Hey {{request.user.username}}";
+    //         alertify.confirm("Are you sure you want to cancel this sales",
+    //         // if proceed
+    //         function(){
+    //             $.ajax({
+    //             url: "{% url 'customer:supply_pending_invoice'%}",
+    //             method: "POST",
+    //             data:{invoice:invoice, cusID:cusID, csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},
+    //             success: function(data){
+    //                 if (data == true){
+    //                     alertify.success("Invoice Cancellation successful")
+    //                 }else{
+    //                     alertify.success("Invoice Cancellation unsuccessful")
+    //                 }
+    //             },
+    //             error: function(err){
+
+    //             }
+    //         })                              
+    //         },
+    //         //if Cancel
+    //         function(){
+
+    //         }).set('labels',{ok:'Proceed', cancel:'Cancel'});
+            
+    //     }
+    // }
+ </script>
+

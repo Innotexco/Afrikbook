@@ -1,0 +1,245 @@
+
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+{% include "modalBoxx/quaterly.html" %}
+
+    
+
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Quaterly Sales Report</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+    
+
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="grid gap-6 md:grid-cols-6 xl:grid-cols-4 mb-3">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">FROM</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        name="start_date"
+                        id="from"
+                    />
+                </label>
+
+                {% comment %} <label class="block text-sm">
+                    <span class="text-gray-700">TO</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        name="end_date"
+                        id="to"
+                    />
+                </label> {% endcomment %}
+
+               
+               
+                <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate hidden" id="search2" >
+                    Search
+                </button> 
+
+               
+
+            </div>
+
+           
+
+        </form>
+
+        <div class="w-full overflow-x-auto table-responsive mt-5" id="sumquaterly">
+            {% include 'components/Periodheader.html' %}
+            <h2>{{start}} Sales Report Summary</h2>
+            <table id="example2sumquaterly" class="sale" style="width:100%">
+                <thead>
+                      <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                          <th class="px-4 py-3">Date</th>
+                          <th class="px-4 py-3">Income</th>
+                          <th class="px-4 py-3">Expenses</th>
+                          <th class="px-4 py-3">Total</th>
+                          <th class="px-4 py-3">View</th>
+                      </tr>
+                </thead>
+                <tbody class="bg-white divide-y" >
+                    
+                    {% for data in  quaterly_sales_data %}
+                    <tr class="text-gray-700">
+  
+                        <td class="text-[10px]">
+                            {{data.quarter_start}} - {{data.quarter_end}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{data.total_sales}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{data.total_purchase}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{data.total}}
+                        </td>
+                        {% include 'report/viewbtn.html' %}
+                         
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                  {% include 'ModalBoxx/tfoot.html' %}
+            </table>
+
+            <div class="flex justify-end  py-3 my-5 bg-white rounded-lg shadow-md">
+
+                <div class="">
+        
+                    <label class="flex justify-between gap-6 text-sm">
+                        <span class="text-gray-700">Total Sales: </span>
+                        <span>
+
+                            <b class="mr-1 currency"></b><span class="" id="sales_total">{{total_sales|floatformat:2|intcomma}}</span>
+                        </span>
+                       
+                    </label>
+        
+                    <label class="flex justify-between gap-6 text-sm">
+                        <span class="text-gray-700 ">Total Expenses: </span>
+                        <span>
+
+                            <b class="mr-1 currency"></b><span class="" id="purchase_total">{{total_purchase|floatformat:2|intcomma}}</span>
+                        </span>
+                    </label>
+                    <label class="flex justify-between gap-6 text-sm">
+                        <span class="text-gray-700 ">Balance: </span>
+                        <span>
+
+                            <b class="text-[15px] mr-1 currency"></b><span class="" id="total">{{total|floatformat:2|intcomma}}</span>
+                        </span>
+                    </label>
+        
+                    
+                </div>
+        
+            </div>
+        </div>
+        
+       
+
+        
+        
+
+    </div>
+
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+        
+         <!-- Print Export To Excel and Export to Pdf template -->
+         {% include 'ModalBoxx/printbtn.html' with container="sumquaterly" table="example2" table_no="sumquaterly" %}
+
+    </div>
+
+    <script>
+         $(document).on('change', 'input[type="date"]', function(){
+           
+           let date1 = $('#from').val()
+           if(date1 != ''){
+               $('#search2').removeClass('hidden')
+           }else{
+               $('#search2').addClass('hidden')
+           }
+       })
+        $(document).ready(
+            setTimeout(function(){
+                //Filter()
+            }, 500)
+        )
+        //serach by date
+        function Filter(){
+            //e.preventDefault()
+            const from = $('#from').val()
+            const to = $('#to').val()
+            const datas = {
+                start_date: from,
+                end_date: to,
+                csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+            }
+           
+            if(from || to || datas.invoice || datas.invoice_state || datas.customer || datas.item){
+                $.ajax({
+                    url: '#',
+                    method: 'POST',
+                    data: datas,
+                    success: function(response) {
+                        if(response.serializer_data && response.serializer_data.length > 0){
+                            // Handle the response data
+                        
+                            $("#sales_total").val(response.sales_total);
+                            $("#qty_total").val(response.qty_total);
+                            const table = $('#example2 tbody')
+                            table.empty()
+                            let num = 0;
+                            response.serializer_data.forEach(item => {
+                                num++ 
+                                
+        
+                                const row = $('<tr id="row">').append(
+                                    $('<td class="text-[10px]">').html(num),
+                                    $('<td class="text-[10px]">').text(item.cusID),
+                                    $('<td class="text-[10px]">').text(item.customer_name),
+                                    $('<td class="text-[10px]">').text(item.invoice_date),
+                                    $('<td class="text-[10px]">').text(item.invoiceID),
+                                    $('<td class="text-[10px]">').text(item.Gdescription),
+                                    $('<td class="text-[10px]">').text(parseFloat(item.amount_expected) + parseFloat(item.amount_paid)),
+                                    $('<td class="text-[10px]">').text(item.customer_name),
+                                    $('<td class="text-[10px]">').text(item.payment_method),
+                                    $('<td class="text-[10px]">').append('<a onclick="showModal(\'' + item.invoiceID + '\', \'' + item.cusID + '\')" class="flex items-center justify-center text-blue-500 border px-3 bg-gray-50 cursor-pointer"  aria-label="Edit">View</a>'),
+                                    
+                                
+                                );
+                                table.append(row);
+                                
+                                $("#no-data").css('display', 'none');
+                            });
+                        }else{
+                            $("#example2 tbody").empty();
+                            $("#sales_total").val(0);
+                            $("#qty_total").val(0);
+                            $("#no-data").css('display', 'block');
+                            alertify.error("No Return data between selected date")
+                            //alertify.error("Select start_date and end_date")
+                        }
+                    },
+                    error: function(error) {
+                        // Handle the error
+                        console.log('error')
+                    }
+                });
+            }else{
+                //alertify.error("Select start_date and end_date")
+            }
+
+            
+        };
+
+    </script>
+
+
+
+
+{% endblock content %}

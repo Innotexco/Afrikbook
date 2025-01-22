@@ -1,0 +1,140 @@
+<!-- Open the modal using ID.showModal() method View chart of Account -->
+
+<dialog id="my_modal_view_customer_details" class="modal py-3 px-3 rounded-lg">
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Customer Information / Invoice</span>
+        </div>
+        <span>
+            <form method="dialog" class="modal-backdrop">
+                <button class="py-1 px-2 rounded-full bg-red-600 text-[14px] text-white font-semibold">X</button>
+            </form>
+        </span>
+    </a>
+
+    <div class="modal-box">
+        <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md space-y-10 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-10">
+
+            <div class="items-center justify-center">
+                <h3 class="text-center text-gray-900 font-extrabold my-5 text-[24px]">Customer Information</h3>
+                <dl class="md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8 ">
+                    <div class="flex">
+                        <div class="">
+                            <dt class="text-lg leading-6 font-medium text-gray-900">
+                                Full Name
+                            </dt>
+                            <dd class="mt-2 text-base text-gray-500" id="name">
+                                Brightify<br>
+                                Associate
+                            </dd>
+                        </div>
+                    </div>
+    
+                    <div class="flex">
+                        <div class="">
+                            <dt class="text-lg leading-6 font-medium text-gray-900">
+                                Phone number
+                            </dt>
+                            <dd class="mt-2 text-base text-gray-500" id="phone_no">
+                                (555) 555-5555
+                            </dd>
+                        </div>
+                    </div>
+    
+                    <div class="flex">
+                        <div class="">
+                            <dt class="text-lg leading-6 font-medium text-gray-900">
+                                Customer Code
+                            </dt>
+                            <dd class="mt-2 text-base text-gray-500" id="code">
+                                18220
+                            </dd>
+                        </div>
+                    </div>
+    
+                    <div class="flex">
+                        <div class="">
+                            <dt class="text-lg leading-6 font-medium text-gray-900">
+                                Balance 
+                            </dt>
+                            <dd class="mt-2 text-base text-gray-500" id="balance">
+                                37354678:00
+                            </dd>
+                        </div>
+                    </div>
+                </dl>
+            </div>
+    
+            <div class="w-full overflow-x-auto table-responsive my-5">
+                <h3 class="text-center text-gray-900 font-extrabold my-5 text-[24px]">Invoice Details</h3>
+                <table id="view_customer_details" class="display" style="width:100%">
+                    <thead>
+                        <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                            <th class="px-4 py-3">SN</th>
+                            <th class="px-4 py-3">Invoice Date</th>
+                            <th class="px-4 py-3">Invoice No.</th>
+                            <th class="px-4 py-3">Amount</th>
+                            <th class="px-4 py-3">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y">
+    
+                        <tr class="text-gray-700">
+    
+                            <td class="text-[10px]">
+                                1000-FIDELITY 
+                            </td>
+                            <td class="text-[10px]">
+                                Date
+                            </td>
+                            <td class="text-[10px]">
+                                Transaction Source
+                            </td>
+                            <td class="text-[10px]">
+                                Amount
+                            </td>
+                            <td class="text-[10px]">
+                                testing
+                            </td>
+    
+                        </tr>
+    
+                        <tr class="text-gray-700">
+    
+                            <td class="text-[10px]">
+                                1000-FIDELITY 
+                            </td>
+                            <td class="text-[10px]">
+                                Date
+                            </td>
+                            <td class="text-[10px]">
+                                Transaction Source
+                            </td>
+                            <td class="text-[10px]">
+                                Amount
+                            </td>
+                            <td class="text-[10px]">
+                                testing
+                            </td>
+    
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+
+        </div>
+    </div>
+    
+</dialog>

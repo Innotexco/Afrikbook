@@ -1,0 +1,108 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="/">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Returned Items</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+    <form method="POST">
+        {% csrf_token %}
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+        <div class="w-3/3 border p-2 text-[12px]">
+            <p>Company:  {{customer.company_name}}</p>
+            <p>Phone:  {{customer.phone}}</p>
+            <p>Email:  {{customer.email}}</p>
+            <p>Customer ID  :{{customer.customer_code}}</p>
+            <p>Address:  {{customer.address}}</p>
+            <p>Balance:  {{customer.Balance}}</p>
+            <hr class="my-2">
+            <p>Description:  {{invoice.Gdescription}}</p>
+            <p>Invoice ID:  {{invoice.invoiceID}}</p>
+            <p>ReferenceID:  </p>
+            <p>Refund_date:  {{invoice.invoice_date}}</p>
+        </div>
+        <div class="w-full my-5 overflow-hidden shadow-xs">
+            <div class="w-full overflow-x-auto">
+                <table class="border-collapse border border-slate-400 w-full" id="itemsTable">
+                    <thead>
+                        <tr class="font-medium tracking-wide text-left px-4 text-gray-500 border-b bg-gray-200">
+                            <th class="border border-slate-300 px-4 text-[10px] ...">SN</th>
+                            {% comment %} <th class="border border-slate-300 px-4 text-[10px] ...">Item</th> {% endcomment %}
+                            <th class="border border-slate-300 px-4 text-[10px] ...">Description</th>
+                            <th class="border border-slate-300 px-4 text-[10px] ...">Quantity</th>
+                            <th class="border border-slate-300 px-4 text-[10px] ...">Unit Price</th>
+                            <th class="border border-slate-300 px-4 text-[10px] ...">Discount</th>
+                            <th class="border border-slate-300 px-4 text-[10px] ...">Amount</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody id="dynamic_row_add">
+                        
+                        {% for invoice in invoices %}
+                            <tr>
+                                <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">
+                                    {{forloop.counter}}
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">
+                                    {{invoice.item_description}}
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">
+                                    {{invoice.qty}}
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">
+                                    {{invoice.unit_p}}
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">
+                                    {{invoice.discount}}
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">
+                                    {{invoice.amount}}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                      
+                    </tbody>
+                </table>
+            </div>
+        </div>
+       
+        
+    
+        {% comment %} <div class="block justify-end items-center w-full"> {% endcomment %}
+            
+            <label class="flex justify-end items-center gap-2 text-[11px] w-full mt-1">
+                <span class="text-gray-700">Total</span>
+                <input 
+                    type="text"
+                    class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                    id="total"
+                    name="total"
+                    value="{{invoice.amount_expected}}"
+                    disabled/>
+            </label>
+        {% comment %} </div> {% endcomment %}
+    
+      
+        
+
+    </div>
+    
+
+{% endblock content %}

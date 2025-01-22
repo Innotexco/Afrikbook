@@ -1,0 +1,85 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{% block title %} Afrikbook Sales Point {% endblock title %}</title>
+        <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet"/>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Farro:wght@300;400;500&display=swap" rel="stylesheet">
+        <!-- <link rel="stylesheet" href="src/style.css" /> -->
+        <!-- <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" /> -->
+
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script> -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+        <link href="https://unpkg.com/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+        <script src="https://cdn.tailwindcss.com"></script>
+
+         <!-- CSS -->
+         <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
+         <!-- Default theme -->
+         <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/default.min.css"/>
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+      
+        <!-- Jquery -->
+        <script src="{% static 'jquery/jquery.js' %}"></script>
+        <script src="{% static 'jquery/jquery.min.js' %}"></script>
+
+
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i&display=swap" rel="stylesheet">
+       
+    </head>
+   
+     
+    <body class="bg-blue-gray-50">
+        <style>
+            /* MY LOADER */
+                
+            .loadercontainer {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(255, 255, 255, 0.8);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 999;
+                }
+
+            .loader {
+                border: 8px solid #f3f3f3;
+                border-top: 8px solid #34db95;
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+
+            /* END MY LOADER */
+
+            /* Fix the header */
+            .overflow-auto {
+                position: relative;
+            }
+        
+            .overflow-auto thead {
+                position: sticky;
+                top: 0;
+                background-color: #edf2f7; /* Tailwind equivalent of bg-gray-100 */
+                z-index: 10; /* Ensure it's above the table body */
+            }
+        </style>
+
+        

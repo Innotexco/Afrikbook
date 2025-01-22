@@ -1,0 +1,261 @@
+
+{% extends 'base.html' %}
+
+
+
+{% block content %}
+
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Customer Ledger</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+        <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+            <label class="block text-sm">
+                <span class="text-gray-700">From</span>
+                <input 
+                    type="date"
+                    class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                    placeholder=""
+                    id="from"
+                />
+            </label>
+
+            <label class="block text-sm">
+                <span class="text-gray-700">To</span>
+                <input 
+                    type="date"
+                    class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                    placeholder=""
+                    id="to"
+                />
+
+            </label>
+            
+            <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="search" onclick="Filter()">
+                Search
+            </button>
+
+        </div>
+        <div class="w-full overflow-x-auto table-responsive mt-4" id="cl">
+            {% include 'components/Periodheader.html' %}
+          <table id="example" class="display" style="width:100%">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                        <th class="px-4 py-3">SN</th>
+                        <th class="px-4 py-3">Customer ID</th>
+                        <th class="px-4 py-3">Customer Name</th>
+                        <th class="px-4 py-3">Amount Paid</th>
+                        <th class="px-4 py-3">Balance</th>
+                        <th class="px-4 py-3">View</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y" id="'+i+'">
+
+                    
+                    {% for display in display_vendor %}
+                    
+                    <tr class="text-gray-700">
+
+                        <td class="text-[10px]">
+                            {{display.id}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.address}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.company_name}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.custID}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.company_name}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.custID}}
+                        </td>
+                        <td class="text-[10px]">
+                            none
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+                <tfoot>
+    
+                    <tr class="">
+                        <!-- <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-5"> -->
+                        <tr>
+                            <td class="py-4"></td>
+                        </tr>
+                        <td class="pt-6 text-sm" colspan="">
+                            <span class="text-gray-700">Total Amount</span>
+                        </td>
+                        <td class="pt-6">
+                            <b class="text-[15px] mr-1 currency"></b><span class="" id="total-amount">0.00</span>
+                            <!-- <input 
+                                class="block w-full px-2 mt-1 text-sm bg-slate-100 border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                placeholder="" disabled
+                                value=""
+                                id="total-amount"
+                            /> -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="block text-sm" colspan="">
+                            <span class="text-gray-700 ">Amount Paid</span>
+                        </td>
+                        <td>
+                            <b class="text-[15px] mr-1 currency"></b><span class="" id="amount-paid">0.00</span>
+                            <!-- <input 
+                                class="block w-full px-2 mt-1 text-sm bg-slate-100  border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                placeholder=""
+                                disabled
+                                value=""
+                                id="amount-paid"
+                            /> -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="block text-sm" colspan="">
+                            <span class="text-gray-700 ">Balance</span>
+                        </td>
+                        <td>
+                            <b class="text-[15px] mr-1 currency"></b><span class="" id="balance">0.00</span>
+                        
+                            <!-- <input 
+                                class="block w-full px-2 mt-1 text-sm bg-slate-100  border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                placeholder=""
+                                disabled
+                                value=""
+                                id="balance"
+                            /> -->
+                        </td> 
+                    </tr>
+            
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div class="py-3 my-5 bg-white rounded-lg shadow-md">
+
+        <!-- <div class="flex justify-between items-center gap-6">
+
+            <button class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+            type="button" onclick="generatePDF('cl')">
+            Print
+            </button>
+            <button class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+            type="button" onclick="exportTableToExcel('example')">
+            Export to Excel
+            </button>
+            <button class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+            type="button" onclick="generatePDF('cl')">
+            Export to PDF
+            </button>
+        </div> -->
+        <!-- Print Export To Excel and Export to Pdf template -->
+        {% include 'ModalBoxx/printbtn.html' with container="cl" table="example" table_no="" %}
+    </div>
+    <script>
+  document.getElementById('openNewTabButton').addEventListener('click', function() {
+    // Replace 'https://www.example.com' with the URL you want to open
+    window.open('https://www.example.com', '_blank');
+  });
+</script>
+    <script>
+        $(document).on('change', function(){
+            const from = $('#from').val()
+            const to = $('#to').val()
+            setTimeout(function() {
+                if(from != '' && to != ''){
+                    Filter()
+                }
+            }, 500)
+          }
+        )
+            
+        function Filter(){
+           // e.preventDefault()
+            const from = $('#from').val()
+            const to = $('#to').val()
+            //console.log(from)
+            //console.log(to)
+            if(from && to){
+            $.ajax({
+                url: '{% url "filter:customers-ledger" %}',
+                method: 'GET',
+                data: {
+                    'start_date': from,
+                    'end_date': to,
+                },
+                success: function(data) {
+                   // console.log(data)
+                    if(data.serializer_data && data.serializer_data.length > 0){
+                        // Handle the response data
+                        const table = $('#example tbody')
+                        table.empty()
+                        let num = 0;
+                        data.serializer_data.forEach(item => {
+                            num++ 
+                            //console.log(item.invoiceID)
+                            const row = $('<tr id="row">').append(
+                                $('<td class="text-[10px]">').html(num),
+                                $('<td class="text-[10px]">').text(item.cusID),
+                                $('<td class="text-[10px]">').text(item.customer_name),
+                                $('<td class="text-[10px]">').text(item.amount_paid),
+                                $('<td class="text-[10px]">').text(item.amount_expected - item.amount_paid ),
+                                //$('<td class="text-[10px]">').text(item.Gdescription)
+                                $('<td class="text-[10px] bg-gray-50 w-3 text-center">').append('<a href="/view-customer-ledger/'+item.cusID+'/'+item.invoiceID+'" target="_blank" class="text-blue-500 border px-4"  aria-label="Edit">View</a>'),
+                            
+                            
+                            );
+                            //table.animate({left:"100px"}, "slow");
+                            table.append(row);
+                        });
+                        $("#total-amount").html(NCFormat(data.amount_total));
+                        $("#amount-paid").html(NCFormat(data.amount_paid_total));
+                        $("#balance").html(NCFormat(data.balance));
+                    }else{
+                        $("#total-amount").html("0.00");
+                        $("#amount-paid").html("0.00");
+                        $("#balance").html("0.00");
+                        alertify.error("No Return data between selected date")
+                        
+                    }
+                },
+                error: function(error) {
+                    // Handle the error
+                    console.log('error')
+                }
+            });
+            }else{
+                alertify.error("Select start_date and end_date")
+            }
+
+            
+        }
+
+        </script>
+       
+
+{% endblock content %}

@@ -1,0 +1,386 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+        href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Balance Sheet</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+        <form action="" method="get">
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">From</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="fromDate"
+                    />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">To</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="toDate"
+                    />
+
+                </label>
+                
+                <button type="submit" class="block w-full h-8 px-4 py-1 mt-5 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                    >
+                    Search
+                </button>
+
+            </div>
+        </form>
+        <div class=""  id="printContent">
+            <h1 class="font-extrabold text-center text-lg m-4">BALANCE SHEET REPORT</h1>
+            <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs" >
+                <div class="w-full overflow-x-auto">
+                    <table class="w-full whitespace-no-wrap">
+                        <thead>
+                            <tr class="text-lg font-extrabold tracking-wide text-left text-white uppercase border-b bg-slate-400">
+                                <th colspan="3" class="px-4 py-3">Assets</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y">
+
+                            <tr class="text-black font-medium">
+
+                                <td colspan="3" class="px-4 py-1">
+                                    Current Assets
+                                </td>
+
+                            </tr>
+
+                            <tr class="text-slate-600">
+
+                                <td colspan="2" class="px-4 py-1">
+                                    cash
+                                </td>
+                                <td class="px-4 py-1 text-sm assets">
+                                {% if CashSum %}  {{  CashSum|floatformat:2|intcomma  }} {% else %} 0 {% endif %}
+                                    
+                                </td>
+
+                            </tr>
+                            <tr class="text-slate-600">
+
+                                <td colspan="2" class="px-4 py-1">
+                                    Account receivable
+                                </td>
+                                <td class="px-4 py-1 text-sm assets">
+                                {% if AccountReceivables %}  {{  AccountReceivables|floatformat:2|intcomma  }} {% else %} 0 {% endif %}
+                                    
+                                </td>
+
+                            </tr>
+
+                            <tr class="text-slate-600">
+
+                                <td colspan="2" class="px-4 py-1 assets">
+                                    Inventory
+                                </td>
+                                <td class="px-4 py-1 text-sm">
+                                    {% if Inventory_Sum %}  {{  Inventory_Sum|floatformat:2|intcomma  }} {% else %} 0 {% endif %}
+                                </td>
+
+                            </tr>
+
+                            <tr class="text-slate-600">
+
+                                <td colspan="2" class="px-4 py-1">
+                                    Prepaid Expenses
+                                </td>
+                                <td class="px-4 py-1 text-sm assets">
+                                    {% if Prepaid_Expenses_Sum %}  {{  Prepaid_Expenses_Sum|floatformat:2|intcomma  }} {% else %} 0 {% endif %}
+                                </td>
+
+                            </tr>
+
+                            <tr class="text-black font-medium bg-slate-200">
+
+                                <td colspan="2" class="px-4 py-1">
+                                    Total Current-Assets
+                                </td>
+                                <td class="px-4 py-1 text-sm" id="Total_Current_Assets">
+                                {{ Total_Current_Assets }}
+                                </td>
+
+                            </tr>
+                            
+                            <tr class="text-black font-medium">
+
+                                <td colspan="3" class="px-4 py-1">
+                                    Non Current Assets
+                                </td>
+
+                            </tr>
+
+                            <tr class="text-slate-600">
+
+                                <td colspan="2" class="px-4 py-1">
+                                    Property plant equipment
+                                </td>
+                                <td class="px-4 py-1 text-sm noncurrentassets">
+                                    {% if get_PPE_Sum %}  {{  get_PPE_Sum|floatformat:2|intcomma  }} {% else %} 0 {% endif %}
+                                </td>
+
+                            </tr>
+
+                            
+                            <tr class="text-black font-medium bg-slate-200">
+
+                                <td colspan="2" class="px-4 py-1">
+                                    Total Non Current Assets
+                                </td>
+                                <td class="px-4 py-1 text-sm" id="Total_Non_Current_Assets">
+                                {{ Total_Non_Current_Assets }}
+                                </td>
+
+                            </tr>
+                            <tr class="text-black font-medium bg-slate-300">
+
+                                <td colspan="2" class="px-4 py-1">
+                                    Total Assets
+                                </td>
+                                <td class="px-4 py-1 text-sm" id="Total_Assets">
+                                    {{ Total_Assets }}
+                                </td>
+
+                            </tr>
+                            
+                        </tbody>
+                    </table>
+                    <table class="w-full whitespace-no-wrap mt-3">
+                        <thead>
+                            <tr class="text-lg font-extrabold tracking-wide text-left text-white uppercase border-b bg-slate-400">
+                                <th colspan="3" class="px-4 py-3">Liabilities and Owner's Equity</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y">
+
+                            <tr class="text-black font-medium">
+
+                                <td colspan="3" class="px-4 py-1">
+                                    Current Liabilities
+                                </td>
+
+                            </tr>
+
+                            <tr class="text-slate-600">
+
+                                <td colspan="2" class="px-4 py-1">
+                                    Account Payables
+                                </td>
+                                <td class="px-4 py-1 text-sm" class="currentliabilies">
+                                    {% if acctpayableSum %}  {{  acctpayableSum|floatformat:2|intcomma  }} {% else %} 0 {% endif %}
+                                </td>
+                            </tr>
+
+                            <tr class="text-slate-600">
+
+                                <td colspan="2" class="px-4 py-1">
+                                    Income Tax Payables
+                                </td>
+                                <td class="px-4 py-1 text-sm" class="currentliabilies">
+                                    {% if Income_Tax_Payables_Sum %}  {{  Income_Tax_Payables_Sum|floatformat:2|intcomma  }} {% else %} 0 {% endif %}
+                                    
+                                </td>
+
+                            </tr>
+
+                            <tr class="text-black font-medium bg-slate-200">
+
+                                <td colspan="2" class="px-4 py-1">
+                                    Total Current Liabilities
+                                </td>
+                                <td class="px-4 py-1 text-sm" id="Total_Current_Liabilies">
+                                    {{Total_Current_Liabilities}}
+                                </td>
+
+                            </tr>
+                            
+                            <tr class="text-black font-medium">
+
+                                <td colspan="3" class="px-4 py-1">
+                                    Non Current Liabilities
+                                </td>
+
+                            </tr>
+
+                            <tr class="text-slate-600">
+
+                                <td colspan="2" class="px-4 py-1">
+                                    Long term debit
+                                </td>
+                                <td class="px-4 py-1 text-sm" class="noncurrentliabilies">
+                                    {% if Long_term_debit %}  {{  Long_term_debit|floatformat:2|intcomma  }} {% else %} 0 {% endif %}
+                                </td>
+
+                            </tr>
+
+                            <tr class="text-slate-600">
+
+                                <td colspan="2" class="px-4 py-1">
+                                    Other
+                                </td>
+                                <td class="px-4 py-1 text-sm" class="noncurrentliabilies">
+                                    {% if Other_Sum %}  {{  Other_Sum|floatformat:2|intcomma  }} {% else %} 0 {% endif %}
+                                    
+                                </td>
+
+                            </tr>
+                        
+
+                            <tr class="text-black font-medium bg-slate-200">
+
+                                <td colspan="2" class="px-4 py-1">
+                                    Total Non Current Liabilities
+                                </td>
+                                <td class="px-4 py-1 text-sm" id="Total_NonCurrent_Liabilies">
+                                    {{ Total_Non_Current_Liabilities }}
+                                </td>
+                            </tr>
+
+                            <tr class="text-black font-medium">
+
+                                <td colspan="3" class="px-4 py-1">
+                                    Owner's Equity
+                                </td>
+
+                            </tr>
+
+                            <tr class="text-slate-600">
+
+                                <td colspan="2" class="px-4 py-1">
+                                    capital Investment
+                                </td>
+                                <td class="px-4 py-1 text-sm" class="equities">
+                                    {% if capital_Investment %}  {{  capital_Investment|floatformat:2|intcomma  }} {% else %} 0 {% endif %}
+                                </td>
+
+                            </tr>
+
+                            <tr class="text-slate-600">
+
+                                <td colspan="2" class="px-4 py-1">
+                                    Retained Earning
+                                </td>
+                                <td class="px-4 py-1 text-sm" class="equities">
+                                    {% if Retained_Earning %}  {{  Retained_Earning|floatformat:2|intcomma  }} {% else %} 0 {% endif %}
+                                </td>
+
+                            </tr>
+
+                            <tr class="text-black font-medium">
+
+                                <td colspan="2" class="px-4 py-1">
+                                    Total Owner's equity
+                                <td class="px-4 py-1 text-sm" id="Total_equities_Liabilies">
+                                    Total_Owners_equity
+                                </td>
+
+                            </tr>
+
+                            <tr class="text-black font-medium bg-slate-200">
+
+                                <td colspan="2" class="px-4 py-1">
+                                    Total Liabilities Owner's equity
+                                </td>
+                                <td class="px-4 py-1 text-sm"id="Total_Liabilies" >
+                                    0
+                                </td>
+
+                            </tr>
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <button  type='button' onclick="printModal.showModal()" class=" h-8  px-4  w-full text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="openModalButton">
+            Print
+        </button>
+
+    </div>
+    <script>
+        $(document).ready(function() {
+            var format = new Intl.NumberFormat()
+    
+            // *******************************ASSETS***********************
+                // ******************************* CURRENT ASSETS***********************
+                    assetsSum = loopedaccts('.assets')
+                    formatted_asset_Sum = format.format(assetsSum)
+                    $('#Total_Current_Assets').text(formatted_asset_Sum)
+                // ******************************* CURRENT ASSETS***********************
+
+
+                // ******************************* NON-CURRENT ASSETS***********************
+                    non_current_assets = loopedaccts('.noncurrentassets')
+                    formatted_noncurrent_asset_Sum = format.format(non_current_assets)
+                    $('#Total_Non_Current_Assets').text(formatted_noncurrent_asset_Sum)
+                // ******************************* NON-CURRENT ASSETS***********************
+
+                // ******************************* GROUND ASSETS TOTAL ***********************
+                    total_assets = assetsSum + non_current_assets
+                    total_assets_Sum = format.format(total_assets)
+                    $('#Total_Assets').text(total_assets_Sum)
+                // ******************************* GROUND ASSETS TOTAL ***********************
+            // *******************************ASSETS***********************
+
+
+            // *******************************lABILITY***********************
+                // ******************************* CURRENT LABILITY***********************
+                    currentliabilies_sum = loopedaccts('.currentliabilies')
+                    formatted_currentliabilies_Sum = format.format(currentliabilies_sum)
+                    $('#Total_Current_Liabilies').text(formatted_currentliabilies_Sum)
+                // ******************************* CURRENT LABILITY***********************
+
+
+                // ******************************* NON-CURRENT LABILITY***********************
+                    non_current_liabilies = loopedaccts('.noncurrentliabilies')
+                    formatted_noncurrent_liabilies_Sum = format.format(non_current_liabilies)
+                    $('#Total_NonCurrent_Liabilies').text(formatted_noncurrent_liabilies_Sum)
+                // ******************************* NON-CURRENT LABILITY***********************
+                
+
+                // *******************************EQUITIES LABILITY***********************
+                    equities_liabilies = loopedaccts('.equities')
+                    formatted_equities_liabilies_Sum = format.format(equities_liabilies)
+                    $('#Total_equities_Liabilies').text(formatted_equities_liabilies_Sum)
+                // ******************************* EQUITIES LABILITY***********************
+                
+                // ******************************* GROUND ASSETS TOTAL ***********************
+                    total_liabilies_Sum = currentliabilies_sum + non_current_liabilies + equities_liabilies
+                    total_liabilies = format.format(total_liabilies_Sum)
+                    $('#Total_Liabilies').text(total_liabilies)
+                // ******************************* GROUND ASSETS TOTAL ***********************
+            // *******************************lABILITY***********************
+
+        })
+    </script>
+
+{% endblock content %}
+    

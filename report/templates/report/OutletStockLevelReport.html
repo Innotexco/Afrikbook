@@ -1,0 +1,462 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Outlet Stock Level Report</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+    <div class="px-4 my-5 bg-white rounded-lg shadow-md">
+        <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-1 p-2 border-r">
+              <!-- Content for the first column -->
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3 ">
+                 <!-- <div class="grid grid-cols-2  md:grid-cols-2 xl:grid-cols-4 mt-5"> -->
+                    
+    
+                    <label class="block text-sm hidden" id="dailyDate">
+                        <span class="text-gray-700">
+                            From Date 
+                        </span>
+                        <input 
+                            type="date"
+                            class="onchangeClass block w-full py-2 px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            id="fromdate"
+                        />
+                    </label>
+        
+                    <label class="block text-sm hidden" id="durationFrmDate">
+                        <span class="text-gray-700">
+                            To Data ?
+                        </span>
+                        <input 
+                            type="date"
+                            class="onchangeClass block w-full py-2 px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            id="todate"
+                        />
+                    </label>
+                    <label class="block text-sm hidden monthly">
+                        <span class="text-gray-700">
+                            Select Month
+                        </span>
+                        <select class="onchangeM_Y block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="monthly">
+                            <option>_ _Choose Month_ _</option>
+                            <option value="01">January</option>
+                            <option value="02">February</option>
+                            <option value="03">March</option>
+                            <option value="04">April</option>
+                            <option value="05">May</option>
+                            <option value="06">June</option>
+                            <option value="07">July</option>
+                            <option value="08">August</option>
+                            <option value="09">September</option>
+                            <option value="10">October</option>
+                            <option value="11">Novermber</option>
+                            <option value="12">December</option>
+                     
+                            
+                        </select>
+                    </label>
+                    <label class="block text-sm hidden Quaterly">
+                        <span class="text-gray-700">
+                            Select Months
+                        </span>
+                        <select class="onchangeQuaterly block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="Quaterly">
+                            <option>_ _Choose Months_ _</option>
+                            <option value="01-04">January - April</option>
+                            <option value="05-08">May - August</option>
+                            <option value="09-12">September - December</option>
+                        </select>
+                    </label>
+                    <label class="block text-sm hidden Yearly">
+                        <span class="text-gray-700">
+                            Select Year
+                        </span>
+                        <select class="onchangeM_Y block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="Yearly">
+                            <option>_ _Choose Year_ _</option>
+                            <option value="2024">2024</option>
+                            <option value="2024">2024</option>
+                        </select>
+                    </label>
+                    <div class="block text-sm mt-5"> 
+                        <button  type='button' id="search_btn"  class="hidden Search w-full py-2 px-2 mt-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                            Search Date
+                        </button>
+                    </div>
+                </div>  
+            </div>
+            
+            <div class="col-span-1">
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3 ">
+                    <!-- <div class="grid grid-cols-2  md:grid-cols-2 xl:grid-cols-4 mt-5"> -->
+                    <input type="hidden"  id="daily">
+                    <label class="block text-sm">
+                        <span class="text-gray-700">
+                            Select Period
+                        </span>
+                        <select class="commonClass block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="duration">
+                            <option>_ _Choose period_ _</option>
+                            <!-- <option >Hourly</option> -->
+                            <option >Daily</option>
+                            <option >Monthly</option>
+                            <option >Quaterly</option>
+                            <option >Yearly</option>
+                        </select>
+                    </label>
+                </div>  
+            </div>
+        </div>
+      
+    </div>
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+        <div class="w-full overflow-x-auto table-responsive" id="outlet">
+          <table id="storestocklevel" class="display" style="width:100%">
+                <thead id="thead">
+                    
+                </thead>
+                <tbody class="bg-white divide-y result" id="">                 
+
+                    
+
+                </tbody>
+                <!-- <tbody class=" result bg-white divide-y" id=""> </tbody> -->
+            </table>
+            
+        </div>
+        <div class="col-span-1">
+            <div class="grid gap-6 ">
+                <div class="block justify-end items-center w-full">
+                    <label class="flex justify-end items-center gap-2 text-[11px] w-full py-3">
+                        <div class="flex justify-center items-center gap-6">
+                            
+                            <label class="flex items-center">
+                                
+                                <span class="ml-2 text-gray-700 font-bold">
+                                    Total Outlet quantity: <span class="text-gray-700"></span>
+                                 </span>
+                            </label>
+                        </div>
+                        <input 
+                            type="text"
+                            class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            value="{{totalqty}}"
+                            readonly
+                            id="totalqty"
+                        />
+                    </label>
+                </div>
+            </div>  
+        </div>
+    </div>
+
+
+    <div class="grid grid-cols-2 gap-4">
+        <div class="col-span-1 p-2 ">
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3 ">
+                <button class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                  onclick="generatePDF('outlet')">
+                    Print
+                </button>
+
+                <button type="button" class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                    onclick="convertTableToExcel('outlet', 'storestocklevel')">
+                    Export to excel
+                </button >  
+
+            </div>  
+        </div>
+        
+       
+    </div>
+
+
+<script>
+       
+    // const makeChanges = ((any)=>{
+    // $(document).ready(function() {
+        // $(document).on('click', '.Search', function(){
+        //     getStocklevel("{% url 'Stock:OutletStockLevel' %}")
+        // }); 
+        
+        // $(document).on('change', '.commonClass', function(){
+        //     getStocklevel("{% url 'Stock:OutletStockLevel' %}")
+        // }) 
+        // $(document).on('change', '#fromdate', function(){
+        //     alert($(this).val())
+        // }) 
+
+        function add_remove_classes(){
+            $('#durationFrmDate').removeClass('hidden')
+            $('.durationFrmTime').addClass('hidden')
+            $('.durationday').addClass('hidden')
+
+            // $('#search_btn').removeClass('hidden')
+        }
+        $(document).on('change', '#duration', function(){
+            let duration = $(this).val()
+            let fromdate    =  $('#fromdate').val();
+            let todate    =  $('#todate').val();
+            // if(duration == 'Hourly'){
+            //     if(fromdate == '' ){
+            //         $('#search_btn').addClass('hidden')
+            //     }
+            //     else{
+            //         $('#search_btn').removeClass('hidden')
+            //     }
+
+            // }else{
+            //     if(fromdate != '' && todate != '' ){
+            //         $('#search_btn').removeClass('hidden')
+            //     }else{
+            //         $('#search_btn').addClass('hidden')
+            //     }
+            // }
+
+            $('#search_btn').addClass('hidden')
+            switch(duration){
+                case 'Hourly':
+                    $('#durationFrmDate').addClass('hidden')
+                    $('.durationday').addClass('hidden')
+
+                    $('.durationFrmTime').removeClass('hidden')
+                    // $('#search_btn').removeClass('hidden')
+                    break;
+
+
+                case 'Daily':
+
+                    $('#durationFrmDate').removeClass('hidden')
+                    $('#dailyDate').removeClass('hidden')
+                    $('.monthly').addClass('hidden')
+                    $('.Quaterly').addClass('hidden')
+                    $('.Yearly').addClass('hidden')
+                    $('#daily').val('daily')
+
+                    break;
+                case 'Monthly':
+                    $('#daily').val('monthly')
+                    $('#durationFrmDate').addClass('hidden')
+                    $('#dailyDate').addClass('hidden')
+                    $('.monthly').removeClass('hidden')
+                    $('.Quaterly').addClass('hidden')
+                    $('.Yearly').removeClass('hidden')
+                    break;
+                case 'Quaterly':
+                    $('#daily').val('quaterly')
+                    $('#durationFrmDate').addClass('hidden')
+                    $('#dailyDate').addClass('hidden')
+                    $('.monthly').addClass('hidden')
+                    $('.Quaterly').removeClass('hidden')
+                    $('.Yearly').removeClass('hidden')
+
+                    break;
+                case 'Yearly':
+                    $('#daily').val('')
+                    $('#durationFrmDate').addClass('hidden')
+                    $('#dailyDate').addClass('hidden')
+                    $('.monthly').addClass('hidden')
+                    $('.Quaterly').addClass('hidden')
+                    $('.Yearly').removeClass('hidden')
+                    break;
+                default:
+                    $('#durationFrmDate').addClass('hidden')
+                    $('#dailyDate').addClass('hidden')
+                    $('.monthly').addClass('hidden')
+                    $('.Quaterly').addClass('hidden')
+                    $('.Yearly').addClass('hidden')
+                    // $('#search_btn').addClass('hidden')
+                    alert('Please select a valid period')
+                break;
+
+            }
+        }) 
+
+        $(document).on('change', '.onchangeClass', function(){
+            let date1 = $('#fromdate').val()
+            let date2 = $('#todate').val()
+            let duration = $('#duration').val()
+            if(date1 != '' && date2 != '' ){
+                $('#search_btn').removeClass('hidden')
+            }else{
+                $('#search_btn').addClass('hidden')
+            }
+        })
+
+        $(document).on('change', '.onchangeM_Y', function(){
+            let monthly = $('#monthly').val()
+            let Yearly = $('#Yearly').val()
+           
+            if(Yearly != '_ _Choose Year_ _' && monthly != '_ _Choose Month_ _' ){
+                $('#search_btn').removeClass('hidden')
+            }else{
+                $('#search_btn').addClass('hidden')
+            }
+        })
+
+        $(document).on('change', '.onchangeQuaterly', function(){
+            let Quaterly = $('#Quaterly').val()
+            let Yearly = $('#Yearly').val()
+           
+            if(Yearly != '_ _Choose Year_ _' && Quaterly != '_ _Choose Months_ _' ){
+                $('#search_btn').removeClass('hidden')
+            }else{
+                $('#search_btn').addClass('hidden')
+            }
+        })
+
+        $(document).on('change', '#Yearly', function(){
+            let Yearly = $('#Yearly').val()
+           
+            if(Yearly != '_ _Choose Year_ _'){
+                $('#search_btn').removeClass('hidden')
+            }else{
+                $('#search_btn').addClass('hidden')
+            }
+        })
+
+        
+
+    // function getStocklevel(){
+    $(document).ready(function(){
+        
+        $(document).on('click', '.Search', function(){
+            let fromdate    =  $('#fromdate').val();
+            let todate    =  $('#todate').val();
+            let monthly    =  $('#monthly').val();
+            let Yearly    =  $('#Yearly').val();     
+            let Quaterly  =  $('#Quaterly').val();       
+            let daily  =  $('#daily').val();       
+            $.ajax({
+                type: 'GET',
+                url: '{% url "report:OutletStockLevelReport" %}',
+                data: {
+                    monthly: monthly,
+                    Yearly: Yearly,
+                    Quaterly: Quaterly,
+                    daily: daily,
+                    fromdate: fromdate,   
+                    todate: todate, 
+                },
+                success: function(res){
+                    if(res.error){
+                        alert(res.error)
+                    }else{
+                        $('#storestocklevel .result').empty();
+                        $('#totalqty').empty();
+                        $('#thead').empty();
+
+    
+                        // FIRST TR
+                        let newRow = $('<tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">');
+                            newRow.append('<th class="py-3">Date</th>');
+                            newRow.append('<th class="py-3">Item Name</th>');
+                            res.dateLog.forEach(function(item, index) {
+                                newRow.append('<th class="py-3">'+ item +'</th>');
+                                
+                                // $('#storestocklevel .result').append(newRow);
+                            });
+                            newRow.append('<th class="py-3">Current Stock Level</th>');
+                            newRow.append('</tr>');
+                        $('#thead').append(newRow);
+
+
+                        let count = 0
+
+                        // SECOND TR
+                    
+                        res.itemLog.forEach(function(item, index) {
+                            let newRow2 = $('<tr><td class="text-left">'+res.currentDate +'</td>');
+                            newRow2.append('<td class="py-3">'+item.item +'</td>');
+                            res.qtyLog.forEach(function(qty, index) {
+                                if(qty.item == item.item){
+                                    newRow2.append('<td class="py-3">'+qty.qty +'</td>');
+                                    
+                                }else{
+                                    newRow2.append('<td class="py-3">0</td>');
+                                }
+                            })
+                            newRow2.append('<td class="py-3">'+item.qtyLevel +'</td>');
+                            newRow2.append('</tr>');
+                            $('#storestocklevel .result').append(newRow2);
+                            // $('#storestocklevel .result').append(newRow);
+                        });
+                    }
+
+                    
+                }
+            })
+        })
+
+
+        $(document).on('click', '.Searchssss', function(){
+
+    
+            let fromdate    =  $('#fromdate').val();
+            let todate    =  $('#todate').val();
+            let begin    =  $('#durationFrmTime').val();
+            let end    =  $('#durationToTime').val();     
+            let store  =  $('#store').val();       
+            let daily = $('#daily').val()
+            $.ajax({
+                type: 'GET',
+                url: '{% url "report:OutletStockLevelReport" %}',
+                data: {
+                    begin: begin,
+                    end: end,
+                    fromdate: fromdate,   
+                    todate: todate, 
+                    daily: daily,
+                },
+                success: function(res){
+                    // $('#storestocklevel .default').remove();
+                    $('#storestocklevel .result').empty();
+                    $('#totalqty').empty();
+                    // res.data.forEach(function(item, index) {
+                        // let newRow = $('<tr id="campareTR'+ res.data.id + '">');
+                        // Add data to the row
+                        // newRow.append('<td class="text-[10px]">' + (index + 1) + '</td>');
+                        let newRow = $('<tr>');
+                        newRow.append('<td class="text-[10px]"> 1 </td>');
+                        newRow.append('<tr><td class="text-[10px]">' + res.data.datetx + '</td>');
+                        newRow.append('<td class="text-[10px]">' + res.data.begin + '</td>');
+                        newRow.append('<td class="text-[10px]">' + res.data.end + '</td>');
+                        newRow.append('<td class="text-[10px]">' + res.data.Noqty + '</td>');
+                        newRow.append('<td class="text-[10px]">' + res.data.Noitems + '</td>');
+                        newRow.append('<td class="text-[10px]">' + res.data.selling_price + '</td>');
+                        // newRow.append('<td class="text-[10px]"> ' + res.data.previous_qty + ' </td>');
+                        newRow.append('<td class="text-[10px]"> ' + res.data.current_qty + ' </td></tr>');
+                            // Add more columns as needed
+                            $('#storestocklevel .result').append(newRow);
+                    // });
+                    // Append the row to the table body
+                    // let newtotal = $('#totalqty')
+                    // newtotal.val(res.totalqty );
+                }
+            })
+        })
+    })
+
+
+    // });
+</script>
+
+
+{% endblock content %}

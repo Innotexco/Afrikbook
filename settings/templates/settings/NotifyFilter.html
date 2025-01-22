@@ -1,0 +1,56 @@
+<div id="accordion-color" class="my-9" data-accordion="collapse" data-active-classes="bg-blue-100 dark:bg-gray-800 text-blue-600 dark:text-white">
+    {% for log in logs  %}
+    <h2 id="accordion-color-heading-1">
+        <button onclick="CollapseItem('{{log.invoice_no}}')" type="button" class="flex items-center justify-between w-full focus:outline-none p-5 font-medium rtl:text-right text-gray-500 border-t border-gray-200     dark:text-gray-400 hover:bg-blue-100 dark:hover:bg-gray-800 gap-3" data-accordion-target="#accordion-color-body-1" aria-expanded="true" aria-controls="accordion-color-body-1">
+        <span>{{log.invoice_no}}, {{log.datetx}} </span>
+        <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5 5 1 1 5"/>
+        </svg>
+        </button>
+    </h2>
+    <div id="{{log.invoice_no}}" class="hidden items transition-div" style="display: none; transition: display 0.3s ease;" aria-labelledby="accordion-color-heading-1">
+        <div class="flex items-center justify-between mx-4   px-4 py-3 text-xs font-bold tracking-wide text-gray-500 uppercase border-t bg-gray-50  sm:grid-cols-6">
+            <span class="flex items-center col-span-6 mt-3">
+                INVOICE NO.
+            </span>
+            
+            
+            <span class="flex items-center col-span-6 mt-2 sm:mt-auto sm:justify-end">
+                    ITEM NAME
+            </span>
+            <span class="flex items-center col-span-6 mt-2 sm:mt-auto sm:justify-end">
+                    NOTIFICATION STATUS
+            </span>
+            </div>
+
+            {% for item in items %}
+                {% if item.invoice_no == log.invoice_no %}
+                <div class="flex items-center justify-between mx-4 px-4 py-3 text-xs font-semibold tracking-wide text-gray-500 uppercase border-t bg-gray-50 sm:grid-cols-6">
+                <span class="flex items-center col-span-6 mt-3">
+                    {{item.invoice_no}}
+                </span>
+
+                <span class="flex items-center col-span-6 mt-2 sm:mt-auto sm:justify-end">
+                    {{item.item}}
+                </span>
+                
+            
+                <span class="flex items-center col-span-6 mt-2 sm:mt-auto sm:justify-end">
+                    {% comment %} <label class="inline-flex items-center cursor-pointer">
+                        <span class="mr-3 text-sm font-medium text-red-500 dark:text-gray-300">OFF</span>
+                        <input type="checkbox" onchange="ChangeStatus('{{item.invoice_no}}', {{item.item_code}})" value="" class="sr-only peer{{item.item_code}}" {% if item.notification_status == "1" %} checked {% endif %}>
+                        <div class="relative w-11 h-6 bg-gray-200 rounded-full  dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                        <span class="ms-3 text-sm font-medium text-blue-500 dark:text-gray-300">ON</span>
+                    </label> {% endcomment %}
+                    <label class="switch">
+                        <input type="checkbox" onchange="ChangeStatus('{{item.invoice_no}}', {{item.item_code}})" value="" class="toggle-checkbox sr-only peer{{item.item_code}}" {% if item.notification_status == "1" %} checked {% endif %}>
+                        <span class="slider round"></span>
+                    </label>
+                </span>
+                </div>
+                {% endif %}
+            {% endfor %}
+
+    </div>
+    {% endfor %}
+</div>

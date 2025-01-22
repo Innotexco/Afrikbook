@@ -1,0 +1,240 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Supplied Invoice</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+        <div >
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">FROM</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        name="from"
+                        id="from"
+                    />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">TO</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        name="to"
+                        id="to"
+                    />
+                </label>
+
+                <label >
+                    <span class="text-gray-700">By Customer</span>
+                    <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="customer_id" required onchange="filterItem(this)">
+                        <option selected disabled=true>Select Customer</option>
+                        {% for customer in customers %}
+                           <option value="{{customer.customer_code}}">{{customer.customer_code }}_{{customer.name}}</option>   
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" onclick="Filter()">
+                    Search
+                </button> 
+
+
+                
+            </div>
+        </div>
+
+        <div class="w-full overflow-hidden rounded-lg shadow-xs mt-5">
+            <div class="w-full overflow-x-auto">
+                <table id="p_invoice" class="w-full whitespace-no-wrap">
+                    <thead>
+                        <tr
+                            class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800"
+                        >
+                            <th class="px-4 py-3">SN</th>
+                            <th class="px-4 py-3">Date</th>
+                            <th class="px-4 py-3">InvoiceID</th>
+                            <th class="px-4 py-3">Customer</th>
+                            <th class="px-4 py-3">Description</th>
+                            <th class="px-4 py-3">Total Amount</th>
+                            <th class="px-4 py-3">State</th>
+                            <!-- <th class="px-4 py-3">Delete</th> -->
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y">
+                        {% for invoice in invoice %}
+                        <tr class="text-gray-700 dark:text-gray-400">
+                            <td class="px-4">
+                               {{forloop.counter}}
+                            </td>
+                            <td class="px-4 text-sm">
+                                {{invoice.invoice_date}}
+                            </td>
+                            <td class="px-4 text-sm">
+                                {{invoice.invoiceID}}
+                            </td>
+                            <td class="px-4 text-sm">
+                                {{invoice.customer_name}}
+                            </td>
+                            <td class="px-4 text-sm">
+                                {{invoice.Gdescription}}
+                            </td>
+                            <td class="px-4 text-sm">
+                                {{invoice.amount_expected}}
+                            </td>
+                            <td class="px-4 text-sm">
+                                {{invoice.invoice_state}}
+                            </td>
+                            
+                            <!-- <td class="text-[10px] flex justify-cente items-center">
+                               
+                                <input type="checkbox" onchange="Confirm('{{invoice.invoiceID}}')" value="" class="m-1 peer{{invoice.invoiceID}}" {% if invoice.invoice_state == "1" %} checked {% endif %}>
+                                            
+                                </span>                  
+                            </td> -->
+                           
+                        </tr>
+                        {% endfor %}
+
+                        
+
+                       
+
+                    </tbody>
+                </table>
+            </div>
+            
+    {% csrf_token %}
+    </div>
+    <script>
+        function Confirm(id){
+            alertify.defaults.glossary.title = "Hey";
+            alertify.confirm("Are you sure you want to proceed to ship this invoice",
+            function(){
+                ChangeStatus(id)
+            },
+            function(){
+               
+            }
+            );
+        }
+        
+
+        function ChangeStatus(id){
+           
+            var checkbox = document.querySelector(`.peer${id}`);
+            var state = null
+            if(checkbox.checked){
+                state = 1
+            }else{
+                state = 0
+            }
+            console.log(state)
+            $.ajax({
+                url: '#',
+                method: 'POST',
+                data:{'invoiceID': id,'state':state,csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val() },
+                success: function(data){
+                    if(state === 1){
+                        alertify.success("Cart payment method enabled")
+                    }else{
+                        alertify.success("Cart payment method disabled")
+                    }
+            
+                },
+                error: function(data){
+
+                }
+            })
+        }
+
+
+
+
+        function Filter(){
+            
+            const datas = {
+                start_date: $('#from').val(),
+                end_date: $('#to').val(),
+                customer: $('#customer_id').val(),
+            }
+            if(datas.start_date || datas.end_date  || datas.customer){
+            $.ajax({
+                url: '#',
+                method: 'GET',
+                data: datas,
+                success: function(response) {
+                    console.log(response)
+                    if(response && response.length > 0){
+                        
+                        const table = $('#p_invoice tbody')
+                        table.empty()
+                        let num = 0;
+                        response.forEach(item => {
+                            num++  
+    
+                            const row = $('<tr class="text-gray-700" id="row">').append(
+                                $('<td class="px-4 text-sm">').html(num),
+                                $('<td class="px-4 text-sm">').text(item.invoice_date),
+                                $('<td class="px-4 text-sm">').text(item.invoiceID),
+                                $('<td class="px-4 text-sm">').text(item.customer_name),
+                                $('<td class="px-4 text-sm">').text(item.Gdescription),
+                                $('<td class="px-4 text-sm">').text(item.amount_expected),
+                                $('<td class="px-4 text-sm">').text(item.invoice_state),
+                                // $('<td class="text-[10px] flex justify-cente items-center">').html(
+                                //     `<input type="checkbox" onchange="Confirm('${item.invoiceID}')" value="" class="m-1 peer${item.invoiceID}" {% if invoice.invoice_state == "1" %} checked {% endif %}>`
+                                // )   
+                                );
+                                table.append(row);
+                            
+                        });
+                        $("#no-data").css('display', 'none')
+                    }else{
+                        $("#p_invoice tbody").empty();
+                        $("#no-data").css('display', 'block');
+                        alertify.error("No Return data between selected category");
+                        //alertify.error("Select start_datde and end_date")
+                    }
+                },
+                error: function(error) {
+                    // Handle the error
+                    console.log('error')
+                }
+            });
+            }else{
+                alertify.error("Select category to fetch data from")
+            }
+
+            
+        }
+
+    </script>
+
+    
+    {% endblock content %}

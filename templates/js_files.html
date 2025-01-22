@@ -1,0 +1,533 @@
+
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
+<script>
+    // DEVELOPER: LILY
+    // PHONE: 08124767155 
+    // DATE: OCT 2023 
+
+    function generateID(){
+        return Math.random().toString(10).substr(2, 3);
+    }
+
+    function advoidDuplicatedTr(allOptionValues) {
+        
+        // *************************************************************************************
+                let count = 0;
+                for (let i = 0; i < allOptionValues.length; i++) {
+                    if (allOptionValues[i] === '_ _Choose an Option_ _') {
+                        count++;
+                        if (count > 1) {
+                            // Find the index of the current <tr> element to remove
+                            const trIndexToRemove = i;
+                            // Remove the corresponding <tr> element
+                            $('#stock_row_add tr:eq(' + trIndexToRemove + ')').remove();
+                        }
+                    }
+                }
+        // *************************************************************************************
+
+    }
+
+
+    function ifitemdoesntexit(allOptionValues){
+    var [check_if_store_selection_is_ok, check_if_item_selection_is_ok] = hiddenInput()
+    // let from  =  '' ?? $('#from').val().includes('_ _')  $('#from').val()
+    let from  =  $('#from').val()
+    let store  =  $('#storeID').val();
+    $.each(allOptionValues, function(index, selected) {
+            console.log(index, selected, 'dfdsfadsfadsfadsf')
+            if(selected != '_ _Choose an Option_ _'){
+                const trbyindex =  $('#stock_row_add tr:eq(' + index + ')')
+                const targetLabel = trbyindex.find('.your_label_class');
+
+                // const findinvalidaOPT = trbyindex.find('#stock_row_add option[value="_ _Choose an Option_ _"]:eq('+ index + ')') ;
+                // const findinvalidVal = trbyindex.text().indexOf('_ _Choose an Option_ _') ;
+                // const targetLabels = findinvalidVal.find('.your_label_class');
+
+                $.ajax({
+                    type:'GET',
+                    url: "{% url 'Stock:WarehouseToWarehouse' %}",
+                    data: {
+                        itemcode: selected,
+                        store: store,
+                        sender: from,
+                    },
+                    success: function(response){
+                        getqty = response.getQty
+                        
+                        console.log(response.failed, response.getQty,  'response.failedresponse.failed')
+                        if(response.failed){
+                            disabledbutton()
+                            check_if_item_selection_is_ok.val('');
+                                targetLabel.text(response.failed)
+                                // targetLabels.text('')
+
+                        }
+                        if(getqty){
+                            // console.log('GREAT')
+                            targetLabel.text('')
+                            // targetLabels.text('')
+
+                            check_if_item_selection_is_ok.val('ok');
+                            if (check_if_store_selection_is_ok.val() == 'ok'){
+                                enabledbutton()
+                            }
+                        }
+                    },
+                    error: function() {
+                            // Handle errors
+                    },
+                })
+            }
+
+            
+    });
+}
+
+
+    function isItemDuplicated(array, item) {
+        // Count occurrences of the item in the array
+        let count = 0;
+        // Iterate through the array
+        for (let i = 0; i < array.length; i++) {
+            if (array[i] === item) {
+                count++;
+                // If the item appears more than once, return true
+                if (count > 1) {
+                    return true;
+                }
+            }
+        }
+        // If the loop completes without finding duplicates, return false
+        return false;
+        }
+
+
+    function disabledbutton(){
+        $('#allowed').addClass('bg-green-200 cursor-not-allowed');
+        $('#allowed').removeClass('bg-green-500');
+        $("#allowed").attr('disabled', true);
+    }
+    function enabledbutton(){
+        $("#allowed").removeAttr('disabled');
+        $('#allowed').removeClass('bg-green-200 cursor-not-allowed');
+        $('#allowed').addClass('bg-green-500');
+    }
+    function enabledloader(){
+        $('#hiddenN').addClass('loadercontainer');
+        $('#loader').addClass('loader');
+        $('#loading').text('Loading...');
+    }
+    function disabledloader(){
+        $('#hiddenN').removeClass('loadercontainer');
+        $('#loader').removeClass('loader');
+        $('#loading').text('');
+    }
+
+    function clonedtTableRow(e, selectedOption){
+        // alert("ok")
+        // *************************************************************************************
+            closeTR =  $(e).closest('tr')
+            const inputField = closeTR.find('#desc');
+            const inputField2 = closeTR.find('.qtty');
+            const inputField3 = closeTR.find('#item');
+            const inputField4 = closeTR.find('#price');
+            const inputField5 = closeTR.find('#wholesale_price');
+            inputField2.data("button-name");
+            
+            // cloning each row in the next line
+            const newRow = $('#stock_row_add tr:first').clone();
+            // making the cloned input empty
+            newRow.find('input').val('');
+
+            // adding the cloned to the table by ID
+            $('#stock_row_add').append(newRow);
+
+            // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                // creating a random ID for delete btn
+                const uniqueId =  generateID();
+
+                // adding a class for the same table #stock_row_ad, using the generated ID
+                newRow.addClass('fordelete' + uniqueId);
+            
+                // creating an id for the delete btn using the generated ID 
+                newRow.find('.stock_remove_W_W').attr('id', 'delete_' + uniqueId);
+            // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+
+            // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                // giving attr to class for code refrence
+                newRow.find('.qtty').attr('id', 'label_' + uniqueId);
+                newRow.find('.your_label_class').attr('for', 'label_' + uniqueId);
+
+
+
+            // Find the second-to-last row in #stock_row_add
+            const secondToLastRow = $('#stock_row_add tr:last').prev();
+            const LastRow = $('#stock_row_add tr:last')
+
+            // Find the label within the second-to-last row with a specific data-forerrors attribute
+            const lastLabel = secondToLastRow.find('label[data-forerrors]');
+            const lastLabel2 = LastRow.find('label[data-forerrors]');
+
+            // Assign a value to the data-forerrors attribute of the found label
+            // if(!selectedOption.includes('_ _') ){
+                lastLabel.attr("data-forerrors", selectedOption);
+                lastLabel2.attr("data-forerrors", '');
+            
+            // }
+
+
+          
+        // *************************************************************************************
+     
+        // ******************************AJAX******************************************************
+            $.ajax({
+                type:'GET',
+                url: "{% url 'Stock:WarehouseToWarehouse' %}",
+                data: {
+                    data: selectedOption,
+                },
+                success: function(response){
+                    inputField.val(response.des);
+                    inputField2.val(1);
+                    inputField3.val(response.item);
+                    inputField4.val(response.price);
+                    inputField5.val(response.wholesale_price);
+                    inputField2.data("button-name", response.code);
+                    disabledloader()
+                    const allOptionValues = $('.select-dropdown').map(function() {
+                        return $(this).val();
+                    }).get();
+
+                    ifitemdoesntexit(allOptionValues)
+                    
+
+                },
+                error: function() {
+                    // Handle errors
+                },
+            })
+        // ***********************************END AJAX**************************************************
+
+
+    }
+
+
+    function avoidDuplicatedRow(selectedOption){
+        // *************************************************************************************
+            // map through the select option
+            const allOptionValues = $('.select-dropdown').map(function() {
+                return $(this).val();
+            }).get();
+
+
+            if (isItemDuplicated(allOptionValues, selectedOption)) {
+                toastr.options = {
+                    closeButton: true,
+                    positionClass: 'toast-top-right',
+                    progressBar: true,
+                };
+                toastr.error("already selected", "Error");
+                    const secondToLastIndex = $('#stock_row_add tr').length - 2;
+                $('#stock_row_add tr:eq(' + secondToLastIndex + ')').remove();
+            } 
+            advoidDuplicatedTr(allOptionValues)
+        // *************************************************************************************
+
+    }
+
+
+    function hiddenInput(){
+        var check_if_store_selection_is_ok = $('#hiddenInput1');
+        var check_if_item_selection_is_ok = $('#hiddenInput2');
+        return [check_if_store_selection_is_ok, check_if_item_selection_is_ok]
+    }
+    $(document).ready(function(){
+        var [check_if_store_selection_is_ok, check_if_item_selection_is_ok] = hiddenInput()
+        if (check_if_store_selection_is_ok.val() == 'ok' & check_if_item_selection_is_ok.val() == 'ok'){
+            enabledbutton()
+        }
+    })
+
+    $(document).on('change', '#select', function(){
+        enabledloader()
+        var [check_if_store_selection_is_ok, check_if_item_selection_is_ok] = hiddenInput()
+        okokok = check_if_item_selection_is_ok.val('ok');
+        console.log(okokok.val(), check_if_store_selection_is_ok.val(), 'okokokokokok')
+        if (check_if_store_selection_is_ok.val() == 'ok'){
+            enabledbutton()
+        }else{
+
+        }
+        const selectedOption = $(this).val();
+     // *************************************************************************************
+        // function for cloned row
+        clonedtTableRow(this, selectedOption)
+     // *************************************************************************************
+     // *************************************************************************************
+        // map through the select option
+        avoidDuplicatedRow(selectedOption)
+     // *************************************************************************************
+
+    });
+
+
+    $(document).on('click', '.stock_remove_W_W', function(){
+        var button_id = $(this).attr("id");
+        var row_id = button_id.replace('delete_', '');
+        $('.fordelete'+row_id).remove();
+        // check for other valid...
+            var errortag = $('.your_label_class').text()
+            var [check_if_store_selection_is_ok, check_if_item_selection_is_ok] = hiddenInput()
+            console.log(errortag, check_if_store_selection_is_ok.val(), check_if_item_selection_is_ok.val(),  'errortag.text()errortag.text()')
+            if(errortag == ''){
+                if(check_if_store_selection_is_ok.val() == 'ok'){
+                    enabledbutton()
+                }
+            }
+
+    });
+
+
+
+    // while selecting the transfer store
+    $(document).on('change', '.commonClassT', function(){
+        let from  =  $('#from').val();
+        let to  =  $('#to').val();
+        let err  =  $('#err');
+        var [check_if_store_selection_is_ok, check_if_item_selection_is_ok] = hiddenInput()
+        if(!from.includes('_ _') && !to.includes('_ _')){
+            if(from == to){
+                err.text("both from and to must not match")
+                disabledbutton()
+                check_if_store_selection_is_ok.val('');
+            }else{
+                err.text('')
+                check_if_store_selection_is_ok.val('ok');
+
+                if (check_if_item_selection_is_ok.val() == 'ok'){
+                    enabledbutton()
+                }
+
+                const allOptionValues = $('.select-dropdown').map(function() {
+                        return $(this).val();
+                        // console.log($(this).val())
+                    }).get();
+
+                ifitemdoesntexit(allOptionValues)
+            }
+        }else{
+            disabledbutton()
+            check_if_store_selection_is_ok.val('');
+
+        }       
+    })
+
+
+
+
+
+    function onkeyboard(e){
+  
+        VAL = $(e).val()
+        var inputId = $(e).attr('id');
+        var [check_if_store_selection_is_ok, check_if_item_selection_is_ok] = hiddenInput()
+        labelFor =  $('label[for="' + inputId + '"]')
+        // for qty auth
+        let buttonName = $(e).data("button-name");
+        let buttonoutlet = $(e).data("button-outlet");
+        let from = $('#from').val();
+        // console.log(buttonName, from)
+
+        if(VAL == ''){
+            $(e).addClass('error-border');
+            labelFor.text('Invalid input');
+            disabledbutton()
+            check_if_item_selection_is_ok.val('');
+
+        }
+        else{
+            $(e).removeClass('error-border');
+            labelFor.text('');
+            check_if_item_selection_is_ok.val('ok');
+            if (check_if_store_selection_is_ok.val() != ''){
+                enabledbutton()
+            }
+        }
+        $.ajax({
+            type:'GET',
+            url: "{% url 'Stock:WarehouseToWarehouse' %}",
+            data: {
+                id: buttonName,
+                from: from,
+                buttonoutlet: buttonoutlet,
+            },
+            success: function(response){
+                getqty = response.getQty
+                if (!isNaN(getqty)) {
+                    // Assuming VAL is a valid number, check the condition
+                    if (parseFloat(getqty) < parseFloat(VAL)) {
+                        labelFor.text('We only have ' + getqty + ' left');
+                        $(e).addClass('error-border');
+                        disabledbutton()
+                        check_if_item_selection_is_ok.val('');
+                    }
+                } 
+                if(response.failed){
+                    labelFor.text(response.failed);
+                    $(e).addClass('error-border');
+                    disabledbutton()
+                    check_if_item_selection_is_ok.val('');
+                }
+            },
+            error: function() {
+                // Handle errors
+            },
+        }) 
+    }
+
+
+
+    function getStocklevel(url){
+        
+        let fromdate    =  $('#fromdate').val();
+        let todate    =  $('#todate').val();
+        let Itemcode    =  $('#Itemcode').val();
+        let searchItem    =  $('#searchItem').val();     
+        let store  =  $('#store').val();       
+        $.ajax({
+            type: 'GET',
+            url: url,
+            data: {
+                Itemcode: Itemcode,
+                searchItem: searchItem,   
+                fromdate: fromdate,   
+                todate: todate, 
+                // onchange
+                store: store,
+            },
+            success: function(res){
+                console.log(res)
+                $('#storestocklevel .default').remove();
+                $('#storestocklevel .result').empty();
+                $('#totalqty').empty();
+                res.data.forEach(function(item, index) {
+                    console.log(item)
+                    let newRow = $('<tr id="campareTR'+ item.id + '">');
+                    // Add data to the row
+                    newRow.append('<td class="text-[10px]">' + (index + 1) + '</td>');
+                    // newRow.append('<td class="text-[10px]">' + item.datetx + '</td>');
+                    newRow.append('<td class="text-[10px]">' + item.category + '</td>');
+                    newRow.append('<td class="text-[10px]">' + item.item_name + '</td>');
+                    newRow.append('<td class="text-[10px]">' + item.qty + '</td>');
+                    newRow.append('<td class="text-[10px]">' + item.itemcode + '</td>');
+                    newRow.append('<td class="text-[10px]"> ' + item.store + ' </td>');
+                    // newRow.append('<td class="text-[10px]"> ' + item.low_stock_level + ' </td>');
+                    newRow.append('<td class="text-[10px]"> ' + item.wholesale_price + ' </td>');
+                    newRow.append('<td class="text-[10px]"> ' + item.wholesale_price + ' </td>');
+                    newRow.append('<td class="text-[10px]"> ' + item.selling_price + ' </td>');
+                    newRow.append('<td class="text-[10px]"> ' + item.selling_price + ' </td>');
+                        // Add more columns as needed
+                        $('#storestocklevel .result').append(newRow);
+                });
+                // Append the row to the table body
+                let newtotal = $('#totalqty')
+                newtotal.val(res.totalqty );
+            }
+        })
+    }
+
+</script>
+
+<script>
+    $(document).ready(function() {
+        // Function to print the content
+        function printContent() {
+            var contentToPrint = $('#printContent').html();
+            
+            // Use template literals to create the HTML structure
+            var printDocument = `
+                <html>
+                    <head>
+                        <title>Print Document</title>
+                        <!-- Include additional head content if needed -->
+                        <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet">
+                        <link href="https://unpkg.com/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+
+                    </head>
+                    <body>
+                        ${contentToPrint}
+                    </body>
+                </html>`;
+            var printWindow = window.open('', '_blank');
+
+            printWindow.document.write(printDocument);
+            printWindow.document.close();
+            printWindow.print();
+            printWindow.close();
+        }
+
+        // Open Modal
+        $('#openModalButton').click(function() {
+            var tableContent = $('#printContent').html();
+            $('#modalContent').html(tableContent);
+            // $('#printModal').css('display', 'block');
+        });
+
+        // Print Button in Modal
+        $('#printModalContentButton').click(function() {
+            // Call the printContent function when the print button is clicked in the modal
+            printContent();
+        });
+    });
+    
+    function loopedaccts(sum){
+            var getsum = 0;
+            // Iterate over elements with class "DebitSum"
+            $(sum).each(function() {
+                // Get the text content of each element, convert to number, and add to sum
+                var textContent = $(this).text();
+                // Remove commas from the text (if present) and convert to number
+                var value = parseFloat(textContent.replace(/,/g, ''));
+                if (!isNaN(value)) {
+                    getsum += value;
+            }
+            })
+            return getsum
+        }
+</script>
+
+
+
+{% if error_message %}
+<script>
+    $(document).ready(function() {
+        toastr.options = {
+            closeButton: true,
+            positionClass: 'toast-top-right',
+            progressBar: true,
+        };
+        toastr.error("{{ error_message|escapejs }}", "Error");
+    });
+</script>
+{% endif %}
+
+{% if success_message %}
+<script>
+    $(document).ready(function() {
+        toastr.options = {
+            closeButton: true,
+            positionClass: 'toast-top-right',
+            progressBar: true,
+        };
+        toastr.success("{{ success_message|escapejs }}", "Success");
+    });
+</script>
+{% endif %}
+<script>
+    var j = jQuery.noConflict();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->

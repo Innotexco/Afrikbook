@@ -1,0 +1,624 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="Afrikbook.">
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i&display=swap" rel="stylesheet">
+        
+        <title>
+            
+            {% block title %}
+                Afrikbook Setup
+            {% endblock title %}
+                
+        </title>
+
+
+
+        <link rel="stylesheet" href="{% static 'src/styles.css' %}">
+        <link rel="stylesheet" href="{% static 'src/main.css' %}">
+ 
+        
+        <script src="{% static 'js/jquery.js' %}"></script>
+        <script src="{% static 'js/jquery.min.js' %}"></script>
+
+    
+       
+    </head>
+    <style>
+        .bg-neutral-700 {
+            --tw-bg-opacity: 1; 
+            background-color: #444E46;
+        }
+        .primary{
+            background-color: #018786;
+        }
+    </style>
+    <style>
+        /* Button Styles */
+        .btn {
+            position: relative;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            color: #fff;
+            background-color: #3498db;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        /* Spinner Styles */
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none; /* Hidden by default */
+            margin-left: 10px; /* Adjust spacing between text and spinner */
+        }
+
+        /* Spinner Animation */
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    <body class="body-wrappe">
+
+        
+        <div class="">
+            <form action="" method="post" id="billing" class="flex flex-col justify-center items-center  mb-6">
+                {% csrf_token %}
+                <div class="container flex flex-col justify-center md:flex-row my-6">
+                    <div class="w-full">
+                        <div class="order-1 mb-8 w-full  bg-light p-6 md:order-2 md:mb-0 md:p-8 ltr:md:ml-7 rtl:md:mr-7 ltr:lg:ml-9 rtl:lg:mr-9">
+                            <h1 class="mb-6 font-sans text-xl font-bold text-heading md:text-2xl text-center">
+                                Billing Information
+                            </h1>
+                           
+                                
+                                <div>
+                                    <label class="block text-sm">
+                                        <span class="text-gray-700 dark:text-gray-400">
+                                            Select billing Country  
+                                        </span>
+                                    </label>
+                                        <select id="country" class="block w-full p-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="country">
+                                            <option disabled> Select Country</option>
+                                            {% for value in country %}
+                                            <option>{{value.Country}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                </div>
+                                <div class="my-6">
+                                    <label
+                                        for="email"
+                                        class="block text-sm  text-gray-700">
+                                        Credit or Debit card number
+                                    </label>
+                                    <input
+                                        id="card_number"
+                                        name="card_number"
+                                        type="text"
+                                        class="flex w-full appearance-none text-black items-center p-5 mt-1 text-sm text-heading transition duration-300 ease-in-out focus:outline-0 focus:ring-0 border-b border-border-base rounded focus:border-slate h-8 bg-slate-300"
+                                       
+                                    />
+                                    <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                </div>
+
+                                <div class="flex justify-between  gap-6">
+                                    <div class="w-full">
+                                        <label class="block text-sm">
+                                            <span class="text-gray-700 dark:text-gray-400">
+                                                Expiration date  
+                                            </span>
+                                        </label>
+                                            <select id="month" name="month" class="block w-full p-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg">
+                                                <option selected disabled> Month</option>
+                                                <option value="01">January</option>
+                                                <option value="02">February</option>
+                                                <option value="03">March</option>
+                                                <option value="04">April</option>
+                                                <option value="05">May</option>
+                                                <option value="06">June</option>
+                                                <option value="07">July</option>
+                                                <option value="08">August</option>
+                                                <option value="09">September</option>
+                                                <option value="10">October</option>
+                                                <option value="11">November</option>
+                                                <option value="12">December</option>
+                                            </select>
+                                        <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                    </div> 
+                                    <div class="w-full">
+                                        <label class="block text-sm">
+                                            
+                                            <select id="year" name="year" class="block w-full p-2 mt-6 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg">
+                                                <option selected disabled>Year</option>
+                                                
+                                            </select>
+                                          </label>
+                                        <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                    </div> 
+
+                                </div>
+                                <div class="my-3">
+                                    <label
+                                        for="subject"
+                                        class="block text-sm  text-gray-700">
+                                        Security Code
+                                    </label>
+                                    <input
+                                        id="code"
+                                        name="code"
+                                        type="password"
+                                        class="flex w-full appearance-none text-black items-center p-5 mt-1 text-sm text-heading transition duration-300 ease-in-out focus:outline-0 focus:ring-0 border-b border-border-base rounded focus:border-slate h-8 bg-slate-300"
+                                        placeholder="CVV/CVC"
+                                    />
+                                    <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                </div>
+                                <div class="my-3">
+                                    <label
+                                        for="subject"
+                                        class="block text-sm  text-gray-700">
+                                        Cardholder's name
+                                    </label>
+                                    <input
+                                        id="name"
+                                        name="holders_name"
+                                        type="text"
+                                        class="flex w-full appearance-none text-black items-center p-5 mt-1 text-sm text-heading transition duration-300 ease-in-out focus:outline-0 focus:ring-0 border-b border-border-base rounded focus:border-slate h-8 bg-slate-300"
+                                        placeholder=""
+                                    />
+                                    <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                </div>
+                                <div class="my-6">
+                                    <label
+                                        for="subject"
+                                        class="block text-sm  text-gray-700">
+                                        Address
+                                    </label>
+                                    <input
+                                        id="address"
+                                        name="address"
+                                        type="address"
+                                        class="flex w-full appearance-none text-black items-center p-5 mt-1 text-sm text-heading transition duration-300 ease-in-out focus:outline-0 focus:ring-0 border-b border-border-base rounded focus:border-slate h-8 bg-slate-300"
+                                        
+                                    />
+                                    <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                </div>
+                                
+                                <button
+                                    id="verify"
+                                    type="button"
+                                    class="w-ful text-center text-white inline-flex items-center justify-center shrink-0 font-semibold leading-none rounded outline-none transition duration-300 ease-in-out focus:outline-0 focus:shadow focus:ring-1 focus:ring-slate-500 primary  text-light border border-transparent hover:bg-blue-300-hover px-5 py-0 h-8">
+                                    Verrify
+                                    <div class="spinner" id="spinner"></div></button>
+    
+                        </div>
+                    </div>
+                    <div class="w-full">
+                        <div class="order-1 mb-8 w-full  bg-light p-6 md:order-2 md:mb-0 md:p-8 ltr:md:ml-7 rtl:md:mr-7 ltr:lg:ml-9 rtl:lg:mr-9">
+                            <h1 class="mb-6 font-sans text-xl font-bold text-heading md:text-2xl text-center">
+                                Plan
+                            </h1>
+                            
+                                <div>
+                                    <label class="block text-sm">
+                                        <span class="text-gray-700 dark:text-gray-400">
+                                            Select Plan  
+                                        </span>
+                                    </label>
+                                        <select id="plan" onchange="Plan()" class="block w-full p-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="plan">
+                                            <option disabled> Select plan</option>
+                                            <option>Micro Business</option>
+                                            <option>Small Business</option>
+                                            <option>Meduim Business</option>
+                                            <option>Large Business</option>
+                                        </select>
+                                    <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                </div>
+                                <div class="my-6">
+                                    <label class="block text-sm">
+                                        <span class="text-gray-700 dark:text-gray-400">
+                                            Select Subscription  
+                                        </span>
+                                    </label>
+                                        <select id="subscription" onchange="Plan()" class="block w-full p-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="subscription">
+                                            <option selected value="Free"> Free Trial (6 months)</option>
+                                            <script>
+                                                for(i=1; i <= 5; i++){
+                                                    if(i ==1 ){
+                                                        document.write(`<option value=${i}>${i} year</option>`);
+                                                    }else{
+                                                        document.write(`<option value=${i}>${i} years</option>`);
+                                                    }
+                                                }
+                                            </script>
+                                        </select>
+                                    <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                </div>
+    
+                                <div class="my-3 text-gray-700">
+                                    <label class="block text-sm">
+                                        <span class="text-gray-700 dark:text-gray-400">
+                                            User  
+                                            <span class="user"></span>
+                                        </span>
+                                    </label>
+                                    <select id="user"  class="block w-full p-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="user">
+                                        <option selected value="Free"> Free Trial(6 months)</option>
+                                        <script>
+                                            for(i=7; i <= 50; i++){
+                                                document.write(`<option value=${i}>${i}</option>`);
+                                            }
+                                        </script>
+                                    </select>
+                                    <span class="text-red-500 error"></span>
+                                </div>
+                                <div class="my-3 text-gray-700">
+                                    <label class="block text-sm">
+                                        <span class="text-gray-700 dark:text-gray-400">
+                                            Amount
+                                        </span>
+                                    </label>
+                                    <input
+                                       readonly
+                                        id="amount"
+                                        name="amount"
+                                        value="0"
+                                        type="text"
+                                        class="flex w-full appearance-none text-black items-center mt-1 p-5 text-sm text-heading transition duration-300 ease-in-out focus:outline-0 focus:ring-0 border-b border-border-base rounded focus:border-slate h-8 bg-slate-300"
+                                    />
+                                    <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                </div>
+                               
+
+                                <div class="my-3 invisible">
+                                    <label class="block text-sm">
+                                        <span class="text-gray-700 dark:text-gray-400">
+                                            Select Your company  
+                                        </span>
+                                    </label>
+                                        <select id="company" class="block w-full p-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="company">
+                                            <option disabled selected> Select Country</option>
+                                            {% for value in company %}
+                                            <option value="{{value.id}}" {% if value.id == id %} selected{% endif %}>{{value.company_name}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                </div>
+
+                                <div class="mb-6 invisible">
+
+                                    <div class="flex justify-start w-full  text-black items-center  gap-2">
+                                        <input
+                                        name="auto_renew"
+                                        type="checkbox"
+                                        id="auto_renew"
+                                        checked
+                                        class="transition duration-300 ease-in-out focus:outline-0 focus:ring-0 border-b border-border-base rounded focus:border-slate h-10 my-4  bg-slate-300"
+                                        
+                                        />
+                                        <label
+                                            for="email"
+                                            class="block text-sm font-semibold leading-none text-gray-700">
+                                            Auto renew
+                                        </label>
+                                        
+                                    </div>
+                                </div>
+                                
+       
+                                <button
+                                    id="login"
+                                    type="button"
+                                    class="w-full text-center hidden text-white inline-flex items-center justify-center shrink-0 font-semibold leading-none rounded outline-none transition duration-300 ease-in-out focus:outline-0 focus:shadow focus:ring-1 focus:ring-slate-500 primary  text-light border border-transparent hover:bg-blue-300-hover px-5 py-0 h-8">
+                                    Complete
+                                    <div class="spinner" id="spinner2">
+                        
+                                </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script>
+           
+
+            function Plan(){
+                var plan = $('#plan').val()
+                var duration = $('#subscription').val()
+
+                if(duration == 'Free'){duration= 1}
+               
+                if(plan != "" && duration != ""){
+
+                   
+                 
+                    if(plan == 'Personal'){
+                       total = 0
+                       $("#amount").val(total)
+                       $("#user option:selected").val(1).text(1)
+                    }
+                    else if (plan == "Micro Business"){
+                       total = 50000 * duration
+                       $("#amount").val(total)
+                       $("#user option:selected").val(2).text(2)
+                    }
+                    else if (plan == "Small Business"){
+                       total = 80000 * duration
+                       $("#amount").val(total)
+                       $("#user option:selected").val(4).text(4)
+                    }
+                    else if (plan == "Meduim Business"){
+                       total = 125000 * duration
+                       $("#amount").val(total)
+                       $("#user option:selected").val(6).text(6)
+                    }
+                    else if (plan == "Large Business"){
+                      $("#user option:selected").val(7).text(7)  
+                       $("#user").trigger('change');
+                    }
+                }
+              
+                user_feild()
+            }
+
+            function user_feild(){
+                var plan = $('#plan').val()
+                if (plan == "Large Business"){
+                    $("#user").attr('readonly', false)
+                    $(".user").text(' (you can add 7-50 users)')
+                }else{
+                    $("#user").attr('readonly', true)
+                    $(".user").text('')
+                }
+                if (plan == "Personal"){
+                    $("#subscription").attr('readonly', true)
+                }else{
+                    $("#subscription").attr('readonly', false)
+                }
+            }
+
+            $('#user').on('change', function(){
+                var duration = $('#subscription').val()
+                if(duration == 'Free'){duration= 1}
+
+                var value = parseInt($(this).val())
+                var unit = 20000 * value
+                
+                if(value > 50){
+                    $('.error').text("You have reached user limit(50)")
+                    $('#login').prop('disabled', true)
+                }
+                else if(value > 5){
+                    $('.error').text('')
+                    total = unit * duration
+                    $("#amount").val(total)
+                    $('#login').prop('disabled', false)
+                }
+                else{
+                    $('.error').text("Users must be greater than 6")
+                    $('#login').prop('disabled', true)
+                }
+                
+            })
+
+
+
+
+            const yearSelect = document.getElementById('year');
+            const currentYear = new Date().getFullYear();
+            // const startYear = currentYear - 10; // 10 years before the current year
+            const endYear = currentYear + 10;  // 10 years after the current year
+
+            for (let year = currentYear; year <= endYear; year++) {
+                val = String(year).slice(2);
+                const option = document.createElement('option');
+                option.textContent = year;
+                option.value = val;
+                yearSelect.appendChild(option);
+            }
+
+
+
+           
+
+            function verifyCard(number, cvv, month, year){
+                   $.ajax({
+                       url: "{% url 'main:Verify-Card' %}",
+                       method: 'GET',
+                       data: {number:number, code:cvv, month:month, year:year},
+                       success: function(data){
+                        const button = document.getElementById("verify");
+                        const spinner = document.getElementById("spinner");
+
+                        // Show spinner and disable button
+                        spinner.style.display = "inline-block";
+                        button.disabled = true;
+
+                        // Simulate a process (e.g., API call)
+                        setTimeout(() => {
+                            spinner.style.display = "none"; // Hide spinner
+                            button.disabled = false; // Re-enable button
+                            if(data == 200){
+                                alert("Verification successful");
+                                $("#verify").hide('slow')
+                                $("#login").show('slow')
+                            }else{
+                                alert("Verification unsuccessful");
+                                $("#verify").show('slow')
+                                $("#login").hide('slow')
+                            }
+                        }, 3000);
+
+                       },
+                       error: function(error){
+                        // console.log(error)
+                       },
+                   })
+            };
+
+
+            function Complete(country, number, cvv, month, year, name, address, plan, sub, user, amount, company, renew){
+               
+                $.ajax({
+                       url: "/Billing/"+company+"/",
+                       method: 'POST',
+                       data: {
+                        'country':country, 'number':number, 'code':cvv, 'month':month, 'year':year, 'plan':plan, 'name':name, 'address':address, 'sub':sub, 'user':user, 'amount':amount, 'company':company, 'renew':renew,
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                       },
+                       success: function(data){
+                        console.log(data)
+                        const button = document.getElementById("login");
+                        const spinner = document.getElementById("spinner2");
+
+                        // Show spinner and disable button
+                        spinner.style.display = "inline-block";
+                        button.disabled = true;
+
+                        // Simulate a process (e.g., API call)
+                        setTimeout(() => {
+                            spinner.style.display = "none"; // Hide spinner
+                            button.disabled = false; // Re-enable button
+                            if(data.status == true){
+                                window.location.href = `${data.data.authorization_url}`
+                            }else{
+                                if(data.message == 'Free'){
+                                    window.location.href ="{% url 'main:Migration' %}"
+                                }else{
+                                    alert(data.message);
+                                }
+                            }
+                        }, 5000);
+
+                       },
+                       error: function(error){
+                        // console.log(error)
+                       },
+                   })
+            };
+
+           
+            $("#verify").on('click', function(){
+                const fields = ["country", "card_number", "month", "year", "code", "name", "address"];
+                let isValid = true; // Track overall form validity
+
+                // Collect field values dynamically
+                const fieldValues = {};
+                fields.forEach(field => {
+                    const value = $(`#${field}`).val();
+                    fieldValues[field] = value;
+
+                    // Add or remove error class
+                    if (!value) {
+                        $(`#${field}`).addClass('border border-red-500');
+                        isValid = false;
+                    } else {
+                        $(`#${field}`).removeClass('border border-red-500');
+                    }
+                });
+
+
+                // Check overall form validity
+                if (isValid) {
+                    // Perform the required action (e.g., verifyCard)
+                    verifyCard(fieldValues.card_number, fieldValues.code, fieldValues.month, fieldValues.year);
+                }
+                   
+            });
+            
+            $("#login").on('click', function () {
+                // Collect input fields and their IDs
+                const fields = ["country", "card_number", "month", "year", "code", "name", "address", "plan", "subscription", "user", "amount", "company"];
+                const auto_renew = $("#auto_renew").is(":checked");
+                let isValid = true; // Track overall form validity
+
+                // Collect field values dynamically
+                const fieldValues = {};
+                fields.forEach(field => {
+                  
+                    const value = $(`#${field}`).val();
+                    
+                    fieldValues[field] = value;
+
+                    // Add or remove error class
+                    if (!value) {
+                        $(`#${field}`).addClass('border border-red-500');
+                        isValid = false;
+                    } else {
+                        $(`#${field}`).removeClass('border border-red-500');
+                    }
+                });
+
+                // Debugging: Log values
+                // console.log(auto_renew);
+
+                // Check overall form validity
+                if (isValid) {
+                    // Perform the required action (e.g., verifyCard)
+                    Complete(fieldValues.country, fieldValues.card_number, fieldValues.code, fieldValues.month, fieldValues.year, fieldValues.name, fieldValues.address, fieldValues.plan, fieldValues.subscription, fieldValues.user, fieldValues.amount, fieldValues.company, auto_renew);
+                }
+            });
+
+            
+            
+            function getPlan(){
+              
+                var plan = sessionStorage.getItem('plan')
+                var sub = sessionStorage.getItem('sub')
+                if(plan){
+                   var option =  $('#plan')
+
+                   option.find('option').each(function(opp){
+                       if($(this).val() == plan){
+                           $(this).attr('selected', true)
+                       }else{
+                        $(this).attr('selected', false)
+                       }
+
+                   })
+                }
+
+                if(sub){
+                    var option =  $('#subscription')
+              
+
+                   option.find('option').each(function(opp){
+                       if($(this).val() == sub){
+                           $(this).attr('selected', true)
+                       }else{
+                        $(this).attr('selected', false)
+                       }
+
+                   })
+                }
+                Plan()
+            }
+            getPlan();
+          
+        </script>
+        <script src="https://js.paystack.co/v2/inline.js"></script>
+</body>
+</html>

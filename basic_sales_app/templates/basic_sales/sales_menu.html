@@ -1,0 +1,413 @@
+{% extends 'base_layout.html' %}
+{% load static %}
+
+{% block content %}
+    {% include 'basic_sales/checkout_summary.html' %}
+
+    <!-- page content -->
+    <div class="flex-grow flex mt-5" id="app">
+        <!-- store menu -->
+        <div class="flex flex-col bg-blue-gray-50 h-full w-full py-4">
+
+            <div class="flex px-2 flex-row relative">
+                <div  class="absolute left-5 top-3 px-2 py-2 rounded-full bg-[#f7fee7] hover:bg-[#ecfccb] text-dark">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <input
+                    type="text"
+                    class="bg-white rounded-3xl shadow text-lg full w-full h-16 py-4 px-16 transition-shadow focus:shadow-2xl focus:outline-none"
+                    placeholder="Search by item name, barcode..."
+                    x-model="keyword"
+                    id="searchItem"
+                />
+                <div class="absolute right-5 top-3 px-2 py-2 rounded-full bg-[#f7fee7] hover:bg-[#ecfccb] text-dark" id="showFilter">
+                    <button >view category</button>
+                </div>
+            </div>
+
+            <!-- Categories will be dynamically populated here -->
+            
+            <div id="filterMenu" class="m-2 max-w-screen hidden">
+                <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-lg ">
+                    <h2 class="text-stone-700 text-xl font-bold">Categories </h2>
+                    <p class="mt-1 text-sm">Use category to further refine search</p>
+
+                    <div id="categoryMenu" class="mt-5 overflow-x-scroll flex  gap-4 w-full">
+                        <div onclick="fetchAllItems()" class="py-2 bg-[#f7fee7] hover:bg-[#ecfccb]   text-dark text-center cursor-pointer flex-none w-32 md:w-1/4 lg:w-1/6 xl:w-1/8">
+                            All
+                        </div>
+                        {% for cate_name, cate_id in category %}
+                            <div onclick="fetchItemsByCategory('{{ cate_id }}')" class="py-2 bg-[#f7fee7] hover:bg-[#ecfccb]   text-dark text-center cursor-pointer flex-none w-32 md:w-1/4 lg:w-1/6 xl:w-1/8">
+                                {{ cate_name }}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    
+                    <div class="mt-5">
+                        <a href="" class="items-left justify-left py-2 px-4 mb-12 mt-5 cursor-pointer text-[12px] font-semibold bg-[#ecfccb] text-dark rounded-full">Load More</a>
+                    </div>
+                    
+                </div>
+                
+            </div>
+                
+            <!-- <a href="" class="flex items-center justify-center py-2 px-10 mb-12 cursor-pointer text-[12px] font-semibold bg-blue-500 text-slate-200 rounded-full">
+                <span class="text-slate-200">Basic Sales Point</span>
+            </a> -->
+
+
+
+            <div class="h-full overflow-hidden mt-4">
+                <div class="h-full overflow-y-auto px-2">
+                    
+                    
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-8 gap-4 pb-3" id="items-container">
+                        
+                    </div>
+                    
+                    <div class="select-none bg-blue-gray-100 rounded-3xl flex flex-wrap content-center justify-center h-full opacity-25 hidden" id="noProduct">
+                        <div class="w-full text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                            </svg>
+                            <p class="text-xl py-5">
+                                YOU DON'T HAVE
+                                <br/>
+                                ANY PRODUCTS TO SHOW
+                            </p>
+                            
+                        </div>
+                    </div>
+
+                    <!-- <div class="select-none bg-blue-gray-100 rounded-3xl flex flex-wrap content-center justify-center h-full opacity-25"
+                        x-show="filteredProducts().length === 0 && keyword.length > 0">
+                        <div class="w-full text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <p class="text-xl">
+                                EMPTY SEARCH RESULT
+                                <br/>
+                                "<span x-text="keyword" class="font-semibold"></span>"
+                            </p>
+                        </div>
+                    </div>
+                         -->
+
+                </div>
+            </div>
+
+        </div>
+        <!-- end of store menu -->
+
+        <!-- right sidebar -->
+        <div class="w-5/12 flex flex-col w bg-blue-gray-50 h-full bg-white pr-4 pl-2 py-4">
+            <div class="bg-white rounded-3xl flex flex-col h-full shadow">
+                    <!-- SCANNER AND CUSTOMER ENTRY -->
+                    
+                <div class="px-4 py-3 my-2 bg-white rounded-lg">
+                    <div class="flex flex-wrap text-lg font-semibold">
+                        <input id="scannerInput" x-model="keyword" type="text" autofocus class="w-full border bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none" placeholder="Scan barcode ">
+                        <input type="hidden" name="" id="get_symbol" value="" class="symbol">
+                        <input type="hidden" name="" id="VAT" value="{{VAT}}">
+                        
+                        
+                    </div>
+
+                    <hr class="my-4">
+                    
+                    <label class="block mt-2 text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">
+                            Payment Method
+                        </span>
+                        <select class="block w-full mt-1 text-sm border py-1 bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none" id="payment_method" name="payment_method">
+                            <option>Cash</option>
+                            <!-- <option>POS</option> -->
+                            <option>Transfer</option>
+                            <option>Cheque</option>
+                            <!-- <option>Cash and POS</option> -->
+                            <!-- <option>POS and Transfer</option> -->
+                            <option>Transfer and Cash</option>
+                            <!-- <option>From Customer account</option> -->
+                        </select>
+                    </label>
+
+                    <div class="flex gap-4 mt-2" id="more-inputs">
+                        
+                    </div>
+                    <label class="block mt-2 text-sm mb-2 hidden" id="transfer_div">
+                        <span class="text-gray-700 dark:text-gray-400">
+                            Account
+                        </span>
+                        <select name="transfer_account" class="block w-full mt-1 text-sm border py-1 bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none" id="account">
+                            <option selected disabled></option>
+                            {% for account in accounts %}
+                                {% if  account.series_name|upper == "ASSETS" %} 
+                                <option value="{{account.account_id}}">{{account.account_id}}({{account.series_name}})</option>
+                                 {% endif %}
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label class="block mt-3 text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">
+                            Select Customer
+                        </span>
+                        <select class="block w-full mt-1 text-sm border py-1 bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none" name="customer_name" id="customer_name">
+                            <!-- <option>Casual Customer</option> -->
+                            {% for customer in customers %}
+                                {% if customer.name == "Casual Customer" %}
+                                   <option value="{{customer.customer_code}}">{{customer.name}}</option>
+                                {% endif %}
+                            {% endfor %}
+                            {% for customer in customers %}
+                                {% if customer.name != "Casual Customer" %}
+                                    <option value="{{customer.customer_code}}">{{customer.name}}</option>
+                                {% endif %}
+                            {% endfor %}
+
+                        </select>
+                    </label>
+                    <label class="block mt-2 text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">
+                            Customer Balance
+                        </span>
+                        <input type="text" id="balance" name="genby" value=""  class="focus:outline-none"/>
+                    </label>
+
+                </div>
+    
+                <!-- cart items -->
+                <div class="flex-1 flex flex-col overflow-auto">
+                    <div class="h-16 text-center flex justify-center">
+                        <div class="pl-8 text-left text-lg py-4 relative">
+                            <!-- cart icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            <div class="text-center absolute bg-[#f7fee7] hover:bg-[#ecfccb] text-dark w-5 h-5 text-xs p-0 leading-5 rounded-full -right-2 top-3"><span id="cart-item-count">0</span></div>
+                        </div>
+                        <div class="flex-grow px-8 text-right text-lg py-4 relative">
+                            <!-- trash button -->
+                            <button onclick="clearCart()" class="text-blue-gray-300 hover:text-pink-500 focus:outline-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+    
+                    <div id="cart-container" class="flex-1 w-full px-4 overflow-auto">
+                        
+                    </div>
+                </div>
+                <!-- end of cart items -->
+    
+                <!-- payment info -->
+                <div class="h-auto w-full text-center pt-3 pb-4 px-4">
+                    <div id="total-cart-container" class="flex mb-3 text-lg font-semibold text-blue-gray-700">
+                        
+                    </div>
+                    
+                    <div class="mb-3 text-blue-gray-700 px-3 pt-2 pb-3 rounded-lg bg-blue-gray-50 hidden" id="customersOnly">
+                        <div class="flex text-lg font-semibold">
+                            <div class="flex-grow text-left "><input type="checkbox" name="" id="checkBforpartPay" class="m-1"><span class="text-sm">Part Payment</span></div>
+                            <div class="flex text-right hidden" id="partpayPrice">
+                                <div class="mr-2">#</div>
+                                <input id="cashInput" type="text" class="w-28 text-right bg-white shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <hr class="my-2">
+
+                        <!-- <div class=" mt-2 hidden">
+                            <div class="money in moneys">
+                                <button onclick="calculateChange()" class=" bg-[#B2BEB5] w-full text-[#ecfccb] font-semibold rounded-lg px-3 py-1 focus:outline-none">
+                                    Check Receiveable(remainder)
+                                </button>
+                            </div>
+                        </div> -->
+                    </div>
+                    <div id="changeDisplay" class=" flex mb-3 text-lg font-semibold bg-cyan-50 text-blue-gray-700 rounded-lg py-2 px-3 hidden">
+                        <div class="text-cyan-800">BALANCE: </div>
+                        <div class="text-right flex-grow text-cyan-600" x-text="priceFormat(change)" id="change">
+                        </div>
+                    </div>
+                
+                    <div  class="flex justify-center mb-3 text-lg font-semibold bg-[#B2BEB5] text-[#ecfccb] rounded-lg py-2 px-3">
+                    <!-- <div onclick="checkout_summary.showModal(), generateReceipt()"  id="checkou" class="flex justify-center mb-3 text-lg font-semibold bg-[#B2BEB5] text-[#ecfccb] rounded-lg py-2 px-3"> -->
+                        <!-- <button  id="checkout" class="bg-[#B2BEB5] rounded-2xl text-lg w-full py-2 font-semibold focus:outline-none"> -->
+                        <button id="checkout" type="button" onclick="checkout()" class="bg-[#B2BEB5] rounded-2xl text-lg w-full py-2 font-semibold focus:outline-none">
+                            CHECKOUT
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block text-right" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                            </svg>
+                        </button>
+                    </div>
+                    
+                </div>
+                    <!-- end of payment info -->
+            </div>
+        </div>
+        <!-- end of right sidebar -->
+    </div>
+    <button id="Scanned_code" data-url="{% url 'basic_sales_app:Scanned_code' %}" class="hidden"></button>
+    <button id="itemSearch" data-url="{% url 'basic_sales_app:itemSearch' %}" class="hidden"></button>
+    <button id="SaleMenu" data-url="{% url 'basic_sales_app:SalesMenu' %}" class="hidden"></button>
+    <button id="fetch_default" data-url="{% url 'basic_sales_app:fetch_default' %}" class="hidden"></button>
+    <button id="fetch_all_items" data-url="{% url 'basic_sales_app:fetch_all_items' %}" class="hidden"></button>
+    
+    <script>
+     
+    //    currency(); 
+   
+
+        $("#customer_name").on('change', function() {
+            
+            const customerId = $(this).val();
+            
+       
+            if(customerId != "Casual Customer"){
+
+                if (customerId != ""){
+                    $.ajax({
+                        url: '/get_customer_balance/'+ customerId + '/',
+                        method: 'GET',
+                        success: function(data){
+                            $("#balance").val(data) 
+                           
+                        },
+                        error: function(error){
+                            console.log('Item not found'+error);
+                            //alert('Item not found');
+                            $("#balance").val('0.00') 
+                            //alertify.error("Item not found");
+                        }
+                    });
+                }
+            
+            }
+        });
+    
+    function Transfer(payment_method){
+        if (payment_method.includes("Transfer")){
+            $("#transfer_div").removeClass('hidden')
+        }else{
+            $("#transfer_div").addClass('hidden')
+        }
+    }
+    
+    $("#payment_method").on("change", function(){
+        var payment_method = $(this).val()
+
+        Transfer(payment_method)
+
+        if(payment_method === "Cash and POS"){
+            $("#more-inputs").empty();
+            
+            var more_input =
+                `<label class="block mt-2 text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Cash
+                    </span>
+                    <input type="text" name="" id="cash" required class="w-full border bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none">
+                </label>
+                <label class="block mt-2 text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                       POS
+                    </span>
+                    <input type="text" name="" id="pos" required class="w-full border bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none">
+                </label>`
+
+            $("#more-inputs").append(more_input);
+
+        }else if(payment_method === 'POS and Transfer'){
+            $("#more-inputs").empty();
+            
+            var more_input =
+                `<label class="block mt-2 text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        POS
+                    </span>
+                    <input type="text" name="" id="pos" required class="w-full border bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none">
+                </label>
+                <label class="block mt-2 text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                       Transfer
+                    </span>
+                    <input type="text" name="" id="transfer" required class="w-full border bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none">
+                </label>`
+
+            $("#more-inputs").append(more_input);
+        }
+        else if(payment_method === 'Transfer and Cash'){
+
+            $("#more-inputs").empty();
+            
+            var more_input =
+                `<label class="block mt-2 text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Transfer
+                    </span>
+                    <input type="number" name="transfer" id="transfer" required class="w-full border bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none">
+                </label>
+                <label class="block mt-2 text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                      Cash
+                    </span>
+                    <input type="number" name="cash" id="cash" required class="cash w-full border bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none">
+                </label>`
+
+            $("#more-inputs").append(more_input);
+        }else{
+
+        }
+    })
+  
+    $(document).ready(function() {
+        Validations();
+    });
+    
+    function Validations() {
+        var checkout = document.getElementById('checkout');
+        var payment_method = document.getElementById('payment_method').value;
+        // var checkedValue = document.querySelector('input[name="accountType"]:checked').value;
+        var customer = document.getElementById('customer_name').value;
+        var balance = document.getElementById('total-price').value;
+    
+        // Assume checkout button ID is 'checkout'
+    
+        // Disable the checkout button by default
+        checkout.disabled = true;
+    
+        if (payment_method === "Cash and POS") {
+            var cash = document.getElementById('cash').value;
+            var pos = document.getElementById('pos').value;
+            if (cash && pos) {
+                // Enable the checkout button if both cash and pos values are present
+                checkout.disabled = false;
+            }
+        } else if (payment_method === 'POS and Transfer') {
+            var pos = document.getElementById('pos').value;
+            var transfer = document.getElementById('transfer').value;
+            if (pos && transfer) {
+                checkout.disabled = false;
+            }
+        } else if (payment_method === 'Transfer and Cash') {
+            var transfer = document.getElementById('transfer').value;
+            var cash = document.getElementById('cash').value;
+            if (transfer && cash) {
+                checkout.disabled = false;
+            }
+        } else{checkout.disabled = false;}
+    }
+       
+    </script>
+<script src ='{% static "basic_sales_js/sales_menu.js" %}'></script>
+<script src ='{% static "basic_sales_js/fetchAll.js" %}'></script>
+
+{% endblock %}
+    

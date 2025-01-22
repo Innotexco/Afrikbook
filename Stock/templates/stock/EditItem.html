@@ -1,0 +1,894 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+    
+
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>New Item</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    <!-- {% if messages %}
+        {% include 'messages.html' %}
+    {% endif %} -->
+
+    <a onclick="my_modal_add_coupon.showModal()" class="block w-full h-8 mt-5 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+        Add Coupon
+    </a>
+    
+
+    <form action="" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+            
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">
+                        Select Category
+                    </span>
+                    <select name="category" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+                        
+                        {% for show_item in item_category %}
+                        <option value="{{show_item.id}}" {% if edit_item.category.category_name == show_item.category_name %} selected {% endif %}>{{ show_item.category_name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">
+                        Select Sub-Category
+                    </span>
+                    <select name="sub_category" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+                        
+                        {% for show_item in item_sub_category %}
+                        <option value="{{show_item.id}}" {% if edit_item.sub_category.name == show_item.name %} selected {% endif %}>{{ show_item.name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Item Name</span>
+                    <input 
+                        type="text"
+                        name="item_name"
+                        value="{{edit_item.item_name}}"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+                </label>
+
+                <div class="flex gap-2">
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Generate / Scan Code</span>
+                        <input 
+                            type="text"
+                            name="generated_code"
+                            value="{{edit_item.generated_code}}"
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder="" readonly
+                            id="randomNumber"
+                        />
+                    </label>
+                    <!-- <button id="generateButton" class="block h-8 px-2 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                        Generate
+                    </button> -->
+                </div>
+
+            </div>
+            
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Attribute (Optional)</span>
+                    <input 
+                        type="text"
+                        name="attribute"
+                        value="{{edit_item.attribute}}"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Size</span>
+                    <input 
+                        type="text"
+                        name="size"
+                        value="{{edit_item.size}}"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Purchase Price (Optional)</span>
+                    <input 
+                        type="text"
+                        name="purchase_price"
+                        value="{{edit_item.purchase_price}}"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-600">Description/Summary (Optional)</span>
+                    <textarea
+                        class="block w-full mt-1 px-2 text-sm form-textarea border-2 rounded-md focus:border-slate-300  focus:outline-none focus:shadow-outline-green text-slate-600"
+                        rows="1"
+                        name="description"
+                        placeholder=""
+                    >{{edit_item.description}}</textarea>
+                </label>
+
+            </div>
+
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Selling Price (Retail)</span>
+                    <input 
+                        type="text"
+                        name="selling_price"
+                        value="{{edit_item.selling_price}}"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Selling Price (Wholesale)</span>
+                    <input 
+                        type="text"
+                        name="wholesale_price"
+                        value="{{edit_item.wholesale_price}}"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Item Image</span>
+                    <input 
+                        type="file"
+                        multiple
+                        name="image"
+                        value="{{edit_item.image}}"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Discount price</span>
+                    <input 
+                        type="text"
+                        name="discount_price"
+                        value="{{edit_item.discount_price}}"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+
+                </label>
+
+                
+            </div>
+
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Discount Percentage</span>
+                    <input 
+                        type="text"
+                        name="discount_percentage"
+                        disabled
+                        class="block w-full px-2 mt-1 bg-slate-200 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">
+                        Select State
+                    </span>
+                    <select name="state" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+                        <option>--Choose An Option--</option>
+                        <option>Favourite</option>
+                        <option>Lastest</option>
+                        <option>Popular</option>
+                    </select>
+                </label>
+                <label class="block text-sm">
+                    <span class="text-gray-700">
+                        Select Availability
+                    </span>
+                    <select name="availability" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+                        <option>--Choose An Option--</option>
+                        <option {% if edit_item.availability == 1 %} selected {% endif %} value=1 >In stock</option>
+                        <option {% if edit_item.availability == 0 %} selected {% endif %} value=0 >Out of stock</option>
+                    </select>
+                </label>
+
+                <button type="submit" class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                    Update
+                </button>
+                
+            </div>
+
+
+        </div>
+
+    </form>
+
+
+    <div class="grid gap-6 md:grid-cols-2 hidden">
+    
+        <form >
+            {% csrf_token %}
+            <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+                <div class="mt-5">
+                    <button onclick="Item_tag()" class="w-full flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple">
+                        <div class="flex items-center">
+                            <svg
+                                class="w-5 h-5 mr-2"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                            >
+                            <path
+                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                            ></path>
+                            </svg>
+                            <span>Update Item Tags</span>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    
+
+                    <div id="Item_tag">
+                
+                        <div class="grid gap-6 md:grid-cols-2 mt-5">
+        
+                            <label class="block text-sm">
+                                <span class="text-gray-700">
+                                    Select Item 
+                                </span>
+                                <select name="item_code" id="get_item_code_id" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+                                    <option></option>
+                                    {% for show_code in item_code %}
+                                    <option value="{{ show_code.generated_code }}">{{show_code.item_name}}<p>-(<span>{{ show_code.generated_code }}</span>)</p></option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+        
+                            <label class="block text-sm">
+                                <span class="text-gray-700">
+                                    Item Status
+                                </span>
+                                <select id="item_status" name="item_status" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+                                    <option></option>
+                                    <option>New Arrival</option>
+                                    <option>Lastest</option>
+                                    <option>Popular</option>
+                                </select>
+                            </label>
+        
+                        </div>
+        
+                        <button id="AddItemTag" type="button" class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                            Update
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+
+        <form>
+            {% csrf_token %}
+
+            <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+                <div class="mt-5">
+
+                    <button onclick="Item_size()" class="w-full flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple">
+                        <div class="flex items-center">
+                            <svg
+                                class="w-5 h-5 mr-2"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                            >
+                            <path
+                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                            ></path>
+                            </svg>
+                            <span>Update Item Size</span>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+
+                    <div id="Item_size">
+                        <div class="grid gap-6 md:grid-cols-2 mt-5">
+        
+                            <label class="block text-sm">
+                                <span class="text-gray-700">
+                                    Select Item 
+                                </span>
+                                <select id="item_code" name="item_code" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+                                    <option></option>
+                                    {% for show_code in item_code %}
+                                    <option value="{{ show_code.generated_code }}">{{show_code.item_name}}<p>-(<span>{{ show_code.generated_code }}</span>)</p></option>
+                                    {% endfor %}
+                                </select>
+                            </label> 
+    
+        
+                            <label class="block text-sm">
+                                <span class="text-gray-700">Item Size</span>
+                                <input 
+                                    type="text"
+                                    id="size"
+                                    name="size"
+                                    class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    placeholder=""
+                                />
+                            
+                            </label>
+        
+                        </div>
+        
+                        <button id="AddItemSize" type="button" class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                            Update
+                        </button>
+                    </div>
+                </div>
+                
+            </div>
+
+        </form>
+
+
+    </div>
+    
+
+
+    <div class="grid gap-6 md:grid-cols-2">
+
+        <form>
+            {% csrf_token %}
+
+            <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+                <div class="mt-5">
+
+                    <button onclick="Item_description()" class="w-full flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple">
+                        <div class="flex items-center">
+                            <svg
+                                class="w-5 h-5 mr-2"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                            >
+                            <path
+                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                            ></path>
+                            </svg>
+                            <span>Update Item Description</span>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+
+                    <div id="Item_description">
+                        <div class="grid gap-6 md:grid-cols-2 mt-5">
+        
+                            <label class="block text-sm">
+                                <span class="text-gray-700">
+                                    Select Item 
+                                </span>
+                                <select id="item_description" name="item_code" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+                                    <option></option>
+                                    {% for show_code in item_code %}
+                                    <option {% if edit_item.generated_code == show_code.generated_code %} selected {% endif %} value="{{ show_code.generated_code }}">{{show_code.item_name}}<p>-(<span>{{ show_code.generated_code }}</span>)</p></option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+        
+                            <label class="block text-sm">
+                                <span class="text-gray-700">Item Descriptions</span>
+                                <input 
+                                    type="text"
+                                    id="text"
+                                    name="text"
+                                    class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    placeholder=""
+                                />
+                            
+                            </label>
+        
+                        </div>
+        
+                        <button id="AddItemDescription" type="button" class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                            Update
+                        </button>
+                    </div>
+                </div>
+                
+            </div>
+
+        </form>
+
+        <form>
+            {% csrf_token %}
+
+            <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+                <div class="mt-5">
+
+                    <button onclick="Item_specification()" class="w-full flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple">
+                        <div class="flex items-center">
+                            <svg
+                                class="w-5 h-5 mr-2"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                            >
+                            <path
+                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                            ></path>
+                            </svg>
+                            <span>Update Item Specification</span>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+
+                    <div id="Item_specification">
+                        <div class="grid gap-6 md:grid-cols-2 mt-5">
+        
+                            <label class="block text-sm">
+                                <span class="text-gray-700">
+                                    Select Item 
+                                </span>
+                                <select id="item_spec" name="item_code" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+                                    <option></option>
+                                    {% for show_code in item_code %}
+                                    <option {% if edit_item.generated_code == show_code.generated_code %} selected {% endif %} value="{{ show_code.generated_code }}">{{show_code.item_name}}<p>-(<span>{{ show_code.generated_code }}</span>)</p></option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+        
+                            <label class="block text-sm">
+                                <span class="text-gray-700">Key Features</span>
+                                <input 
+                                    type="text"
+                                    id="quality"
+                                    name="quality"
+                                    class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                />
+                            
+                            </label>
+        
+                        </div>
+        
+                        <button id="AddItemSpecification" type="button" class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                            Update
+                        </button>
+                    </div>
+                </div>
+                
+            </div>
+
+        </form>
+        
+    </div>
+
+  
+    
+    <div class="grid gap-6 md:grid-cols-2 hidden">
+
+        <form>
+            {% csrf_token %}
+
+            <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+                <div class="mt-5">
+
+                    <button onclick="Item_brand()" class="w-full flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple">
+                        <div class="flex items-center">
+                            <svg
+                                class="w-5 h-5 mr-2"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                            >
+                            <path
+                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                            ></path>
+                            </svg>
+                            <span>Update Item Brand</span>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+
+                    <div id="Item_brand">
+                        <div class="grid gap-6 md:grid-cols-2 mt-5">
+        
+                            <label class="block text-sm">
+                                <span class="text-gray-700">
+                                    Select Item 
+                                </span>
+                                <select id="item_brand" name="item_code" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+                                    <option></option>
+                                    {% for show_code in item_code %}
+                                    <option value="{{ show_code.generated_code }}">{{show_code.item_name}}<p>-(<span>{{ show_code.generated_code }}</span>)</p></option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+        
+                            <label class="block text-sm">
+                                <span class="text-gray-700">Item brand</span>
+                                <input 
+                                    type="text"
+                                    id="brand_name"
+                                    name="brand_name"
+                                    class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    placeholder=""
+                                />
+                            
+                            </label>
+        
+                        </div>
+        
+                        <button id="AddItenBrand" type="button" class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                            Update
+                        </button>
+                    </div>
+                </div>
+                
+            </div>
+
+        </form>
+
+        <form>
+            {% csrf_token %}
+
+            <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+                <div class="mt-5">
+
+                    <button onclick="Item_color()" class="w-full flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple">
+                        <div class="flex items-center">
+                            <svg
+                                class="w-5 h-5 mr-2"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                            >
+                            <path
+                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                            ></path>
+                            </svg>
+                            <span>Update Item Color</span>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+
+                    <div id="Item_color">
+                        <div class="grid gap-6 md:grid-cols-2 mt-5">
+        
+                            <label class="block text-sm">
+                                <span class="text-gray-700">
+                                    Select Item 
+                                </span>
+                                <select id="item_code" name="item_code" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+                                    <option></option>
+                                    {% for show_code in item_code %}
+                                    <option value="{{ show_code.generated_code }}">{{show_code.item_name}}<p>-(<span>{{ show_code.generated_code }}</span>)</p></option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+        
+                            <label class="block text-sm">
+                                <span class="text-gray-700">Color Name</span>
+                                <input 
+                                    type="text"
+                                    id="color_name"
+                                    name="color_name"
+                                    class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                />
+                            
+                            </label>
+        
+                            <label class="block text-sm">
+                                <span class="text-gray-700">Color Code</span>
+                                <input 
+                                    type="text"
+                                    id="color_code"
+                                    name="color_code"
+                                    class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                />
+                            </label>
+        
+                            <button id="AddItemColor" type="button" class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                                Update
+                            </button>
+                        </div>
+        
+                    </div>
+                </div>
+                
+            </div>
+
+        </form>
+        
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script>
+        
+        function Item_tag(e) {
+
+            //here I want to prevent default
+            e = e || window.event;
+            e.preventDefault();
+
+            var x = document.getElementById("Item_tag");
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        }
+        
+        function Item_size(e) {
+
+            //here I want to prevent default
+            e = e || window.event;
+            e.preventDefault();
+
+            var x = document.getElementById("Item_size");
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        }
+        
+        function Item_brand(e) {
+
+            //here I want to prevent default
+            e = e || window.event;
+            e.preventDefault();
+
+            var x = document.getElementById("Item_brand");
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        }
+        
+        function Item_color(e) {
+
+            //here I want to prevent default
+            e = e || window.event;
+            e.preventDefault();
+
+            var x = document.getElementById("Item_color");
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        }
+        
+        function Item_description(e) {
+
+            //here I want to prevent default
+            e = e || window.event;
+            e.preventDefault();
+
+            var x = document.getElementById("Item_description");
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        }
+        
+        function Item_specification(e) {
+
+            //here I want to prevent default
+            e = e || window.event;
+            e.preventDefault();
+
+            var x = document.getElementById("Item_specification");
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        }
+    </script>
+
+    <style>
+        #Item_tag,
+        #Item_size,
+        #Item_brand,
+        #Item_color,
+        #Item_description,
+        #Item_specification{
+            display: none;
+        }
+    </style>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#coupon_id').submit(function(event) {
+                event.preventDefault();
+                $.ajax({
+                    method: 'POST',
+                    url: '../add_coupon',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        // Handle success response (e.g., show success message)
+                        console.log(response.message);
+                    },
+                    error: function(xhr, errmsg, err) {
+                        // Handle error response (e.g., display form errors)
+                        console.log(xhr.responseText);
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock content %}
+
+
+
+
+{% comment %} 
+
+<label class="block text-sm">
+    <span class="text-gray-600">Shipping Description</span>
+    <textarea
+        class="block w-full mt-1 px-2 text-sm form-textarea border-2 rounded-md focus:border-slate-300  focus:outline-none focus:shadow-outline-green text-slate-600"
+        rows="1"
+        name="shipping_desc"
+    ></textarea>
+</label>
+
+<label class="block text-sm">
+    <span class="text-gray-700">Item Brand</span>
+    <input 
+        type="text"
+        name="brand"
+        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+        placeholder=""
+    />
+
+</label>
+
+
+
+<label class="block text-sm">
+    <span class="text-gray-700">Item Description</span>
+    <input 
+        type="text"
+        name="text"
+        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+        placeholder=""
+    />
+
+</label> {% endcomment %}
+
+<script>
+    $(document).ready(function () {
+        // Handle form submission with AJAX
+        $('#ItemTagForm').submit(function (e) {
+             e.preventDefault();
+             $.ajax({
+                url: 'add_item_tag/',
+                type: "POST",
+                data: $('#ItemTagForm').serialize(),
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message);
+                        // Optionally, you can redirect or perform other actions on success
+                    } else {
+                        alert('Error: ' + JSON.stringify(response.errors));
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while submitting the form');
+                }
+            });
+        });
+
+        $(document).ready(function () {
+            $("#ItemTagForm").submit(function (event) {
+                event.preventDefault();
+
+               // var formData = new FormData();
+                // formData.append('item_code', $('#item_code').val().trim());
+
+                // or
+                // var formData = new FormData($(this)[0]);
+                $.ajax({
+                    url: 'add_item_tag/',
+                    type: "POST",
+                    data: $('#ItemTagForm').serialize(),
+                    success: function (data) {
+                        console.log(data);
+                    }
+                }); 
+            });
+        });
+
+
+        // $('#submitBtn').on('click', function () {
+        //     $.ajax({
+        //         url: '/add_item_description/',
+        //         type: 'POST',
+        //         data: $('#itemDescriptionForm').serialize(),
+        //         success: function (response) {
+        //             if (response.success) {
+        //                 alert(response.message);
+        //                 // Optionally, you can redirect or perform other actions on success
+        //             } else {
+        //                 alert('Error: ' + JSON.stringify(response.errors));
+        //             }
+        //         },
+        //         error: function () {
+        //             alert('An error occurred while submitting the form');
+        //         }
+        //     });
+        // });
+
+
+
+
+
+
+        // $('#BrandBtn').on('click', function () {
+        //     $.ajax({
+        //         url: '/add_item_description/',
+        //         type: 'POST',
+        //         data: $('#itemBrandForm').serialize(),
+        //         success: function (response) {
+        //             if (response.success) {
+        //                 alert(response.message);
+        //                 // Optionally, you can redirect or perform other actions on success
+        //             } else {
+        //                 alert('Error: ' + JSON.stringify(response.errors));
+        //             }
+        //         },
+        //         error: function () {
+        //             alert('An error occurred while submitting the form');
+        //         }
+        //     });
+        // });
+    });
+</script>

@@ -1,0 +1,453 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Outlet Stock Level Report</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+    <div class="px-4 my-5 bg-white rounded-lg shadow-md">
+        <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-1 p-2 border-r">
+              <!-- Content for the first column -->
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3 ">
+                 <!-- <div class="grid grid-cols-2  md:grid-cols-2 xl:grid-cols-4 mt-5"> -->
+                    
+    
+                    <label class="block text-sm">
+                        <span class="text-gray-700">
+                            From Date 
+                        </span>
+                        <input 
+                            type="date"
+                            class="onchangeClass block w-full py-2 px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            id="fromdate"
+                        />
+                    </label>
+        
+                    <label class="block text-sm hidden" id="durationFrmDate">
+                        <span class="text-gray-700">
+                            To Data ?
+                        </span>
+                        <input 
+                            type="date"
+                            class="onchangeClass block w-full py-2 px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            id="todate"
+                        />
+                    </label>
+                    <label class="block text-sm hidden durationFrmTime">
+                        <span class="text-gray-700">
+                            Select Time Duration
+                        </span>
+                        <select class="block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="durationFrmTime">
+                            <option>_ _Choose Hour_ _</option>
+                            <option value="0">12am</option>
+                            <option value="1">1am</option>
+                            <option value="2">2am</option>
+                            <option value="3">3am</option>
+                            <option value="4">4am</option>
+                            <option value="5">5am</option>
+                            <option value="6">6am</option>
+                            <option value="7">7am</option>
+                            <option value="8">8am</option>
+                            <option value="9">9am</option>
+                            <option value="10">10am</option>
+                            <option value="11">11am</option>
+                            <option value="12">12pm</option>
+                            <option value="13">1pm</option>
+                            <option value="14">2pm</option>
+                            <option value="15">3pm</option>
+                            <option value="16">4pm</option>
+                            <option value="17">5pm</option>
+                            <option value="18">6pm</option>
+                            <option value="19">7pm</option>
+                            <option value="20">8pm</option>
+                            <option value="21">9pm</option>
+                            <option value="22">10pm</option>
+                            <option value="23">11pm</option>
+                            
+                        </select>
+                    </label>
+                    <label class="block text-sm hidden durationday">
+                        <span class="text-gray-700">
+                            Select Day to
+                        </span>
+                        <select class="block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="durationFrmTime">
+                            <option value="0">Monday</option>
+                            <option value="1">Tuesday</option>
+                            <option value="2">Wednesday</option>
+                            <option value="3">Thursday</option>
+                            <option value="4">Friday</option>
+                            <option value="5">Saturday</option>
+                            <option value="6">Sunday</option>
+                        </select>
+                    </label>
+                    <div class="block text-sm mt-5"> 
+                        <button  type='button' id="search_btn"  class="hidden Search w-full py-2 px-2 mt-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                            Search Date
+                        </button>
+                    </div>
+                </div>  
+            </div>
+            
+            <div class="col-span-1">
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3 ">
+                    <!-- <div class="grid grid-cols-2  md:grid-cols-2 xl:grid-cols-4 mt-5"> -->
+                    <label class="block text-sm hidden durationFrmTime">
+                        <span class="text-gray-700">
+                            Select Time Duration
+                        </span>
+                        <select class="block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="durationToTime">
+                            <option>_ _Choose Hour_ _</option>
+                            <option value="0">12am</option>
+                            <option value="1">1am</option>
+                            <option value="2">2am</option>
+                            <option value="3">3am</option>
+                            <option value="4">4am</option>
+                            <option value="5">5am</option>
+                            <option value="6">6am</option>
+                            <option value="7">7am</option>
+                            <option value="8">8am</option>
+                            <option value="9">9am</option>
+                            <option value="10">10am</option>
+                            <option value="11">11am</option>
+                            <option value="12">12pm</option>
+                            <option value="13">1pm</option>
+                            <option value="14">2pm</option>
+                            <option value="15">3pm</option>
+                            <option value="16">4pm</option>
+                            <option value="17">5pm</option>
+                            <option value="18">6pm</option>
+                            <option value="19">7pm</option>
+                            <option value="20">8pm</option>
+                            <option value="21">9pm</option>
+                            <option value="22">10pm</option>
+                            <option value="23">11pm</option>
+                            
+                        </select>
+                    </label>
+                    <input type="hidden"  id="daily">
+                    <label class="block text-sm hidden durationday">
+                        <span class="text-gray-700">
+                            Select Day to
+                        </span>
+                        <select class="block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="durationFrmTime">
+                            <option>_ _Choose Day_ _</option>
+                            <option value="0">Monday</option>
+                            <option value="1">Tuesday</option>
+                            <option value="2">Wednesday</option>
+                            <option value="3">Thursday</option>
+                            <option value="4">Friday</option>
+                            <option value="5">Saturday</option>
+                            <option value="6">Sunday</option>
+                        </select>
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">
+                            Select Time Duration
+                        </span>
+                        <select class="commonClass block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="duration">
+                            <option>_ _Choose Duration_ _</option>
+                            <!-- <option >Hourly</option> -->
+                            <option >Daily</option>
+                            <option >Monthly</option>
+                            <option >Quaterly</option>
+                            <option >Yearly</option>
+                        </select>
+                    </label>
+                </div>  
+            </div>
+        </div>
+      
+    </div>
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+        <div class="w-full overflow-x-auto table-responsive">
+          <table id="storestocklevel" class="display" style="width:100%">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                        <th class="py-3">SN</th>
+                        <th class="py-3">Stockin Date</th>
+                        <th class="py-3">Time Begin</th>
+                        <th class="py-3">Time End</th>
+                        <!-- <th class="py-3">Qty In Outlet</th> -->
+                        <th class="py-3">No. of Qty</th>
+                        <th class="py-3">No.Item</th>
+                        <th class="py-3">Total Selling Price</th>
+                        <!-- <th class="py-3">Previous Qty in Stock</th> -->
+                        <!-- <th class="py-3">Current Qty in Stock</th> -->
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y result" id="">                 
+                    
+                    
+                </tbody>
+                <!-- <tbody class=" result bg-white divide-y" id=""> </tbody> -->
+            </table>
+            
+        </div>
+    </div>
+
+
+    <div class="grid grid-cols-2 gap-4">
+        <div class="col-span-1 p-2 ">
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3 ">
+                <a class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                    href="#">
+                    Print
+                </a>
+
+            <a class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                href="#">
+                Export to Excel
+            </a>     
+
+            </div>  
+        </div>
+        
+        <div class="col-span-1">
+            <div class="grid gap-6 ">
+                <div class="block justify-end items-center w-full">
+                    <label class="flex justify-end items-center gap-2 text-[11px] w-full py-3">
+                        <div class="flex justify-center items-center gap-6">
+                            
+                            <label class="flex items-center">
+                                
+                                <span class="ml-2 text-gray-700 font-bold">
+                                    Total Outlet quantity: <span class="text-gray-700"></span>
+                                 </span>
+                            </label>
+                        </div>
+                        <input 
+                            type="text"
+                            class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            value="{{totalqty}}"
+                            readonly
+                            id="totalqty"
+                        />
+                    </label>
+                </div>
+            </div>  
+        </div>
+    </div>
+
+
+<script>
+       
+    // const makeChanges = ((any)=>{
+    // $(document).ready(function() {
+        // $(document).on('click', '.Search', function(){
+        //     getStocklevel("{% url 'Stock:OutletStockLevel' %}")
+        // }); 
+        
+        // $(document).on('change', '.commonClass', function(){
+        //     getStocklevel("{% url 'Stock:OutletStockLevel' %}")
+        // }) 
+        // $(document).on('change', '#fromdate', function(){
+        //     alert($(this).val())
+        // }) 
+
+        function add_remove_classes(){
+            $('#durationFrmDate').removeClass('hidden')
+            $('.durationFrmTime').addClass('hidden')
+            $('.durationday').addClass('hidden')
+
+            // $('#search_btn').removeClass('hidden')
+        }
+        $(document).on('change', '#duration', function(){
+            let duration = $(this).val()
+            let fromdate    =  $('#fromdate').val();
+            let todate    =  $('#todate').val();
+            if(duration == 'Hourly'){
+                if(fromdate == '' ){
+                    $('#search_btn').addClass('hidden')
+                }
+                else{
+                    $('#search_btn').removeClass('hidden')
+                }
+
+            }else{
+                if(fromdate != '' && todate != '' ){
+                    $('#search_btn').removeClass('hidden')
+                }else{
+                    $('#search_btn').addClass('hidden')
+                }
+            }
+            switch(duration){
+                case 'Hourly':
+                    $('#durationFrmDate').addClass('hidden')
+                    $('.durationday').addClass('hidden')
+
+                    $('.durationFrmTime').removeClass('hidden')
+                    // $('#search_btn').removeClass('hidden')
+                    break;
+                case 'Daily':
+
+                //    $('#durationFrmDate').addClass('hidden')
+                //    $('.durationFrmTime').addClass('hidden')
+                //     $('.durationday').removeClass('hidden')
+                //     $('#search_btn').removeClass('hidden')
+                    $('#daily').val('daily')
+                    add_remove_classes()
+
+                    break;
+                case 'Monthly':
+                    $('#daily').val('')
+                    add_remove_classes()
+                    break;
+                case 'Quaterly':
+                    $('#daily').val('')
+                    add_remove_classes()
+                    break;
+                case 'Yearly':
+                    $('#daily').val('')
+                    add_remove_classes()
+                    break;
+                default:
+                    $('#durationFrmDate').addClass('hidden')
+                    $('.durationFrmTime').addClass('hidden')
+                    $('.durationday').addClass('hidden')
+                    // $('#search_btn').addClass('hidden')
+                    alert('Please select a valid period')
+                break;
+
+            }
+        }) 
+
+        $(document).on('change', '.onchangeClass', function(){
+            let date1 = $('#fromdate').val()
+            let date2 = $('#todate').val()
+            let duration = $('#duration').val()
+            if(duration == 'Hourly'){
+                $('#search_btn').removeClass('hidden')
+            }else{
+                if(date1 != '' && date2 != '' ){
+                    $('#search_btn').removeClass('hidden')
+                }else{
+                    $('#search_btn').addClass('hidden')
+                }
+            }
+        })
+
+        
+
+    // function getStocklevel(){
+    $(document).ready(function(){
+        
+        $(document).on('click', '.Search', function(){
+            let fromdate    =  $('#fromdate').val();
+            let todate    =  $('#todate').val();
+            let begin    =  $('#durationFrmTime').val();
+            let end    =  $('#durationToTime').val();     
+            let store  =  $('#store').val();       
+            let daily = $('#daily').val()
+            $.ajax({
+                type: 'GET',
+                url: '{% url "report:OutletStockLevelReport" %}',
+                data: {
+                    begin: begin,
+                    end: end,
+                    fromdate: fromdate,   
+                    todate: todate, 
+                    daily: daily,
+                },
+                success: function(res){
+                    console.log(res.data)
+                    // $('#storestocklevel .default').remove();
+                    $('#storestocklevel .result').empty();
+                    $('#totalqty').empty();
+                    res.data.forEach(function(item, index) {
+                        let newRow = $('<tr id="campareTR'+ item.id + '">');
+                        // Add data to the row
+                        newRow.append('<td class="text-[10px]">' + (index + 1) + '</td>');
+                        newRow.append('<tr><td class="text-[10px]">' + item.datetx + '</td>');
+                        newRow.append('<td class="text-[10px]">' + item.begin + '</td>');
+                        // newRow.append('<td class="text-[10px]">' + item.end + '</td>');
+                        newRow.append('<td class="text-[10px]">' + item.Noqty + '</td>');
+                        newRow.append('<td class="text-[10px]">' + item.Noitems + '</td>');
+                        newRow.append('<td class="text-[10px]">' + item.selling_price + '</td>');
+                        // newRow.append('<td class="text-[10px]"> ' + item.previous_qty + ' </td>');
+                            // Add more columns as needed
+                        $('#storestocklevel .result').append(newRow);
+                    });
+
+                    // Append the row to the table body
+                    // let newtotal = $('#totalqty')
+                    // newtotal.val(res.totalqty );
+                }
+            })
+        })
+
+
+        $(document).on('click', '.Searchssss', function(){
+
+    
+            let fromdate    =  $('#fromdate').val();
+            let todate    =  $('#todate').val();
+            let begin    =  $('#durationFrmTime').val();
+            let end    =  $('#durationToTime').val();     
+            let store  =  $('#store').val();       
+            let daily = $('#daily').val()
+            $.ajax({
+                type: 'GET',
+                url: '{% url "report:OutletStockLevelReport" %}',
+                data: {
+                    begin: begin,
+                    end: end,
+                    fromdate: fromdate,   
+                    todate: todate, 
+                    daily: daily,
+                },
+                success: function(res){
+                    console.log(res.data)
+                    // $('#storestocklevel .default').remove();
+                    $('#storestocklevel .result').empty();
+                    $('#totalqty').empty();
+                    // res.data.forEach(function(item, index) {
+                        // let newRow = $('<tr id="campareTR'+ res.data.id + '">');
+                        // Add data to the row
+                        // newRow.append('<td class="text-[10px]">' + (index + 1) + '</td>');
+                        let newRow = $('<tr>');
+                        newRow.append('<td class="text-[10px]"> 1 </td>');
+                        newRow.append('<tr><td class="text-[10px]">' + res.data.datetx + '</td>');
+                        newRow.append('<td class="text-[10px]">' + res.data.begin + '</td>');
+                        newRow.append('<td class="text-[10px]">' + res.data.end + '</td>');
+                        newRow.append('<td class="text-[10px]">' + res.data.Noqty + '</td>');
+                        newRow.append('<td class="text-[10px]">' + res.data.Noitems + '</td>');
+                        newRow.append('<td class="text-[10px]">' + res.data.selling_price + '</td>');
+                        // newRow.append('<td class="text-[10px]"> ' + res.data.previous_qty + ' </td>');
+                        newRow.append('<td class="text-[10px]"> ' + res.data.current_qty + ' </td></tr>');
+                            // Add more columns as needed
+                            $('#storestocklevel .result').append(newRow);
+                    // });
+                    // Append the row to the table body
+                    // let newtotal = $('#totalqty')
+                    // newtotal.val(res.totalqty );
+                }
+            })
+        })
+    })
+
+
+    // });
+</script>
+
+
+{% endblock content %}

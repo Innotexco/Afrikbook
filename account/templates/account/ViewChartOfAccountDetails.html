@@ -1,0 +1,53 @@
+<!-- Open the modal using ID.showModal() method View chart of Account -->
+
+<dialog id="my_modal_chart_of_account" class="modal py-3 px-3 rounded-lg">
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>View Chart of Account Details</span>
+        </div>
+        <span>
+            <form method="dialog" class="modal-backdrop">
+                <button class="py-1 px-2 rounded-full bg-red-600 text-[14px] text-white font-semibold">X</button>
+            </form>
+        </span>
+    </a>
+    <div class="modal-box">
+        <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+    
+            <div class="w-full overflow-x-auto table-responsive">
+                <table id="chart_of_account_details" class="display" style="width:100%">
+                    <thead>
+                        <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                            <th class="px-1 py-3">Account ID</th>
+                            <th class="px-4 py-3">Date</th>
+                            <th class="px-1 py-3">Transaction Source</th>
+                            <th class="px-4 py-3">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y" id="transactions">
+    
+
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex my-5 mt-4 items-end justify-end gap-3">
+                <label class="text-slate-600">Total Amount :</label>
+                <input class="form-control w-32 h-5 rounded-sm border border-slate-200 p-3 focus:border-slate-100 focus:outline-none" value="00:00" id="total_amount" readonly  />
+            </div>
+
+
+        </div>
+    </div>
+    
+</dialog>

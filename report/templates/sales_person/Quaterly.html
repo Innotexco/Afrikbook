@@ -1,0 +1,282 @@
+
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+
+
+    
+
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Customer Quaterly Sales Report</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+    
+
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="grid gap-6 md:grid-cols-6 xl:grid-cols-4 mb-3">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">FROM</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        name="start_date"
+                        id="from"
+                    />
+                </label>
+
+                {% comment %} <label class="block text-sm">
+                    <span class="text-gray-700">TO</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        name="end_date"
+                        id="to"
+                    />
+                </label> {% endcomment %}
+
+               
+               
+                <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="search2">
+                    Search
+                </button> 
+
+               
+
+            </div>
+            
+            
+            
+        </form>
+        <input type="hidden" id="iddd" value="4"/>
+
+        <div class="w-full overflow-x-auto table-responsive mt-5" id="quaterly">
+            {% include 'components/Periodheader.html' %}
+            <h1>Sales Person Sales Report</h1>
+          <table id="personquaterly" class="sale my-6" style="width:100%">
+                <!-- <thead class="hidden">
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                        <th class="px-4 py-3">Customer</th>
+                        <th class="px-4 py-3" colspan="5">Quaters</th>
+                        <th class="px-4 py-3" >Total</th>
+                           
+                        </tr>
+                </thead>  -->
+                <tbody class="bg-white divide-y">
+
+                   
+                    
+                     {% for sale in quarterly_sales_data|dictsort:"cus" %}
+                     <tr class="text-gray-700">
+                    
+                        <td class="text-[10px]  text-sm">
+                            {% if forloop.counter is 1 %}
+                                <span class="text-lg ">Sales Person</span><br>
+                            {% endif %}
+                            {{sale.cus}}
+                        </td>
+                        <td class="text-[10px] flex gap-10">
+                            {% for item  in sale.customer %}
+                              <td class="">
+                                {% if forloop.parentloop.counter is 1 %}
+                                <span class="font-semibold text-sm">Qrt {{forloop.counter}}</span><br>
+                                {% endif %}                                
+                                <span >{{item.total_sales}}</span>
+                                   
+                               </td>
+                            
+                            {% endfor %}
+                        </td>
+                        <td class="text-[10px] text-sm">
+                            {% if forloop.counter is 1 %}
+                            <span class="text-lg">Total</span><br>
+                            {% endif %}
+                            {{sale.quarterly_total|floatformat:2|intcomma}}
+                        </td>
+                        <td class="text-[10px] text-sm">
+                            {% if forloop.counter is 1 %}
+                                <span class="text-lg">Rating</span><br>
+                            {% endif %}
+                            <span class="">{{sale.rate}}% </span>
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+                {% include 'customer_sales/tfoot.html' %}
+            </table>
+            <div class="flex justify-end  py-3 my-5 bg-white rounded-lg shadow-md">
+
+                <div class="">
+        
+                    <label class="flex justify-end  block text-sm">
+                        <span class="text-gray-700">Total Sales: <b class="text-[15px] mr-1 currency"></b><bold class="font-semibold" id="sales_total">{{total_sales|floatformat:2|intcomma}}</bold></span>
+                       
+                    </label>
+        
+                    <label class="flex justify-end  block text-sm">
+                        <span class="text-gray-700 ">Total Item: <bold class="font-semibold" id="purchase_tota">{{total_qty}}</bold></span>
+                       
+                    </label>
+                    <label class="flex justify-between gap-6 text-sm hidden">
+                        <span class="text-gray-700 ">Total Expenses: </span>
+                        <span class="font-semibold" id="purchase_total">{{total_purchase}}</span>
+                    </label>
+                    <label class="flex justify-between gap-6 text-sm hidden">
+                        <span class="text-gray-700 ">Balance: </span>
+                        <span class="font-semibold" id="total">{{total}}</span>
+                    </label>
+        
+                    
+                </div>
+        
+            </div>
+        </div>
+    </div>
+
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+        <!-- <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+            <button type="button" class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                href="#" onclick="generatePDF('pdfdiv')">
+                Print
+            </button >
+
+            <button type="button" class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                onclick="convertTableToExcel('pdfdiv', 'example2')">
+                Export to excel
+            </button >
+
+            <button type="button" class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                href="#" onclick="generatePDF('pdfdiv')">
+                Export to PDF
+            </button >
+
+            
+        </div> -->
+         <!-- Print Export To Excel and Export to Pdf template -->
+         {% include 'ModalBoxx/printbtn.html' with container="quaterly" table="person" table_no="quaterly" %}
+
+    </div>
+
+    <script>
+        $(document).ready(
+            setTimeout(function(){
+                //Filter()
+            }, 500)
+        )
+        //serach by date
+        function Filter(){
+            //e.preventDefault()
+            const from = $('#from').val()
+            const to = $('#to').val()
+            const datas = {
+                start_date: from,
+                end_date: to,
+                invoice: $('#invoice').val(),
+                invoice_state: $('#invoice_state').val(),
+                customer: $('#customer_id').val(),
+                item: $('#item').val(),
+            }
+           
+            if(from || to || datas.invoice || datas.invoice_state || datas.customer || datas.item){
+                $.ajax({
+                    url: '{% url "filter:sales-report-date" %}',
+                    method: 'GET',
+                    data: datas,
+                    success: function(response) {
+                        if(response.serializer_data && response.serializer_data.length > 0){
+                            // Handle the response data
+                        
+                            $("#sales_total").val(response.sales_total);
+                            $("#qty_total").val(response.qty_total);
+                            const table = $('#example2 tbody')
+                            table.empty()
+                            let num = 0;
+                            response.serializer_data.forEach(item => {
+                                num++ 
+                                
+        
+                                const row = $('<tr id="row">').append(
+                                    $('<td class="text-[10px]">').html(num),
+                                    $('<td class="text-[10px]">').text(item.cusID),
+                                    $('<td class="text-[10px]">').text(item.customer_name),
+                                    $('<td class="text-[10px]">').text(item.invoice_date),
+                                    $('<td class="text-[10px]">').text(item.invoiceID),
+                                    $('<td class="text-[10px]">').text(item.Gdescription),
+                                    $('<td class="text-[10px]">').text(parseFloat(item.amount_expected) + parseFloat(item.amount_paid)),
+                                    $('<td class="text-[10px]">').text(item.customer_name),
+                                    $('<td class="text-[10px]">').text(item.payment_method),
+                                    $('<td class="text-[10px]">').append('<a onclick="showModal(\'' + item.invoiceID + '\', \'' + item.cusID + '\')" class="flex items-center justify-center text-blue-500 border px-3 bg-gray-50 cursor-pointer"  aria-label="Edit">View</a>'),
+                                    
+                                
+                                );
+                                table.append(row);
+                                
+                                $("#no-data").css('display', 'none');
+                            });
+                        }else{
+                            $("#example2 tbody").empty();
+                            $("#sales_total").val(0);
+                            $("#qty_total").val(0);
+                            $("#no-data").css('display', 'block');
+                            alertify.error("No Return data between selected date")
+                            //alertify.error("Select start_date and end_date")
+                        }
+                    },
+                    error: function(error) {
+                        // Handle the error
+                        console.log('error')
+                    }
+                });
+            }else{
+                //alertify.error("Select start_date and end_date")
+            }
+
+            
+        };
+
+    </script>
+    <script>
+        let num = 0
+        var num2 = parseInt($("#iddd").val());
+        var execute = true
+
+
+        if (execute == true){
+            while (num <= num2){
+                
+                $(`#header${num}`).show()
+                num ++
+            }
+            execute = false
+        }else{
+            //console.log(execute)
+        }
+    </script>
+
+
+
+
+{% endblock content %}

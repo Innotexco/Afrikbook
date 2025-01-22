@@ -1,0 +1,247 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Profile Setup/Update</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+        <h1 class="text-2xl text-slate-600 font-semibold text-center uppercase">  Create / Update Profile</h1>
+        
+        <div class="flex items-center justify-center py-3">
+            <div class="h-20 w-20 rounded-md border border-slate-200">
+                {% if profile.logo %}
+                <img src="{{profile.logo.url}}" alt="logo" class="object-contain" />
+                {% endif %}
+
+            </div>
+        </div>
+        <form action="" method="post" enctype="multipart/form-data"> {% csrf_token %}
+        <input type="hidden" value="{{profile.id}}" name="id">
+
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Logo</span>
+                    <input 
+                        type="file"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="{{form.logo.name}}"
+                    />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">Owner Name</span>
+                    <input 
+                        type="text"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="{{form.ownerName.name}}"
+                        value="{{profile.ownerName}}"
+                    />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">Business Name</span>
+                    <input 
+                        type="text"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="{{form.CompanyName.name}}"
+                        value="{{profile.CompanyName}}"
+                    />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">Phone / Tel</span>
+                    <input 
+                        type="text"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="{{form.phone.name}}"
+                        value="{{profile.phone}}"
+                    />
+                </label>
+
+            </div>
+
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">Phone 2</span>
+                    <input 
+                        type="text"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="{{form.phone2.name}}"
+                        value="{{profile.phone2}}"
+                    />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">Services Description</span>
+                    <input 
+                        type="text"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="{{form.services.name}}"
+                        value="{{profile.services}}"
+                    />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">Email</span>
+                    <input 
+                        type="text"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="{{form.email.name}}"
+                        value="{{profile.email}}"
+                    />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">R C (Optional)</span>
+                    <input 
+                        type="text"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="{{form.Rc.name}}"
+                        value="{{profile.Rc}}"
+                        id="rc"
+                    />
+                </label>
+
+            </div>
+
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Sales Interface
+                    </span>
+                    <select class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="salesinterface" id="interface" onchange="SalesInterface()">
+                        <option value="Basic Sales Point">Basic Sales Point</option>
+                        <option value="Sales Point">Sales Point</option>
+                      
+                    </select>
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-600">Address</span>
+                    <input
+                        class="block w-full mt-1 px-2 text-sm form-input border-2 rounded-md focus:border-slate-300  focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg"
+                        rows="1"
+                        placeholder=""
+                        name="{{form.address.name}}"
+                        value="{{profile.address}}"
+                    ></input>
+                </label>
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Select Country  
+                    </span>
+                    <select class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="country">
+                        <option disabled> Select Country</option>
+                        {% for value in country %}
+                        <option onclick="Currency('{{value.Currency}}')" {% if profile.country == value.Country %}selected {% endif %}>{{value.Country}}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Select Currency
+                    </span>
+                    <select id="currency" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="currency">
+                        {% for currency in country %}
+                        <option {% if profile.currency == currency.Currency %}selected {% endif %}>{{currency.Currency}}</option>
+                        {% endfor %}
+                        
+                    </select>
+                </label>
+                <input type="hidden" value="{{token}}" name="{{form.Token_ID.name}}">
+                <input type="hidden" value="admin" name="{{form.Userlogin.name}}">
+
+                <button type="submit" class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                    {% if submit %}{{ submit }} {% endif %}
+                </button>
+
+            </div>
+        </form>
+
+    </div>
+
+
+    <script>
+       
+        
+        function Currency(value){
+           
+            $("#currency option:selected").text(value)
+        }
+
+        function SalesInterface(){
+            
+      
+            var value = $('#interface').val();
+            //console.log(value)
+            if(value){
+                localStorage.setItem('salesInterface', value);
+                var storedValue = localStorage.getItem('salesInterface');
+                if(storedValue === 'Sales Point'){
+                    // $('#sales_interface').attr("href", `{% url 'main:SalesPoint' %}`);
+                    // $('#side_sales_interface').attr("href", `{% url 'main:SalesPoint' %}`);
+                    $('#sales_interface').attr("href", `{% url 'basic_sales_app:SalesMenu' %}`);
+                    $('#side_sales_interface').attr("href", `{% url 'basic_sales_app:SalesMenu' %}`);
+                    $('#sales_interface').attr("target", `_blank`);
+                    $('#side_sales_interface').attr("target", `_blank`);
+                }else{
+                    $('#sales_interface').attr("href", `{% url 'customer:NewSales' %}`);
+                    $('#side_sales_interface').attr("href", `{% url 'customer:NewSales' %}`);
+                    $('#sales_interface').removeAttr("target");
+                    $('#side_sales_interface').removeAttr("target");
+                }
+                alertify.success(value+" mode activated");
+            }
+        }
+        $(document).ready(function(){
+            var storedValue = localStorage.getItem('salesInterface');
+            if(storedValue){
+                var bsp = ""
+                var sp = ""
+                if(storedValue =="Basic Sales Point"){bsp = "selected"}
+                if(storedValue =="Sales Point"){sp = "selected"}
+
+                $("#interface").html(
+                    `
+                        <option ${bsp} value="Basic Sales Point">Basic Sales Point</option>
+                        <option ${sp} value="Sales Point">Sales Point</option>
+                    `
+                )
+            }
+        })
+        
+    </script>
+
+{% endblock content %}

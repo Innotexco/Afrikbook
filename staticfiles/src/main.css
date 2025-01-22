@@ -1,0 +1,86 @@
+
+
+.sidebar {
+    width: 84px;
+    height: 100vh;
+    overflow: hidden;
+    padding-top: 30px !important;
+    transition: all 1s ease;
+}
+
+
+
+.sidebar.close {
+    width: 260px;
+    transition: all 1s ease;
+}
+
+
+.sidebar.close .txt {
+    display: block;
+    transition: all 1s ease;
+}
+
+.sidebar .txt {
+    display: none;
+    transition: all 1s ease;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: .5rem;
+}
+
+::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #2F4F4F;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #356464;
+}
+
+@media screen and (max-width: 1022px) {
+    .sidebar.close{
+        width: 84px !important;
+        background-color: #fff;
+        transition: all 1s ease;
+        padding-top: 10px !important;
+        transition: all 1s ease;
+        z-index: 40;
+    }
+
+    .sidebar.close .txt {
+        display: none;
+        transition: all 1s ease;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 24px;
+        padding-top: 10px !important;
+        left: 0;
+        width: 204px;
+        height: 100vh;
+        background-color: #fff;
+        overflow: hidden;
+        z-index: 40;
+        transition: all 1s ease;
+    }
+
+    .sidebar .txt {
+        display: block;
+        transition: all 1s ease;
+    }
+
+    .main-content {
+        margin-left: 84px !important;
+        transition: all 1s ease;
+    }
+}
+
+
+

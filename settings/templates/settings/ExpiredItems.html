@@ -1,0 +1,156 @@
+
+{% extends 'base.html' %}
+
+{% block home %}
+
+
+
+<div id="message">
+
+</div>
+
+
+
+    
+    <main class="w-full">
+
+        <div class="bg-slate-200 py-1 px-2 w-[300px] text-gray-600 text-sm rounded-sm">Expired
+            <span class="text-red-500">Products</span><br>
+        </div>
+
+        
+    <div class="flex flex-wrap justify-between">
+        <h4 class="my-4 text-lg font-semibold text-gray-600 dark:text-gray-300">
+        Expired Products
+        </h4>
+        {% if items.count > 0 %}
+        <span id="delete-all" class="flex items-center cursor-pointer justify-between px-2 py-2 text-sm font-medium leading-5 text-red-600 rounded-lg focus:outline-none focus:shadow-outline-gray">
+        Delete All
+        <span>
+            {% endif %}
+    </div>
+
+    <div class="flex flex-wrap justify-between gap-4 my-2">
+       
+        <div class="w-full my-6 overflow-hidden rounded-lg shadow-xs">
+            <div class="w-full overflow-x-auto">
+                <table class="w-full whitespace-no-wrap" id="myTable">
+                    <thead>
+                        <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                            <th class="px-4 py-3">SN</th>
+                            <th class="px-4 py-3">Invoice No.</th>
+                            <th class="px-4 py-3">Item</th>
+                            <th class="px-4 py-3">Mfg Date</th>
+                            <th class="px-4 py-3">Exp Date</th>
+                            <th class="px-4 py-3">Shelf Life</th>
+                            <th class="px-4 py-3">Days Left</th>
+                            <th class="px-4 py-3">Notifiy Me</th>
+                            <th class="px-4 py-3">Notification Status</th>
+                            <th class="px-4 py-3">Status</th> 
+                            <th class="px-4 py-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y">
+                         {% for stockout in items|dictsort:"rdays" %}
+                            {% if stockout.rdays <= 0 and stockout.status != "Sold" %}
+                                <tr class="text-gray-700">
+                                    <td class="px-4 py-3">
+                                    {{ forloop.counter}}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                    {{stockout.invoice_no}}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                    {{stockout.item}}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                        {{stockout.manufacture_date}}
+                                    </td>
+                                    <td class="px-4 py-3 text-xs text-red-600">
+                                        {{stockout.expiry_date}}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                        {{stockout.days}} 
+                                        {% if stockout.days == 1 %}
+                                        day
+                                        {% else %}
+                                        days
+                                        {% endif%}
+                                    </td> 
+                                    <td class="px-4 py-3 text-sm">
+                                        {{stockout.rdays}} 
+                                        {% if stockout.rdays == 1 %}
+                                        day
+                                        {% else %}
+                                        days
+                                        {% endif%}
+                                    </td> 
+                                    <td class="px-4 py-3 text-sm">
+                                        {{stockout.notify_me}}
+                                        {% if stockout.notify_me == 1 %}
+                                        day before expiry date
+                                        {% else %}
+                                        days before expiry date
+                                        {% endif%}
+                                    </td> 
+                                    <td class="px-4 py-3 text-sm">
+                                        {% if stockout.n_status == "1" %}
+                                        Enabled
+                                        {% else %}
+                                        Disabled
+                                        {% endif%}
+                                        
+                                    </td> 
+                                    <td class="px-4 py-3 text-sm">
+                                        {{stockout.status}}
+                                    </td>
+                                    <td class="text-[10px]">
+                                        <a href="{% url 'settings:DeleteExpiredItem' stockout.invoice_no stockout.item_code %}"
+                                            class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-red-600 rounded-lg focus:outline-none focus:shadow-outline-gray"
+                                            aria-label="Delete"
+                                            id="delete"
+                                            >
+                                            <svg
+                                                class="w-5 h-5"
+                                                aria-hidden="true"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                            >
+                                                <path
+                                                fill-rule="evenodd"
+                                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                clip-rule="evenodd"
+                                                ></path>
+                                            </svg>
+                                        </a>
+                                    </td> 
+                                </tr>
+                            {% endif %}
+                         {% endfor %}
+                         
+                    </tbody>
+                </table>
+            </div>
+
+<script>
+    $('#delete').click( function() {
+        sessionStorage.removeItem("notification");
+    });
+    $('#delete-all').click( function() {
+        
+        alertify.defaults.glossary.title = "Confirm";
+        alertify.confirm("Are you sure you want to delete all expired items?",
+        // if OK
+        function(){   
+            sessionStorage.removeItem("notification");                            
+            window.location.href = "{% url 'settings:DeleteExpiredItems' %}"
+        },
+        //if Cancel
+        function(){
+        })
+    });
+</script>
+           
+{% endblock home %}
+      
+  

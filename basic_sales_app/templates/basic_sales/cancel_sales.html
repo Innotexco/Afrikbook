@@ -1,0 +1,209 @@
+
+{% extends 'base_layout.html' %}
+{% load static %}
+
+{% block content %}
+
+
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+        <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+        href="#">
+            <div class="flex items-center">
+                <svg
+                    class="w-5 h-5 mr-2"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                >
+                <path
+                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                ></path>
+                </svg>
+                <span>Cancel Sales</span>
+            </div>
+            
+        </a>
+        <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+            <form action="" method="get">
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+    
+                    <label class="block text-sm">
+                        <span class="text-gray-700">
+                            From
+                        </span>
+                        <input 
+                            type="date"
+                            class="block w-full py-2 px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            name="fromdate"
+                            id="fromdate"
+                        />
+                    </label>
+        
+                    <label class="block text-sm">
+                        <span class="text-gray-700">
+                            To
+                        </span>
+                        <input 
+                            type="date"
+                            class="block w-full py-2 px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            name="todate"
+                            id="todate"
+                        />
+                    </label>
+                    <button type="button" id="CSD" class="block w-full h-8 px-4 py-1 mt-5 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" >
+                        Search
+                    </button>
+
+                    <label class="block text-sm">
+                        <span class="text-gray-700">
+                            Search by (item name, invoiceID, barcode customer name)
+                        </span>
+                        <input 
+                            type="text"
+                            class="block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            id="CSD_search"
+                        />
+                    </label>
+                </div>
+            </form>
+        </div>
+
+        
+        <div class="w-full overflow-auto" style="height: 400px;"  id="printContent">
+            <table class="w-full whitespace-no-wrap" id="cancelSales">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                        <th class="px-4 py-3">SN</th>
+                        <th class="px-4 py-3">Customer Name</th>
+                        <th class="px-4 py-3">Item Name</th>
+                        <th class="px-4 py-3">Item Price</th>
+                        <th class="px-4 py-3">Qty</th>
+                        <th class="px-4 py-3">Amount</th>
+                        <th class="px-4 py-3">Amount Paid</th>
+                        <th class="px-4 py-3">Payment Method</th>
+                        <th class="px-4 py-3">Cancel</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y old">
+                    {% for CSH in page.object_list%}
+                        <tr class="text-gray-700 dark:text-gray-400">
+                            <td class="px-4 py-1">
+                            {{forloop.counter}}
+                            </td>
+                            <td class="px-4 py-1 text-sm">
+                                {{CSH.customer_name}}
+                            </td>
+                            <td class="px-4 py-1 text-sm">
+                                {{CSH.item_name}}
+                            </td>
+                            <td class="px-4 py-1 text-sm">
+                                {{currency}}{{CSH.unit_p}}
+                            </td>
+                            <td class="px-4 py-1 text-sm">
+                                {{CSH.qty}}
+                            </td>
+                            <td class="px-4 py-1 text-sm">
+                                {{currency}}{{CSH.amount}}
+                            </td>
+                            <td class="px-4 py-1 text-sm">
+                                {{currency}}{{CSH.amount_paid}}
+                            </td>
+                            <td class="px-4 py-1 text-sm">
+                                {{CSH.payment_method}}
+                            </td>
+                            <td class="py-3 text-sm">
+                                <a onclick="CancelSales('{{CSH.id}}')" class="items-left justify-left py-2  px-4 mb-12 mt-5 cursor-pointer text-[12px] font-semibold bg-red-600 text-slate-200 rounded-md" >Cancel</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    
+                </tbody>
+                
+                <tbody class="bg-white divide-y new">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="grid px-4 py-3 text-xs font-semibold tracking-wide text-gray-500 uppercase border-t bg-gray-50 sm:grid-cols-9">
+            <span class="flex items-center col-span-3">
+                Showing {{ page.number }} of {{ page.paginator.num_pages }}.
+            </span>
+          
+            <span class="col-span-2"></span>
+            <!-- Pagination -->
+            <span class="flex col-span-4 mt-2 sm:mt-auto sm:justify-end">
+                <nav aria-label="Table navigation">
+                <ul class="inline-flex items-center">
+                    <li>
+                        {% if page.has_previous %}
+                            <a  href="?page=1" class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple" >&laquo;
+                                First
+                            </a>
+                            <a href="?page={{ page.previous_page_number }}">Previous</a>
+                        {% endif %}
+                    </li>
+                    <li>
+                    {% if page.has_next %}
+                        <a class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple" href="?page={{ page.next_page_number }}">Next</a>
+                        <a class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple" href="?page={{ page.paginator.num_pages }}">Last &raquo;</a>
+                    {% endif %}
+
+                    </li>
+                   
+                </ul>
+                </nav>
+            </span>
+            
+        </div>
+                
+        <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-1 p-2 ">
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3 ">
+                    <a onclick="printModal.showModal()"  id="openModalButton" class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                        href="#">
+                        Print
+                    </a>
+
+                <a class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                    onclick="convertTableToExcel('printContent', 'cancel_sales')">
+                    Export to Excel
+                </a>     
+
+                </div>  
+            </div>
+            
+            <div class="col-span-1">
+                <div class="grid gap-6 ">
+                    <div class="block justify-end items-center w-full">
+                        <label class="flex justify-end items-center gap-2 text-[11px] w-full py-3">
+                            <div class="flex justify-center items-center gap-6">
+                                
+                                <label class="flex items-center">
+                                    
+                                    <span class="ml-2 text-gray-700 font-bold">
+                                        Sales Total Money: <span class="text-gray-700"></span>
+                                    </span>
+                                </label>
+                            </div>
+                            <input 
+                                type="text"
+                                class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                placeholder=""
+                                value="{{totalqty}}"
+                                readonly
+                                id="totalqty"
+                            />
+                        </label>
+                    </div>
+                </div>  
+            </div>
+        </div>
+    </div>
+    <button id="Search_for_sales" data-url="{% url 'Basic_Sales:Search_for_sales'%}" class="hidden"></button>
+    <button id="UpdateCancelSales" data-url="{% url 'Basic_Sales:UpdateCancelSales'%}" class="hidden"></button>
+
+
+<script src ='{% static "js/cancel_sales.js" %}'></script>
+{% endblock %}

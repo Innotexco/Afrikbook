@@ -1,0 +1,191 @@
+
+{% extends 'base_layout.html' %}
+{% load static %}
+
+{% block content %}
+    <style>
+        /* Styles to position the dropdown */
+        #currencyDropdownMenu {
+            top: 100%;
+            left: 0;
+        }
+
+    </style>
+    <!-- page content -->
+    <div class="flex-grow flex" id="app">
+        <!-- store menu -->
+        <div class="flex flex-col bg-blue-gray-50 h-full w-full ">
+
+           
+
+            <div class="w-full  mt-5 overflow-hidden rounded-lg shadow-xs">
+    
+                <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+                    href="#">
+                    <div class="flex items-center">
+                        <svg
+                            class="w-5 h-5 mr-2"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                        >
+                        <path
+                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                        </svg>
+                        <span>Add / Edit Profile</span>
+                    </div>
+                </a>
+                <div class="grid gap-6 md:grid-cols-1">
+                    <form method="post" enctype="multipart/form-data"> {% csrf_token %}
+
+                        <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+                            <div class="">
+
+
+                                <div id="Item_size">
+                                    <div class="grid gap-6 md:grid-cols-2 ">
+                    
+                                        <label class="block text-sm">
+                                            <span class="text-gray-700">Logo</span>
+                                            <input 
+                                                type="file"
+                                                id="size"
+                                                name="{{form.logo.name}}"
+                                                class="block w-full px-2 mt-1 py-3 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                                placeholder=""
+                                            />
+                                        
+                                        </label>
+                    
+                                        <label class="block text-sm">
+                                            <span class="text-gray-700">Owner Name</span>
+                                            <input 
+                                                type="text"
+                                                id="size"
+                                                name="{{form.ownerName.name}}"
+                                                value="{{profile.ownerName}}"
+                                                class="block w-full px-2 mt-1 py-3 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                                placeholder=""
+                                            />
+                                            <span class="flex w-full text-red-400">{{formerror.ownerName.errors}}</span>
+                                        </label>
+                    
+                                        <label class="block text-sm">
+                                            <span class="text-gray-700">Business Name</span>
+                                            <input 
+                                                type="text"
+                                                id="size"
+                                                name="{{form.CompanyName.name}}"
+                                                value="{{profile.CompanyName}}"
+                                                class="block w-full px-2 mt-1 py-3 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                                placeholder=""
+                                            />
+                                            <span class="flex w-full text-red-400">{{formerror.CompanyName.errors}}</span>
+                                        </label>
+                                        <label class="block text-sm">
+                                            <span class="text-gray-700">Phone / Tel</span>
+                                            <input 
+                                                type="text"
+                                                id="size"
+                                                name="{{form.phone.name}}"
+                                                value="{{profile.phone}}"
+                                                class="block w-full px-2 mt-1 py-3 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                                placeholder=""
+                                            />
+                                            <span class="flex w-full text-red-400">{{formerror.phone.errors}}</span>
+                                        </label>
+                    
+                                        <label class="block text-sm">
+                                            <span class="text-gray-700">Services Description</span>
+                                            <input 
+                                                type="text"
+                                                id="size"
+                                                name="{{form.services.name}}"
+                                                value="{{profile.services}}"
+                                                class="block w-full px-2 mt-1 py-3 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                                placeholder=""
+                                            />
+                                            <span class="flex w-full text-red-400">{{formerror.services.errors}}</span>
+                                        </label>
+                                        <label class="block text-sm">
+                                            <span class="text-gray-700">Email Address</span>
+                                            <input 
+                                                type="text"
+                                                id="size"
+                                                name="{{form.email.name}}"
+                                                value="{{profile.email}}"
+                                                class="block w-full px-2 mt-1 py-3 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                                placeholder=""
+                                            />
+                                            <span class="flex w-full text-red-400">{{formerror.email.errors}}</span>
+                                        </label>
+                    
+                                        <label class="block text-sm">
+                                            <span class="text-gray-700">R C (Optional)</span>
+                                            <input 
+                                                type="text"
+                                                id="size"
+                                                name="{{form.Rc.name}}"
+                                                value="{{profile.Rc}}"
+                                                class="block w-full px-2 mt-1 py-3 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                                placeholder=""
+                                            />
+                                        
+                                        </label>
+                    
+                                        <label class="block text-sm">
+                                            <span class="text-gray-700">Address</span>
+                                            <input 
+                                                type="text"
+                                                id="size"
+                                                name="{{form.address.name}}"
+                                                value="{{profile.address}}"
+                                                class="block w-full px-2 mt-1 py-3 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                                placeholder=""
+                                            />
+                                            <span class="flex w-full text-red-400">{{formerror.address.errors}}</span>
+                                        </label>
+                                       
+                                        
+                                      
+                                        <label class="block text-sm">
+                                            <div class="rounded-md bg-white shadow-xs">
+                                                <span class="text-gray-700">Select Currency</span>
+                                                    <select id="currencySelect" name="{{form.currency.name}}" class="block w-full px-2 py-3 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+                                                        {% for code in all_currencies %}
+                                                            <option value="{{ code }}">{{ code }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                            </div>
+                                        </label>
+                                        <span class="flex w-full text-red-400">{{formerror.currency.errors}}</span>
+                                        <input type="hidden" value="{% if profile.Token_ID %} {{profile.Token_ID}} {% else %} {{token}} {% endif %}" name="{{form.Token_ID.name}}">
+                                        <input type="hidden" value="{{request.user}}" name="{{form.Userlogin.name}}">
+                    
+                                    </div>
+                    
+                                    <button name="addprofile" type="submit" class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                                        {% if submit %}{{ submit }} {% endif %}
+                                    </button>
+                                </div>
+                            </div>
+                            
+                        </div>
+
+                    </form>
+                </div>
+
+                
+                
+            </div>
+
+        </div>
+        <!-- end of store menu -->
+    </div>
+
+<!-- <script src ='{% static "js/JS_for_dropdowns_add_colors.js" %}'></script> -->
+
+{% endblock %}
+
+    

@@ -1,0 +1,148 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Pickup Station</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    <form method="POST" id="formData">
+        {% csrf_token %}
+        <div class="px-4 py-3 my-8 bg-white rounded-lg shadow-md">
+
+            <div class="flex  gap-2">
+    
+                <input type="text" name="id" id="station_id" class="hidden">
+                <input type="text" name="delete" id="delete" class="hidden">
+
+                 <label class="block w-full text-sm">
+                    <span class="text-gray-700">Pickup Station</span>
+                    <input 
+                        class="block w-6/12 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="station"
+                        id="station"
+                    />
+                    <p class="text-red-500 error">{{ form.detail.errors }}</p>
+                </label>
+    
+                
+            </div>
+            <button id="bb" class="block  px-4 py-1 mt-5 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                type="submit">
+                Create
+            </button>
+    
+    
+        </div>
+    </form>
+
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+        <div class="w-full overflow-hidden rounded-lg shadow-xs mt-5">
+            <div class="w-full overflow-x-auto">
+                <table class="w-full whitespace-no-wrap">
+                    <thead>
+                        <tr
+                            class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800"
+                        >
+                            <th class="px-4 py-3">SN</th>
+                            <th class="px-4 py-3">Pickup Station</th>
+                            <th class="px-4 py-3">Edit</th>
+                            <th class="px-4 py-3">Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y">
+                        {% for station in stations %}
+                        <tr class="text-gray-700 dark:text-gray-400">
+                            <td class="px-4">
+                            {{forloop.counter}}
+                            </td>
+                            <td class="px-4 text-sm">
+                            {{station.addr}}
+                            </td>
+                            <td class="text-[10px]">
+                                <input type="checkbox", name="select" onchange="EditStation(this, '{{station.id}}','{{station.addr}}')" class="px-2 py-2 ml-3 text-sm font-medium leading-5 text-blue-500 rounded-lg focus:outline-none focus:shadow-outline-gray" />
+                            
+                            </td>
+                            <td class="text-[10px]">
+                                <a onclick="Delete('{{station.id}}')"
+                                    class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-red-600 rounded-lg focus:outline-none focus:shadow-outline-gray"
+                                    aria-label="Delete"
+                                    >
+                                    <svg
+                                        class="w-4 h-4"
+                                        aria-hidden="true"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                    >
+                                        <path
+                                        fill-rule="evenodd"
+                                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                        clip-rule="evenodd"
+                                        ></path>
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                        
+
+                       
+
+                    </tbody>
+                </table>
+            </div>
+            
+
+    </div>
+    <script>
+        function EditStation(element, id, value){
+            var checkbox = $(element).prop('checked');
+            
+            if(checkbox == true){
+                $('#station_id').val(id)
+                $('#station').val(value)
+                $('#bb').text("Update")
+                $("input:checkbox[name='select']").prop('checked', false)
+                $(element).prop('checked', true);
+                
+            }else{
+                $('#station_id').val('')
+                $('#station').val('')
+                $('#bb').text("Create")
+            }
+        }
+
+
+        function Delete(id){
+            alertify.defaults.glossary.title = "Hey";
+            alertify.confirm("Are you sure you want to delete this method.",
+            function(){
+                $('#station_id').val(id)
+                $('#delete').val('Yes')
+               $('#formData').submit()
+            });
+        }
+
+    </script>
+    
+    {% endblock content %}

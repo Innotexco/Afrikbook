@@ -1,0 +1,304 @@
+
+{% extends 'base.html' %}
+{% load humanize %}
+
+
+{% block content %}
+
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+        href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Trial Balance</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+        <form action="" method="get">
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">From</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="fromDate"
+                    />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">To</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="toDate"
+                    />
+
+                </label>
+                
+                <button type="submit" class="block w-full h-8 px-4 py-1 mt-5 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                    >
+                    Search
+                </button>
+
+            </div>
+        </form>
+        <div class=""  id="printContent">
+            <h1 class="font-extrabold text-center text-lg m-4">TRIAL BALANCE REPORT</h1>
+            <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+                <div class="w-full overflow-x-auto">
+                    <table class="w-full whitespace-no-wrap">
+                        <thead>
+                            <tr class="text-lg font-extrabold tracking-wide text-left text-slate-800 border-2 border-slate-200 h-[20px]">
+                                <th colspan="" class="px-4 py-1 border-r">Account</th>
+                                <th colspan="" class="px-4 py-1 border-r">Debit</th>
+                                <th colspan="" class="px-4 py-1 border-r">Credit</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y">
+        
+                            <!-- <tr class="text-slate-600 font-medium border-2">
+        
+                                <td colspan="" class="px-4 border-2 py-1">
+                                    Cash
+                                </td>
+                                <td class="px-4 py-1 border-2 text-sm DebitSum" id="DebitSum">
+                                    0
+                                </td>
+                                <td class="px-4 py-1 border-2 text-sm">
+                                    
+                                </td>
+
+                            </tr> -->
+        
+                            <tr class="text-slate-600 font-medium border-2">
+        
+                                <td colspan="" class="px-4 border-2 py-1">
+                                    Purchase
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm DebitSum" id="DebitSum">
+                                {% if PurchaseSum %}  {{ PurchaseSum|floatformat:2|intcomma }} {% else %} 0 {% endif %}
+
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm">
+                                
+                                </td>
+
+                            </tr>
+        
+                            <tr class="text-slate-600 font-medium border-2">
+        
+                                <td colspan="" class="px-4 border-2 py-1">
+                                    Sales
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm">
+                                
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm CreditSum">
+                                    {% if SalesSum %}  {{ SalesSum|floatformat:2|intcomma }} {% else %} 0 {% endif %}
+                                </td>
+
+                            </tr>
+        
+                            <tr class="text-slate-600 font-medium border-2">
+        
+                                <td colspan="" class="px-4 border-2 py-1">
+                                    Account Payable
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm DebitSum" id="DebitSum">
+                                    {% if acctpayableSum %}  {{ acctpayableSum|floatformat:2|intcomma }} {% else %} 0 {% endif %}
+                                    
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm">
+                                
+                                </td>
+
+                            </tr>
+        
+                            <tr class="text-slate-600 font-medium border-2">
+        
+                                <td colspan="" class="px-4 border-2 py-1">
+                                    Account Receivable
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm">
+                                
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm CreditSum">
+                                    {% if acctreceivableSum %}  {{ acctreceivableSum|floatformat:2|intcomma }} {% else %} 0 {% endif %}
+                                </td>
+
+                            </tr>
+                            
+                            <tr class="text-slate-600 font-medium border-2">
+        
+                                <td colspan="" class="px-4 border-2 py-1">
+                                    Expenses
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm DebitSum" id="DebitSum">
+                                    {% if Expenses %}  {{ Expenses|floatformat:2|intcomma }} {% else %} 0 {% endif %}
+                                </td>
+                                <td class="px-4 border py-1 text-sm">
+                                
+                                </td>
+
+                            </tr>
+        
+                            <tr class="text-black font-medium border-2 ">
+        
+                                <td colspan="" class="px-4 border-2 py-1">
+                                    Salaries
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm DebitSum" id="DebitSum">
+                                    {% if SalariesSum %}  {{ SalariesSum|floatformat:2|intcomma }} {% else %} 0 {% endif %}
+                                    
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm">
+                                    
+                                </td>
+
+                            </tr>
+
+                            <tr class="text-black font-medium border-2 ">
+        
+                                <td colspan="" class="px-4 border-2 py-1">
+                                    Discount Allowed
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm DebitSum" id="DebitSum">
+                                    {% if discountallowed_Sum %}  {{ discountallowed_Sum|floatformat:2|intcomma }} {% else %} 0 {% endif %}
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm">
+                                
+                                </td>
+
+                            </tr>
+                            <tr class="text-black font-medium border-2 ">
+        
+                                <td colspan="" class="px-4 border-2 py-1">
+                                    Discount Receivable
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm">
+                                    
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm CreditSum">
+                                    {% if discountrecieved_Sum %}  {{ discountrecieved_Sum|floatformat:2|intcomma }} {% else %} 0 {% endif %}
+                                </td>
+
+                            </tr>
+                            <tr class="text-black font-medium border-2 ">
+        
+                                <td colspan="" class="px-4 border-2 py-1">
+                                    Return Outward
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm DebitSum" id="DebitSum">
+                                    {% if returnoutward_Sum %}  {{ returnoutward_Sum|floatformat:2|intcomma }} {% else %} 0 {% endif %}
+                                    
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm">
+                                    
+                                </td>
+
+                            </tr>
+                            <tr class="text-black font-medium border-2 ">
+        
+                                <td colspan="" class="px-4 border-2 py-1">
+                                    Return Inward
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm">
+                                
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm CreditSum">
+                                    {% if returnInwardSum %}  {{ returnInwardSum|floatformat:2|intcomma }} {% else %} 0 {% endif %}
+                                    
+                                </td>
+
+                            </tr>
+                            
+                            <tr class="text-black font-medium border-2 ">
+        
+                                <td colspan="" class="px-4 border-2 py-1">
+                                    Loan
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm DebitSum" id="DebitSum">
+                                    {% if loan_Sum %}  {{ loan_Sum|floatformat:2|intcomma }} {% else %} 0 {% endif %}
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm">
+                                    
+                                </td>
+
+                            </tr>
+                            
+                            <tr class="text-black font-medium border-2 ">
+        
+                                <td colspan="" class="px-4 border-2 py-1">
+                                    Rapaid Loan
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm">
+                                    
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm CreditSum">
+                                    {% if rapaid_loan_Sum %}  {{ rapaid_loan_Sum|floatformat:2|intcomma }} {% else %} 0 {% endif %}
+                                </td>
+
+                            </tr>
+                            
+                            <tr class="text-black font-medium border-2 ">
+        
+                                <td colspan="" class="px-4 border-2 py-1">
+                                    Retained Earnings
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm">
+                                    
+                                </td>
+                                <td class="px-4 border-2 py-1 text-sm CreditSum">
+                                    {% if retained_earnings %}  {{ retained_earnings|floatformat:2|intcomma }} {% else %} 0 {% endif %}
+                                </td>
+
+                            </tr>
+                            <tr class="text-lg font-extrabold tracking-wide text-left text-slate-800 border-2 border-slate-200 h-[20px]">
+                                <th colspan="" class="px-4 py-1 border-2">Total</th>
+                                <th colspan="" class="px-4 py-1 border-2" id="debit">0</th>
+                                <th colspan="" class="px-4 py-1 border-2" id="credit"></th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3"> 
+            <button  type='button' onclick="printModal.showModal()" class=" h-8  px-4  mt-5 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="openModalButton">
+                Print
+            </button>
+        </div>
+
+    </div>
+    <script>
+    $(document).ready(function() {
+     
+        var format = new Intl.NumberFormat()
+
+        DebitSum = loopedaccts('.DebitSum')
+        CreditSum = loopedaccts('.CreditSum')
+        
+        formattedDebitSum = format.format(DebitSum)
+        formattedCreditSum = format.format(CreditSum)
+       
+        debit = $('#debit').text(formattedDebitSum)
+        credit = $('#credit').text(formattedCreditSum)
+    })
+       
+
+    </script>
+{% endblock content %}
+    

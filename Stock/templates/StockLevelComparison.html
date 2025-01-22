@@ -1,0 +1,245 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Outlet and Warehouse Stock Level</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+    <div class="px-4 py-2 my-5 bg-white rounded-lg shadow-md">
+        <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-1 p-2 border-r">
+              <!-- Content for the first column -->
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3 ">
+                 <!-- <div class="grid grid-cols-2  md:grid-cols-2 xl:grid-cols-4 mt-5"> -->
+                    
+    
+                    <label class="block text-sm">
+                        <span class="text-gray-700">
+                            Search(item code)
+                        </span>
+                        <input 
+                            type="text"
+                            class="block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            id="Itemcode"
+                        />
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">
+                            Search(item)
+                        </span>
+                        <input 
+                            type="text"
+                            class="block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            id="searchItem"
+                        />
+                    </label>
+                    <div class="block text-sm mt-5"> 
+                        <button  type='button' class="Search w-full py-2 px-2 mt-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                            Search
+                        </button>
+                    </div>
+
+                </div>  
+            </div>
+            
+            <div class="col-span-1">
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3 ">
+                    <!-- <div class="grid grid-cols-2  md:grid-cols-2 xl:grid-cols-4 mt-5"> -->
+                    <label class="block text-sm">
+                        <span class="text-gray-700">
+                            Select by Shop
+                        </span>
+                        <select class="commonClass block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="selectshop">
+                            <option>_ _Choose Shop_ _</option>
+                            {%for shop in shop %}
+                                <option >{{shop.outlet_name}}</option>
+                            {% endfor %}
+                        
+                        
+                        </select>
+                    </label>
+        
+                   
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Search Warehouse</span>
+                        <select class="commonClass block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="selectwarehouse">
+                            <option>_ _Choose warehouse_ _</option>
+                            {%for warehouse in warehouse %}
+                                <option >{{warehouse.warehouse_name}}</option>
+                            {% endfor %}
+                        </select>
+                        
+                    </label>
+                    <!-- <div class="block text-sm mt-5"> 
+                        <button  type='button' class="Search w-full py-2 px-2 mt-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                            Search
+                        </button>
+                    </div> -->
+                </div>  
+            </div>
+        </div>
+      
+    </div>
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+        <div class="w-full overflow-x-auto table-responsive">
+          <table id="comparedata" class="display" style="width:100%">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                        <th class="py-3">SN</th>
+                        <th class="py-3">Category</th>
+                        <th class="py-3">Item Name</th>
+                        <th class="py-3">Qty In Warehouse</th>
+                        <th class="py-3">Qty In Outlet</th>
+                        <th class="py-3">Stockin Date</th>
+                        <th class="py-3">Item ID</th>
+                        <th class="py-3">Warehouse</th>
+                        <th class="py-3">Shop</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y" id="">
+
+                    
+                    
+                    
+                </tbody>
+                
+            </table>
+            
+        </div>
+    </div>
+
+
+    <div class="grid grid-cols-2 gap-4">
+        <div class="col-span-1 p-2 ">
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3 ">
+                <a class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                    href="#">
+                    Print
+                </a>
+
+            <a class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                href="#">
+                Export to Excel
+            </a>     
+
+            </div>  
+        </div>
+        
+        <div class="col-span-1">
+            <div class="grid gap-6 ">
+                <div class="block justify-end items-center w-full">
+                    <label class="flex justify-end items-center gap-2 text-[11px] w-full">
+                        <span class="ml-2 text-gray-700 font-bold">
+                            Total warehouse quantity: <span class="text-gray-700"></span>
+                        </span>
+                        <input 
+                            type="text"
+                            class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            readonly
+                            id="totalqty1"
+                        />
+                    </label>
+                    
+                    
+                    <label class="flex justify-end items-center gap-2 text-[11px] w-full py-3">
+                        <div class="flex justify-center items-center gap-6">
+                            
+                            <label class="flex items-center">
+                                
+                                <span class="ml-2 text-gray-700 font-bold">
+                                    Total Outlet quantity: <span class="text-gray-700"></span>
+                                 </span>
+                            </label>
+                        </div>
+                        <input 
+                            type="text"
+                            class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            readonly
+                            id="totalqty2"
+                        />
+                    </label>
+                </div>
+            </div>  
+        </div>
+    </div>
+
+    
+
+
+<script>
+        function StockLevelComparison(){
+            let selectshop  =  $('#selectshop').val();
+            let selectwarehouse  =  $('#selectwarehouse').val();   
+            let Itemcode    =  $('#Itemcode').val();
+            let searchItem    =  $('#searchItem').val();    
+            $.ajax({
+                type: 'GET',
+                url: "{% url 'Stock:StockLevelComparison' %}",
+                data: {
+                    selectshop: selectshop,
+                    selectwarehouse: selectwarehouse,   
+                    Itemcode: Itemcode,
+                    searchItem: searchItem,   
+                },
+                success: function(res){
+                    $('#comparedata tbody').empty();
+                    $('#totalqty1').empty();
+                    $('#totalqty2').empty();
+                    res.data.forEach(function(item, index) {
+                        let newRow = $('<tr id="campareTR'+ item.id + '">');
+                        // Add data to the row
+                        newRow.append('<td class="text-[10px]">' + (index + 1) + '</td>');
+                        newRow.append('<td class="text-[10px]">' + item.items + '</td>');
+                        newRow.append('<td class="text-[10px]">' + item.items + '</td>');
+                        newRow.append('<td class="text-[10px]">' + item.qty1 + '</td>');
+                        newRow.append('<td class="text-[10px]">' + item.qty2 + '</td>');
+                        newRow.append('<td class="text-[10px]">' + item.datetx + '</td>');
+                        newRow.append('<td class="text-[10px]">' + item.itemcode + '</td>');
+                        newRow.append('<td class="text-[10px]"> ' + item.store1 + ' </td>');
+                        newRow.append('<td class="text-[10px]"> ' + item.store2 + ' </td>');
+                            // Add more columns as needed
+                            $('#comparedata tbody').append(newRow);
+                    });
+                    // Append the row to the table body
+                    let newtotal1 = $('#totalqty1')
+                    let newtotal2 = $('#totalqty2')
+                    newtotal1.val(res.totalqty1);
+                    newtotal2.val(res.totalqty2 );
+                }
+            })
+        }
+        
+        $(document).on('click', '.Search', function(){
+            StockLevelComparison()
+        }); 
+        
+        $(document).on('change', '.commonClass', function(){
+            StockLevelComparison()
+        })
+            
+       
+        
+    </script>
+
+
+{% endblock content %}

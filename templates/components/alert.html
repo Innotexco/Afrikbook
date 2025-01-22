@@ -1,0 +1,38 @@
+<style>
+.messages{
+    opacity: 0;
+    animation: blinking 1s linear 1000;
+}
+@keyframes blinking {
+    from, 49.9% { opacity: 0;} 50%, to { opacity: 1;}
+}
+</style>
+
+
+<div id="msg-btn" class="flex justify-end  my-2 messages hidden">
+    <button id="msg-btn-btn" class="block h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-orange-300 border border-transparent rounded-lg active:bg-orange-300 hover:bg-orange-300 focus:outline-none focus:shadow-outline-slate"
+        type="button">Please review and take neccessary action</button>
+</div>
+
+<div class="relative z-50">
+    <div class="hidden absolute w-full overflow-hidden bg-white shadow-md p-4"  id="message">
+   
+    </div> 
+    
+</div>
+
+<script>
+
+    $(document).ready(function(){
+        // Show and hide more fileds
+        $(".messages").click(function(){
+            $("#message").slideToggle("slow");
+           
+        });
+        $(".messages").dblclick(function(){
+            $("#message").addClass("hidden");
+            $("#msg-btn").addClass("hidden");
+        });
+    });
+   
+</script>

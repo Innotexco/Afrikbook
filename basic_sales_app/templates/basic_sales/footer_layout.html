@@ -1,0 +1,794 @@
+
+{% include 'basic_sales/loader.html' %}
+
+<style>
+    /* #filterMenu {
+        display: none;
+    } */
+
+    .item_name, .item_price {
+        font-family: 'Farro', sans-serif;
+        font-size: 11px;
+    }
+    .alertify {
+        z-index: 1100; /* Set a higher z-index than the modal */
+    }
+      
+</style>
+
+
+<script>
+    
+
+   
+
+    function CartItemCount() {
+        const cartItems = JSON.parse(sessionStorage.getItem('Items')) || [];
+        const itemCountElement = document.getElementById('cart-item-count');
+    
+        // Count the number of items in the cart
+        const itemCount = cartItems.length;
+    
+        // Display the item count on your HTML template
+        if (itemCountElement) {
+            itemCountElement.textContent = itemCount.toString();
+        }
+    }
+    
+
+    // Initialize cartItems with a valid array
+    let cartItems = [];
+
+    // Call functions that depend on cartItems
+    // displayCartItems();
+    
+
+    // function displayCartItems() {
+    //     const cartContainer = document.getElementById('cart-container');
+    //     const totalcartContainer = document.getElementById('total-cart-container');
+    //     const checkoutContainer = document.getElementById('checkout-container');
+    //     const totalcheckoutContainer = document.getElementById('checkout-total-cart-container');
+    //     const cartItems = JSON.parse(sessionStorage.getItem('Items'));
+    
+    //     // Clear existing cart items
+    //     cartContainer.innerHTML = '';
+    //     totalcartContainer.innerHTML = '';
+    //     checkoutContainer.innerHTML = '';
+    //     totalcheckoutContainer.innerHTML = '';
+    
+    //     let itemCount = 0;
+    //     let totalPrice = 0;
+    
+    //     // Check if there are items in the cart
+    //     if (cartItems && cartItems.length > 0) {
+    //         cartItems.forEach(function (item) {
+
+    //             itemCount += item[4]; // Assuming item[4] represents the quantity
+    //             totalPrice += item[3] * item[4]; // Assuming item[3] is the price and item[4] is the quantity
+                
+    //             const cartItemHtml = `
+    //                 <div class="card sm:overflow-x">
+    //                     <div class="mb-3 bg-blue-gray-50 rounded-lg w-full text-blue-gray-700 py-2 px-2 flex justify-between items-center">
+    //                         <div class="flex justify-between items-center">
+    //                             <div class="w-16 sm:w-24 md:w-32 flex gap-2">
+    //                                 <img src="media/${item[1]}" alt="" class="rounded-lg h-10 w-10 bg-white shadow mr-2"/>
+    //                                 <article>
+    //                                     <h5 class="text-sm font-semibold">${item[2]}</h5>
+    //                                     <p class="text-xs hidden">$${item[3]}</p>
+    //                                     <p class="text-xs block font-semibold"> $${(item[3] * item[4]).toFixed(2)}</p>
+    //                                 </article>
+    //                             </div>
+    //                             <div class="w-28 grid grid-cols-3 justify-center gap-2 ml-12 sm:ml-12 md:ml-12 xl:ml-24">
+    //                                 <button id="ReduceCart`+item[0]+`" onclick="ReduceQty('`+item.id+`', '`+item[0]+`', '`+item.image+`', '`+item.item_name+`', '`+item.selling_price+`')" class="rounded-lg text-center py-1 text-white bg-blue-gray-600 hover:bg-blue-gray-700 focus:outline-none">
+    //                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-minus" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    //                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+    //                                         <line x1="5" y1="12" x2="19" y2="12" />
+    //                                     </svg>
+
+    //                                 </button>
+
+    //                                 <input type="text" id="qty${item.id}" value="${item[4]}" class="bg-white rounded-lg text-center shadow focus:outline-none focus:shadow-lg text-sm">
+                                    
+    //                                 <button id="AddCart`+item[0]+`" onclick="AddQty('`+item.id+`', '`+item[0]+`', '`+item.image+`', '`+item.item_name+`', '`+item.selling_price+`')" class="rounded-lg text-center py-1 text-white bg-blue-gray-600 hover:bg-blue-gray-700 focus:outline-none">
+    //                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-3 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    //                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+    //                                     </svg>
+    //                                 </button>
+    //                             </div>
+    //                         </div>
+    //                         <div class="flex-grow text-right text-lg p-1 w-8">
+    //                             <button id="RmvFromCart`+item[0]+`" onclick="RemoveItem('`+item.id+`', '`+item[0]+`', '`+item.image+`', '`+item.item_name+`', '`+item.selling_price+`')" class="text-blue-gray-300 hover:text-pink-500 focus:outline-none">
+    //                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    //                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+    //                                 </svg>
+    //                             </button>
+    //                         </div>
+    //                     </div>
+    //                 </div>
+    //             `;
+
+    //             cartContainer.innerHTML += cartItemHtml;
+
+    //             const checkoutReceiptHtml = `
+    //                 <article >
+    //                     <tr class="text-center">
+    //                         <td class="py-2 text-center" >*</td>
+    //                         <td class="py-2 text-left">
+    //                             <span >${item[2]}</span>
+    //                             <br />
+    //                             <small >$${item[3]}</small>
+    //                         </td>
+    //                         <td class="py-2 text-center">${item[4]}</td>
+    //                         <td class="py-2 text-right">$${(item[3] * item[4]).toFixed(2)}</td>
+                            
+    //                     </tr>
+    //                 </article>
+
+    //             `;
+                
+    //             checkoutContainer.innerHTML += checkoutReceiptHtml;
+
+    //         });
+    //     } else {
+    //         // Display a message if the cart is empty
+    //         const emptyCartHtml = `
+    //             <div class="flex-1 w-full p-4 opacity-25 select-none flex flex-col flex-wrap content-center justify-center">
+    //                 <svg xmlns="http://www.w3.org/2000/svg" class="h-16 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    //                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+    //                 </svg>
+    //                 <p>
+    //                     CART IS EMPTY
+    //                 </p>
+    //             </div>
+    //         `;
+    //         cartContainer.innerHTML = emptyCartHtml;
+    //     }
+
+    
+    //     // Display the count and total price
+    //     const cartSummaryHtml = `
+    //         <b>TOTAL:</b>
+    //         <p id="totalPrice" class="text-right w-full">$${totalPrice.toFixed(2)}</p>
+    //         <input type="hidden" name="" id="total-price" value="${totalPrice.toFixed(2)}">
+    //     `;
+    //     totalcartContainer.innerHTML += cartSummaryHtml;
+
+    //     // Display Chectout total price 
+    //     const checkoutSummaryHtml = `
+    //         <b>TOTAL:</b>
+    //         <p class="text-right w-full">$${totalPrice.toFixed(2)}</p>
+    //     `;
+    //     totalcheckoutContainer.innerHTML += checkoutSummaryHtml;
+
+    //     CartItemCount();
+
+    //     calculateChange();
+
+    // }
+
+
+
+
+    // Function to calculate and display change
+ 
+
+    // function AddQty(id, generated_code, image, item_name, selling_price) {
+    //     alert("plus one(1)" + generated_code);
+
+    //     const cartItems = JSON.parse(sessionStorage.getItem('Items'));
+
+    //     let list;
+
+    //     if (cartItems === null) {
+    //         list = [];
+    //     } else {
+    //         list = cartItems; 
+    //     }
+    
+    //     // Find the index of the existing item in the cart
+    //     const existingItemIndex = list.findIndex(item => item[0] === generated_code);
+    
+    //     console.log(existingItemIndex);
+    //     // Increment the quantity of the existing item
+    //     if (existingItemIndex !== -1 && list[existingItemIndex] && list[existingItemIndex][4] !== undefined) {
+    //         list[existingItemIndex][4] = Number(list[existingItemIndex][4]) + 1 || 1;
+    
+            
+    //         sessionStorage.setItem('Items', JSON.stringify(list));
+    
+    //         displayCartItems();
+    //     } else {
+    //         console.error("Error: Item not found or missing required properties.");
+    //     }
+    // }
+    
+
+    // function ReduceQty(id, generated_code, image, item_name, selling_price) {
+        
+    //     alert("Minus one(1)" + generated_code);
+
+    //     const cartItems = JSON.parse(sessionStorage.getItem('Items'));
+
+    //     let list;
+
+    //     if (cartItems === null) {
+    //         list = [];
+    //     } else {
+    //         list = cartItems; 
+    //     }
+    
+    //     // Find the index of the existing item in the cart
+    //     const existingItemIndex = list.findIndex(item => item[0] === generated_code);
+    
+    //     console.log(existingItemIndex);
+    //     // Increment the quantity of the existing item
+    //     if (existingItemIndex !== -1 && list[existingItemIndex] && list[existingItemIndex][4] !== undefined) {
+    //         list[existingItemIndex][4] = Number(list[existingItemIndex][4]) - 1 || 1;
+    
+            
+    //         sessionStorage.setItem('Items', JSON.stringify(list));
+    
+    //         displayCartItems();
+    //     } else {
+    //         console.error("Error: Item not found or missing required properties.");
+    //     }
+    // }
+    
+    
+    // function RemoveItem(id, generated_code, image, item_name, selling_price) {
+        
+    //     // alert(generated_code + "Eyia K Egia");
+    //     confirmval = confirm("Are you sure you want to delete " + item_name)
+    //     const cartItems = JSON.parse(sessionStorage.getItem('Items'));
+    //     if(confirmval){
+    //         let list;
+
+    //         if (cartItems === null) {
+    //             list = [];
+    //         } else {
+    //             list = cartItems; 
+    //         }
+        
+    //         // Find the index of the existing item in the cart
+    //         const selectedIndex = list.findIndex(item => item[0] === generated_code);
+
+    //         if (selectedIndex !== null && selectedIndex !== undefined && cartItems && cartItems.length > selectedIndex) {
+    //             // Remove the selected item from the cartItems array
+    //             cartItems.splice(selectedIndex, 1);
+
+    //             // Save the updated cartItems array back to sessionStorage
+    //             sessionStorage.setItem('Items', JSON.stringify(cartItems));
+
+    //             // Refresh the displayed cart items
+    //             displayCartItems();
+    //         }
+    //     }
+        
+
+    // }
+    
+
+    // function clearCart() {
+    //     // Clear the cart items from session storage
+    //     sessionStorage.removeItem('Items');
+    
+    //     displayCartItems();
+    // }
+
+    function ShowReceipt(){
+        Checkout.showModal();
+        
+            // Generate a random receipt number (you can modify this logic based on your requirements)
+            const receiptNumber = Math.floor(Math.random() * 1000000) + 1;
+        
+            // Get the current date and time
+            const currentDate = new Date();
+            const formattedDate = currentDate.toLocaleDateString();
+            const formattedTime = currentDate.toLocaleTimeString();
+        
+            // Display the generated receipt number, date, and time on your HTML template
+            const receiptNumberElement = document.getElementById('receipt-number');
+            const dateElement = document.getElementById('receipt-date');
+            const timeElement = document.getElementById('receipt-time');
+        
+            if (receiptNumberElement && dateElement && timeElement) {
+                receiptNumberElement.textContent = `No: ${receiptNumber}`;
+                dateElement.textContent = `Date: ${formattedDate}`;
+                timeElement.textContent = `Time: ${formattedTime}`;
+            }
+    }
+    
+
+    function generateReceipt() {
+        var payment_method = $("#payment_method").val();
+        var account = $("#account").val();
+        var cus_id = $("#id_customer").val();
+        var ven_id = $("#id_customer").val();
+        var total = $("#total-price").val();
+        var balance = $("#balance").val();
+        var accountType = document.querySelector('input[name="accountType"]:checked').value;
+       
+        
+        if(accountType == "Customer"){
+            if(cus_id == "Casual Customer" && payment_method != null && account != null){
+                ShowReceipt();
+            }else{
+                if(cus_id != null && payment_method != null && account != null){
+
+                    if(balance >= total){
+                        ShowReceipt();
+                    }else{
+                        alertify.defaults.glossary.title = "Oops";
+                        alertify.confirm("Customer balance is insufficient. Proceed"
+                        ,function(){
+                            ShowReceipt();
+                        },function(){
+                            
+                        }).set('labels',{ok:'Proceed', cancel:'Cancel'});
+                    }
+                }else{
+                    alertify.error("Please provide valid data before proceeding to checkout.");
+                }
+            }
+        }else{
+            if(ven_id != null && payment_method != null && account != null){
+                ShowReceipt();
+            }else{
+                alertify.error("Please provide valid data before proceeding to checkout.");
+            }
+        }
+    }
+   
+
+    function searchItems() {
+        var keyword = document.querySelector('[x-model="keyword"]').value.trim().toLowerCase();
+        
+        // If the keyword is empty, clear the items container
+        if (keyword === '') {
+            // $('#items-container').empty();
+            displayCartItems();
+            //return;
+        }
+    
+        $.ajax({
+            type: 'GET',
+            url: '/fetch-items-by-keyword/', 
+            data: {
+                'keyword': keyword
+            },
+            dataType: 'json',
+            success: function (data) {
+                // Clear existing items
+                $('#items-container').empty();
+    
+                // Append fetched items dynamically
+                data.items.forEach(function (item) {
+                    var itemHtml = `
+                        <div class="p-2 border rounded-md shadow-md" id="AddCart${item.generated_code}" onclick="AddToCart('${item.id}', '${item.generated_code}', '${item.image}', '${item.item_name}', '${item.selling_price}')">
+                            <img class="h-12 w-auto" src="media/${item.image}" alt="${item.item_name}" class="mb-2" />
+                            <div class="mt-4 md:mt-0">
+                                <h2 class="text-sm font-semibold item_name line-clamp-1 truncate">${item.item_name}</h2>
+                                <p class="mt-2 text-sm text-gray-600 hidden">${item.generated_code}</p>
+                                <div class="mt-1 flex items-center">
+                                    <div class="flex items-center hidden">
+                                        <button id="reduce_qty" class="bg-gray-200 rounded-l-lg px-2 py-1" disabled>-</button>
+                                        <input type="text" class="w-6 qty px-2 py-1 text-gray-600" id="qty${item.id}" value="1" />
+                                        <button id="add_qty" class="bg-gray-200 rounded-r-lg px-2 py-1 cursor-pointer" disabled>+</button>
+                                    </div>
+                                    <span id="selling_price" class="font-medium text-sm item_price">$${item.selling_price}</span>
+                                </div>
+                                <div class="w-full px-2 hidden">
+                                    <button id="AddCart${item.generated_code}" onclick="AddToCart('${item.id}', '${item.generated_code}', '${item.image}', '${item.item_name}', '${item.selling_price}')"
+                                        class="add-to-cart-button w-10 bg-gray-900 dark:bg-gray-600 text-white p-2 rounded-full font-bold hover:bg-gray-800 dark:hover:bg-gray-700">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 inline-block " fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    $('#items-container').append(itemHtml);
+                });
+            },
+            error: function (error) {
+                console.error('Error fetching items by keyword:', error);
+            }
+        });
+    }
+    
+
+    
+    
+var input = document.getElementById("scannerInput");
+
+
+// input.addEventListener("keypress", function(event) {
+
+// if (event.key === "Enter") {
+
+// event.preventDefault();
+
+// document.getElementById("AddScannerItem").click();
+// }
+
+// });
+
+
+function scannerItems() {
+    const scannerInput = document.getElementById('scannerInput');
+    const item_code = scannerInput.value.trim();
+
+    let qty = document.getElementById('qty').value;
+
+    if (item_code) {
+    // Assuming you have information about the item based on the generated_code
+    getItemInfoByGeneratedCode(item_code);
+
+    // đď¸ clear input field
+    scannerInput.value = '';
+    }
+}
+
+function getItemInfoByGeneratedCode(item_code) {
+    $.ajax({
+    type: 'GET',
+    url: '/fetch_item_details/',  
+    data: {
+        'keyword': item_code 
+    },
+    dataType: 'json',
+    success: function (data) {
+        if (data != null) {
+            AddToCart(data.id, data.generated_code, data.image, data.item_name, data.selling_price);
+            data = null;
+        }
+    },
+    error: function (error) {
+        console.error('Error fetching item details:', error);
+        alert('Request Failed');
+    }
+    });
+
+}     
+    
+    
+</script> 
+
+
+
+
+
+
+{% comment %} function displayCartItems() {
+    const cartContainer = document.getElementById('cart-container');
+    const cartItems = JSON.parse(sessionStorage.getItem('Items'));
+
+    // Clear existing cart items
+    cartContainer.innerHTML = '';
+
+    // Check if there are items in the cart
+    if (cartItems && cartItems.length > 0) {
+        cartItems.forEach(function (item) {
+            const cartItemHtml = `
+                <div class="card">
+                    <div class="select-none mb-3 bg-blue-gray-50 rounded-lg w-full text-blue-gray-700 py-2 px-2 flex justify-between items-center">
+                        <div class="flex gap-2">
+                            <img src="media/${item[1]}" alt="" class="rounded-lg h-10 w-10 bg-white shadow mr-2"/>
+                            <article>
+                                <h5 class="text-sm font-semibold">${item[2]}</h5>
+                                <p class="text-xs hidden">$${item[3]}</p>
+                                <p class="text-xs block font-semibold"> $${(item[3] * item[4]).toFixed(2)}</p>
+                            </article>
+                        </div>
+                        <div class="py-1">
+                            <div class="w-28 grid grid-cols-3 gap-2 ml-2">
+                                <button onclick="addQty(item, -1)" class="rounded-lg text-center py-1 text-white bg-blue-gray-600 hover:bg-blue-gray-700 focus:outline-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-3 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                                    </svg>
+                                </button>
+                                <input type="text" value="${item[4]}" class="bg-white rounded-lg text-center shadow focus:outline-none focus:shadow-lg text-sm">
+                                 
+                                <button onclick="addQty(item, 1)" class="rounded-lg text-center py-1 text-white bg-blue-gray-600 hover:bg-blue-gray-700 focus:outline-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-3 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            cartContainer.innerHTML += cartItemHtml;
+        });
+    } else {
+        // Display a message if the cart is empty
+        const emptyCartHtml = `
+        
+            <div class="flex-1 w-full p-4 opacity-25 select-none flex flex-col flex-wrap content-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <p>
+                    CART IS EMPTY
+                </p>
+            </div>
+        `;
+        cartContainer.innerHTML = emptyCartHtml;
+    }
+}
+{% endcomment %}
+
+{% comment %} 
+<script>
+    
+// Function to calculate and display change
+// function calculateChange() {
+// // Get the total price
+// const totalPrice = parseFloat(document.getElementById('totalPrice').innerText.replace('$', ''));
+
+// // Get the cash input value
+// const cashInput = parseFloat(document.getElementById('cashInput').value);
+
+// // Calculate the change
+// const change = cashInput - totalPrice;
+
+// // Display the change
+// if (change > 0) {
+//     // Change is positive
+//     document.getElementById('changeDisplay').innerHTML = `
+//         <div class="flex mb-3 text-lg font-semibold bg-cyan-50 text-blue-gray-700 rounded-lg py-2 px-3">
+//             <div class="text-cyan-800">CHANGE</div>
+//             <div class="text-right flex-grow text-cyan-600">
+//                 $${change.toFixed(2)}
+//             </div>
+//         </div>
+//     `;
+// } else if (change < 0) {
+//     // Change is negative
+//     document.getElementById('changeDisplay').innerHTML = `
+//         <div class="flex mb-3 text-lg font-semibold bg-pink-100 text-blue-gray-700 rounded-lg py-2 px-3">
+//             <div class="text-right flex-grow text-pink-600">
+//                 $${Math.abs(change).toFixed(2)}
+//             </div>
+//         </div>
+//     `;
+// } else {
+//     // Change is zero
+//     document.getElementById('changeDisplay').innerHTML = '';
+// }
+// }
+
+</script> {% endcomment %}
+
+<script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+
+<script>
+
+alertify.set('notifier','position', 'top-right');
+{%for msg in messages%}
+    alertify.success('{{msg}}');
+{% endfor %}
+</script>
+
+<script>
+
+let customer = document.getElementById("Customer")
+
+
+let vendor = document.getElementById("Vendor")
+
+let customerSelect = document.getElementById("id_customer")
+
+
+// let vendorSelect = document.getElementById("id_vendor")
+// vendorSelect.style.display = "none"
+
+let details = document.getElementById("details")
+
+
+if(customer){
+customer.addEventListener('click',() => {
+// Display customer select menu    
+customerSelect.style.display = "inline"
+// Hide vendor select menu
+vendorSelect.style.display = "none"
+// Remove required attribute from vendor select menu
+vendorSelect.removeAttribute('required');
+details.textContent = 'Customer Details'
+
+
+$("#id_vendor").val("");
+
+});
+}
+if(vendor){
+vendor.addEventListener('click',() => {   
+// Display vendor select menu 
+vendorSelect.style.display = "inline"
+// Hide customer select menu
+customerSelect.style.display = "none"
+// Remove required attribute from customer select menu
+customerSelect.removeAttribute('required');
+details.textContent = 'Vendor Details'
+
+
+$("#id_customer").val("Casual Customer");
+});
+
+
+}
+
+
+$("#id_customer").on('change', function() {
+
+const customerId = $(this).val();
+
+//alert(customerId);
+if(customerId != "Casual Customer"){
+
+    if (customerId != ""){
+        $.ajax({
+            url: '/get_customer_balance/'+ customerId + '/',
+            method: 'GET',
+            success: function(data){
+                $("#balance").val(data) 
+            },
+            error: function(error){
+                // console.log('Item not found'+error);
+                //alert('Item not found');
+                $("#balance").val('0.00') 
+                //alertify.error("Item not found");
+            }
+        });
+    }
+
+}
+});
+$("#id_vendor").on('change', function() {          
+const vendorId = $(this).val();
+/*alert(vendorId);*/ 
+if (vendorId != ""){
+    $.ajax({
+        url: '/get_vendor/'+ vendorId + '/',
+        method: 'GET',
+        
+        success: function(data){
+            /*$("#text").html("Name:  "+data.name +"\n"+
+            "Code:  "+data.code+"\n"+
+            "Phone:  "+data.phone+"\n"+
+            "Email:  "+data.email +"\n"+
+            //"Category: "+data.category+"\n"+
+            "Company:  "+data.company +"\n"+
+            "Delivery Address  : "+data.address)*/
+
+            //$("#balance").val(data.name);
+            //$("#cusID").val(data.code);
+            
+        },
+        error: function(){
+        // alert('Item not found');
+        //alertify.error("Item not found");
+        }
+    });
+}
+
+
+});
+
+$("payment_method").on("change", function(){
+var payment_method = $(this).val()
+if(payment_method === "Cash and POS"){
+$("#more-inputs").empty();
+
+var more_input =
+    `<label class="block mt-2 text-sm">
+        <span class="text-gray-700 dark:text-gray-400">
+            Cash
+        </span>
+        <input type="text" name="" id="cash" required class="w-full border bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none">
+    </label>
+    <label class="block mt-2 text-sm">
+        <span class="text-gray-700 dark:text-gray-400">
+            POS
+        </span>
+        <input type="text" name="" id="pos" required class="w-full border bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none">
+    </label>`
+
+$("#more-inputs").append(more_input);
+
+}else if(payment_method === 'POS and Transfer'){
+$("#more-inputs").empty();
+
+var more_input =
+    `<label class="block mt-2 text-sm">
+        <span class="text-gray-700 dark:text-gray-400">
+            POS
+        </span>
+        <input type="text" name="" id="pos" required class="w-full border bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none">
+    </label>
+    <label class="block mt-2 text-sm">
+        <span class="text-gray-700 dark:text-gray-400">
+            Transfer
+        </span>
+        <input type="text" name="" id="transfer" required class="w-full border bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none">
+    </label>`
+
+$("#more-inputs").append(more_input);
+}
+else if(payment_method === 'Transfer and Cash'){
+
+$("#more-inputs").empty();
+
+var more_input =
+    `<label class="block mt-2 text-sm">
+        <span class="text-gray-700 dark:text-gray-400">
+            Transfer
+        </span>
+        <input type="text" name="" id="transfer" required class="w-full border bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none">
+    </label>
+    <label class="block mt-2 text-sm">
+        <span class="text-gray-700 dark:text-gray-400">
+            Cash
+        </span>
+        <input type="text" name="" id="cash" required class="w-full border bg-slate-100 shadow rounded-lg focus:bg-white focus:shadow-lg px-2 focus:outline-none">
+    </label>`
+
+$("#more-inputs").append(more_input);
+}else{
+
+}
+})
+
+// $(document).ready(function() {
+// Validations();
+// });
+
+// function Validations() {
+// var checkout = document.getElementById('checkout');
+// var payment_method = document.getElementById('payment_method').value;
+// // var checkedValue = document.querySelector('input[name="accountType"]:checked').value;
+// var customer = document.getElementById('id_customer').value;
+// var vendor = document.getElementById('id_vendor').value;
+// var balance = document.getElementById('total-price').value;
+
+// // Assume checkout button ID is 'checkout'
+
+// // Disable the checkout button by default
+// checkout.disabled = true;
+
+// if (payment_method === "Cash and POS") {
+// var cash = document.getElementById('cash').value;
+// var pos = document.getElementById('pos').value;
+// if (cash && pos) {
+//     // Enable the checkout button if both cash and pos values are present
+//     checkout.disabled = false;
+// }
+// } else if (payment_method === 'POS and Transfer') {
+// var pos = document.getElementById('pos').value;
+// var transfer = document.getElementById('transfer').value;
+// if (pos && transfer) {
+//     checkout.disabled = false;
+// }
+// } else if (payment_method === 'Transfer and Cash') {
+// var transfer = document.getElementById('transfer').value;
+// var cash = document.getElementById('cash').value;
+// if (transfer && cash) {
+//     checkout.disabled = false;
+// }
+// } else{checkout.disabled = false;}
+// }
+
+
+
+</script>
+</body>
+</html>
+</head>
+</html>
+
+
+
+
+

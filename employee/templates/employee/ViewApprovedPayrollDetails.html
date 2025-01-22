@@ -1,0 +1,313 @@
+
+
+<dialog id="my_modal_payroll" class="modal py-3 px-3 rounded-lg md:w-800 ">
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span id="details"></span>
+        </div>
+        <span>
+            <form method="dialog" class="modal-backdrop">
+                <button class="py-1 px-2 rounded-full bg-red-600 text-[14px] text-white font-semibold" id="details-close" >X</button>
+            </form>
+        </span>
+    </a>
+
+    <div class="modal-box">
+        <form  method="post">
+            {% csrf_token %}
+            
+            <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+                <div class="w-full overflow-x-auto table-responsive">
+                <table id="payroll-deatil" class="display" style="width:100%">
+                        <thead>
+                            <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                                <th colspan="8" class="px-1 py-3">
+                                    <div class="relative py-2 flex items-center justify-center bg-slate-200">
+                                        <span class="text-sm text-slate-600 uppercase">earnings</span>
+                                    </div>
+                                </th>
+                                <th colspan="8" class="px-1 py-3">
+                                    <div class="relative py-2 flex items-center justify-center bg-slate-200">
+                                        <span class="text-sm text-slate-600 uppercase">deductions</span>
+                                    </div>
+                                </th>
+                                <th class="px-1 py-3">
+                                    <div class="relative py-2 px-3 flex items-center justify-center bg-slate-200">
+                                        <span class="text-sm text-slate-600 uppercase">summarys</span>
+                                    </div>
+                                </th>
+                                <th colspan="3" class="px-1 py-3">
+                                    <div class="relative py-2 px-3 flex items-center justify-center bg-slate-200">
+                                        <span class="text-sm text-slate-600 uppercase">Account Details</span>
+                                    </div>
+                                </th>
+                            </tr>
+                            <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50 px-4 border-b">
+                                <th class="border border-slate-300 px-1 py-1">SN</th>
+                                <th class="border border-slate-300 px-1 py-1">Employee Name</th>
+                                <th class="border border-slate-300 px-1 py-1">ID</th>
+                                <th class="border border-slate-300 px-1 py-1">Basic Salary</th>
+                                <th class="border border-slate-300 px-1 py-1">Overtime</th>
+                                <th class="border border-slate-300 px-1 py-1">Allowance</th>
+                                <th class="border border-slate-300 px-1 py-1">Others</th>
+                                <th class="border border-slate-300 px-1 py-1">Gross Pay</th>
+                                <th class="border border-slate-300 px-1 py-1">Tax</th>
+                                <th class="border border-slate-300 px-1 py-1">Loan Repayment</th>
+                                <th class="border border-slate-300 px-1 py-1">Union Dues</th>
+                                <th class="border border-slate-300 px-1 py-1">Sanctions</th>
+                                <th class="border border-slate-300 px-1 py-1">NHF</th>
+                                <th class="border border-slate-300 px-1 py-1">NSITF</th>
+                                <th class="border border-slate-300 px-1 py-1">Other Deductions</th>
+                                <th class="border border-slate-300 px-1 py-1">Total Dues</th>
+                                <th class="border border-slate-300 px-1 py-1">Net Pay</th>
+                                <th class="border border-slate-300 px-1 py-1">Account No</th>
+                                <th class="border border-slate-300 px-1 py-1">Account Name</th>
+                                <th class="border border-slate-300 px-1 py-1">Bank name</th>
+                                {% comment %} <th class="border border-slate-300 px-1 py-1">Type</th> {% endcomment %}
+                                <th class="border border-slate-300 px-1 py-1"><a onclick="ConfirmAllPayment()" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">Confirm All</a></th>
+                                <input type="hidden" id="month-year" name="" value="">
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y">
+    
+                            
+                            {% for employee in employee %}
+                            
+                            <tr class="text-gray-700 py-0 mx-0">
+    
+                                <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">
+                                    {{forloop.counter}}
+                                </td>
+                                <td class="border border-slate-300 py-0 my-[0] text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="text"
+                                        name="name[]"
+                                        id="name"
+                                        value="{{employee.fullname}}"
+                                        readonly
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    />
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="text"            
+                                        name="staff_ID[]"
+                                        id="staff_ID"
+                                        value="{{employee.staff_ID}}"
+                                        readonly
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    />
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="number"
+                                        name="salary[]"
+                                        id="salary"
+                                        value="{{employee.basic_salary}}"
+                                        readonly
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    />
+                                </td>
+                                <td class="border border-slate-300 py-0 my-[0] text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="number"
+                                        name="overtime[]"
+                                        id="overtime"
+                                        oninput="Earnings(this, 'add1{{forloop.counter}}')"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                        
+                                    />
+                                    <input type="hidden" name="add" id="add1{{forloop.counter}}" value="0" class="border px-1 mt-1 w-full">
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="number"
+                                        name="allowance[]"
+                                        id="allowance"
+                                        oninput="Earnings(this, 'add2{{forloop.counter}}')"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    />
+                                    <input type="hidden" name="add" id="add2{{forloop.counter}}" value="0" class="border px-1 mt-1 w-full">
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="number"
+                                        name="others[]"
+                                        id="others"
+                                        oninput="Earnings(this, 'add3{{forloop.counter}}')"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    />
+                                    <input type="hidden" name="add" id="add3{{forloop.counter}}" value="0" class="border px-1 mt-1 w-full">
+                                </td>
+                                <td class="border border-slate-300 py-0 my-[0] text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="number"
+                                        name="gross-pay[]"
+                                        id="gross-pay"
+                                        value="{{employee.basic_salary}}"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    />
+                                    
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="number"
+                                        name="tax[]"
+                                        id="tax"
+                                        oninput="Deductions(this, 'sub1{{forloop.counter}}')"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    />
+                                    <input type="hidden" name="add" id="sub1{{forloop.counter}}" value="0" class="border px-1 mt-1 w-full">
+                                </td>
+                                <td class="border border-slate-300 py-0 my-[0] text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="number"
+                                        name="loan-repay[]"
+                                        id="loan"
+                                        oninput="Deductions(this, 'sub2{{forloop.counter}}')"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    />
+                                    <input type="hidden" name="add" id="sub2{{forloop.counter}}" value="0" class="border px-1 mt-1 w-full">
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="number"
+                                        name="union-pay[]"
+                                        id="union-dues"
+                                        oninput="Deductions(this, 'sub3{{forloop.counter}}')"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    />
+                                    <input type="hidden" name="add" id="sub3{{forloop.counter}}" value="0" class="border px-1 mt-1 w-full">
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="number"
+                                        name="sanction[]"
+                                        id="sanctions"
+                                        oninput="Deductions(this, 'sub4{{forloop.counter}}')"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    />
+                                    <input type="hidden" name="add" id="sub4{{forloop.counter}}" value="0" class="border px-1 mt-1 w-full">
+                                </td>
+                                <td class="border border-slate-300 py-0 my-[0] text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="number"
+                                        name="NHF[]"
+                                        id="NHF"
+                                        oninput="Deductions(this, 'sub5{{forloop.counter}}')"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    />
+                                    <input type="hidden" name="add" id="sub5{{forloop.counter}}" value="0" class="border px-1 mt-1 w-full">
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="number"
+                                        name="NSIFT[]"
+                                        id="NSIFT"
+                                        oninput="Deductions(this, 'sub6{{forloop.counter}}')"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    />
+                                    <input type="hidden" name="add" id="sub6{{forloop.counter}}" value="0" class="border px-1 mt-1 w-full">
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="number"
+                                        name="other-deductions[]"
+                                        id="other-deductions"
+                                        oninput="Deductions(this, 'sub7{{forloop.counter}}')"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    />
+                                    <input type="hidden" name="add" id="sub7{{forloop.counter}}" value="0" class="border px-1 mt-1 w-full">
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="number"
+                                        name="total-dues[]"
+                                        id="total-dues"
+                                        value="0"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    />
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="number"
+                                        name="net-pay[]"
+                                        id="net-pay"
+                                        value="{{employee.basic_salary}}"
+                                        
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    />
+                                </td>
+    
+                            </tr>
+    
+                            {% endfor %}
+    
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+    
+        
+    
+            <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+    
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-2">
+    
+                    
+    
+    
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Total Amount</span>
+                        <input 
+                            class="block w-full px-2 mt-1 text-sm bg-slate-100 border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder="" disabled
+                            value="0"
+                            id="total"
+                        />
+                    </label>
+                
+    
+                    
+                </div>
+              
+    
+            </div>
+        </form>
+    </div>
+    
+</dialog>
+<script>
+    $(document).ready(
+     $("#change-date-form").submit(function(e){
+         e.preventDefault();
+         var serialiderData = $(this).serialize();
+        
+         $.ajax({
+             type:"POST",
+             url:"{% url 'customer:ChangeReturnInwardDate' %}",
+             data: serialiderData,
+             success: function(data){
+                 if(data.length > 0){
+                     alertify.success('Date updated successfully');
+                     //$("#my_modal_sales_ledger_edit_date").css('display', 'none');
+                     //methodInstance = "dialog"
+                 }else{
+                     alertify.error('No date selected')
+                 }
+             }
+         })
+     })
+    )
+ </script>

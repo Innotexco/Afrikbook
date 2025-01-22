@@ -1,0 +1,304 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+{% include "employee/ViewApprovedPayrollDetails.html" %}
+
+
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Payment </span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+  
+    <div class="w-64">
+        <a class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+            href="{% url 'employee:ViewUnapprovePayroll' %}">
+            Approve Payment
+        </a>
+    </div>
+    
+
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+        
+        
+        <div class="w-full overflow-x-auto table-responsive mt-6">
+            
+          <table id="payroll" class="display" style="width:100%">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                        <th class="px-4 py-3">SN</th>
+                        <th class="px-4 py-3">Payroll Date</th>
+                        <th class="px-4 py-3">Total Salary</th>
+                        <th class="px-4 py-3">View</th>
+                        {% comment %} <th class="px-4 py-3">Approve</th> {% endcomment %}
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y">
+
+                    
+                    {% for display in payrolls %}
+                    
+                    <tr class="text-gray-700">
+
+                        <td class="text-[10px]">
+                            {{forloop.counter}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.month_year}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.total}}
+                        </td>
+                        <td class="text-[10px]">
+                            <a onclick="showPayroll('{{display.month_year}}')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">View</a>
+                        </td>
+                        {% comment %} <td class="text-[10px]">
+                            <a onclick="ApprovePayroll('{{display.month_year}}', '{{display.total}}')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">Approve</a>
+                        </td> {% endcomment %}
+                       
+
+                    </tr>
+                    {% endfor %}
+                    
+
+                </tbody>
+            </table>
+            <div class="text-center  text-gray-500 py-2 font-semibold" id="no-data" style="display: none;">No data found</div>
+        </div>
+    </div>
+    {% comment %} <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+        <div class="flex justify-end">
+           <label class="block text-sm">
+                <span class="text-gray-700">Total Amount</span>
+                <input 
+                    class="block w-40 px-2 mt-1 text-sm bg-slate-100 border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                    placeholder="" disabled
+                    value="{{total}}"
+                    id="total"
+                />
+            </label>
+        </div>
+
+    </div> {% endcomment %}
+
+<script>
+    $(document).ready(
+        FetchApprovedPayroll()
+    )
+
+    function showPayroll(data){
+        my_modal_payroll.showModal()
+        $.ajax({
+            url:'{%url "employee:ApprovedPayrolls" %}',
+            method: 'GET',
+            data: {'data':data},
+            success: function(response){
+                const  table = $('#payroll-deatil tbody');
+                table.empty();
+                let num = 0
+                let executed = false
+                if(response.data.length > 0){
+                    $("#total").val(response.total);
+                    
+                    response.data.forEach(item => {
+                        num++ 
+                        if (executed == false){
+                            $("#details").text("Payroll Details for: "+ item.month_year);
+                            $("#month-year").val(item.month_year);
+                            executed = true
+                        }
+                        
+                            const row = $('<tr id="row">').append(
+                                $('<td class="text-[10px]">').html(num),
+                                $('<td class="text-[10px]">').text(item.employee_name),
+                                $('<td class="text-[10px]">').text(item.staffID),
+                                $('<td class="text-[10px]">').text(item.bsaic_salary),
+                                $('<td class="text-[10px]">').text(item.overtime),
+                                $('<td class="text-[10px]">').text(item.allowance),
+                                $('<td class="text-[10px]">').text(item.others),
+                                $('<td class="text-[10px]">').text(item.gross_pay),
+                                $('<td class="text-[10px]">').text(item.tax),
+                                $('<td class="text-[10px]">').text(item.loan_repay),
+                                $('<td class="text-[10px]">').text(item.union_pay),
+                                $('<td class="text-[10px]">').text(item.sanction),
+                                $('<td class="text-[10px]">').text(item.NHF),
+                                $('<td class="text-[10px]">').text(item.NSIFT),
+                                $('<td class="text-[10px]">').text(item.other_deduction),
+                                $('<td class="text-[10px]">').text(item.total_due),
+                                $('<td class="text-[10px]">').text(item.net_pay),
+                                $('<td class="text-[10px] text-bold">').text(item.account_no),
+                                $('<td class="text-[10px]">').text(item.account_name),
+                                $('<td class="text-[10px]">').text(item.bank_name),
+                                //$('<td class="text-[10px]">').append('<select name="type[]" id="type'+num+'"  required oninvalid="this.setCustomValidity("Please delete empty row")" class="block w-full item-select px-2 text-[10px] h-4 form-select focus:outline-none border focus:shadow-outline-green text-slate-600"><option value="0">Select Item</option><option>Cash</option><option>Transfer</option></select>'),
+                                $('<td class="text-[10px] w-3">').append('<button onclick="ConfirmPayment(\'' + item.id + '\',\'' + item.staffID + '\', \''+item.net_pay +'\', \''+num +'\')"  class="flex items-center  justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit"'+((item.confirm_payment == "confirmed") ? 'disabled':'')+'>'+((item.confirm_payment == "confirmed") ? 'Confirmed':'Confirm')+'</button>'),
+                               
+                            );
+                            
+                            table.append(row);
+                        //}
+                    });
+                }else{
+                    alertify.error('No date selected')
+                }
+            },
+            error: function(error){
+
+            }
+        })
+        
+    }
+
+    function FetchApprovedPayroll(){
+        $.ajax({
+            url: "{% url 'employee:FetchApprovedPayroll' %}",
+            method: "GET",
+            success: function(data){
+                const  table = $('#payroll tbody');
+                table.empty();
+                let num = 0
+                if(data && data.length > 0){
+                    //console.log(data)
+                    data.forEach(item => {
+                        num++ 
+                        
+                            const row = $('<tr id="row">').append(
+                                $('<td class="text-[10px]">').html(num),
+                                $('<td class="text-[10px]">').text(item.month_year),
+                                $('<td class="text-[10px]">').text(item.total),
+                                $('<td class="text-[10px] w-3">').append('<a onclick="showPayroll(\'' + item.month_year + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">View</a>'),
+                               // $('<td class="text-[10px] w-3">').append('<a onclick="ApprovePayroll(\'' + item.month_year + '\',\'' + item.total + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">Approve</a>'),
+                               
+                            );
+                            table.append(row);
+                        //}
+                    });
+                }else{
+                   // alertify.error('No date selected')
+                }
+            }
+        })
+    }
+    function ConfirmPayment(id, staff_id, amount, num){
+        if (staff_id){
+
+            $.ajax({
+                url: "{% url 'employee:ConfirmPayment' %}",
+                method: "GET",
+                data: {
+                 'id':id,
+                 'staff_id':staff_id,
+                 'amount':amount,
+                },
+                success: function(data){
+                    if(data.type == "success"){
+                        alertify.success(data.message);
+                    }else{
+                        alertify.error(data.message);
+                    }
+                }
+            })
+        }else{
+            alertify("Select Type")
+        }
+        
+    }
+    function ConfirmAllPayment(){
+
+        const month_year = $("#month-year").val();
+        alert(month_year)
+        if (month_year){
+
+            $.ajax({
+                url: "{% url 'employee:ConfirmAllPayment' %}",
+                method: "GET",
+                data: {
+                 'month_year':month_year
+                },
+                success: function(data){
+                    if(data.type == "success"){
+                        alertify.success(data.message);
+                        FetchApprovedPayroll()
+                    }else{
+                        alertify.error(data.message);
+                    }
+                }
+            })
+        }else{
+            //alertify("Select Type")
+        }
+        
+    }
+  
+     //serach by date
+     $("#search2").on('click', function(e){
+        e.preventDefault()
+        const month = $('#month').val();
+        const year = $('#year').val();
+        //console.log(from)
+        //console.log(to)
+        if(month && year){
+            $.ajax({
+                url: '{% url "employee:payroll-date" %}',
+                method: 'GET',
+                data: {
+                    'month': month,
+                    'year': year,
+                },
+                success: function(response) {
+                    if(response.serializer_data && response.serializer_data.length > 0){
+                        console.log(response.serializer_data)
+                        $('#total').val(response.amount_total)
+                        const table = $('#payroll tbody')
+                        table.empty()
+                        let num = 0;
+                        response.serializer_data.forEach(item => {
+                            num++ 
+                                const row = $('<tr id="row">').append(
+                                    $('<td class="text-[10px]">').html(num),
+                                    $('<td class="text-[10px]">').text(item.dateG),
+                                    $('<td class="text-[10px]">').text(item.employee_name),
+                                    $('<td class="text-[10px]">').text(item.gross_pay),
+                                    $('<td class="text-[10px]">').text(item.total_due),
+                                    $('<td class="text-[10px]">').text(item.net_pay),
+                                     
+                                );
+                                table.append(row);
+                            //}
+                        });
+                        $("#no-data").css('display', 'none')
+                    }else{
+                        $("#payroll tbody").empty();
+                        $('#total').val(0)
+                        $("#no-data").css('display', 'block');
+                        alertify.error("No payroll between selected month and year");
+                        //alertify.error("Select start_date and end_date")
+                    }
+                },
+                error: function(error) {
+                    // Handle the error
+                    console.log('error')
+                }
+            });
+        }else{
+            alertify.error("Select a valid month and year")
+        }
+
+        
+    })
+</script>
+{% endblock content %}

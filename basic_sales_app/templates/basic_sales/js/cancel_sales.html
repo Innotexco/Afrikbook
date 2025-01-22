@@ -1,0 +1,73 @@
+<script>
+    // UPDATED SALES TO DATA
+    function updateSales(res){
+        $('#cancelSales .old').remove();
+        $('#cancelSales .new').empty();
+        res.data.forEach(function(sale, index) {
+            let newRow = $('<tr class="text-gray-700 dark:text-gray-400" id="' + sale.id + '">');
+            // Add data to the row
+            newRow.append('<td class="px-4 py-3 text-sm">' + (index + 1) + '</td>');
+            newRow.append('<td class="px-4 py-3 text-sm">' + sale.customer_name + '</td>');
+            newRow.append('<td class="px-4 py-3 text-sm">' + sale.item_name + '</td>');
+            newRow.append('<td class="px-4 py-3 text-sm">' + sale.unit_p + '</td>');
+            newRow.append('<td class="px-4 py-3 text-sm">' + sale.qty + '</td>');
+            newRow.append('<td class="px-4 py-3 text-sm">' + sale.amount + '</td>');
+            newRow.append('<td class="px-4 py-3 text-sm"> ' + sale.amount_paid + ' </td>');
+            newRow.append('<td class="px-4 py-3 text-sm"> ' + sale.payment_method + ' </td>');
+            newRow.append('<td class="px-4 py-3 text-sm"> <a onclick="CancelSales(' + sale.id + ')" class="items-left justify-left py-2  px-4 mb-12 mt-5 cursor-pointer text-[12px] font-semibold bg-red-600 text-slate-200 rounded-md" >Cancel</a></td>');
+                // Add more columns as needed
+                $('#cancelSales .new').append(newRow);
+        });
+        // Append the row to the table body
+    }
+    
+     function CancelSales(id){
+        $.ajax({
+            type: 'GET',
+            url: "{% url 'Basic_Sales:UpdateCancelSales'%}",
+            data: {
+                id:id 
+            },
+            success: function(res){
+                updateSales(res)
+            }
+        });
+        // csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+    }
+    $(document).ready(function(){
+        
+    // GET SALES BY DATE IN CANCEL SALES PAGE(CSD(DATE))
+    $('#CSD').on('click',function() {
+        let fromdate    =  $('#fromdate').val();
+        let todate      =  $('#todate').val();
+
+        $.ajax({
+            type: 'GET',
+            url: "{% url 'Basic_Sales:Search_for_sales'%}",
+            data: {
+                fromdate: fromdate,   
+                todate: todate, 
+            },
+            success: function(data){
+                updateSales(data)
+            }
+        });
+    });
+
+    // GET SALES BY SEARCH IN CANCEL SALES PAGE(CSD_SEARCH)
+    $('#CSD_search').keyup(function() {
+        let search      =  $('#CSD_search').val();
+        $.ajax({
+            type: 'GET',
+            url: "{% url 'Basic_Sales:Search_for_sales'%}",
+            data: {
+                search: search,   
+            },
+            success: function(data){
+                updateSales(data)
+            }
+        });
+    });
+    })
+    
+</script>

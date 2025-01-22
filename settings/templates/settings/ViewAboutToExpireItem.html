@@ -1,0 +1,111 @@
+
+{% extends 'base.html' %}
+
+{% block home %}
+
+
+
+<div id="message">
+
+</div>
+
+
+
+    
+    <main class="w-full">
+
+        <div class="bg-slate-200 py-1 px-2 w-[300px] text-gray-600 text-sm rounded-sm">About to expire  
+            <span class="text-red-500">Products</span><br>
+        </div>
+
+        
+    
+    <h4 class="my-4 text-lg font-semibold text-gray-600 dark:text-gray-300">
+       Products
+    </h4>
+
+    <div class="flex flex-wrap justify-between gap-4 my-2">
+       
+        <div class="w-full my-6 overflow-hidden rounded-lg shadow-xs">
+            <div class="w-full overflow-x-auto">
+                <table class="w-full whitespace-no-wrap" id="myTable">
+                    <thead>
+                        <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                            <th class="px-4 py-3">SN</th>
+                            <th class="px-4 py-3">Invoice No.</th>
+                            <th class="px-4 py-3">Item</th>
+                            <th class="px-4 py-3">Mfg Date</th>
+                            <th class="px-4 py-3">Exp Date</th>
+                            <th class="px-4 py-3">Shelf Life</th>
+                            <th class="px-4 py-3">Days Left</th>
+                            <th class="px-4 py-3">Notifiy Me</th>
+                            <th class="px-4 py-3">Notification Status</th>
+                            <th class="px-4 py-3">Status</th> 
+                            <th class="px-4 py-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y">
+                         {% for stockout in items|dictsort:"rdays" %}
+                            {% if stockout.rdays >= 1 and stockout.status != "Sold" %}
+                                <tr class="text-gray-700">
+                                    <td class="px-4 py-3">
+                                    {{ forloop.counter}}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                    {{stockout.invoice_no}}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                    {{stockout.item}}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                        {{stockout.manufacture_date}}
+                                    </td>
+                                    <td class="px-4 py-3 text-xs text-red-600">
+                                        {{stockout.expiry_date}}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                        {{stockout.days}} 
+                                        {% if stockout.days == "1" %}
+                                        day
+                                        {% else %}
+                                        days
+                                        {% endif%}
+                                    </td> 
+                                    <td class="px-4 py-3 text-sm">
+                                        {{stockout.rdays}} 
+                                        {% if stockout.rdays == 1 %}
+                                        day
+                                        {% else %}
+                                        days
+                                        {% endif%}
+                                    </td> 
+                                    <td class="px-4 py-3 text-sm">
+                                        {{stockout.notify_me}}
+                                        {% if stockout.notify_me == 1 %}
+                                        day before expiry date
+                                        {% else %}
+                                        days before expiry date
+                                        {% endif%}
+                                    </td> 
+                                    <td class="px-4 py-3 text-sm">
+                                        {% if stockout.n_status == "1" %}
+                                        Enabled
+                                        {% else %}
+                                        Disabled
+                                        {% endif%}
+                                        
+                                    </td> 
+                                    <td class="px-4 py-3 text-sm">
+                                        {{stockout.status}}
+                                    </td> 
+                                </tr>
+                            {% endif %}
+                         {% endfor %}
+                         
+                    </tbody>
+                </table>
+            </div>
+           
+{% endblock home %}
+      
+  

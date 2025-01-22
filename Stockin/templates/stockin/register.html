@@ -1,0 +1,136 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="Afrikbook.">
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i&display=swap" rel="stylesheet">
+
+        <title>
+            
+            {% block title %}
+                Afrikbook Login.
+            {% endblock title %}
+                
+        </title>
+
+
+
+        <!-- Additional CSS Files -->
+        <link rel="stylesheet" href="{% static 'src/styles.css' %}">
+ 
+        
+        <script src="{% static 'js/jquery.js' %}"></script>
+        <script src="{% static 'js/jquery.min.js' %}"></script>
+
+    
+        
+
+    </head>
+
+    <body class="body-wrapper">
+
+        <div id="__next">
+            <div dir="ltr">
+                <div class="flex justify-center items-center h-screen m-auto bg-gray-100 transition-colors duration-150">
+                    
+                    <div class="w-[600px h-[500px] px-4 bg-white rounded-lg shadow-md">
+                        <div class="mx-auto py-10 my-10 grid gap-4 md:grid-cols-2 w-full max-w-7xl px-5 xl:px-8 2xl:px-14">
+                            <div class="order-2 w-full shrink-0 bg-light p-6 md:order-1 md:w-72 lg:w-96">
+                                <div class="mb-8 flex w-full items-center justify-center overflow-hidden">
+                                    <img
+                                        alt="Contact"
+                                        loading="lazy"
+                                        decoding="async"
+                                        data-nimg="1"
+                                        class="h-auto w-[299px]"
+                                        style="color: transparent"
+                                        src="{% static 'img/contact-illustration.2f6adc05.svg' %}"
+                                    />
+                                </div>
+                            </div>
+                            <div class="order-1 mb-8 w-full bg-light p-6 md:order-2 md:mb-0 md:p-8 ltr:md:ml-7 rtl:md:mr-7 ltr:lg:ml-9 rtl:lg:mr-9">
+                                <h1 class="mb-7 font-sans text-xl font-bold text-heading md:text-2xl text-center">
+                                    Register An Account
+                                </h1>
+                                <form action="" method="POST">
+                                    {% csrf_token %}
+                                    <div>
+                                        <label
+                                            for="email"
+                                            class="mb-3 block text-sm font-semibold leading-none text-slate-500">
+                                            Email
+                                        </label>
+                                        <input
+                                            {% if form.is_bound %}
+                                                value="form.email.value"
+                                            {% endif %}
+                                            name="email"
+                                            type="text"
+                                            class="flex w-full appearance-none items-center px-4 text-sm text-heading transition duration-300 ease-in-out focus:outline-0 focus:ring-0 border border-border-base rounded focus:border-slate h-8"
+                                           
+                                        />
+                                        <p class="py-2 text-red-500 errors">{{form.email.errors}}</p>
+                                    </div>
+                                    <div>
+                                        <label
+                                            for="username"
+                                            class="mb-3 block text-sm font-semibold leading-none text-slate-500">
+                                            Username
+                                        </label>
+                                        <input
+                                            {% if form.is_bound %}
+                                                value="form.username.value"
+                                            {% endif %}
+                                            id="username"
+                                            name="username"
+                                            type="text"
+                                            class="flex w-full appearance-none items-center px-4 text-sm text-heading transition duration-300 ease-in-out focus:outline-0 focus:ring-0 border border-border-base rounded focus:border-slate h-8"
+                                           
+                                        />
+                                        <p class="py-2 text-red-500 errors">{{form.username.errors}}</p>
+                                    </div>
+
+                                    <div class="my-3">
+                                        <label
+                                            for="subject"
+                                            class="mb-3 block text-sm font-semibold leading-none text-slate-500">
+                                            Password
+                                        </label>
+                                        <input
+                                            id="password"
+                                            name="password"
+                                            type="password"
+                                            class="flex w-full appearance-none items-center px-4 text-sm text-heading transition duration-300 ease-in-out focus:outline-0 focus:ring-0 border border-border-base rounded focus:border-slate h-8"
+                                            autocomplete="off"
+                                            autoCorrect="off"
+                                            autocapitalize="off"
+                                            spellcheck="false"
+                                            aria-invalid="false"
+                                            value=""
+                                        />
+                                        <p class="py-2 text-red-500 errors">{{form.username.errors}}</p>
+                                    </div>
+                                    
+
+                                    <button
+                                        type="submit"
+                                        class="w-full text-center inline-flex items-center justify-center shrink-0 font-semibold leading-none rounded outline-none transition duration-300 ease-in-out focus:outline-0 focus:shadow focus:ring-1 focus:ring-slate-500 bg-slate-200 text-light border border-transparent hover:bg-slate-300-hover px-5 py-0 h-8">
+                                        Register
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+</body>
+</html>

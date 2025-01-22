@@ -1,0 +1,299 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+{% include "report/ViewPayrollDetails.html" %}
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Payroll Report</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+        <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+            <label for="">
+                <span class="text-gray-700">MONTH</span>
+                <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" name='month' id="month" required >
+                    <option selected disabled=true>Month</option>
+                    <option>January</option>   
+                    <option>February</option>   
+                    <option>March</option>   
+                    <option>April</option>   
+                    <option>May</option>   
+                    <option>June</option>   
+                    <option>July</option>   
+                    <option>August</option>   
+                    <option>September</option>   
+                    <option>October</option>   
+                    <option>November</option>   
+                    <option>December</option>     
+                </select>
+            </label>
+
+            <label for="">
+                <span class="text-gray-700">YEAR</span>
+                <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" name="year" id="year" required >
+                    <option selected disabled=true>Year</option>
+                    {% for year in years %}
+                       <option>{{year}}</option>   
+                    {% endfor %}
+                </select>
+            </label> 
+            
+            <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="search-2">
+                Search
+            </button>
+
+        </div>
+        <div class="w-full overflow-x-auto table-responsive mt-6" id="payroll">
+          <table id="example" class="display" style="width:100%">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                        <th class="px-4 py-3">SN</th>
+                        <th class="px-4 py-3">Month</th>
+                        <th class="px-4 py-3">No of Employee</th>
+                        <th class="px-4 py-3">Total Gross Pay</th>
+                        <th class="px-4 py-3">Total Deduction</th>
+                        <th class="px-4 py-3">Net Pay</th>
+                        <th class="px-4 py-3">View</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y">
+
+                    
+                    {% for display in payrolls %}
+                    
+                    <tr class="text-gray-700">
+
+                        <td class="text-[10px]">
+                            {{forloop.counter}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.month_year}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.employee}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.gross_pay}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.total_due}}
+                        </td>
+                        <td class="text-[10px]">
+                            {{display.net_pay}}
+                        </td>
+                        <td class="text-[10px]">
+                            <a onclick="showPayroll('{{display.month_year}}')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">View</a>
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+            </table>
+            <div class="text-center  text-gray-500 py-2 font-semibold" id="no-data" style="display: none;">No data</div>
+            <div class="flex justify-end  py-3 my-5 bg-white rounded-lg shadow-md">
+
+                <div class="">      
+                    <label class="flex justify-between gap-6 text-sm">
+                        <span class="text-gray-700">Net: </span>
+                        <span>
+                            <b class="text-[15px] mr-1 currency"></b>
+                            <span class="font-semibold" id="net_pay">{{total_amount}}</span>
+                        </span>
+                       
+                    </label>
+        
+                    <label class="flex justify-between gap-6 text-sm">
+                        <span class="text-gray-700 ">Total Amount: </span>
+                        <span>
+                            <b class="text-[15px] mr-1 currency"></b>
+                            <span class="font-semibold" id="total_amount">{{total_amount}}</span>
+                        </span>
+                    </label>
+                   
+        
+            </div>
+            <!-- <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md ">
+
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Net</span>
+                        <input 
+                            class="block w-full px-2 mt-1 text-sm bg-slate-100 border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder="" disabled
+                            value="#{{total_amount}}"
+                            id='net_pay'
+                        />
+                    </label>
+        
+                    <label class="block text-sm">
+                        <span class="text-gray-700 ">Total Amount</span>
+                        <input 
+                            class="block w-full px-2 mt-1 text-sm bg-slate-100  border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            disabled
+                            value="#{{total_amount}}"
+                            id="total_amount"
+                        />
+                    </label>       
+                </div>
+            </div> -->
+        
+        </div>
+    </div>
+    <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <button type="button" class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+            href="#" onclick="generatePDF('payroll')">
+            Print
+        </button >
+        <button type="button" class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+            onclick="exportTableToExcel('example')">
+            Export to excel
+        </button >
+        <button type="button" class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+            href="#" onclick="generatePDF('payroll')">
+            Export to PDF
+        </button >
+    </div>
+   
+    <script>
+        
+        //serach by date
+        $("#search-2").on('click', function(e){
+           e.preventDefault()
+           const month = $('#month').val();
+           const year = $('#year').val();
+           //console.log(from)
+           //console.log(to)
+           if(month && year){
+               $.ajax({
+                   url: '{% url "report:report-payroll-date" %}',
+                   method: 'GET',
+                   data: {
+                       'month': month,
+                       'year': year,
+                   },
+                   success: function(response) {
+                       console.log(response.payroll)
+                       console.log(response.amount_total)
+                       if(response.payroll && response.payroll.length > 0){
+                           $('#total_amount').val(response.amount_total);
+                           $('#net_pay').val(response.amount_total);
+                           const table = $('#example tbody')
+                           table.empty()
+                           let num = 0;
+                           response.payroll.forEach(item => {
+                               num++ 
+                                   const row = $('<tr id="row">').append(
+                                       $('<td class="text-[10px]">').html(num),
+                                       $('<td class="text-[10px]">').text(item.month_year),
+                                       $('<td class="text-[10px]">').text(item.employee),
+                                       $('<td class="text-[10px]">').text(item.gross_pay),
+                                       $('<td class="text-[10px]">').text(item.total_due),
+                                       $('<td class="text-[10px]">').text(item.net_pay),  
+                                       $('<td class="text-[10px] bg-gray-50 w-3">').append('<a onclick="showPayroll(\''+ item.month_year + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">View</a>') 
+                                   );
+                                   table.append(row);
+                               //}
+                           });
+                           $("#no-data").css('display', 'none')
+                       }else{
+                           $("#example tbody").empty();
+                           $('#total').val(0)
+                           $("#no-data").css('display', 'block');
+                           alertify.error("No payroll between selected month and year");
+                           //alertify.error("Select start_date and end_date")
+                       }
+                   },
+                   error: function(error) {
+                       // Handle the error
+                       console.log('error')
+                   }
+               });
+           }else{
+               alertify.error("Select a valid month and year")
+           }
+   
+           
+       })
+
+       function showPayroll(data){
+           $.ajax({
+               url:'{%url "employee:payrolls" %}',
+               method: 'GET',
+               data: {'data':data},
+               success: function(response){
+                   const  table = $('#payroll-deatil tbody');
+                   table.empty();
+                   let num = 0
+                   let executed = false
+                   if(response.data.length > 0){
+                    my_modal_payroll.showModal()
+                    $("#total").val("#"+response.total);
+                    
+                    response.data.forEach(item => {
+                        num++ 
+                        if (executed == false){
+                            //console.log("True")
+                            $("#details").text("Payroll Details for: "+ item.month_year);
+                            executed = true
+                        }
+                        
+                            const row = $('<tr id="row">').append(
+                                $('<td class="text-[10px]">').html(num),
+                                $('<td class="text-[10px]">').text(item.employee_name),
+                                $('<td class="text-[10px]">').text(item.staffID),
+                                $('<td class="text-[10px]">').text(item.bsaic_salary),
+                                $('<td class="text-[10px]">').text(item.overtime),
+                                $('<td class="text-[10px]">').text(item.allowance),
+                                $('<td class="text-[10px]">').text(item.others),
+                                $('<td class="text-[10px]">').text(item.gross_pay),
+                                $('<td class="text-[10px]">').text(item.tax),
+                                $('<td class="text-[10px]">').text(item.loan_repay),
+                                $('<td class="text-[10px]">').text(item.union_pay),
+                                $('<td class="text-[10px]">').text(item.sanction),
+                                $('<td class="text-[10px]">').text(item.NHF),
+                                $('<td class="text-[10px]">').text(item.NSIFT),
+                                $('<td class="text-[10px]">').text(item.other_deduction),
+                                $('<td class="text-[10px]">').text(item.total_due),
+                                $('<td class="text-[10px]">').text(item.net_pay),
+                               // $('<td class="text-[10px] w-3">').append('<a onclick="showEditModal(\'' + item.id + '\',\'' + item.staffID + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">Edit</a>'),
+                               
+                            );
+                            table.append(row);
+                        //}
+                    });
+                    }else{
+                        alertify.error('No date selected')
+                    }
+                },
+                error: function(error){
+
+                }
+            })
+        
+       }
+   </script>
+
+
+
+
+{% endblock content %}

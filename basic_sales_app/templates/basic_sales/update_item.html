@@ -1,0 +1,432 @@
+{% extends 'base_layout.html' %}
+{% load static %}
+
+{% block content %}
+    <!-- page content -->
+    <div class="flex-grow flex" id="app">
+        <!-- store menu -->
+        <div class="flex flex-col bg-blue-gray-50 h-full w-full ">
+  
+           
+
+            <div class="w-full  overflow-hidden rounded-lg shadow-xs">
+    
+                <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+                href="#">
+                    <div class="flex items-center">
+                        <svg
+                            class="w-5 h-5 mr-2"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                        >
+                        <path
+                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                        ></path>
+                        </svg>
+                        <span>New Item</span>
+                    </div>
+                    <span>Home &RightArrow;</span>
+                </a>
+            
+                {% if messages %}
+                    
+                {% endif %}
+            
+                <!-- <a onclick="my_modal_add_coupon.showModal()" class="block w-full h-8 mt-5 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                    Add Coupon
+                </a> -->
+            
+                <form action="" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+            
+                    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+                        
+                        <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+            
+                            <label class="block text-sm">
+                                <span class="text-gray-700">
+                                    Select Category
+                                </span>
+                                <select  class="block w-full px-2 py-3 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="mySelect" name="category">
+                                    {% for getcate, getid in getcate  %}
+                                        <option value="{{ getid }}">{{ getcate }}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+            
+                            <label class="block text-sm">
+                                <span class="text-gray-700">
+                                    Select Sub-Category
+                                </span>
+                                <select  class="block w-full px-2 py-3 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="result" name="{{ form.sub_category.name }}" >
+                                    <option value="{{getSubcate}}">{{ getSubcate }}</option>
+                                </select>
+                            </label>
+            
+                            <label class="block text-sm">
+                                <span class="text-gray-700">Item Name</span>
+                                <input 
+                                    type="text"
+                                    name="{{ form.item_name.name }}"
+                                    value="{{item.item_name}}"
+                                    class="block w-full px-2 py-3 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    placeholder=""
+                                />
+                            </label>
+            
+                            <div class="block text-sm">
+                                <label class="block text-sm">
+                                    <span class="text-gray-700">Generate / Scan Code</span>
+                                    <input 
+                                        type="text"
+                                        name="{{ form.generated_code.name }}"
+                                        value="{{item.generated_code}}"
+                                        class="block w-full px-2 py-3 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                        placeholder="" readonly
+                                        id="randomNumber"
+                                    />
+                                </label>
+                            </div>
+            
+                        </div>
+                        
+                        <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+            
+                            <label class="block text-sm">
+                                <span class="text-gray-700">Attribute (Optional)</span>
+                                <input 
+                                    type="text"
+                                    name="{{ form.attribute.name }}"
+                                    value="{{item.attribute}}"
+                                    class="block w-full px-2 py-3 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    placeholder=""
+                                />
+            
+                            </label>
+            
+                            <label class="block text-sm">
+                                <span class="text-gray-700">Size</span>
+                                <input 
+                                    type="text"
+                                    name="{{ form.size.name }}"
+                                    value="{{item.size}}"
+                                    class="block w-full px-2 py-3 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    placeholder=""
+                                />
+                                <!-- <input type="hidden" value="{{ item.id }}" name="itemID"> -->
+            
+                            </label>
+            
+                            <label class="block text-sm">
+                                <span class="text-gray-700">Purchase Price (Optional)</span>
+                                <input 
+                                    type="text"
+                                    name="{{ form.purchase_price.name }}"
+                                    value="{{item.purchase_price}}"
+                                    class="block w-full px-2 py-3 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    placeholder=""
+                                />
+            
+                            </label>
+            
+                            <label class="block text-sm">
+                                <span class="text-gray-600">Description/Summary (Optional)</span>
+                                <textarea
+                                    class="block w-full mt-1 px-2 py-3 text-sm form-textarea border-2 rounded-md focus:border-slate-300  focus:outline-none focus:shadow-outline-green text-slate-600"
+                                    rows="1"
+                                    name="{{ form.description.name }}"
+                                    placeholder=""
+                                >{{item.description}}</textarea>
+                            </label>
+            
+                        </div>
+            
+                        <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+            
+                            <label class="block text-sm">
+                                <span class="text-gray-700">Selling Price (Retail)</span>
+                                <input 
+                                    type="text"
+                                    name="{{ form.selling_price.name }}"
+                                    value="{{item.selling_price}}"
+                                    class="block w-full px-2 py-3 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    placeholder=""
+                                    id="selling_price"
+                                />
+            
+                            </label>
+            
+                            <label class="block text-sm">
+                                <span class="text-gray-700">Selling Price (Wholesale)</span>
+                                <input 
+                                    type="text"
+                                    name="{{ form.wholesale_price.name }}"
+                                    value="{{item.wholesale_price}}"
+                                    class="block w-full px-2 py-3 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    placeholder=""
+                                />
+            
+                            </label>
+            
+                            <label class="block text-sm">
+                                <span class="text-gray-700">Item Image</span>
+                                <input 
+                                    type="file"
+                                    multiple
+                                    name="{{ form.image.name }}"
+                                    class="block w-full px-2 py-3 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    placeholder=""
+                                />
+            
+                            </label>
+            
+                            <label class="block text-sm">
+                                <span class="text-gray-700">Discount price</span>
+                                <input 
+                                    type="text"
+                                    name="{{ form.discount_price.name }}"
+                                    class="block w-full px-2 py-3 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    placeholder=""
+                                    id="D_price"
+                                    value="{{item.discount_price}}"
+                                />
+            
+                            </label>
+            
+                            
+                        </div>
+            
+                        <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+            
+                            <label class="block text-sm">
+                                <span class="text-gray-700">Discount Percentage(%)</span>
+                                <input 
+                                    type="text"
+                                    name="{{ form.discount_percentage.name }}"
+                                    readonly
+                                    class="block w-full px-2 py-3 mt-1 bg-slate-200 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                    value="{{item.discount_percentage}}"
+                                    id="D_percentage"
+                                />
+            
+                            </label>
+                            <label class="block text-sm">
+                                <span class="text-gray-700">Item Colors</span>
+                                <div id="color_outputed">
+                                    {% if get_colors %}
+                                        {% for color in get_colors %}
+                                            <span class="w-8 h-8 inline-block rounded-full border-none m-1 focus:outline-none  delete" style="background-color: {{color}};" id="input_color2"></span>
+                                        {% endfor %}
+                                    {% else %}
+                                        <span class="inline-block rounded-full border-none m-1 focus:outline-none  delete">No color added</span>
+                                    {% endif %}
+                                </div>
+                            </label>
+            
+                            <button type="submit" name="update_item" class="block w-full h-10 px-4  mt-5 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                                Update
+                            </button>
+                            
+                        </div>
+            
+            
+                    </div>
+            
+                </form>
+            </div>
+
+        </div>
+        <!-- end of store menu -->
+
+        <!-- right sidebar -->
+        <div class="w-5/12 flex flex-col w bg-blue-gray-50 h-full bg-white pr-4 pl-2 py-4">
+            <div class="bg-white rounded-3xl flex flex-col h-full shadow">
+                
+                <!-- SCANNER AND CUSTOMER ENTRY -->
+                <div class="px-4 py-3 my-2 bg-white rounded-lg w-full">
+                    {% if item.image %}
+                        <img src="{{item.image.url}}" alt="">
+                    {% else %}
+                        <h1 class="text-center">NO image found</h1>
+                    {% endif %}
+                </div>
+    
+                <!-- cart items -->
+                <div class="grid gap-6 md:grid-cols-">
+            
+                    <form action="" method="POST">
+                        {% csrf_token %}
+            
+                        <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+            
+                            <div class="mt-5">
+                                <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+                                    href="#">
+                                    <div class="flex items-center">
+                                        <svg
+                                            class="w-5 h-5 mr-2"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                        <path
+                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                                        ></path>
+                                        </svg>
+                                        <span>Update Item Auxilaries</span>
+                                    </div>
+                                </a>
+                                <div id="Item_brand">
+                                    <div class="grid gap-6 md:grid-cols-2 mt-5">
+                                        <label class="block text-sm">
+                                            <span class="text-gray-700">
+                                                Select State
+                                            </span>
+                                            <select name="state" class="block w-full px-2 py-3 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+                                                <option>--Choose An Option--</option>
+                                                <option>Favourite</option>
+                                                <option>Lastest</option>
+                                                <option>Popular</option>
+                                            </select>
+                                        </label>
+                                        <label class="block text-sm">
+                                            <span class="text-gray-700">Item brand</span>
+                                            <input 
+                                                type="text"
+                                                id="brand_name"
+                                                name="brand_name"
+                                                class="block w-full px-2 py-3 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                                placeholder=""
+                                            />
+                                        </label>
+                                        <label class="block text-sm">
+                                            <span class="text-gray-700">Key Features</span>
+                                            <input 
+                                                type="text"
+                                                id="brand_name"
+                                                name="brand_name"
+                                                class="block w-full px-2 py-3 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                                placeholder=""
+                                            />
+                                        </label>
+                                        
+                                        <label class="block text-sm">
+                                            <div class="relative text-left">
+                                                <div class="mt-2">
+                                                    <span class="text-gray-700 "> Update Colors</span>
+
+                                                    <span class="rounded-md shadow-sm">
+                                                        <button type="button" name="colors" id="toggleOptions" class="inline-flex justify-center w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm leading-5 font-medium text-gray-700 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue active:bg-gray-50 active:text-gray-800 transition ease-in-out duration-150">
+                                                            Selects colors
+                                                            <svg class="-mr-1 ml-2 right-0 h-6 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fill-rule="evenodd" d="M6.293 7.293a1 1 0 011.414 0L10 9.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414zM7 11a1 1 0 00-1 1v1a1 1 0 102 0v-1a1 1 0 00-1-1zm5 0a1 1 0 00-1 1v1a1 1 0 102 0v-1a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                                            </svg>
+                                                        </button>
+                                                    </span>
+                                                </div>
+                                                <div id="optionsDropdown" class="hidden absolute  right-0 mt-2 w-56 rounded-md shadow-lg  bg-white ring-1 ring-black overflow-y-auto max-h-40 bottom-full">
+                                                    <div class="rounded-md bg-white shadow-xs">
+                                                        <div class="px-4 py-3">
+                                                            <div class="space-y-1">
+                                                                {% for color in all_colors%}
+                                                                    <div class="flex items-center">
+                                                                        <input id="option1" type="checkbox" class="form-checkbox ml-1 h-4 w-4 text-indigo-600 transition duration-150 ease-in-out" name="update_color[]" value="{{color}}">
+                                                                        <span class="inline-block ml-2 w-4 h-4 rounded-full " style="background-color: {{color}};"></span>
+
+                                                                        <label for="option1" class="ml-2 block text-sm leading-5 text-gray-700">
+                                                                        {{color}}
+                                                                        </label>
+                                                                    </div>
+                                                                {% endfor %}
+                                                                <!-- Add more options as needed -->
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <input 
+                                            type="hidden"
+                                            name="{{ form.generated_code.name }}"
+                                            value="{{item.generated_code}}"
+                                        />
+                                        <label class="block text-sm">
+                                            <span class="text-gray-700">Add New Colors</span>
+                                                <div id="colorSelectors">
+                                                    <!-- Initial color selector -->
+                                                    <input type="color" class="w-full h-12 rounded-full border border-gray-300 focus:outline-none" id="input_color1" title="change item color">
+                                                </div>
+                                              <button id="addColor" type="button" class="mt-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Add Color</button>
+                                        </label>
+
+                                    </div>
+                                    <button id="AddItenBrand" type="submit" name="add_auxilaries" class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                                        Update
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- end of right sidebar -->
+    </div>
+    <button id="additem" data-url="{% url 'Basic_Sales:AddItemForSales' %}" class="hidden"></button>
+
+  <script>
+    // CALCULATE DISCOUNT 
+        function caldiscount(){
+            let D_price                 =  $('#D_price').val();
+            let selling_price           =  $('#selling_price').val();
+            $('#D_percentage').val('')
+            if(D_price.trim() != ''){
+                let discount_percentage     = (D_price/selling_price) * 100
+                if(discount_percentage <= 100){
+                    $('#D_percentage').val(discount_percentage)
+                }else{
+                    $('#D_percentage').val('')
+                }
+            }
+        }
+
+        $('#D_price').keyup(function() {
+            caldiscount()
+        });
+        $('#selling_price').keyup(function() {
+            caldiscount()
+        });
+
+
+        $(document).ready(function() {
+        // When the select option changes
+        $('#mySelect').on('change', function() {
+            // Get the selected value
+            var selectedOption = $(this).val();
+            var additem = document.getElementById('additem').dataset.url;
+
+            // Send the selected value to the server using AJAX
+            $.ajax({
+                type: 'GET',  // Change to 'GET' if you're retrieving data
+                url:additem,  // Replace with your server endpoint URL
+                data: {
+                    data: selectedOption
+                },
+                success: function(response) {
+                    var resultDiv = $("#result");
+                    resultDiv.empty();
+                    var data = response.data;
+                    response.data.forEach(function(item, index) {
+                        selectOpt = '<option value="'+ item.description +'">' + item.description + '</option>';
+                    resultDiv.append(selectOpt);
+                    });
+                },
+                error: function() {
+                    // Handle errors
+                }
+            });
+        });
+    });
+    </script>
+  
+<script src ='{% static "js/JS_for_dropdowns_add_colors.js" %}'></script>
+{% endblock %}

@@ -1,0 +1,1178 @@
+<div :class="{'block': open, 'hidden': !open}" class="hidden mobile-menu z-50 pb-10 lg:hidden h-screen overflow-y-scroll">
+    <div class="container px-6 mx-auto  ">
+        <div class="pt-2 pb-3 ">
+        
+        <a href="#" class="flex flex-row items-center px-3 py-2 mt-1 text-base font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+            <span class="ml-2">File</span>
+        </a>
+        <div class="relative">
+            <div class="main-menu-dropdown-mobile flex justify-between items-center text-gray-300" data-id="account" x-data="{ open: false }">
+
+                <button @click="open = true" class="flex flex-row items-center w-full px-2 py-2 mt-1 text-base font-medium text-left text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">              
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <span class="mx-1 text-[10px]">Account</span>
+                </button>
+                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+            <div id="account"  class="hidden dropdown-menu-mobile px-2 py-2 mt-2 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                <div class="py-1 bg-white rounded-md shadow-xs">
+
+                    <div class="relative sub-menu-dropdown-mobile" >
+                        <a  class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Chart of account</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'account:NewChartOfAccount' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">New</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'account:ViewChartOfAccount' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View Accounts</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'account:AccountSetup' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Account Setup</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Inter Account Transfer</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-0': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-56 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'account:InterAccountTransfer' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add Inter Account Transfer</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'account:ViewInterAccountTransfer' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View Inter Account Transfer</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-400 focus:text-gray-500 hover:text-gray-500 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Credit Account
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="relative" >
+            <div class="main-menu-dropdown-mobile flex justify-between items-center text-gray-300" data-id="vendor" x-data="{ open: false }">
+
+                <button @click="open = true" class="flex flex-row items-center w-full px-2 py-2 mt-1 text-base font-medium text-left text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">              
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <span class="mx-1 text-[10px]">Vendor</span>
+                </button>
+                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+            <div id="vendor"  class="hidden dropdown-menu-mobile px-2 py-2 mt-2 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                <div class="py-1 bg-white rounded-md shadow-xs">
+                    
+                    <a href="{% url 'vendor:NewPurchase' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Purchase Invoice
+                    </a>
+                    
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Purchase Quotes</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'vendor:NewPurchaseQuote' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'vendor:ViewPurchaseQuote' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Purchase Order</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'vendor:NewPurchaseOrder' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'vendor:ViewPurchaseOrder' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Returns Outwards</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'vendor:ReturnItems' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'vendor:ViewReturnOutwards' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Vendor</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-0': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'vendor:register_vendor' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">New Vendor</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'vendor:view_vendor' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View Vendor</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{% url 'vendor:PurchaseAdjustment' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Purchase Adjustment
+                    </a>
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Cancel Purchase</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-0': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'vendor:CanclePurchaseInvoice' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Cancel Purchase Invoice
+                                        </a>
+                                        <a href="{% url 'vendor:viewCanclePurchase' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                           View Cancelled Invoices
+                                        </a>
+                                    </li>
+                                    
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+        <div class="relative">
+            <div class="main-menu-dropdown-mobile flex justify-between items-center text-gray-300" data-id="customer" x-data="{ open: false }">
+                <button class="flex flex-row items-center px-2 py-2 mt-1 text-[12px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <span class="mx-1 text-[10px] tracking-wide">Customer</span>
+                </button>
+                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+            <div id="customer"  class="hidden dropdown-menu-mobile px-2 py-2 mt-2 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                <div class="py-1 bg-white rounded-md shadow-xs">
+
+                    <a href="{% url 'customer:NewSales' %}" id="sales_interface" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Sales Invoices
+                    </a>
+
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Sales Quotes</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'customer:NewSalesQuote' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'customer:SalesQuote' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Sales Order</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'customer:NewSalesOrder' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'customer:SalesOrder' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Returns Inwards</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'customer:ReturnInward' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'customer:ViewReturnsInWards' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="{% url 'customer:CustomerOpeningBalance' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Customer Opening Balance
+                    </a>
+
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Customer</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-0': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-48 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'customer:NewCustomer' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">New Customer</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'customer:Customers' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View Customers</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer hidden"> <span class="flex-1">Edit Customer</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'settings:ShippingAddress' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Shipping Address</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'settings:BillingAddress' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Billing Address</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a href="{% url 'customer:RefundCustomer' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Refund Customer
+                    </a>
+                    
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Verify Payment</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'customer:VerifyPayment' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Verify</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'customer:VerifiedPayment' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Customer Incentives</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolute inset-l-ful top-0 min-w-ful w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Calculate Incentive</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View Incentive</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative">
+            <div class="main-menu-dropdown-mobile flex justify-between items-center text-gray-300" data-id="jounal" x-data="{ open: false }">
+
+                <button class="flex flex-row items-center px-2 py-2 mt-1 text-[12px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <span class="mx-1 text-[10px] tracking-wide">Journal</span>
+                </button>
+                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+            <div id="jounal"  class="hidden dropdown-menu-mobile px-2 py-2 mt-2 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                <div class="py-1 bg-white rounded-md shadow-xs">
+
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Journal Entries</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'journal:NewJournal' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New Journal</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'journal:ReceivePayment' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Receive Payment</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'journal:ViewJournal' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View Journal Entries</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Loan Manager</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'journal:NewLoan' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'journal:Loan' %}" class="px-4 py-1 flex w-full items-start text-gray-700 focus:text-gray-900 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View </span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        
+        {% comment %}  STOCK {% endcomment %}
+
+        <div class="relative">
+            <div class="main-menu-dropdown-mobile flex justify-between items-center text-gray-300" data-id="stock" x-data="{ open: false }">
+
+                <button class="flex flex-row items-center px-2 py-2 mt-1 text-[12px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <span class="mx-1 text-[10px] tracking-wide">Stock</span>
+                </button>
+                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+            <div id="stock"  class="hidden dropdown-menu-mobile px-2 py-2 mt-2 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                <div class="py-1 bg-white rounded-md shadow-xs">
+
+                    <a href="{% url 'Stock:ItemIssue' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Item Issue
+                    </a>
+
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Transfer Stock</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-0': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-48 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'Stock:WarehouseToWarehouse' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Warehouse to warehouse</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'Stock:WarehouseToOutlet' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Warehouse to Outlet</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'Stock:OutletToWarehouse' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Outlet to Warehouse</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'Stock:VerifyTransfer' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Verify Transfer</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'Stock:TransferHistory' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Transfer History</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'Stock:OutletToOutlet' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Outlet to Outlet</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Stock Adjustment</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-0': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-48 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'Stock:StockAdjustment' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Warehouse
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'Stock:StockAdjustmentOutlet' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                                            Outlet
+                                        </a>
+                                    </li>
+                                    
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Item</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'Stock:NewItem' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add New Item</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'Stock:ItemCategory' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Item Category</span> </a>
+                                    </li>
+                                
+                                    <li class="relative sub-menu-dropdown-mobile">
+                                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                            <span class="flex-1">Stock Level</span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                        </a>
+                                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                                <ul class="list-reset">
+                                                    <li>
+                                                        <a href="{% url 'Stock:OutletStockLevel' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Outlet Stock</span> </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{% url 'Stock:WarehouseStockLevel' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Warehouse Stock</span> </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{% url 'Stock:StockLevelComparison' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Stock Level Comparison</span> </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-400 focus:text-gray-500 hover:text-gray-500 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Expired Stock
+                    </a>
+                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-400 focus:text-gray-500 hover:text-gray-500 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Low Stock
+                    </a>
+                    <a href="{% url 'Stock:Coupon' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Coupon
+                    </a>
+
+                    {% comment %} stockin {% endcomment %}
+                    
+
+                    {% comment %} stockout {% endcomment %}
+                    
+
+                    
+
+                </div>
+            </div>
+        </div>
+
+        {% comment %} END STOCK {% endcomment %}
+
+        <div class="relative">
+            <div class="main-menu-dropdown-mobile flex justify-between items-center text-gray-300" data-id="report" x-data="{ open: false }">
+                <button class="flex flex-row items-center px-2 py-2 mt-1 text-[12px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <span class="mx-1 text-[10px] tracking-wide">Report</span>
+                </button>
+                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+
+            </div>
+            <div id="report"  class="hidden dropdown-menu-mobile px-2 py-2 mt-2 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                <div class="py-1 bg-white rounded-md shadow-xs">
+
+                    <!-- <a href="{% url 'report:SalesReport' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Sales Report
+                    </a> -->
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Report</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'report:SalesReport' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Specific Sales Report</span></a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'report:HourlySalesReport' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Hourly</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'report:DailySalesReport' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Daily</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'report:MonthlySalesReport' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Monthly</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'report:QuaterlySalesReport' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Quaterly</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'report:YearlySalesReport' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Yearly</span> </a>
+                                    </li>
+                                
+                                    <li class="relative sub-sub-menu-dropdown-mobile">
+                                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                            <span class="flex-1">Customer Sales</span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                        </a>
+                                        <div class="hidde sub-sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l- top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: block;">
+                                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                                <ul class="list-reset">
+                                                    <li>
+                                                        <a href="{% url 'report:CustomerMonthlySalesReport' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Monthly</span> </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{% url 'report:CustomerQuaterlySalesReport' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Quaterly</span> </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{% url 'report:CustomerYearlySalesReport' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Yearly</span> </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="relative sub-sub-menu-dropdown-mobile">
+                                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                                            <span class="flex-1">Sales Person</span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                        </a>
+                                        <div class="hidde sub-sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: block;">
+                                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                                <ul class="list-reset">
+                                                    <li>
+                                                        <a href="{% url 'report:SalesPersonMonthlySalesReport' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Monthly</span> </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{% url 'report:SalesPersonQuaterlySalesReport' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Quaterly</span> </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{% url 'report:SalesPersonYearlySalesReport' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Yearly</span> </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Stock In Report</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'report:WarehouseStockinReport' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Stock In Report</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'report:OutletStockLevelReport' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Outlet Stock Report</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'report:WarehouseStockLevelReport' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Warehouse Stock Report</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'report:StockAdjustmentHistory' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Stock Adjustment History</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Purchase Report</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'report:PurchaseInvoice' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">All Purchase</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Batch Purchase</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'report:PurchaseAdjustmentHistory' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Purchase Adjustment History</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="{% url 'report:PayrollReport' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Payroll Report
+                    </a>
+
+                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-400 focus:text-gray-500 hover:text-gray-500 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        PettyCash Report
+                    </a>
+                    
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">P/L Account</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'report:ProfitLossStatement' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Profit / Loss</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'report:AccountSeriesReport' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Other Series</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="{% url 'report:Receivables' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Receivables
+                    </a>
+
+                    <a href="{% url 'report:Payables' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Payables
+                    </a>
+
+                    <a href="{% url 'report:AgedReceivables' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Aged Receivables
+                    </a>
+
+                    <a href="{% url 'report:AgedPayable' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Aged Payables
+                    </a>
+
+                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-400 focus:text-gray-500 hover:text-gray-500 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Inventory
+                    </a>
+
+                    <a href="{% url 'account:ViewChartOfAccount' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Chart of Account
+                    </a>
+
+                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-400 focus:text-gray-500 hover:text-gray-500 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Income Report
+                    </a>
+
+                    <a href="{% url 'report:ExpiredItems' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Expired Items
+                    </a>
+
+                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-400 focus:text-gray-500 hover:text-gray-500 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Liability
+                    </a>
+                    
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">General Ledger</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'report:CustomerLedger' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Customer Ledger</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'report:SalesLedger' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Sales Ledger</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'report:PurchaseLedger' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Purchase Ledger</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'report:VendorLedger' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Vendor Ledger</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="{% url 'report:BalanceSheet' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Balance Sheet
+                    </a>
+
+                    <a href="{% url 'report:TrialBalance' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Trial Balance
+                    </a>
+
+                    <a href="{% url 'report:OutletStockinReport' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Outlet Stocking Report
+                    </a>
+
+                    
+
+                </div>
+            </div>
+        </div>
+
+        <div class="relative">
+            <div class="main-menu-dropdown-mobile flex justify-between items-center text-gray-300" data-id="settings" x-data="{ open: false }">
+
+                <button class="flex flex-row items-center px-2 py-2 text-[12px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <span class="mx-1 text-[10px] tracking-wide">Settings</span>
+                </button>
+                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+            <div id="settings"  class="hidden dropdown-menu-mobile px-2 py-2 mt-2 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                <div class="py-1 bg-white rounded-md shadow-xs">
+
+                    <a href="{% url 'settings:PriceManagement' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Price Management
+                    </a>
+                    
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">User</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'main:NewUser' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'main:EditUser' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Edit</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-400 focus:text-gray-500 hover:text-gray-500 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Expiration Control
+                    </a>
+
+                    <a href="{% url 'settings:AddWarehouse' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Add Warehouse
+                    </a>
+
+                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-400 focus:text-gray-500 hover:text-gray-500 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Expired Product
+                    </a>
+
+                    <a href="" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Server Setup
+                    </a>
+
+                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-400 focus:text-gray-500 hover:text-gray-500 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Cloud Setup
+                    </a>
+
+                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-400 focus:text-gray-500 hover:text-gray-500 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Backup
+                    </a>
+
+                    <a href="{% url 'settings:ProfileSetup' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Profile Setup
+                    </a>
+
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Sales Unit</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-0': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'settings:NewSalesOutlet' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">New Unit</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'settings:SalesOutlet' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View All</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Customer Address</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-0': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'settings:ShippingAddress' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Shipping Address</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'settings:BillingAddress' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Billing Address</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div> -->
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Shipping Setup</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-0': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'settings:ShippingMethod' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Shipping Method</span> </a>
+                                        <a href="{% url 'settings:CartPaymentMethod' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Cart Payment Method</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'settings:PickupStation' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Pickup Station</span> </a>
+                                        <a href="{% url 'settings:AddCity' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Add City</span> </a>
+                                        <a href="{% url 'settings:PickupShippingPrice' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Pickup Shipping Price</span> </a>
+                                        <a href="{% url 'settings:AddressShippingPrice' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">City Shipping Price</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+
+                    <a href="{% url 'settings:NewCompany_details' %}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Company Details
+                    </a>
+                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Activate Incentives
+                    </a>
+
+                    <a href="#" onclick="my_modal_2.showModal()" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Instant Stockout
+                    </a>
+                    <a href="#" onclick="InTans.showModal()" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Instant Transfer
+                    </a>
+                    <a href="#" onclick="InTanstocklevel.showModal()" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Sort stockLevel By
+                    </a>
+                    
+
+                </div>
+            </div>
+        </div>
+
+
+        <!-- EXPIRATION CONTROL -->
+        <div class="relative">
+            <div class="main-menu-dropdown-mobile flex justify-between items-center text-gray-300" data-id="expiration" x-data="{ open: false }">
+                <button class="flex flex-row items-center px-2 py-2 mt-1 text-[12px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <span class="mx-1 text-[10px] tracking-wide">Expiration Control</span>
+                </button>
+                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+
+            </div>
+            <div id="expiration"  class="hidden dropdown-menu-mobile px-2 py-2 mt-2 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                <div class="py-1 bg-white rounded-md shadow-xs">
+
+                    <a href="{% url 'settings:InspirationControl' %}"  class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Dashboard
+                    </a>
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Stock Expiry Date</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-24 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'settings:ItemExpiryDate' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Set Expiry Date</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'settings:UpdateItemExpiryDate' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Edit</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="{% url 'settings:SetItemNotification' %}"  class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Set Item Notification
+                    </a>
+                    <a href="{% url 'settings:NotificationStatus' %}"  class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Notification status
+                    </a>
+                  
+
+                </div>
+            </div>
+        </div>
+
+        <div class="relative">
+            <div class="main-menu-dropdown-mobile flex justify-between items-center text-gray-300" data-id="widget" x-data="{ open: false }">
+                <button class="flex flex-row items-center px-2 py-2 mt-1 text-[12px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <span class="mx-1 text-[10px] tracking-wide">Widget</span>
+                </button>
+                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+
+            </div>
+            <div id="widget"  class="hidden dropdown-menu-mobile px-2 py-2 mt-2 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                <div class="py-1 bg-white rounded-md shadow-xs">
+
+                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Launch Calculator
+                    </a>
+
+                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Calender
+                    </a>
+
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Profile</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-28 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'settings:ProfileSetup' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Setup Profile</span> </a>
+                                    </li>
+                                    
+                                    <li>
+                                        <a href="{% url 'settings:ViewProfile' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View Profile</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="relative">
+            <div class="main-menu-dropdown-mobile flex justify-between items-center text-gray-300" data-id="help" x-data="{ open: false }">
+
+                <button @click="open = !open" class="flex flex-row items-center px-2 py-2 mt-1 text-[12px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <span class="mx-1 text-[10px] tracking-wide">Help</span>
+                </button>
+                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+            <div id="help"  class="hidden dropdown-menu-mobile px-2 py-2 mt-2 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                <div class="py-1 bg-white rounded-md shadow-xs">
+
+                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Guide
+                    </a>
+
+                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        About
+                    </a>
+
+                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Support
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="relative">
+            <div class="main-menu-dropdown-mobile flex justify-between items-center text-gray-300" data-id="employee" x-data="{ open: false }">
+                <button class="flex flex-row items-center px-2 py-2 mt-1 text-[12px] font-medium text-gray-300 rounded-md hover:text-white focus:outline-none focus:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <span class="mx-1 text-[10px] tracking-wide">Employee</span>
+                </button>
+                <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+
+            </div>
+            <div id="employee"  class="hidden dropdown-menu-mobile px-2 py-2 mt-2 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                <div class="py-1 bg-white rounded-md shadow-xs">
+                    
+                    <div class="relative sub-menu-dropdown-mobile">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Employee</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-32 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'employee:NewEmployee' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">New Employee</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">Edit Employee</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'employee:Employee' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View Employee</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative sub-menu-dropdown-mobile" x-data="{showChildren:false}" @mouseleave="showChildren=false" @mouseenter="showChildren=true">
+                        <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors duration-100 cursor-pointer">
+                            <span class="flex-1">Payroll</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </a>
+                        <div class="hidden sub-dropdown-menu-mobile bg-white shadow-md rounded border border-gray-300 text-[12px] absolut inset-l-ful top-0 min-w-full w-28 z-30 mt-1" x-show="showChildren" x-transition:enter="transition ease duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease duration-300 transform" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
+                            <span class="absolute top-0 left-0 w-3 h-3 bg-white border transform rotate-45 -ml-1 mt-2"></span>
+                            <div class="bg-white rounded w-full relative z-10 py-1">
+                                <ul class="list-reset">
+                                    <li>
+                                        <a href="{% url 'employee:NewPayroll' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">New Payroll</span> </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'employee:Payroll' %}" class="px-4 py-1 flex w-full items-start hover:bg-gray-100 no-underline hover:no-underline transition-colors duration-100 cursor-pointer"> <span class="flex-1">View Payroll</span> </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="{%url 'employee:ViewUnapprovePayroll'%}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Salary Approval
+                    </a>
+                    <a href="{%url 'employee:ViewApprovePayroll'%}" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-700 focus:text-gray-900 hover:text-gray-900 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Confirm Payment
+                    </a>
+
+                    <a href="#" class="flex flex-row items-center px-4 py-1 text-[12px] text-gray-400 focus:text-gray-500 hover:text-gray-500 focus:outline-none hover:bg-gray-100 focus:bg-gray-100">
+                        Setup
+                    </a>
+                    
+                </div>
+            </div>
+        </div>
+
+        </div>
+    </div>
+
+    <div class="container px-6 mx-auto main-menu-dropdown">
+        <div x-data="{ open: false }" class="py-4 border-t border-gray-700">
+            <button @click="open = true" class="flex items-center w-full focus:outline-none">
+                <div class="flex items-center w-full text-left">
+                    <div class="flex-shrink-0" id="profile_pics">
+                        <img class="w-10 h-10 rounded-full"  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="" />
+                    </div>
+                    <div class="ml-3">
+                        <div class="text-base font-medium leading-none text-white">{{request.user.username}}</div>
+                        <div class="mt-1 text-[12px] font-medium leading-none text-gray-400">{{request.user.email}}</div>
+                    </div>
+                </div>
+                <div class="text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+            </button>
+            <div x-show="open" @click.away="open = false"  class="hidden dropdown-menu py-2 mt-4 bg-white rounded-md shadow-xs" role="menu" aria-orientation="vertical" aria-labelledby="user-menu" role="menuitem">
+                <a href="{% url 'settings:ViewProfile' %}" class="flex flex-row items-center px-3 py-2 text-base font-medium text-gray-700 rounded-md hover:text-gray-900 hover:bg-gray-200 focus:outline-none focus:text-gray-900 focus:bg-gray-200" role="menuitem">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <span class="ml-2">Your Profile</span>
+                </a>
+                <!-- <a href="#" class="flex flex-row items-center px-3 py-2 mt-1 text-base font-medium text-gray-700 rounded-md hover:text-gray-900 hover:bg-gray-200 focus:outline-none focus:text-gray-900 focus:bg-gray-200" role="menuitem">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <span class="ml-2">Settings</span>
+                </a> -->
+                <a href="{% url 'main:logout' %}" class="flex flex-row items-center px-3 py-2 mt-1 text-base font-medium text-red-500 rounded-md hover:text-red-700 hover:bg-red-200 focus:outline-none focus:text-red-700 focus:bg-red-200" role="menuitem">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-log-out"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    <span class="ml-2">Sign out</span>
+                </a>
+            </div>
+        </div>
+        
+    </div>
+
+   
+</div>

@@ -1,0 +1,243 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="Afrikbook.">
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i&display=swap" rel="stylesheet">
+        
+        <title>
+            
+            {% block title %}
+                Afrikbook Login.
+            {% endblock title %}
+                
+        </title>
+
+
+
+        <!-- Additional CSS Files -->
+        <link rel="stylesheet" href="{% static 'src/styles.css' %}">
+        <link rel="stylesheet" href="{% static 'src/styles.css' %}">
+        <link rel="stylesheet" href="{% static 'src/main.css' %}">
+        
+        <script src="{% static 'js/jquery.js' %}"></script>
+        <script src="{% static 'js/jquery.min.js' %}"></script>
+
+    
+       
+    </head>
+    <style>
+        .bg-neutral-700 {
+            --tw-bg-opacity: 1; 
+            background-color: #444E46;
+        }
+        .primary{
+            background-color: #018786;
+        }
+    </style>
+
+    <body class="body-wrapper">
+
+        
+        <div class="flex flex-col md:flex-row justify-between items-center p-4">
+           <div class="border w-full p-4 mb-4">
+                <div class="grid  items-center">
+                    <input type="text" name="id" id="id" class="hidde">
+                    <input type="text" name="delete" id="delete" class="hidde">
+            
+                    <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Select Country  
+                    </span>
+                    <select id="country" onchange="CheckState()" class="block w-full p-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="country">
+                        <option disabled> Select Country</option>
+                        {% for value in country %}
+                        <option value="{{value.id}}">{{value.Country}}</option>
+                        {% endfor %}
+                    </select>
+                    </label>
+
+                    <label class="block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">State</span>
+                        <input 
+                            type="text"
+                            class="block w-full p-2 mb-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input "
+                            placeholder=""
+                            id="state"
+                            requireds
+                            oninput="CheckState()"
+                        />
+                        <span id="state-text" class="text-red-500"></span>
+                    </label>
+                </div>
+                <div class="btn_box flex items-center justify-between gap-2">
+                    <button class="w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="save" type="button">Add State</button>
+                </div>
+           </div>
+           <div class="border w-full p-4 mb-4">
+            <div class="w-full my-6 overflow-hidden rounded-lg shadow-xs">
+                <div class="w-full overflow-x-auto table-responsive">
+                  <table id="state_table" class="customer" style="width:100%">
+                        <thead>
+                            <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                                <th class="px-0 py-3">SN</th>
+                                <th class="px-0 py-3">Country</th>
+                                <th class="px-0 py-3">State</th>
+                                <th class="px-0 py-3">Edit</th>
+                                <th class="px-0 py-3">Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y">
+        
+         
+        
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+           </div>
+        </div>
+
+
+        <script>
+            
+
+            function CheckState(){
+                var country = $("#country").val()
+                var state = $("#state").val()
+                var save = $("#save")
+
+                if(country != "" && state !=""){
+                    $.ajax({
+                        url: "{% url 'main:view_state' %}",
+                        method: "GET",
+                        data: {country:country, state:state},
+                        success: function(data){
+                          if(data != false){
+                             save.addClass('hidden')
+                             $("#state-text").text(state+" already exist in "+ $("#country option:selected").text())
+                          }else{
+                            save.removeClass('hidden')
+                            $("#state-text").text("")
+                          }
+                        },
+                        error: function(error){},
+                    })
+
+                }
+            }
+
+            $("#save").on('click', function(){
+                var country = $("#country").val()
+                var state = $("#state").val()
+                var id = $("#id").val()
+                if(country != "" && state !=""){
+                    $.ajax({
+                        url: "",
+                        method: "GET",
+                        data: {country:country, state:state, id:id},
+                        success: function(data){
+                          if(data > 0){
+                             alert("Saved")
+                             
+                             fetchStates()
+                             $("#state").val('')
+                          }else{
+                            alert("An error occour")
+                          }
+                        },
+                        error: function(error){},
+                    })
+
+                }else{
+                    if(country == ""){
+                        $("#country").addClass('border-red-500')
+                    }else{
+                        $("#country").removeClass('border-red-500')
+                    }
+                    if(state == ""){
+                        $("#state").addClass('border-red-500')
+                    }else{
+                        $("#state").removeClass('border-red-500')
+                    }
+                }
+            })
+
+            function fetchStates(){
+                $.ajax({
+                    url: "{% url 'main:view_state' %}",
+                    method: "GET",
+                    success: function(data){
+                        var table = $("#state_table tbody")
+                        table.empty();
+                        var num = 0;
+                        data.forEach(element => {
+                            num ++
+                            const row = $('<tr id="row">').append(
+                                $('<td class="text-[10px]">').html(num),
+                                    $('<td class="text-[10px]">').text(element.country),
+                                    $('<td class="text-[10px]">').text(element.state),
+                                    $(`<td class="text-[10px]">
+                                        <input type="checkbox", name="select" onchange="Edit(this, '${element.id}','${element.country_id}','${element.country}', '${element.state}')" class="px-2 py-2 ml-3 text-sm font-medium leading-5 text-blue-500 rounded-lg focus:outline-none focus:shadow-outline-gray" />
+                                    
+                                    </td>`),
+                                    $(`<td class="text-[10px]">
+                                        <a onclick="Delete('${element.id}')"
+                                            class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-red-600 rounded-lg focus:outline-none focus:shadow-outline-gray"
+                                            aria-label="Delete"
+                                            >
+                                            <svg
+                                                class="w-4 h-4"
+                                                aria-hidden="true"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                            >
+                                                <path
+                                                fill-rule="evenodd"
+                                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                clip-rule="evenodd"
+                                                ></path>
+                                            </svg>
+                                        </a>
+                                    </td>`)                      
+                            );
+                            table.append(row);
+                
+                       });
+                    },
+                    error: function(error){},
+                })
+            }
+
+            fetchStates()
+
+            function Edit(element, id, country_id, country, state){
+            var checkbox = $(element).prop('checked');
+            
+            if(checkbox == true){
+                $('#id').val(id)
+                $('#country option:selected').val(country_id).text(country)
+                $('#state').val(state)
+                $('#save').text("Update")
+                $("input:checkbox[name='select']").prop('checked', false)
+                $(element).prop('checked', true);
+                
+            }else{
+                $('#station_id').val('')
+                $('#station').val('')
+                $('#save').text("Add State")
+            }
+        }
+
+            function Delete(id){
+                $('#station_id').val(id)
+                $('#delete').val('Yes')
+            }
+        </script>
+</body>
+</html>

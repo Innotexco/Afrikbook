@@ -1,0 +1,170 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>User Setup</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    <!-- {% if messages %}
+        {% include 'messages.html' %}
+    {% endif %} -->
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+        
+        <form action="" method="POST" novalidate>
+            {% csrf_token %}
+            <div class="grid gap-6 md:grid-cols-6 xl:grid-cols-4 my-6"> 
+    
+                <label class="block text-sm">
+                    <span class="text-gray-700">Employee</span>
+                    <select name="employee" class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="" required >
+                        <option selected disabled>Select Employee</option>
+                           {% for employee in employee %}
+                             <option onclick="GetDetails('{{employee.fullname}}', '{{employee.email}}')">{{employee.fullname}}</option> 
+                           {% endfor %}  
+                          
+                        
+                    </select>
+                </label>
+    
+            </div>
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Username</span>
+                    <input 
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        name="username"
+                        id="name"
+                        type="text"
+                    />
+                    <span class="py-2 text-red-500 errors">{{form.username.errors}}</span>
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Email Address</span>
+                    <input 
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        type="email"
+                        id="email_address"
+                        name="email"
+                    />
+                    <span class="py-2 text-red-500 errors">{{form.email.errors}}</span>
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Password</span>
+                    <input 
+                        type="password"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        id="password"
+                        name="password"
+                        autocomplete="off"
+                        autoCorrect="off"
+                        autocapitalize="off"
+                        spellcheck="false"
+                        aria-invalid="false"
+                        value=""
+                    />
+                    <span class="py-2 text-red-500 errors">{{form.password.errors}}</span>
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Select Privilege
+                    </span>
+                    <select name="priviledge" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+                        <!-- <option></option> -->
+                        <option>Admin</option>
+                        <option>Sales Admin</option>
+                        <option>Stock Manager</option>
+                        <option>Inventary</option>
+                    </select>                    
+                    <span class="py-2 text-red-500 errors">{{form.priviledge.errors}}</span>
+                </label>
+                
+            </div>
+
+            <button type="submit" class="block w-full px-4 py-1 mt-5 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                Create
+            </button>
+        </form>
+
+    </div>
+
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+        <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+            <div class="w-full overflow-x-auto table-responsive">
+                <table id="example" class="display" style="width:100%">
+                    <thead>
+                        <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                            <th class="px-4 py-3">SN</th>
+                            <th class="px-4 py-3">Username</th>
+                            <th class="px-4 py-3">Password</th>
+                            <th class="px-4 py-3">Outlet</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y">
+    
+                        {% for display in user %}
+                        
+                        <tr class="text-gray-700">
+    
+                            <td class="text-[10px]">
+                                {{display.id}}
+                            </td>
+                            <td class="text-[10px]">
+                                {{display.username}}
+                            </td>
+                            <td class="text-[10px]">
+                                {{display.password}}
+                            </td>
+                            <td class="text-[10px]">
+                                {{display.outlet}}
+                            </td>
+
+                        </tr>
+    
+                        {% endfor %}
+    
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+     
+
+      function GetDetails(name, email){  
+         // console.log(name)
+          $("#name").val(name)
+          $("#email_address").val(email)
+
+      }
+    </script>
+
+    
+    {% endblock content %}

@@ -1,0 +1,385 @@
+
+{% extends 'base.html' %}
+{% load humanize %}
+
+
+{% block home %}
+{% if user.is_superuser %}
+    
+    <main class="w-full">
+
+
+        <div class="grid gap-6 mb-8 md:grid-cols-3 xl:grid-cols-3 my-5 p-3 shadow-lg">
+          
+            <div class="px-[30px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out shadow-lg">
+                <div class="my-4">
+                    <h2 class='text-blue-500 text-[16px] leading-[25px] font-bold'>Company Name</h2>
+                    <h1 class='text-[#5a5c69] text-[14px] leading-[20px] mt-[10px] font-bold'>{{company.company_name}}</h1>
+                </div>
+                <div class="my-4">
+                    <h2 class='text-blue-500 text-[16px] leading-[25px] font-bold'>Company Owner</h2>
+                    <h1 class='text-[#5a5c69] text-[14px] leading-[20px] mt-[10px] font-bold'>{{company.owner}}</h1>
+                </div>
+                <div class="my-4">
+                    <h2 class='text-blue-500 text-[16px] leading-[25px] font-bold'>Company Email</h2>
+                    <h1 class='text-[#5a5c69] text-[14px] leading-[20px] mt-[10px] font-bold'>{{company.email}}</h1>
+                </div>
+                <div class="my-4">
+                    <h2 class='text-blue-500 text-[16px] leading-[25px] font-bold'>Company Phone</h2>
+                    <h1 class='text-[#5a5c69] text-[14px] leading-[20px] mt-[10px] font-bold'>{{company.phone}}</h1>
+                </div>
+                <div class="my-4">
+                    <h2 class='text-blue-500 text-[16px] leading-[25px] font-bold'>Company Database</h2>
+                    <h1 class='text-[#5a5c69] text-[14px] leading-[20px] mt-[10px] font-bold'>{{company.db_name}}</h1>
+                </div>
+                    
+            </div>
+
+            <div class="px-[30px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out shadow-lg">
+                <div class="my-4">
+                    <h2 class='text-blue-500 text-[16px] leading-[25px] font-bold'>City</h2>
+                    <h1 class='text-[#5a5c69] text-[14px] leading-[20px] mt-[10px] font-bold'>{{company.city}}</h1>
+                </div>
+                <div class="my-4">
+                    <h2 class='text-blue-500 text-[16px] leading-[25px] font-bold'>State</h2>
+                    <h1 class='text-[#5a5c69] text-[14px] leading-[20px] mt-[10px] font-bold'>{{company.state}}</h1>
+                </div>
+                <div class="my-4">
+                    <h2 class='text-blue-500 text-[16px] leading-[25px] font-bold'>Zip Code</h2>
+                    <h1 class='text-[#5a5c69] text-[14px] leading-[20px] mt-[10px] font-bold'>{{company.zipCode}}</h1>
+                </div>
+                <div class="my-4">
+                    <h2 class='text-blue-500 text-[16px] leading-[25px] font-bold'>Country</h2>
+                    <h1 class='text-[#5a5c69] text-[14px] leading-[20px] mt-[10px] font-bold'>{{company.country}}</h1>
+                </div>
+                <div class="my-4">
+                    <h2 class='text-blue-500 text-[16px] leading-[25px] font-bold'>Address</h2>
+                    <h1 class='text-[#5a5c69] text-[14px] leading-[20px] mt-[10px] font-bold'>{{company.address}}</h1>
+                </div>
+                    
+            </div>
+
+            <div class="px-[30px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out shadow-lg">
+                <div class="my-4">
+                    <h2 class='text-blue-500 text-[16px] leading-[25px] font-bold'>Plan</h2>
+                    <h1 class='text-[#5a5c69] text-[14px] leading-[20px] mt-[10px] font-bold'>{{billing.plan}}</h1>
+                </div>
+                <div class="my-4">
+                    <h2 class='text-blue-500 text-[16px] leading-[25px] font-bold'>Subscription</h2>
+                    <h1 class='text-[#5a5c69] text-[14px] leading-[20px] mt-[10px] font-bold'>{{billing.subscription}} {% if billing.subscription == '1' %}year{% else %} years {% endif %}</h1>
+                </div>
+                <div class="my-4">
+                    <h2 class='text-blue-500 text-[16px] leading-[25px] font-bold'>Amount</h2>
+                    <h1 class='text-[#5a5c69] text-[14px] leading-[20px] mt-[10px] font-bold'><span class="currency"></span>{{billing.amount}}</h1>
+                </div>
+                <div class="my-4">
+                    <h2 class='text-blue-500 text-[16px] leading-[25px] font-bold'>Date</h2>
+                    <h1 class='text-[#5a5c69] text-[14px] leading-[20px] mt-[10px] font-bold'>{{billing.updated_at}},  Days left({{remain}})</h1>
+                </div>
+                <div class="my-4">
+                    <h2 class='text-blue-500 text-[16px] leading-[25px] font-bold'>Users</h2>
+                    <h1 class='text-[#5a5c69] text-[14px] leading-[20px] mt-[10px] font-bold'>{{billing.users}}</h1>
+                </div>
+                    
+            </div>
+        
+        </div>
+        
+    </main>
+    
+    <h4 class="mb-4 text-lg font-semibold text-gray-600 dark:text-gray-300">
+        Users({{users.count}})
+    </h4>
+
+    <div class="flex justify-between items-top  my-2 w-full ">
+      
+        <div class="sm:w-full md:w-8/12 md:pr-3 rounded-lg shadow-xs ...">
+            <div class="w-full overflow-x-auto">
+                <table class="w-full whitespace-no-wrap">
+                    <thead>
+                        <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                            <th class="px-4 py-3">SN</th>
+                            <th class="px-4 py-3">Username</th>
+                            <th class="px-4 py-3">Email</th>
+                            <th class="px-4 py-3">Last Login</th>
+                            <th class="px-4 py-3">Position</th>
+                            <th class="px-4 py-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y">
+                         {% for user in users %}
+                            {% if user.email == company.email %}
+                            {% else %}
+                            {% endif %}
+                            <tr class="text-gray-700">
+                                <td class="px-4 py-3">
+                                 {{ forloop.counter }}
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                {{user.username}}
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                {{user.email}}
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                     {{user.last_login}}
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                    {% if user.email == company.email %}
+                                    Admin
+                                    {% else %}
+                                    Staff
+                                    {% endif %}
+                               </td>
+                              
+                                <td class="px-4 py-3 text-sm">
+                                    <button type=button
+                                    
+                                    title="Enable or disable user from logging in"
+                                    onclick="EditUser('{{user.id}}', '{{user.is_active}}', '{{user.username}}')"
+                                    class="bg-[#356464] text-center text-white  inline-flex items-center justify-end shrink-0 font-semibold leading-none rounded outline-none transition duration-300 ease-in-out focus:outline-0 focus:shadow focus:ring-1 focus:ring-slate-500  border border-transparent hover:bg-blue-300-hover px-3 py-0 h-6">
+                                     {% if user.is_active %}Disable{% else %} Enable {% endif %}
+                                    </button>
+                                </td>
+                            </tr>
+                         {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+        </div>
+
+        <div class="sm:w-full md:w-4/12 text-gray-700">
+            <div id="account" class="page">
+                <div class="border rounded-md">
+                  <section class="border-b">
+                    <div class="flex justify-between items-center p-4 bg-gray-100 hover:bg-gray-200 nav1" data-target="customers">
+                      <span class="flex-1">Customers({{customers.count}})</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div id="customers" class="px-2 mt-2 h-72 overflow-y-scroll hidden">
+                        <div class="w-full overflow-x-auto">
+                            <table class="w-full whitespace-no-wrap">
+                                <thead>
+                                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                                        <th class="px-4 py-3">SN</th>
+                                        <th class="px-4 py-3">Name</th>
+                                        <th class="px-4 py-3">Email</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y">
+                                     {% for customer in customers %}
+                                        <tr class="text-gray-700">
+                                            <td class="px-4 py-3">
+                                               {{ forloop.counter }}
+                                            </td>
+                                            <td class="px-4 py-3 text-sm">
+                                               {{customer.name}}
+                                            </td>
+                                            <td class="px-4 py-3 text-sm">
+                                               {{customer.email}}
+                                            </td>
+                                           
+                                        </tr>
+                                     {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                      
+                    </div>
+                  </section>
+                  <section class="border-b">
+                    <div class="flex justify-between items-center p-4 bg-gray-100 hover:bg-gray-200 nav1" data-target="vendors">
+                      <span class="flex-1">Vendors({{vendors.count}})</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div id="vendors" class="px-2 mt-2 h-72 overflow-y-scroll hidden">
+                        <div class="w-full overflow-x-auto">
+                            <table class="w-full whitespace-no-wrap">
+                                <thead>
+                                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                                        <th class="px-4 py-3">SN</th>
+                                        <th class="px-4 py-3">Name</th>
+                                        <th class="px-4 py-3">Email</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y">
+                                     {% for vendor in vendors %}
+                                        <tr class="text-gray-700">
+                                            <td class="px-4 py-3">
+                                               {{ forloop.counter }}
+                                            </td>
+                                            <td class="px-4 py-3 text-sm">
+                                               {{vendor.name}}
+                                            </td>
+                                            <td class="px-4 py-3 text-sm">
+                                               {{vendor.email}}
+                                            </td>
+                                           
+                                        </tr>
+                                     {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                      
+                    </div>
+                  </section>
+                  <section class="border-b">
+                    <div class="flex justify-between items-center p-4 bg-gray-100 hover:bg-gray-200 nav1" data-target="employees">
+                      <span class="flex-1">Employee({{employees.count}})</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div id="employees" class="px-2 mt-2 h-72 overflow-y-scroll hidden">
+                        <div class="w-full overflow-x-auto">
+                            <table class="w-full whitespace-no-wrap">
+                                <thead>
+                                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                                        <th class="px-4 py-3">SN</th>
+                                        <th class="px-4 py-3">Name</th>
+                                        <th class="px-4 py-3">Email</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y">
+                                     {% for employee in employees %}
+                                        <tr class="text-gray-700">
+                                            <td class="px-4 py-3">
+                                               {{ forloop.counter }}
+                                            </td>
+                                            <td class="px-4 py-3 text-sm">
+                                               {{employee.name}}
+                                            </td>
+                                            <td class="px-4 py-3 text-sm">
+                                               {{employee.email}}
+                                            </td>
+                                           
+                                        </tr>
+                                     {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                      
+                    </div>
+                  </section>
+                  <section class="border-b">
+                    <div class="flex justify-between items-center p-4 bg-gray-100 hover:bg-gray-200 nav1" data-target="warehouse">
+                      <span class="flex-1">Warehouse({{warehouse.count}})</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div id="warehouse" class="px-2 mt-2 h-72 overflow-y-scroll hidden">
+                        <div class="w-full overflow-x-auto">
+                            <table class="w-full whitespace-no-wrap">
+                                <thead>
+                                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                                        <th class="px-4 py-3">SN</th>
+                                        <th class="px-4 py-3">Name</th>
+                                        <th class="px-4 py-3">Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y">
+                                     {% for warehouse in warehouse %}
+                                        <tr class="text-gray-700">
+                                            <td class="px-4 py-3">
+                                               {{ forloop.counter }}
+                                            </td>
+                                            <td class="px-4 py-3 text-sm">
+                                               {{warehouse.warehouse_name}}
+                                            </td>
+                                            <td class="px-4 py-3 text-sm">
+                                               {{warehouse.description}}
+                                            </td>
+                                           
+                                        </tr>
+                                     {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                      
+                    </div>
+                  </section>
+                  <section class="border-b">
+                    <div class="flex justify-between items-center p-4 bg-gray-100 hover:bg-gray-200 nav1" data-target="outlets">
+                      <span class="flex-1">Outlet({{outlet.count}})</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" :class="{'rotate-120': open, 'rotate-0': !open}" class="w-4 h-4 mt-1 transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div id="outlets" class="px-2 mt-2 h-72 overflow-y-scroll hidden">
+                        <div class="w-full overflow-x-auto">
+                            <table class="w-full whitespace-no-wrap">
+                                <thead>
+                                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                                        <th class="px-4 py-3">SN</th>
+                                        <th class="px-4 py-3">Name</th>
+                                        <th class="px-4 py-3">Country</th>
+                                        <th class="px-4 py-3">Currency</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y">
+                                     {% for outlet in outlet %}
+                                        <tr class="text-gray-700">
+                                            <td class="px-4 py-3">
+                                               {{ forloop.counter }}
+                                            </td>
+                                            <td class="px-4 py-3 text-sm">
+                                               {{outlet.outlet_name}}
+                                            </td>
+                                            <td class="px-4 py-3 text-sm">
+                                               {{outlet.country}}
+                                            </td>
+                                            <td class="px-4 py-3 text-sm">
+                                               {{outlet.currency}}
+                                            </td>
+                                           
+                                        </tr>
+                                     {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                      
+                    </div>
+                  </section>
+                  
+                </div>
+      
+            </div>
+        </div>
+
+      
+    </div>
+{% else %}
+<div class="flex justify-center items-center h-screen m-auto">
+    <div class="text-center text-gray-300 text-lg">
+        <p>Opp</p>
+        <p>You are not allowed to view this page</p>
+    </div>
+</div>
+{% endif %}
+
+   
+<script>
+    $(".nav1").click(function () {
+    var page = $(this).data('target')
+
+    $(`#${page}`).slideToggle('slow')
+  });
+
+  function EditUser(id, state, user){
+      if(state == 'True'){msg= "Disable"}
+      if(state == 'TFalse'){msg= "Eable"}
+      if(id){
+        alertify.defaults.glossary.title = "Oops";
+        alertify.confirm("Do you want to "+msg+" "+ user,
+        // if proceed
+        function(){
+           window.location.href = `/enable_disable_user/${id}/${state}?next={{ request.path|urlencode }}`                       
+        },
+        //if Cancel
+        function(){
+            
+
+        }).set('labels',{ok:'Proceed', cancel:'Cancel'});
+       
+      }
+  }
+</script>
+{% endblock home %}
+      
+  

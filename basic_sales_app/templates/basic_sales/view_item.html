@@ -1,0 +1,217 @@
+{% extends 'base_layout.html' %}
+{% load humanize %}
+
+{% load static %}
+
+{% block content %}
+    <div class="w-full my-5 overflow-x-hidden rounded-lg shadow-xs">
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+        href="#">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>{{ item.item_name }} - Details</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+{% if messages %}  {% endif %}
+
+<div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+  
+
+    <section class="py-20 font-poppins z-10">
+        <div class="max-w-6xl px-4 mx-auto">
+            <div class="flex flex-wrap mb-24 -mx-4">
+                <div class="w-full px-4 mb-8 md:w-1/2 md:mb-0">
+                    <div class="sticky top-0 z-50 overflow-hidden">
+                        <div class="relative mb-6 lg:mb-10">
+                        <a
+                            class="absolute left-0 transform lg:ml-2 top-1/2 translate-1/2 z-10"
+                            href="#"
+                        >
+                            <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            class="w-5 h-5 text-blue-500 bi bi-chevron-left dark:text-blue-200"
+                            viewBox="0 0 16 16"
+                            >
+                            <path
+                                fill-rule="evenodd"
+                                d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"
+                            ></path>
+                            </svg>
+                        </a>
+                        {% if item.image %}
+                            <img
+                                src="{{item.image.url }}"
+                                alt="{{item.item_name }} Image"
+                                class="object-cover w-full lg:h-1/2 rounded-md"
+                            />
+                        {% else %}
+                            <p>No image available</p>
+                        {% endif %}
+                        <a
+                            class="absolute right-0 transform lg:mr-2 top-1/2 translate-1/2"
+                            href="#"
+                        >
+                            <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            class="w-5 h-5 text-blue-500 bi bi-chevron-right dark:text-blue-200"
+                            viewBox="0 0 16 16"
+                            >
+                            <path
+                                fill-rule="evenodd"
+                                d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"
+                            ></path>
+                            </svg>
+                        </a>
+                        </div>
+                        <div class="flex-wrap hidden -mx-2 md:flex">
+                        {% for display in details %}
+                        <div class="w-1/2 p-2 sm:w-1/4">
+                            <a
+                            class="block border border-transparent hover:border-blue-400"
+                            href="#"
+                            >
+                            <img
+                                class="object-cover w-full lg:h-32"
+                                src="{{display.image.url }}"
+                                alt="{{item.item_name }}"
+                            />
+                            </a>
+                        </div>
+                        {% endfor %}
+                        </div>
+                        <div
+                        class="px-6 pb-6 mt-6 border-t border-gray-300 dark:border-gray-400"
+                        >
+                        
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full px-4 md:w-1/2"> 
+                <div class="lg:pl-20">
+                    <div class="mb-6">
+                    <span class="text-red-500 dark:text-red-200">New</span><span class="text-dark"> / </span> <a href="{% url 'Basic_Sales:update_item' item.id %}" class="text-blue-300">Edit</a>
+                    <h2
+                        class="max-w-xl mt-2 mb-4 text-5xl font-bold md:text-6xl font-heading dark:text-gray-300"
+                    >
+                        {{ item.item_name }}
+                    </h2>
+                    <p class="max-w-md mb-4 text-gray-500 dark:text-gray-400">
+                        Selling price : {{currency}}{{ item.selling_price|floatformat:2|intcomma }}
+                    </p>
+                    </div>
+                    <div class="">
+                    <p class="mb-4 text-lg font-semibold dark:text-gray-400">
+                        Item colors
+                    </p>
+                    <div class="grid grid-cols-2 gap-4 pb-4 border-b-2 border-gray-300 lg:grid-cols-3 dark:border-gray-600">
+                        
+                        {% if get_colors %}
+                            {% for color in get_colors%}
+                                <div>
+                                    <button class="flex items-center justify-center w-full h-full py-4 border-2 border-gray-300 dark:hover:border-blue-400 dark:border-gray-500 hover:border-blue-400">
+                                        <div>
+                                            <div
+                                                class="w-8 h-8 mx-auto mb-2 rounded-full " style="background-color: {{color}};"></div>
+                                            <p class="text-xs text-center text-gray-700 dark:text-gray-400">
+                                                color name
+                                            </p>
+                                        </div>
+                                    </button>
+                                </div>
+                            {% endfor %}
+
+                        {% else %}
+                            <h1 class="text-center">NO color for this item</h1>
+                        {% endif %}
+                    </div>
+
+                    </div>
+                    <div class="mt-6">
+                    <p class="mb-2 text-lg font-semibold dark:text-gray-400">
+                        Category : {{ item.category.category_name}}
+                    </p>
+                    <p class="text-blue-500 ">
+                        Items you may also like...
+                    </p>
+                    <div class="grid grid-cols-2 gap-4 pb-4 mt-2 mb-4 border-b-2 border-gray-300 lg:grid-cols-3 dark:border-gray-600">
+                        {% for other_item in other_item %}
+                            <div>
+                                <a href="{% url 'Basic_Sales:View_item' other_item.id %}" class="flex items-center justify-center w-full h-full py-4 border-2 border-gray-300 dark:hover:border-blue-400 dark:border-gray-600 hover:border-blue-400">
+                                    <div>
+                                        <div class="mb-2 font-semibold dark:text-gray-400">
+                                            {{other_item.item_name}} 
+                                        </div>
+                                        <p class="text-center"> {{currency}}{{other_item.selling_price|floatformat:2|intcomma}}</p>
+                                        <p class="px-2 text-xs font-medium text-center text-gray-700 dark:text-gray-400">
+                                            {{other_item.description}}
+                                        </p>
+                                    </div>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    </div>
+                    <!-- <div class="mt-6">
+                        <p class="mb-4 text-lg font-semibold dark:text-gray-400">
+                            Choose a payment option
+                        </p>
+                        <div
+                            class="grid grid-cols-2 gap-4 pb-4 mt-2 mb-4 border-b-2 border-gray-300 lg:grid-cols-3 dark:border-gray-600"
+                        >
+                            <div>
+                            <button
+                                class="flex items-center justify-center w-full h-full px-2 py-6 border-2 border-gray-300 dark:hover:border-blue-400 dark:border-gray-600 hover:border-blue-400"
+                            >
+                                <div>
+                                <p
+                                    class="px-2 text-base font-semibold text-center text-gray-700 dark:text-gray-400"
+                                >
+                                    Pay in full
+                                </p>
+                                </div>
+                            </button>
+                            </div>
+                            <div>
+                            <button
+                                class="flex items-center justify-center w-full h-full px-2 py-6 border-2 border-gray-300 dark:hover:border-blue-400 dark:border-gray-600 hover:border-blue-400"
+                            >
+                                <div>
+                                <p
+                                    class="px-2 text-base font-semibold text-center text-gray-700 dark:text-gray-400"
+                                >
+                                    Pay monthly
+                                </p>
+                                </div>
+                            </button>
+                            </div>
+                        </div>
+                    </div> -->
+                    <div class="mt-5">
+                        <a href="{% url 'Basic_Sales:SaleMenu' %}" onclick="AddToCart('{{item.id}}', '{{item.generated_code}}','{{ item.image}}', '{{item.item_name}}', '{{item.selling_price}}')" class="w-full  rounded-lg block px-4 py-2 text-center font-bold text-dark bg-[#B2BEB5] lg:w-100 hover:bg-[#f7fee7]">
+                            Sell Item
+                        </a>
+
+                    </div>
+             
+                </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<script src ='{% static "js/view_item.js" %}'></script>
+
+{% endblock %}

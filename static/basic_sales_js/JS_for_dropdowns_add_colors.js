@@ -1,0 +1,48 @@
+
+    //  DROP DOWN FOR COLORS
+     $(document).ready(function(){
+        // Click event to toggle dropdown
+        $('#toggleOptions').click(function() {
+            $('#optionsDropdown').toggleClass('hidden');
+        });
+
+        // JavaScript to handle adding new color selectors
+        const addColorButton = document.getElementById('addColor');
+        const colorSelectorsContainer = document.getElementById('colorSelectors');
+        const check_if_color_is_selected = []
+        let increment = 1
+        addColorButton.addEventListener('click', () => {
+            const input_color = document.getElementById('input_color1');
+            const color= input_color.value
+            const count_color_in_array = check_if_color_is_selected.filter(item => item === color).length;
+            
+            if (count_color_in_array == 0){
+                    increment += 1
+                    check_if_color_is_selected.push(color)
+                    const newColorInput = document.createElement('input');
+                    const newColorspan = document.createElement('span');
+                    newColorInput.type = 'hidden';
+                    newColorInput.value = color;
+                    newColorInput.name = 'color[]'
+                    // for span
+                    newColorspan.className = 'w-8 h-8 inline-block rounded-full border-none m-1 focus:outline-none  delete';
+                    newColorspan.style.backgroundColor = ''+color +''
+                    newColorspan.id = 'input_color'+ increment
+                    // newColorspan.innerHTML = 'input_color'
+                    // newColorspan.click = delete_colors(increment)
+                    colorSelectorsContainer.appendChild(newColorspan);
+                    colorSelectorsContainer.appendChild(newColorInput);
+            }else{
+                    alert("Color is already selected");
+
+            }
+       
+        });
+
+
+        function delete_colors(id) {
+            let get_the_color_element = $('.delete  #input_color'+id+'');
+            get_the_color_element.remove();
+        };
+    });
+

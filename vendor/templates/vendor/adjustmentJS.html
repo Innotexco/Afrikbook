@@ -1,0 +1,150 @@
+<script>
+        
+   
+    function onclickme(id){
+       invoiceID = $('#invoiceID'+id).val()
+       idcode = $('#idcode'+id).val()
+
+       // MODAL INPUT'S VALUES
+       modalItem = $('#modalItem')
+       modalInvoiceID = $('#modalInvoiceID')
+       modalDate = $('#modalDate')
+       modalDescription = $('#modalDescription')
+       modalqty = $('#modalqty')
+       modalID = $('#modalID')
+   
+       $.ajax({
+           type: 'GET',
+           url: "{% url 'vendor:PurchaseAdjustment' %}",
+           data: {
+               invoiceID: invoiceID,
+               idcode: idcode,
+           },
+           success: function(res){
+            console.log(res, 'reaereaewstesre')
+               modalItem.val(res.item)
+               modalInvoiceID.val(res.invoice_no)
+               modalDate.val(res.date)
+               modalDescription.val(res.description)
+               modalqty.val(res.qty)
+               modalID.val(res.id)
+           }
+       })
+   
+   }
+</script>
+
+
+<script>
+    function resultFunction(res){
+        for_cancle_purchase = $('#type_cancle').val();
+        if(res.stockin.failed){
+            alert(res.stockin.failed)
+        }else{
+            $('#adjuststore .default').remove();
+            $('#adjuststore .result').empty();
+            res.stockin.forEach(function(item, index) {
+                let newRow = $('<tr class="text-gray-700" >');
+                // Add data to the row
+                newRow.append('<td class="text-[10px]">' + (index + 1) + '</td>');
+                newRow.append('<td class="text-[10px]">' + item.datetx + '</td>');
+                newRow.append('<td class="text-[10px]">' + item.invoice_no + '</td>');
+                newRow.append('<input type="hidden" value="'+item.invoice_no+'"  name="invoiceID" id="invoiceID'+item.id+'">\
+                            <input type="hidden" value="'+item.id+'" name="id" id="idcode'+item.id+'">');
+                newRow.append('<td class="text-[10px]">' + item.item + '</td>');
+                newRow.append('<td class="text-[10px]">' + item.quantity + '</td>');
+                newRow.append('<td class="text-[10px]">' + item.item_decription + '</td>');
+                newRow.append('<td class="text-[10px]"> ' + item.token_id + ' </td>');
+
+                if(for_cancle_purchase == 'cancle'){
+
+                    newRow.append('<td class="text-[10px]"> \
+                        <input type="hidden" id="type_cancle" value="'+for_cancle_purchase+'">\
+                        <form action="" method="post">{% csrf_token %}\
+                            <input type="hidden" name="modalID" value="'+item.id+'">\
+                            <input type="hidden" name="modalinvoiceID" value="'+item.invoice_no+'">\
+                            <button type="submit" name="cancle_invoice"\
+                                class="items-left justify-left py-2 px-2 cursor-pointer text-[12px] font-semibold bg-red-600 text-white rounded-md"\
+                                aria-label="Edit" id="modaledit" onclick="confirm("Do you want to cancle this invoice?")"> \ Cancle Invoice\
+                            </button>\
+                        </form>\
+                    </td>')
+                }else if(for_cancle_purchase == 'viewcancle'){
+                    newRow.append('<input type="hidden" id="type_cancle" value="'+for_cancle_purchase+'">')
+
+                    console.log(for_cancle_purchase, 'for_cancle_purchasefor_cancle_purchase')
+
+                }else{
+                    let svgElement = $('<svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">\
+                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" ></path> </svg>');
+                newRow.append('<td class="text-[10px]"> <button  onclick="my_modal_edit_stock_details.showModal(), onclickme('+item.id +')"  class="flex items-center justify-center text-blue-500" aria-label="Edit" id="modaledit">' + svgElement[0].outerHTML  +'</button></td>');
+
+                }
+                
+                // Add more columns as needed
+                $('#adjuststore .result').append(newRow);
+            });
+            // res.outletstockinlog.forEach(function(item, index) {
+            //     let newRow = $('<tr class="text-gray-700" >');
+            //     // Add data to the row
+            //     newRow.append('<td class="text-[10px]">' + (index + 1) + '</td>');
+            //     newRow.append('<td class="text-[10px]">' + item.datetx + '</td>');
+            //     newRow.append('<td class="text-[10px]">' + item.invoice_no + '</td>');
+            //     newRow.append('<input type="hidden" value="'+item.invoice_no+'"  name="invoiceID" id="invoiceID'+item.id+'">\
+            //                 <input type="hidden" value="'+item.id+'" name="id" id="idcode'+item.id+'">');
+            //     newRow.append('<td class="text-[10px]">' + item.item + '</td>');
+            //     newRow.append('<td class="text-[10px]">' + item.quantity + '</td>');
+            //     newRow.append('<td class="text-[10px]">' + item.item_decription + '</td>');
+            //     newRow.append('<td class="text-[10px]"> ' + item.token_id + ' </td>');
+
+            //     let svgElement = $('<svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">\
+            //                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" ></path> </svg>');
+            //     newRow.append('<td class="text-[10px]"> <button  onclick="my_modal_edit_stock_details.showModal(), onclickme('+item.id +')"  class="flex items-center justify-center text-blue-500" aria-label="Edit" id="modaledit">' + svgElement[0].outerHTML  +'</button></td>');
+
+            //     // Add more columns as needed
+            //     $('#adjuststore .result').append(newRow);
+            // });
+        }
+    }
+    $(document).ready(function() {
+        for_view_cancle_purchase = $('#type_cancle').val();
+        if(for_view_cancle_purchase == 'viewcancle'){
+            url = "{% url 'vendor:viewCanclePurchase' %}"
+        }else{
+            url = "{% url 'vendor:PurchaseAdjustment' %}"
+        }
+        $(document).on('click', '#getDate', function(){
+            let fromdate    =  $('#fromdate').val();
+            let todate   =  $('#todate').val();
+
+            $.ajax({
+                type: 'GET',
+                url: "{% url 'vendor:PurchaseAdjustment' %}",
+                data: {
+                    fromdate: fromdate,
+                    todate: todate,
+                },
+                success: function(res){
+                    resultFunction(res)
+                }
+            })
+        })
+        $(document).on('change', '.commonClass', function(){
+            let invoice    =  $('#invoice').val();
+            let sortbyItem   =  $('#sortbyItem').val();
+            $.ajax({
+                type: 'GET',
+                url: url,
+                data: {
+                    // 'csrfmiddlewaretoken': '{{ csrf_token }}',
+                    invoice: invoice,
+                    sortbyItem: sortbyItem,
+                },
+                success: function(res){
+                    resultFunction(res)
+                }
+            })
+        }) 
+    }) 
+   
+</script>

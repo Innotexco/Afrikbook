@@ -1,0 +1,67 @@
+<tr id="row'+i+'">
+    <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">*</td>
+    <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+        <select name="item[]" onchange="StockaddRow()" class="block w-full px-2 text-[10px] h-4 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
+            <option value="1">Select Item</option>
+            <option value="1">$5,000</option>
+        </select>
+    </td>
+    <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+        <input type="text" name="desc[]" id="desc" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td>
+        <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+            <input type="text" name="qty[]" id="qty" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/>
+        </td>
+        <td class="border border-slate-300 py-0 my-0">
+            <button  id="'+i+'" class="journal_remove_row flex justify-center items-center w-full h-3 px-2 py-1 text-[12px] font-semibold text-center text-gray-600 transition-colors duration-150 border border-transparent focus:outline-none focus:shadow-outline-slate">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" enable-background="new 0 0 64 64" viewBox="0 0 64 64" id="delete">
+                    <g transform="translate(232 228)">
+                        <path fill="#134563" d="M-207.5-205.1h3v24h-3zM-201.5-205.1h3v24h-3zM-195.5-205.1h3v24h-3zM-219.5-214.1h39v3h-39z"></path>
+                        <path fill="#134563" d="M-192.6-212.6h-2.8v-3c0-.9-.7-1.6-1.6-1.6h-6c-.9 0-1.6.7-1.6 1.6v3h-2.8v-3c0-2.4 2-4.4 4.4-4.4h6c2.4 0 4.4 2 4.4 4.4v3"></path>
+                        <path fill="#134563" d="M-191-172.1h-18c-2.4 0-4.5-2-4.7-4.4l-2.8-36 3-.2 2.8 36c.1.9.9 1.6 1.7 1.6h18c.9 0 1.7-.8 1.7-1.6l2.8-36 3 .2-2.8 36c-.2 2.5-2.3 4.4-4.7 4.4"></path>
+                    </g>
+                </svg>
+            </button>
+        </td>
+    </tr>
+
+
+
+
+    
+    # print(checkexist.quantity, 'checkexistcheckexistcheckexistcheckexistcheckexistcheckexist')
+    # if CreateStockIn.DoesNotExist:
+    #    context["error_message"] =  item[i]+' Item not found in '+ warehouse
+    # else:
+    #    checkexist2 = CreateStockIn.objects.get(Q(item_code= item_code[i]), Q(warehouse=outlet) | Q(outlet = outlet))
+    #    oldQty = checkexist.quantity
+       
+    #    if oldQty < int(quantity[i]):
+    #       context["error_message"] = f"We only have {oldQty} {item[i]} left"
+    #    else:
+    #       newQty = oldQty - quantity[i]
+    #       checkexist.quantity = newQty
+    #       checkexist.save()
+    #       if checkexist2.DoesNotExist:
+    #          CreateStockIn.objects.create(token_id=token_id, Userlogin=Userlogin, supplier=supplier, description=description, warehouse= warehouse, outlet=outlet, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i])
+    #          savedata = CreateStockInLog.objects.create(token_id=token_id, Userlogin=Userlogin, supplier=supplier, source= source, ref_no=ref_no, description=description, warehouse= warehouse, outlet=outlet, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i])
+    #          if savedata:
+    #             allgood = True
+    #       else:
+    #          oldQty2 = checkexist2.quantity
+    #          newQty2 = oldQty2 + quantity[i]
+    #          checkexist2.quantity = newQty2
+    #          checkexist2.save()
+    #          savedata = CreateStockInLog.objects.create(token_id=token_id, Userlogin=Userlogin, supplier=supplier, source= source, ref_no=ref_no, description=description, warehouse= warehouse, outlet=outlet, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i])
+    #          if savedata:
+    #             allgood = True
+               
+
+    # except CreateStockIn.DoesNotExist:
+    #    context["error_message"] =  item[i]+' Item not found in '+ warehouse
+
+    # savedata = CreateStockInLog.objects.create(token_id=token_id, Userlogin=Userlogin, supplier=supplier, source= source, ref_no=ref_no, description=description, warehouse= warehouse, outlet=outlet, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i])
+    # if savedata:
+    #    print('data saved')
+    #    context['success'] = 'data saved'
+
+

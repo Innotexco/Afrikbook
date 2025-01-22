@@ -1,0 +1,140 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span> Address</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+    <div class="w-64">
+        <a class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+            href="{% url 'settings:BillingAddress' %}">
+            New Billing Address
+        </a>
+    </div>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+            <h1 class="py-3 font-semibold text-2xl text-center uppercase">Update Billing Address</h1>
+    
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+                {% for error in form.name.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+                {% comment %} <label class="block text-sm">
+                    <span class="text-gray-700">Branch Name</span>
+                    <input 
+                        type="text"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="outlet_name"
+                    />
+                </label> {% endcomment %}
+    
+                {% comment %} <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">Phone / Tel</span>
+                    <input 
+                        type="text"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="phone"
+                    />
+                </label> {% endcomment %}
+    
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Customer
+                    </span>
+                    <select name="addr_id" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg">
+                        <option slected disabled>Select Customer</option>
+                        {% for cus in customer %}
+                           <option {% if address.addr_id == cus%} selected {% endif %} value="{{cus.id}}">{{cus.username}}</option>                          
+                        {% endfor %}
+                        
+                    </select>
+                    <p class="text-red-500 error">{{ form.customer.errors }}</p>
+                </label>
+    
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">City</span>
+                    <input 
+                        type="text"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="city"
+                        value="{{address.city}}"
+                    />
+                    <p class="text-red-500 error">{{ form.city.errors }}</p>
+                </label>
+                <label class="block text-sm">
+                    <span class="text-gray-700">State</span>
+                    <input 
+                        type="text"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="state"
+                        value="{{address.state}}"
+                    />
+                    <p class="text-red-500 error">{{ form.state.errors }}</p>
+                </label> 
+    
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">Country</span>
+                    <input 
+                        type="text"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="country"
+                        value="{{address.country}}"
+                    />
+                    <p class="text-red-500 error">{{ form.country.errors }}</p>
+                </label> 
+    
+            </div>
+    
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+    
+                <label class="block text-sm">
+                    <span class="text-gray-600">Address</span>
+                    <textarea
+                        class="block w-full mt-1 px-2 text-sm form-textarea border-2 rounded-md focus:border-slate-300  focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg"
+                        rows="1"
+                        placeholder=""
+                        name="address"
+                    >{{address.address}}</textarea>
+                    <p class="text-red-500 error">{{ form.address.errors }}</p>
+                </label>
+                
+    
+                <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                    type="submit">
+                    Update
+                </button>
+                
+            </div>
+    
+    
+        </div>
+    </form>
+
+   
+
+
+
+{% endblock content %}

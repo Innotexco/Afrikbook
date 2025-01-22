@@ -1,0 +1,1090 @@
+{% load static %}
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<!-- <script src="https://unpkg.com/html2pdf.js@0.9.3/dist/html2pdf.bundle.min.js"></script> -->
+{% comment %} <script>
+    const btn = document.querySelector("button.mobile_menu_button");
+    const Mobile_menu = document.querySelector(".mobile_menu");
+
+    btn.addEventListener("click", () => {
+        Mobile_menu.classList.toggle("hidden");
+    });
+    
+</script> {% endcomment %}
+
+
+<script>
+    $(function() {
+        var msg = $("#msg");
+        setTimeout(function() {
+            msg.hide();
+        }, 3000)
+    })
+</script>
+
+
+
+<!---  MAIN MENU DROPDOWN ---->
+{% comment %} <script>
+    $(document).ready(function(){
+        // Show hide popover
+        $(".main-menu-dropdown").click(function(){
+            $(this).find(".dropdown-menu").slideToggle("fast");
+        });
+    });
+    $(document).on("click", function(event){
+        var $trigger = $(".main-menu-dropdown");
+        if($trigger !== event.target && !$trigger.has(event.target).length){
+            $(".dropdown-menu").slideUp("fast");
+        }            
+    });
+</script> {% endcomment %}
+
+
+
+
+<!---  SUB MENU DROPDOWN ---->
+{% comment %} <script>
+    $(document).ready(function(){
+        // Show hide popover
+        $(".sub-menu-dropdown").click(function(){
+            $(this).find(".sub-dropdown-menu").slideToggle("fast");
+        });
+    });
+    $(document).on("click", function(event){
+        var $trigger = $(".sub-menu-dropdown");
+        if($trigger !== event.target && !$trigger.has(event.target).length){
+            $(".sub-dropdown-menu").slideUp("fast");
+        }            
+    });
+</script> {% endcomment %}
+
+
+
+
+<!---  MAIN ITEM GRID VIEW ---->
+<script>
+   /*
+    var i = 1;
+    function addRow() {
+        
+            i++;
+            $('#dynamic_row_add').append('<tr id="row'+i+'"><td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">'+i+'</td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><select name="item[]" id="select" onchange="" required oninvalid="this.setCustomValidity("Please delete empty row")" class="block w-full item-select px-2 text-[10px] h-4 form-select focus:outline-none focus:shadow-outline-green text-slate-600"><option value="0">Select Item</option>{% for display in item %}<option value="{{display.generated_code}}">{{display.item_name}}</option>    {% endfor %}</select></td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="text" name="desc[]" id="desc" value=""  class="block w-full desc px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/><input type="hidden" name="item_name" id="name" value=""  class="block w-full desc px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/> <input type="hidden" name="purchaseP" id="purchseP" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input" placeholder="" value=""/></td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="number" name="qty[]" id="qty" value="" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="text" name="unit[]" id="unit'+i+'" value="" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="text" name="discount[]" id="discount" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="text" name="amount[]" id="amount2'+i+'" value="" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td><td class="border border-slate-300 py-0 my-0"><button  id="'+i+'" class="remove_row flex justify-center items-center w-full h-3 px-2 py-1 text-[12px] font-semibold text-center text-gray-600 transition-colors duration-150 border border-transparent focus:outline-none focus:shadow-outline-slate"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" enable-background="new 0 0 64 64" viewBox="0 0 64 64" id="delete"><g transform="translate(232 228)"><path fill="#134563" d="M-207.5-205.1h3v24h-3zM-201.5-205.1h3v24h-3zM-195.5-205.1h3v24h-3zM-219.5-214.1h39v3h-39z"></path><path fill="#134563" d="M-192.6-212.6h-2.8v-3c0-.9-.7-1.6-1.6-1.6h-6c-.9 0-1.6.7-1.6 1.6v3h-2.8v-3c0-2.4 2-4.4 4.4-4.4h6c2.4 0 4.4 2 4.4 4.4v3"></path><path fill="#134563" d="M-191-172.1h-18c-2.4 0-4.5-2-4.7-4.4l-2.8-36 3-.2 2.8 36c.1.9.9 1.6 1.7 1.6h18c.9 0 1.7-.8 1.7-1.6l2.8-36 3 .2-2.8 36c-.2 2.5-2.3 4.4-4.7 4.4"></path></g></svg></button></td></tr></form>');
+    
+        
+    };
+    // Attach an event listener to the document for the select elements
+    document.addEventListener('change',  function (event) {
+    
+    });
+
+   
+    $(document).on('change', '#select',function(event){
+        const itemId = $(this).val(); 
+
+        const desc = $(this).closest('tr').find('input[name="desc[]"]');
+        const name = $(this).closest('tr').find('input[name=item_name]');
+        const purchaseP = $(this).closest('tr').find('input[name=purchaseP]');
+        const qty =  $(this).closest('tr').find('input[name="qty[]"]');
+        const unit =  $(this).closest('tr').find('input[name="unit[]"]');
+        const amount =  $(this).closest('tr').find('input[name="amount[]"]');
+        
+        // Find all select elements with the class 'item-select'
+        const selectElements = document.querySelectorAll('.item-select');
+        let isValueExists = false;
+        // Loop through the select elements
+        for (let i = 0; i < selectElements.length; i++) {
+            const select = selectElements[i];
+            if (select !== event.target) {
+                // Check if the selected value matches the value of other selects
+                if (select.value === itemId) {
+                    isValueExists = true;
+                    alert("Selected item already exists, add quantity instaed.");
+                    event.target.value = "0"; // Reset the selected value
+                   
+                     
+                    break;
+
+                }
+            }
+        }
+       
+        
+        if (isValueExists) {
+            //$(this).val("0"); 
+            // Perform actions when the value already exists
+           // console.log("Value already exists in another row.");
+        } else {
+            // Perform actions when the value doesn't exist in other rows
+           // console.log("Value is unique in the table.");
+            if(itemId != 0){
+                
+                $.ajax({
+                    url: '/get_items/'+ itemId + '/',
+                    method: 'GET',
+                    
+                    success: function(data){
+                            desc.val(data.desc)
+                            name.val(data.name)
+                            purchaseP.val(data.amount)
+                            qty.val(1)
+                            unit.val(data.unit)
+                            amount.val(data.unit)
+
+                            const inputElements = document.getElementsByName("amount[]");
+
+                            // Initialize a variable to store the sum
+                            let sum = 0;
+
+                            //alert(sum)
+                            // Loop through the input elements and add their values to the sum
+                            for (let i = 0; i < inputElements.length; i++) {
+                                const inputValue = parseFloat(inputElements[i].value);
+                                if (!isNaN(inputValue)) {
+                                    sum += inputValue;
+                                }
+                            }
+                            // Display the sum in a result div
+                            const subTotal = document.getElementById("sub-total");
+                            const total = document.getElementById("total");
+                            subTotal.value = sum;
+                            total.value = sum;
+
+                            addRow()
+                    },
+                    error: function(){
+                        alert('Item not found');
+                    }
+                    });
+
+                    
+            }else{
+                desc.val("")
+                name.val("")
+                qty.val("")
+                unit.val("")
+                amount.val("")
+            }
+        }
+
+    });
+   
+    
+   
+    $(document).on("input", "#qty", function (e) {
+        const value =  $(this).val();
+        //console.log(value)
+        
+        
+        const unit =  $(this).closest('tr').find('input[name="unit[]"]');
+        const qty =  $(this).closest('tr').find('input[name="qty[]"]');
+        const discount =  $(this).closest('tr').find('input[name="discount[]"]');
+        const amount =  $(this).closest('tr').find('input[name="amount[]"]');
+        
+        const subTotal = document.getElementById("sub-total");
+        const total = document.getElementById("total");
+        const allAmount = document.getElementsByName("amount[]");
+        
+        if(value > 0){
+            const unit_p = parseInt(unit.val());
+            const qty_p = parseInt(qty.val());
+            const discount_p = parseInt(discount.val());
+            
+            if(!isNaN(unit_p && discount_p)){
+
+                amount.val((unit_p - discount_p)* value)
+                //alert(unit_p)
+                //const inputElements = document.getElementsByName("amount[]");
+
+                // Initialize a variable to store the sum
+                let sum = 0;
+
+                //alert(sum)
+                // Loop through allAmount input elements and add their values to the sum
+                for (let i = 0; i < allAmount.length; i++) {
+                    const inputValue = parseFloat(allAmount[i].value);
+                    if (!isNaN(inputValue)) {
+                        sum += inputValue;
+                    }
+                }
+                // Display the sum in a result 
+                
+                subTotal.value = sum;
+                total.value = sum;
+            }else if(isNaN(discount_p)){
+                amount.val(unit_p * value)
+                 // Initialize a variable to store the sum
+                 let sum = 0;
+
+                 //alert(sum)
+                 // Loop through allAmount input elements and add their values to the sum
+                 for (let i = 0; i < allAmount.length; i++) {
+                     const inputValue = parseFloat(allAmount[i].value);
+                     if (!isNaN(inputValue)) {
+                         sum += inputValue;
+                     }
+                 }
+                 // Display the sum in a result 
+                 
+                 subTotal.value = sum;
+                 total.value = sum;
+            }
+        }else{
+             unit_p = parseInt(unit.val())
+             if(!isNaN(unit_p)){
+
+                 amount.val(unit_p)
+
+                let sum = 0;
+
+                //alert(sum)
+                // Loop through allAmount input elements and add their values to the sum
+                for (let i = 0; i < allAmount.length; i++) {
+                    const inputValue = parseFloat(allAmount[i].value);
+                    if (!isNaN(inputValue)) {
+                        sum += inputValue;
+                    }
+                }
+                // Display the sum in a result div
+                
+                subTotal.value = sum;
+                total.value = sum;
+                }else{
+                    amount.val("")
+                }
+
+             
+        }
+        
+    });
+
+    $(document).on("input", "#discount", function (e) {
+        const value =  $(this).val();
+        //console.log(value)
+        
+        
+        const unit =  $(this).closest('tr').find('input[name="unit[]"]');
+        const qty =  $(this).closest('tr').find('input[name="qty[]"]');
+        const amount =  $(this).closest('tr').find('input[name="amount[]"]');
+        
+        const subTotal = document.getElementById("sub-total");
+        const total = document.getElementById("total");
+        const allAmount = document.getElementsByName("amount[]");
+
+       
+        if(value > 0){
+            const unit_p = parseInt(unit.val());
+            const qty_p = parseInt(qty.val());
+            if(!isNaN(unit_p)){
+
+                amount.val((unit_p - value) * qty_p)
+                //alert(unit_p)
+                //const inputElements = document.getElementsByName("amount[]");
+
+                // Initialize a variable to store the sum
+                let sum = 0;
+
+                //alert(sum)
+                // Loop through allAmount input elements and add their values to the sum
+                for (let i = 0; i < allAmount.length; i++) {
+                    const inputValue = parseFloat(allAmount[i].value);
+                    if (!isNaN(inputValue)) {
+                        sum += inputValue;
+                    }
+                }
+                // Display the sum in a result div
+                
+                subTotal.value = sum;
+                total.value = sum;
+            }
+        }else{
+             unit_p = parseInt(unit.val())
+             const qty_p = parseInt(qty.val());
+             if(!isNaN(unit_p)){
+
+                amount.val(unit_p * qty_p)
+
+                 let sum = 0;
+
+                //alert(sum)
+                // Loop through allAmount input elements and add their values to the sum
+                for (let i = 0; i < allAmount.length; i++) {
+                    const inputValue = parseFloat(allAmount[i].value);
+                    if (!isNaN(inputValue)) {
+                        sum += inputValue;
+                    }
+                }
+                // Display the sum in a result div
+                
+                subTotal.value = sum;
+                total.value = sum;
+                }else{
+                    amount.val("")
+                }
+
+             
+        }
+        
+    });
+
+    $(document).on('click', '.remove_row',function(e){
+        e.preventDefault()
+        var row_id = $(this).attr("id");
+        //alert(row_id)
+        $('#row'+row_id+'').remove();
+    });
+
+    //If Discount
+    const checkbox = document.getElementById("discountcheck")
+    checkbox.addEventListener("change", function () {
+        const subTotal = document.getElementById("sub-total"); 
+        const discount = document.getElementById("discount2"); 
+        const sub_Total = parseInt(subTotal.value); 
+        const total = document.getElementById("total");
+        if (checkbox.checked) {
+            //alert('checked');
+            if(!isNaN(sub_Total)){
+
+                //sum = sub_Total - (sub_Total * 7.5 / 100);
+                sum = sub_Total - 7.5 / 100;
+                
+                discount.value = "7.5%";
+                total.value = sum;
+
+            }else{
+                
+
+            }
+            
+            
+        } else {
+            //alert('unchecked');
+            discount.value = "";
+            if(isNaN(sub_Total)){
+
+                total.value = "";
+            }else{
+                total.value = sub_Total
+            }
+            
+        }
+    })
+
+
+
+
+    */
+    // VIEW VENDOR DETAILS 
+    
+    $("#vendor_id").on('change', function() {
+                
+        const vendor_id_url = $(this).val();
+        
+       
+       // alert(vendor_id_url)
+        if (vendor_id_url != ""){
+            $.ajax({
+                url: '/get_vendor/'+ vendor_id_url + '/',
+                method: 'GET',
+                data:{"venID":vendor_id_url},
+                success: function(data){
+                    $("#text").html("Name :  "+data.name +"\n"+"Customer ID :  "+data.code+"\n"+"Phone :  "+data.phone+"\n"+"Email :  "+data.email +"\n"+"Address :  "+data.address)
+                    
+                    $('#genby').val(data.name);
+
+                },
+                error: function(){
+                    alert('Vendor not found!!!');
+                }
+             });
+        }
+    
+       
+    });
+    
+
+
+    // FETCH USER INFO
+    function FetchUser(user_id_url) {
+        
+        
+        if (user_id_url != ""){
+            $.ajax({
+                url: 'get_user/'+ user_id_url + '/',
+                method: 'GET',
+                
+                success: function(data){
+                    // console.log(data.priviledge)
+                    $("#user_id").val(data.id)
+                    $("#username").val(data.username)
+                    $("#password").val(null)
+                    $("#c-password").val(null)
+                    if(data.outlet){
+                        //$("#outlet").attr('checked', 'true')
+                        updateoutlet(data.outlet)
+
+                    }
+                    if (data.priviledge) {
+                        updateCheckboxes(data.priviledge);
+                    }
+                 
+                },
+                error: function(){
+                    alert('User not found!!!');
+                }
+             });
+        }
+    };
+
+    // Function to update checkboxes based on existing privileges  TESTING
+    function updateCheckboxes(existingPrivileges) {
+        const checkboxes = document.getElementsByName("all_page_access[]");
+
+        checkboxes.forEach(checkbox => {
+            //console.log(existingPrivileges)
+            if (existingPrivileges.includes(checkbox.value)) {
+                checkbox.checked = true;
+            }
+            else {
+                checkbox.checked = false;
+            }
+        });
+    }
+    function updateoutlet(outlet) {
+        const checkboxes = document.getElementsByName("outlet");
+
+        checkboxes.forEach(checkbox => {
+           //console.log(outlet)
+            if (outlet.includes(checkbox.value)) {
+                checkbox.checked = true;
+            }
+            else {
+                checkbox.checked = false;
+            }
+        });
+    }
+
+
+    // GET ITEM CODE 
+    $("#get_item_code_id").submit(function() {
+                
+        const item_code_id = $(this).val();
+        
+        // alert(item_code_id);
+        
+        if (item_code_id != ""){
+            $.ajax({
+                url: 'get_item_code_id/' + item_code_id + '/',
+                method: 'GET',
+
+                success: function(data){
+                    
+                    $('#item_code_val').val(data.generated_code);
+                    
+                },
+                error: function(){
+                    alert('item_code not found!!!');
+                }
+                });
+        }
+    
+        
+    });
+
+
+
+    // ====== UPDATE ITEM =====
+    $(document).ready(function() {
+
+    
+        // Handle form submission with AJAX === ADD ITEM TAGS 
+        $('#AddItemTag').on('click', function (e) {
+            e.preventDefault();
+    
+            $item_code = $('#get_item_code_id').val();
+            $item_status = $('#item_status').val();
+    
+            if($item_code == "" || $item_status == " "){
+                alert("Please complete the required fields");
+            }
+            else{
+                $.ajax({
+                    url: '../../../add_item_tag/',
+                    type: "POST",
+                    data: {
+                        item_code: $item_code,
+                        item_status: $item_status,
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    success: function () {
+                        Read();
+                        $('#get_item_code_id').val('');
+                        $('#item_status').val('');
+                        alert("New Tag Was Successfully Added")
+                    }
+                });
+            }
+        });
+    
+    
+        // Handle form submission with AJAX === ADD ITEM SIZE 
+        $('#AddItemSize').on('click', function (e) {
+            e.preventDefault();
+    
+            $item_code = $('#item_code').val();
+            $size = $('#size').val();
+    
+            if($item_code == "" || $size == " "){
+                alert("Please complete the required fields");
+            }
+            else{
+                $.ajax({
+                    url: '../../../add_item_size/',
+                    type: "POST",
+                    data: {
+                        item_code: $item_code,
+                        size: $size,
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    success: function () {
+                        Read();
+                        $('#item_code').val('');
+                        $('#size').val('');
+                        alert("New Size Was Successfully Added")
+                    }
+                });
+            }
+        });
+    
+    
+        // Handle form submission with AJAX === ADD ITEM DESCRIPTION 
+        $('#AddItemDescription').on('click', function (e) {
+            e.preventDefault();
+    
+            $item_description = $('#item_description').val();
+            $text = $('#text').val();
+    
+            if($item_description == "" || $text == " "){
+                alert("Please complete the required fields");
+            }
+            else{
+                $.ajax({
+                    url: '../../../add_item_description/',
+                    type: "POST",
+                    data: {
+                        item_description: $item_description,
+                        text: $text,
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    success: function () {
+                        //Read();
+                        $('#item_description').val('');
+                        $('#text').val('');
+                        alert("New Description Was Successfully Added")
+                    }
+                });
+            }
+        });
+    
+    
+        // Handle form submission with AJAX === ADD ITEM SPECIFICATION 
+        $('#AddItemSpecification').on('click', function (e) {
+            e.preventDefault();
+    
+            $item_code = $('#item_spec').val();
+            $quality = $('#quality').val();
+    
+            if($item_code == "" || $quality == " "){
+                alert("Please complete the required fields, NOTHING DEY THERE");
+            }
+            else{
+                $.ajax({
+                    url: '../../../add_item_specification/',
+                    type: "POST",
+                    data: {
+                        item_code: $item_code,
+                        quality: $quality,
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    success: function () {
+                        //Read();
+                        $('#item_spec').val('');
+                        $('#quality').val('');
+                        alert("New Specification Was Successfully Added")
+                    }
+                });
+            }
+        });
+    
+    
+        // Handle form submission with AJAX === ADD ITEM BRAND
+        $('#AddItenBrand').on('click', function (e) {
+            e.preventDefault();
+    
+            $item_code = $('#item_brand').val();
+            $brand_name = $('#brand_name').val();
+    
+            if($item_code == "" || $brand_name == " "){
+                alert("Please complete the required fields");
+            }
+            else{
+                $.ajax({
+                    url: '../../../add_item_brand/',
+                    type: "POST",
+                    data: {
+                        item_code: $item_code,
+                        brand_name: $brand_name,
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    success: function () {
+                        Read();
+                        $('#item_brand').val('');
+                        $('#brand_name').val('');
+                        alert("New Brand Was Successfully Added")
+                    }
+                });
+            }
+        });
+
+        // Handle form submission with AJAX === ADD COUPON
+        $('#AddCoupon').on('click', function (e) {
+            e.preventDefault();
+            
+            $code = $('#randomCode').val();
+            $amount = $('#amount').val();
+            $limit = $('#limit').val();
+            $usage = $('#usage').val();
+    
+            if($code == "" || $amount == " " || $limit ==" " || $usage == " "){
+                alert("Please complete the required fields");
+            }
+            else{
+                $.ajax({
+                    url: '{% url "Stock:add_coupon" %}',
+                    type: "POST",
+                    data: {
+                        code: $code,
+                        amount: $amount,
+                        limit: $limit,
+                        usage: $usage,
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    success: function () {
+                        //Read();
+                        $('#randomCode').val("");
+                        $('#amount').val("");
+                        $('#limit').val("");
+                        $('#usage').val("");
+                        alertify.success("New Coupon Was Successfully Added")
+                        location.reload();
+                    }
+                });
+            }
+        });
+        // Handle form submission with AJAX === EDIT COUPON
+        $('#EditCoupon').on('click', function (e) {
+            e.preventDefault();
+            
+            $id = $('#id').val();
+            $code = $('#randomCode').val();
+            $amount = $('#amount').val();
+            $limit = $('#limit').val();
+            $usage = $('#usage').val();
+    
+            if($id == "" || $code == "" || $amount == " " || $limit ==" " || $usage == " "){
+                alert("Please complete the required fields");
+            }
+            else{
+                $.ajax({
+                    url: '{% url "Stock:edit_coupon" %}',
+                    type: "POST",
+                    data: {
+                        id: $id,
+                        code: $code,
+                        amount: $amount,
+                        limit: $limit,
+                        usage: $usage,
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    success: function () {
+                        //Read();
+                       $('#id').val("");
+                       $('#randomCode').val("");
+                       $('#amount').val("");
+                       $('#limit').val("");
+                       $('#usage').val("");
+                        alertify.success("Coupon Was Updated Successfully Added")
+                        location.reload();
+                    }
+                });
+            }
+        });
+    
+    
+        // Handle form submission with AJAX === ADD ITEM BRAND
+        $('#AddItemColor').on('click', function (e) {
+            e.preventDefault();
+    
+            $item_code = $('#item_code').val();
+            $color_name = $('#color_name').val();
+            $color_code = $('#color_code').val();
+    
+            if($item_code == "" || $color_name == " " || $color_code == " "){
+                alert("Please complete the required fields");
+            }
+            else{
+                $.ajax({
+                    url: '../../../add_item_color/',
+                    type: "POST",
+                    data: {
+                        item_code: $item_code,
+                        color_name: $color_name,
+                        color_code: $color_code,
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    success: function () {
+                        Read();
+                        $('#item_code').val('');
+                        $('#color_name').val('');
+                        $('#color_code').val('');
+                        alert("New Color Was Successfully Added")
+                    }
+                });
+            }
+        });
+    
+    });
+    function Read(){
+        alert("Show table");
+    }
+
+
+
+    // ======== DOWNLOAD AS PDF, EXCEL AND PRINT =========
+
+    // PRINT 
+    function printDiv(pdfdiv) {
+        var printContents = document.getElementById(pdfdiv).innerHTML;
+        var originalContents = document.body.innerHTML;
+        
+        // //hide and show elements
+        // var $section = $(`#${pdfdiv}`).find('section'); 
+        // $section.removeClass('hidden'); 
+        // hide_elements(true) 
+
+        
+       
+        // const element = document.getElementById(pdfdiv);  
+        // // Add a footer element
+        // const footer = document.createElement('div');
+        // footer.style.textAlign = 'left';
+        // footer.style.marginTop = '20px';
+        // footer.innerHTML = '<p class="text-gray-700">{{note}}</p>'; // Customize your footer note here
+        // element.appendChild(footer);
+
+        document.body.innerHTML = printContents;
+        window.print();
+    
+        document.body.innerHTML = originalContents;
+
+        //  //hide and show elements
+        //  setTimeout(() => {
+        //     $section.addClass('hidden');
+        //     hide_elements(false)
+        //     element.removeChild(footer);
+            
+        // }, 0);
+    }
+
+
+
+    // DOWNLOAD AS PDF
+    function generatePDF(div) {
+
+        //hide and show elements
+        var $section = $(`#${div}`).find('section'); 
+        $section.removeClass('hidden'); 
+        hide_elements(true) 
+
+        
+       
+        const element = document.getElementById(div);  
+        // Add a footer element
+        const footer = document.createElement('div');
+        footer.style.textAlign = 'left';
+        footer.style.marginTop = '20px';
+        footer.innerHTML = '<p class="text-gray-700">{{note}}</p>'; // Customize your footer note here
+        element.appendChild(footer);
+
+        html2pdf(element, {
+            margin: 10,
+            filename: 'report.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            }).then(function (pdf) {
+                
+            // You can save or display the generated PDF as needed
+            pdf.save();
+        });
+        
+        
+        //hide and show elements
+        setTimeout(() => {
+            $section.addClass('hidden');
+            hide_elements(false)
+            element.removeChild(footer);
+            
+        }, 0);
+    }
+
+    function printPDF() {
+        generatePDF();
+        // var printWindow = window.open(",",'width=800,height=600');
+        // printWindow.document.write(element.innerHTML);
+        // printWindow.document.close();
+        // printWindow.print()
+    }
+    function Email_AS_PDF(div) {
+        
+        email_modal.showModal()
+        $("#div").val(div)
+
+
+    }
+    
+    function Email_PDF(div) {
+        
+            // hide and show elements
+            var $section = $(`#${div}`).find('section');
+            $section.removeClass('hidden');
+            hide_elements(true)
+
+            const element = document.getElementById(div);
+            const email = document.getElementById('email').value;
+          
+            const opt = {
+                margin: [10, 10, 10, 10],  // [top, left, bottom, right] margins in mm
+                filename: 'document.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },  // Increase the canvas resolution
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Convert the HTML content to PDF and apply options
+            html2pdf().set(opt).from(element).toPdf().get('pdf').then(function (pdf) {
+                // Convert PDF to Blob
+                const pdfBlob = pdf.output('blob');
+
+                // Prepare FormData to send PDF via AJAX
+                const formData = new FormData();
+                formData.append('pdf_file', pdfBlob, 'document.pdf');
+                formData.append('email', email );
+                
+                // Send PDF to backend via AJAX
+                fetch('/send_email_with_pdf', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',  // Add CSRF token
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (div === "sq"){
+                            alert('Quote sent successfully!');
+                        }
+                    } else {
+                        alert('Error sending PDF: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+
+            //hide and show elements
+            setTimeout(() => {
+                $section.addClass('hidden');
+                hide_elements(false)
+                
+            }, 0);
+    }
+
+
+    // DOWNLOAD AS EXCEL
+    function downloadExcel() {
+        window.location.href = "{% url 'report:generate_excel' %}";
+    }
+
+    function printTable(pdfdiv) {
+        window.print();
+    }
+    function convertTableToExcel(tableId, table_data) {
+        var table = $('#' + tableId);
+        var filename = table_data;
+        var excelHtml = table.clone().appendTo('body');
+        excelHtml.find('button, input, textarea').remove();
+        var excelFile = excelHtml.html();
+        excelHtml.remove();
+        var uri = 'data:application/vnd.ms-excel;charset=utf-8,' + encodeURIComponent(excelFile);
+        var link = document.createElement('a');
+        link.href = uri;
+        link.download = filename + '.xls';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    //
+    //new DataTable('#chart_of_account');
+    //new DataTable('#chart_of_account_details');
+    //new DataTable('#Newcustomer');
+    // new DataTable('#customer');
+    //new DataTable('#view_customer_details');
+    //new DataTable('#SalesQuote');
+    //new DataTable('#SalesOrder');
+    //new DataTable('#CustomerIncentives');
+    //new DataTable('#ViewCustomerIncentives');
+    //new DataTable('#example11');
+    
+</script>
+<script>
+    
+    function removeElementById() {
+      
+        $('.drop').remove();
+                    
+    }
+
+    function exportTableToExcel(table_id) {
+        removeElementById();
+       
+        // Get the table data
+        var table = document.getElementById(`${table_id}`);
+        var rows = table.querySelectorAll('tr');
+        var data = [];
+    
+        rows.forEach(row => {                                                                  
+            var cells = row.querySelectorAll('td, th');
+            var rowData = [];
+            cells.forEach(cell => {
+                rowData.push(cell.innerText);
+            });
+            data.push(rowData);
+        });
+    
+       // Get headings and totals
+    //var heading = document.querySelector('p.hhh').innerText;
+    // var totalSales = document.getElementById('sales_total').innerText;
+    // var totalExpenses = document.getElementById('purchase_total').innerText;
+    // var balance = document.getElementById('total').innerText;
+   
+    // Send the data to the server
+    fetch('{% url "report:export_sales_report" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            table_data: data,
+            //heading: heading,
+            // total_sales: totalSales,
+            // total_expenses: totalExpenses,
+            // balance: balance
+        })
+    })
+        .then(response => response.blob())
+        .then(blob => {
+            // Create a link to download the file
+            var link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = 'sales_report.xlsx';
+            document.body.appendChild(link); // Append to the body to make sure it works in some browsers
+            link.click();
+            document.body.removeChild(link); // Clean up after download
+        });
+    }
+</script>
+<script>
+
+    function hide_elements(value){
+        const element = document.getElementById("'+i+'")
+
+        if( element != null){
+            const lastTh = document.querySelectorAll('thead tr th:last-child');
+            const lastTd = document.querySelectorAll('tbody tr td:last-child');
+            const input_border = document.querySelectorAll('.w-\\[100px\\]');
+         
+            if(value == true){
+               
+                lastTh.forEach(function(th){
+                    th.classList.add('hidden')
+                })
+                
+                lastTd.forEach(function(td){
+                    
+                    td.classList.add('hidden')
+                })
+
+                input_border.forEach(function(input){
+                    input.classList.remove('border-2')
+                })
+    
+            }else{
+               
+                // lastTh.classList.remove('hidden')
+                lastTh.forEach(function(th){
+                    th.classList.remove('hidden')
+                })
+        
+                
+
+                lastTd.forEach(function(td){
+                    td.classList.remove('hidden')
+                })
+               
+                    input_border.forEach(function(input){
+                        input.classList.add('border-2')
+                        
+                })
+            }
+        }
+    }
+
+    function viewColunm(value){
+        // var executed = false
+        //         var hide = false
+        //         if(!executed){
+        //             console.log(executed)
+        //             lastTh.forEach(function(th){
+        //                 alert(th.innerText)
+        //                  hide = viewColunm(th.innerText)
+        //                  console.log("th.l", th.length)
+        //             })
+        //             executed = true
+        //         }
+        //         //  lastTh.classList.add('hidden')
+        //         alert(hide)
+        if(value == "View"){
+            console.log(value)
+            return true
+        }else{
+            console.log(value)
+            return false 
+        }
+    }
+
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.js"></script>
+
+<!-- Additional Scripts -->
+{% comment %} <script src="{% static 'js/main.js' %}"></script> {% endcomment %}
+
+
+

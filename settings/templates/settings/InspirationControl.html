@@ -1,0 +1,530 @@
+
+{% extends 'base.html' %}
+
+{% block home %}
+
+
+
+
+
+
+
+    
+    <main class="w-full">
+
+        <div class="bg-slate-200 py-1 px-2 w-[300px] text-gray-600 text-sm rounded-sm">Stock Overview from 1-jan-2023 to 
+            <span class="text-red-500">Date</span><br>
+        </div>
+
+        <h1 class="my-2 text-gray-800 text-[32px] font-bold">Manage Products</h1>
+
+        <div class="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4 my-5">
+    
+            <div class="h-[100px] rounded-[12px] bg-white border-l-[4px] border-[#8589DF] flex items-center justify-between px-[30px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out shadow-lg">
+                <div>
+                    <h2 class='text-[#8589DF] text-[14px] leading-[20px] font-bold'>Total Products</h2>
+                    <h1 class='text-[#5a5c69] text-[24px] leading-[30px] mt-[10px] font-bold'>{{products}}</h1>
+                </div>
+                <div class="ml-5 text-blue-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" class="icon" viewBox="0 0 1024 1024" id="business-stock"><path d="M921.6 2.048H102.4C45.875 2.048 0 47.923 0 104.448v573.44c0 56.525 45.875 102.4 102.4 102.4h122.88c10.65 0 19.866-5.325 25.395-13.517 1.843-1.638 3.687-3.686 5.12-5.939l169.37-252.109 21.913 111.207c2.458 12.288 11.879 21.708 24.167 24.166 12.083 2.458 24.576-2.662 31.539-12.902l211.354-314.778 4.71 84.787c.82 16.384 14.54 29.082 30.72 29.082h1.843c16.999-1.024 29.901-15.36 28.877-32.359l-10.24-182.272c-.614-10.24-6.144-19.456-14.95-24.78-8.807-5.12-19.661-5.735-28.877-1.23l-176.128 83.969c-15.36 7.373-21.914 25.6-14.541 40.96 7.373 15.36 25.6 21.709 40.96 14.54l81.306-38.707-164.66 245.146-21.913-111.206c-2.458-12.288-11.879-21.71-24.167-24.167-12.288-2.457-24.576 2.663-31.539 12.903L210.125 718.848H102.4c-22.528 0-40.96-18.432-40.96-40.96v-573.44c0-22.528 18.432-40.96 40.96-40.96h819.2c22.528 0 40.96 18.432 40.96 40.96v573.44c0 22.528-18.432 40.96-40.96 40.96H512c-16.998 0-30.72 13.722-30.72 30.72 0 .82 0 1.638.205 2.662 0 .82-.205 1.639-.205 2.663V962.56H102.4c-16.998 0-30.72 13.722-30.72 30.72S85.402 1024 102.4 1024h819.2c16.998 0 30.72-13.722 30.72-30.72s-13.722-30.72-30.72-30.72H542.72V780.288H921.6c56.525 0 102.4-45.875 102.4-102.4v-573.44c0-56.525-45.875-102.4-102.4-102.4z"></path></svg>
+                </div>
+            </div>
+    
+            <div class="h-[100px] rounded-[12px] bg-white border-l-[4px] border-blue-500 flex items-center justify-between px-[30px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out shadow-lg">
+                <div>
+                    <h2 class='text-blue-500 text-[14px] leading-[20px] font-bold'>All Stock</h2>
+                    <h1 class='text-[#5a5c69] text-[24px] leading-[30px] mt-[10px] font-bold'>{{stock}}</h1>
+                </div>
+                <div class="ml-5 text-blue-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" class="icon" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" clip-rule="evenodd" viewBox="0 0 64 64" id="customers-rating"><path d="M59,43l-46,-0c-0.552,0 -1,0.448 -1,1c0,0.552 0.448,1 1,1l46,-0l-0,1.944c-0,0.586 -0.483,1.056 -1.074,1.056c-0,-0 -51.852,0 -51.852,0c-0.591,-0 -1.074,-0.47 -1.074,-1.055l0,-1.945l4,0c0.552,0 1,-0.448 1,-1c0,-0.552 -0.448,-1 -1,-1l-4,0l-0,-21.75c-0,-0.552 -0.448,-1 -1,-1c-0.552,-0 -1,0.448 -1,1l0,25.694c0,1.686 1.374,3.056 3.074,3.056l19.926,0l0,9l-5,0c-0.552,0 -1,0.448 -1,1c0,0.552 0.448,1 1,1l22,0c0.552,0 1,-0.448 1,-1c0,-0.552 -0.448,-1 -1,-1l-5,0l0,-9l19.926,-0c1.7,-0 3.074,-1.37 3.074,-3.056l0,-34.944c0,-0.552 -0.448,-1 -1,-1l-4,-0c-0.552,-0 -1,0.448 -1,1c-0,0.552 0.448,1 1,1l3,-0l0,30Zm-23,16l-0,-9l-8,0l-0,9l8,0Zm-21.163,-30.69c-0.168,-0.342 -0.516,-0.558 -0.896,-0.558c-0.381,0 -0.729,0.216 -0.897,0.558l-0.985,1.996c-0,-0 -2.203,0.32 -2.203,0.32c-0.376,0.054 -0.689,0.318 -0.807,0.68c-0.118,0.362 -0.02,0.76 0.253,1.025l1.594,1.554c-0,0 -0.376,2.194 -0.376,2.194c-0.065,0.375 0.089,0.754 0.397,0.978c0.308,0.224 0.717,0.253 1.054,0.076l1.97,-1.036c-0,0 1.97,1.036 1.97,1.036c0.337,0.177 0.745,0.148 1.053,-0.076c0.308,-0.224 0.462,-0.603 0.398,-0.978l-0.376,-2.194c-0,0 1.593,-1.554 1.593,-1.554c0.273,-0.265 0.371,-0.663 0.254,-1.025c-0.118,-0.362 -0.431,-0.626 -0.808,-0.68l-2.202,-0.32c-0,-0 -0.986,-1.996 -0.986,-1.996Zm11.882,-0c-0.169,-0.342 -0.516,-0.558 -0.897,-0.558c-0.38,0 -0.728,0.216 -0.897,0.558l-0.985,1.996c0,-0 -2.202,0.32 -2.202,0.32c-0.377,0.054 -0.69,0.318 -0.808,0.68c-0.117,0.362 -0.019,0.76 0.253,1.025l1.594,1.554c0,0 -0.376,2.194 -0.376,2.194c-0.064,0.375 0.09,0.754 0.398,0.978c0.308,0.224 0.716,0.253 1.053,0.076l1.97,-1.036c0,0 1.97,1.036 1.97,1.036c0.337,0.177 0.746,0.148 1.054,-0.076c0.307,-0.224 0.462,-0.603 0.397,-0.978l-0.376,-2.194c0,0 1.594,-1.554 1.594,-1.554c0.273,-0.265 0.371,-0.663 0.253,-1.025c-0.118,-0.362 -0.431,-0.626 -0.807,-0.68l-2.203,-0.32c0,-0 -0.985,-1.996 -0.985,-1.996Zm12.118,-0c-0.168,-0.342 -0.516,-0.558 -0.896,-0.558c-0.381,0 -0.729,0.216 -0.897,0.558l-0.985,1.996c-0,-0 -2.203,0.32 -2.203,0.32c-0.376,0.054 -0.689,0.318 -0.807,0.68c-0.118,0.362 -0.02,0.76 0.253,1.025l1.594,1.554c-0,0 -0.376,2.194 -0.376,2.194c-0.065,0.375 0.089,0.754 0.397,0.978c0.308,0.224 0.717,0.253 1.054,0.076l1.97,-1.036c-0,0 1.97,1.036 1.97,1.036c0.337,0.177 0.745,0.148 1.053,-0.076c0.308,-0.224 0.462,-0.603 0.398,-0.978l-0.376,-2.194c-0,0 1.593,-1.554 1.593,-1.554c0.273,-0.265 0.371,-0.663 0.254,-1.025c-0.118,-0.362 -0.431,-0.626 -0.808,-0.68l-2.202,-0.32c-0,-0 -0.986,-1.996 -0.986,-1.996Zm11.882,-0c-0.169,-0.342 -0.516,-0.558 -0.897,-0.558c-0.38,0 -0.728,0.216 -0.897,0.558l-0.985,1.996c0,-0 -2.202,0.32 -2.202,0.32c-0.377,0.054 -0.69,0.318 -0.808,0.68c-0.117,0.362 -0.019,0.76 0.253,1.025l1.594,1.554c0,0 -0.376,2.194 -0.376,2.194c-0.064,0.375 0.09,0.754 0.398,0.978c0.308,0.224 0.716,0.253 1.053,0.076l1.97,-1.036c0,0 1.97,1.036 1.97,1.036c0.337,0.177 0.746,0.148 1.054,-0.076c0.307,-0.224 0.462,-0.603 0.397,-0.978l-0.376,-2.194c0,0 1.594,-1.554 1.594,-1.554c0.273,-0.265 0.371,-0.663 0.253,-1.025c-0.118,-0.362 -0.431,-0.626 -0.807,-0.68l-2.203,-0.32c0,-0 -0.985,-1.996 -0.985,-1.996Zm-0.897,2.702l0.321,0.65c0.146,0.295 0.427,0.5 0.753,0.547l0.718,0.104c-0,0 -0.519,0.507 -0.519,0.507c-0.236,0.23 -0.344,0.561 -0.288,0.885l0.123,0.715c-0,-0 -0.642,-0.338 -0.642,-0.338c-0.292,-0.153 -0.64,-0.153 -0.931,0l-0.642,0.338c-0,-0 0.122,-0.715 0.122,-0.715c0.056,-0.324 -0.051,-0.655 -0.287,-0.885l-0.52,-0.507c0,0 0.718,-0.104 0.718,-0.104c0.326,-0.047 0.608,-0.252 0.753,-0.547l0.321,-0.65Zm-24,-0l0.321,0.65c0.146,0.295 0.427,0.5 0.753,0.547l0.718,0.104c-0,0 -0.519,0.507 -0.519,0.507c-0.236,0.23 -0.344,0.561 -0.288,0.885l0.123,0.715c-0,-0 -0.642,-0.338 -0.642,-0.338c-0.292,-0.153 -0.64,-0.153 -0.931,0l-0.642,0.338c-0,-0 0.122,-0.715 0.122,-0.715c0.056,-0.324 -0.051,-0.655 -0.287,-0.885l-0.52,-0.507c0,0 0.718,-0.104 0.718,-0.104c0.326,-0.047 0.608,-0.252 0.753,-0.547l0.321,-0.65Zm-11.881,-0l0.321,0.65c0.145,0.295 0.427,0.5 0.753,0.547l0.718,0.104c-0,0 -0.52,0.507 -0.52,0.507c-0.236,0.23 -0.343,0.561 -0.287,0.885l0.122,0.715c0,-0 -0.642,-0.338 -0.642,-0.338c-0.291,-0.153 -0.639,-0.153 -0.931,0l-0.642,0.338c0,-0 0.123,-0.715 0.123,-0.715c0.056,-0.324 -0.052,-0.655 -0.288,-0.885l-0.519,-0.507c-0,0 0.718,-0.104 0.718,-0.104c0.325,-0.047 0.607,-0.252 0.753,-0.547l0.321,-0.65Zm24,-0l0.321,0.65c0.145,0.295 0.427,0.5 0.753,0.547l0.718,0.104c-0,0 -0.52,0.507 -0.52,0.507c-0.236,0.23 -0.343,0.561 -0.287,0.885l0.122,0.715c0,-0 -0.642,-0.338 -0.642,-0.338c-0.291,-0.153 -0.639,-0.153 -0.931,0l-0.642,0.338c0,-0 0.123,-0.715 0.123,-0.715c0.056,-0.324 -0.052,-0.655 -0.288,-0.885l-0.519,-0.507c-0,0 0.718,-0.104 0.718,-0.104c0.325,-0.047 0.607,-0.252 0.753,-0.547l0.321,-0.65Zm-28.046,-20.012l-5.895,-0c-0.552,0 -1,0.448 -1,1l-0,5.139c-0,0.552 0.448,1 1,1c0.552,-0 1,-0.448 1,-1l-0,-4.139l4.895,-0l-0,3.632c-0,1.715 1.39,3.105 3.105,3.105l8.217,-0c-0,-0 1.995,4.657 1.995,4.657c0.161,0.375 0.534,0.615 0.943,0.606c0.408,-0.01 0.77,-0.266 0.913,-0.649l1.73,-4.614l4.097,-0c1.715,-0 3.105,-1.39 3.105,-3.105l-0,-10.527c-0,-1.715 -1.39,-3.105 -3.105,-3.105l-17.895,0c-1.715,0 -3.105,1.39 -3.105,3.105l-0,4.895Zm30.964,2.903c-0.805,0.347 -1.545,0.846 -2.177,1.478c-1.313,1.312 -2.05,3.093 -2.05,4.949c-0,1.236 -0,2.17 -0,2.17c-0,0.552 0.447,1 1,1l13.368,0c0.552,0 1,-0.448 1,-1l-0,-2.17c0,-1.856 -0.737,-3.637 -2.05,-4.949c-0.632,-0.632 -1.372,-1.131 -2.177,-1.478c1.538,-1.087 2.543,-2.878 2.543,-4.903c-0,-3.311 -2.689,-6 -6,-6c-3.312,0 -6,2.689 -6,6c-0,2.025 1.005,3.816 2.543,4.903Zm9.141,6.427l-0,1.17c0,-0 -11.368,0 -11.368,0c-0,0 -0,-1.17 -0,-1.17c-0,-1.326 0.526,-2.597 1.464,-3.535c0.938,-0.938 2.21,-1.465 3.536,-1.465c0.454,0 0.913,0 1.368,0c1.326,0 2.598,0.527 3.536,1.465c0.937,0.938 1.464,2.209 1.464,3.535Zm-22.452,-2.593l3.347,-0c0.61,-0 1.105,-0.495 1.105,-1.105c-0,-0 -0,-10.527 -0,-10.527c-0,-0.61 -0.495,-1.105 -1.105,-1.105c-0,0 -17.895,0 -17.895,0c-0.61,0 -1.105,0.495 -1.105,1.105c-0,0 -0,10.527 -0,10.527c-0,0.61 0.495,1.105 1.105,1.105l8.876,-0c0.4,-0 0.762,0.238 0.919,0.606c0,-0 1.275,2.974 1.275,2.974l2.283,-6.089c0.194,-0.517 0.771,-0.779 1.288,-0.585c0.516,0.193 0.779,0.77 0.585,1.287l-0.678,1.807Zm-4.671,-11.214c-0.176,-0.32 -0.512,-0.519 -0.877,-0.519c-0.365,0 -0.701,0.199 -0.877,0.519l-1.069,1.947c0,-0 -2.182,0.415 -2.182,0.415c-0.358,0.068 -0.651,0.326 -0.764,0.673c-0.113,0.347 -0.027,0.728 0.223,0.994l1.521,1.619c0,-0 -0.28,2.203 -0.28,2.203c-0.045,0.362 0.109,0.721 0.405,0.935c0.295,0.215 0.684,0.251 1.014,0.096l2.009,-0.947c0,-0 2.009,0.947 2.009,0.947c0.33,0.155 0.719,0.119 1.014,-0.096c0.296,-0.214 0.45,-0.573 0.405,-0.935l-0.28,-2.203c0,-0 1.521,-1.619 1.521,-1.619c0.25,-0.266 0.336,-0.647 0.223,-0.994c-0.113,-0.347 -0.406,-0.605 -0.764,-0.673l-2.182,-0.415c-0,-0 -1.069,-1.947 -1.069,-1.947Zm21.439,-1.523c2.208,0 4,1.792 4,4c-0,2.208 -1.792,4 -4,4c-2.208,0 -4,-1.792 -4,-4c-0,-2.208 1.792,-4 4,-4Zm-22.316,4.082l0.419,0.764c0.144,0.261 0.397,0.445 0.69,0.501l0.856,0.162c-0,0 -0.597,0.635 -0.597,0.635c-0.204,0.218 -0.301,0.515 -0.263,0.811l0.109,0.864c0,0 -0.788,-0.371 -0.788,-0.371c-0.27,-0.127 -0.582,-0.127 -0.852,-0l-0.788,0.371c-0,0 0.109,-0.864 0.109,-0.864c0.038,-0.296 -0.059,-0.593 -0.263,-0.811l-0.597,-0.635c0,0 0.856,-0.162 0.856,-0.162c0.293,-0.056 0.546,-0.24 0.69,-0.501l0.419,-0.764Z"></path></svg>
+                </div>
+            </div>
+    
+            <div class="h-[100px] rounded-[12px] bg-white border-l-[4px] border-green-500 flex items-center justify-between px-[30px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out shadow-lg">
+                <div>
+                    <h2 class='text-green-500 text-[14px] leading-[20px] font-bold'>Sold Product</h2>
+                    <h1 class='text-[#5a5c69] text-[24px] leading-[30px] mt-[10px] font-bold'>{{sold}}</h1>
+                </div>
+                <div class="ml-5 text-blue-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" class="icon" data-name="Layer 1" viewBox="0 0 128 128" id="sales"><path d="M46.126 83.553a1.998 1.998 0 0 0-2.778.525l-16 23.47a2 2 0 1 0 3.304 2.255l16-23.47a2 2 0 0 0-.526-2.78zM30 80.004a6 6 0 1 0 6 6.001 6.007 6.007 0 0 0-6-6zm0 8.002a2 2 0 1 1 2-2 2.002 2.002 0 0 1-2 2zm12 16.002a6 6 0 1 0 6 6.001 6.007 6.007 0 0 0-6-6zm0 8.001a2 2 0 1 1 2-2 2.002 2.002 0 0 1-2 2z"></path><path d="M56.28 122.301a2.213 2.213 0 0 1-2.573 1.655L11.542 113.91a2.106 2.106 0 0 1-1.48-2.546l17.344-70.407a13.162 13.162 0 0 1 4.841-6.721l13.315-8.212 2.284-6.108L30.148 30.83a17.11 17.11 0 0 0-6.63 9.184l-17.34 70.393a6.08 6.08 0 0 0 4.439 7.395l42.163 10.046a6.333 6.333 0 0 0 7.381-4.58l2.864-11.348-2.611-6.002-4.134 16.383Z"></path><path d="M121.494 99.028 93.35 33.343a15.969 15.969 0 0 0-7.999-7.635l-13.58-4.975a33.583 33.583 0 0 1-.698 4.005l12.9 4.726a12.192 12.192 0 0 1 5.7 5.455l28.144 65.684a2.302 2.302 0 0 1-1.048 2.945s-38.59 18.24-38.687 18.286a1.826 1.826 0 0 1-2.45-.989L46.765 54.491a13.338 13.338 0 0 1-.216-8.256l9.286-24.841a2.103 2.103 0 0 1 2.613-1.282l1.238.454a19.943 19.943 0 0 0 .292-4.154l-.154-.056a5.891 5.891 0 0 0-2.03-.362 6.123 6.123 0 0 0-5.705 3.998L42.8 44.834a17.284 17.284 0 0 0 .295 11.255s28.857 66.325 28.869 66.352a5.877 5.877 0 0 0 7.827 3.01l38.686-18.286a6.3 6.3 0 0 0 3.016-8.137Z"></path><path d="M48.544 14.274a2 2 0 0 0 2.642-3.004 3.217 3.217 0 0 1-1.17-2.823 5.238 5.238 0 0 1 2.552-3.813c3.623-2.173 7.654 1.818 9.278 4.231 2.965 4.41 2.405 11.15 1.024 15.58a30.34 30.34 0 0 1-.544 1.567c-.108-.005-.214-.016-.324-.016a6.023 6.023 0 1 0 4.02 1.561c.243-.64.467-1.28.666-1.92 1.724-5.53 2.228-13.427-1.524-19.005-3.282-4.88-9.266-8.663-14.653-5.428a9.225 9.225 0 0 0-4.48 6.88 7.211 7.211 0 0 0 2.513 6.19zm13.458 19.723a2 2 0 1 1 1.998-2 2.003 2.003 0 0 1-1.998 2zm7.528 20.116a1.822 1.822 0 0 1 .04 1.328 1.654 1.654 0 0 1-.923 1.007 1.698 1.698 0 0 1-1.371.032 1.77 1.77 0 0 1-1.003-.903l-2.307-4.853a1.974 1.974 0 0 0-1.184-1.067 2.118 2.118 0 0 0-2.656 1.203 1.942 1.942 0 0 0 .095 1.585l2.307 4.853a5.88 5.88 0 0 0 1.43 1.835 6.134 6.134 0 0 0 1.941 1.134 5.987 5.987 0 0 0 2.224.342 5.786 5.786 0 0 0 2.247-.535 5.573 5.573 0 0 0 1.886-1.398 6.103 6.103 0 0 0 1.163-1.963 6.02 6.02 0 0 0 .353-2.206 5.26 5.26 0 0 0-.511-2.14l-.882-1.854a1.633 1.633 0 0 1-.067-1.316 1.738 1.738 0 0 1 .87-.979 2.01 2.01 0 0 1 1.432-.078 1.633 1.633 0 0 1 1.01.882l2.308 4.853a1.98 1.98 0 0 0 1.149 1.067 2.027 2.027 0 0 0 1.578-.094 2.26 2.26 0 0 0 1.073-1.192 1.829 1.829 0 0 0-.056-1.502l-2.307-4.853a5.22 5.22 0 0 0-1.43-1.834 6.502 6.502 0 0 0-2.003-1.123 6.247 6.247 0 0 0-2.258-.342 5.617 5.617 0 0 0-2.191.51 5.501 5.501 0 0 0-1.9 1.404 5.847 5.847 0 0 0-1.127 1.93 6.005 6.005 0 0 0-.327 2.192 5.827 5.827 0 0 0 .503 2.194zm17.888 10.12a7.216 7.216 0 0 0-1.772-2.376 7.332 7.332 0 0 0-2.433-1.424 7.528 7.528 0 0 0-2.797-.408 7.827 7.827 0 0 0-2.86.666l-9.206 4.23a1.725 1.725 0 0 0-.962 1.106 1.977 1.977 0 0 0 .098 1.485 1.945 1.945 0 0 0 1.137 1.005 1.92 1.92 0 0 0 1.52-.034l3.162-1.454 2.89 6.081-3.244 1.492a1.726 1.726 0 0 0-.981 1.098 1.994 1.994 0 0 0 .117 1.49 1.967 1.967 0 0 0 1.144.987 1.935 1.935 0 0 0 1.488-.07l9.346-4.295a6.668 6.668 0 0 0 2.32-1.73 7.305 7.305 0 0 0 1.38-2.395 7.027 7.027 0 0 0 .36-2.724 7.345 7.345 0 0 0-.707-2.73zm-3.49 4.245a3.14 3.14 0 0 1-.674 1.105 3.447 3.447 0 0 1-1.096.788l-2.357 1.083-2.89-6.08 2.495-1.148a3.164 3.164 0 0 1 1.282-.29 3.25 3.25 0 0 1 1.254.221 3.632 3.632 0 0 1 1.077.669 3.175 3.175 0 0 1 .78 1.036 3.234 3.234 0 0 1 .327 1.327 3.61 3.61 0 0 1-.198 1.289zm7.978 6.582a1.983 1.983 0 0 0-1.576.061l-13.95 6.41a2.26 2.26 0 0 0-1.073 1.19 1.904 1.904 0 0 0 .082 1.557l3.992 8.398a1.927 1.927 0 0 0 1.144 1.02 2.038 2.038 0 0 0 1.597-.087 1.954 1.954 0 0 0 1.065-1.137 1.881 1.881 0 0 0-.062-1.516l-3.124-6.57 12.092-5.557a1.911 1.911 0 0 0 1.051-1.165 1.946 1.946 0 0 0-.062-1.516 2.052 2.052 0 0 0-1.176-1.088zm8.152 25.357a2.028 2.028 0 0 0 2.726.972 2.016 2.016 0 0 0 1.08-1.143 1.893 1.893 0 0 0-.063-1.55l-3.707-7.798a1.883 1.883 0 0 0-1.204-1.04 2.12 2.12 0 0 0-1.55.08l-13.95 6.41a2.041 2.041 0 0 0-1.017 2.693l3.707 7.798a1.969 1.969 0 0 0 1.157 1.047 2.048 2.048 0 0 0 1.597-.086 1.974 1.974 0 0 0 1.052-1.131 1.895 1.895 0 0 0-.062-1.55l-2.852-6L90.3 97.59l1.983 4.171a2.069 2.069 0 0 0 3.8-.182 1.91 1.91 0 0 0-.055-1.537l-1.984-4.172 3.162-1.452z"></path></svg> 
+                </div>
+            </div>
+
+            <div class="h-[100px] rounded-[12px] bg-white border-l-[4px] border-red-500 flex items-center justify-between px-[30px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out shadow-lg">
+                <div>
+                    <h2 class='text-red-500 text-[14px] leading-[20px] font-bold'>Expired Product</h2>
+                    <h1 class='text-[#5a5c69] text-[24px] leading-[30px] mt-[10px] font-bold'>{{expired}}</h1>
+                </div>
+                <div class="ml-5 text-blue-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" class="icon" data-name="Layer 1" viewBox="0 0 168 168" id="expired"><path fill="#2d4356" d="M159.426 8.612a3 3 0 1 0-3-3 3 3 0 0 0 3 3zm0-4.5a1.5 1.5 0 1 1-1.5 1.5 1.5 1.5 0 0 1 1.5-1.5zM94 10a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0-6a2 2 0 1 1-2 2 2 2 0 0 1 2-2zm71.426 86.612a3 3 0 1 0-3 3 3 3 0 0 0 3-3zm-3 1.5a1.5 1.5 0 1 1 1.5-1.5 1.5 1.5 0 0 1-1.5 1.5zm-131-61.5a3 3 0 1 0-3-3 3 3 0 0 0 3 3zm0-4.5a1.5 1.5 0 1 1-1.5 1.5 1.5 1.5 0 0 1 1.5-1.5zm-24-.5a2 2 0 1 0-2-2 2 2 0 0 0 2 2zm0-3a1 1 0 1 1-1 1 1 1 0 0 1 1-1zm143.295 125.776H84.959a63.984 63.984 0 0 0 63.036-63.925c0-.017.005-.033.005-.05s0-.035-.005-.053A63.993 63.993 0 0 0 84.1 20.423c-.035 0-.068-.01-.1-.01s-.068.009-.1.01a63.993 63.993 0 0 0-63.895 63.936c0 .018-.005.035-.005.053s0 .033.005.05a63.984 63.984 0 0 0 63.036 63.925H17.279a2.017 2.017 0 1 0 0 4h133.442a2.017 2.017 0 1 0 0-4zM82 136.826v7.535a60.05 60.05 0 0 1-57.945-57.949h7.532a2 2 0 0 0 0-4h-7.532A60.05 60.05 0 0 1 82 24.471V32a2 2 0 0 0 4 0v-7.529a60.05 60.05 0 0 1 57.945 57.941h-7.531a2 2 0 0 0 0 4h7.531A60.05 60.05 0 0 1 86 144.362v-7.535a2 2 0 0 0-4 0z"></path><circle cx="2" cy="150.388" r="2" fill="#2d4356"></circle><path fill="#2d4356" d="M160 148.388h-3a2 2 0 0 0 0 4h3a2 2 0 0 0 0-4zm-149 0H8a2 2 0 0 0 0 4h3a2 2 0 0 0 0-4z"></path><circle cx="166" cy="150.388" r="2" fill="#2d4356"></circle><path fill="#2d4356" d="M131.219 114.745c1.025-1.778.866-4.088-.469-6.393L89.271 41.793c-1.3-2.23-3.221-3.509-5.269-3.51a6.259 6.259 0 0 0-5.255 3.484l-41.53 66.641c-1.3 2.247-1.462 4.557-.437 6.335s3.114 2.806 5.726 2.806H125.5c2.605 0 4.691-1.021 5.719-2.804Zm-90.973-2a2.513 2.513 0 0 1 .4-2.277l41.527-66.64c.561-.967 1.245-1.545 1.828-1.545s1.266.578 1.826 1.545l41.494 66.584a2.573 2.573 0 0 1 .433 2.335 2.6 2.6 0 0 1-2.258.8H42.505a2.6 2.6 0 0 1-2.259-.801Z"></path><path fill="#0bceb2" d="m15.18 48.519 2.102-2.764-1.327-.752-1.349 3.096h-.045l-1.371-3.074-1.35.774 2.08 2.699v.044l-3.253-.421v1.504l3.274-.419v.044l-2.101 2.697 1.26.797 1.439-3.119h.044l1.327 3.097 1.394-.796-2.124-2.655v-.044l3.339.398v-1.504l-3.339.443v-.045zM42.552 10.497l2.281-3-1.441-.816-1.463 3.36h-.049l-1.488-3.336-1.465.84 2.257 2.929v.047l-3.53-.456v1.632l3.553-.455v.048l-2.28 2.927 1.368.865 1.561-3.385h.047l1.44 3.36 1.513-.863-2.304-2.881v-.048l3.623.432v-1.632l-3.623.48v-.048zM71.202 12.678l-.856 1.099.513.325.587-1.271h.017l.541 1.262.568-.324-.865-1.082v-.018l1.36.162v-.612l-1.36.18v-.018l.856-1.126-.541-.307-.549 1.262h-.019l-.558-1.253-.55.316.847 1.099v.018l-1.325-.171v.612l1.334-.171v.018zM161.79 48.586V47.02l-3.477.461v-.046l2.188-2.879-1.382-.783-1.405 3.224h-.046l-1.428-3.201-1.406.806 2.166 2.81v.046l-3.387-.438v1.566l3.41-.437v.046l-2.189 2.809 1.313.83 1.498-3.248h.045l1.382 3.225 1.452-.829-2.211-2.764v-.046l3.477.414zM139.313 30.435l2.188-2.879-1.382-.783-1.405 3.224h-.046l-1.428-3.201-1.406.806 2.166 2.81v.046l-3.387-.438v1.566l3.41-.437v.046l-2.189 2.809 1.313.83 1.498-3.248h.045l1.382 3.225 1.452-.829-2.211-2.764v-.046l3.477.414V30.02l-3.477.461v-.046zM132.84 9.604l1.832.218v-.825l-1.832.243v-.025l1.153-1.517-.728-.413-.741 1.699h-.024l-.753-1.687-.741.425 1.142 1.481v.025l-1.785-.231v.825l1.797-.23v.024l-1.154 1.481.692.437.79-1.712h.023l.729 1.7.765-.437-1.165-1.457v-.024zM118.154 156h-8.308a2.006 2.006 0 0 0 0 4h8.308a2.006 2.006 0 0 0 0-4zm-60 0h-8.308a2.006 2.006 0 0 0 0 4h8.308a2.006 2.006 0 0 0 0-4zM104 156H64a2 2 0 0 0 0 4h15.94v2H72a2 2 0 0 0 0 4h25a2 2 0 0 0 0-4h-8.94v-2H104a2 2 0 0 0 0-4zM84 88.291a2 2 0 0 0 2-2V61.542a2 2 0 1 0-4 0v24.749a2 2 0 0 0 2 2z"></path><circle cx="84" cy="96.291" r="4" fill="#0bceb2"></circle></svg>
+                </div>
+            </div>
+            
+        </div>
+        
+    </main>
+     <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-2 mb-3">
+
+                {% comment %} <label class="block text-sm">
+                    <span class="text-gray-700">FROM</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        name="from"
+                        id="from"
+                    />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">TO</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        name="to"
+                        id="to"
+                    />
+                </label>
+
+               
+               
+                <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="search2" onclick="Filter()">
+                    Search
+                </button>  {% endcomment %}
+
+                <label for="">
+                    <span class="text-gray-700">By Invoice status</span>
+                    <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="" required onchange="filterItem(this)">
+                        <option selected disabled=true>Select status</option>
+                       
+                           <option>Sold</option>   
+                           <option>Expired</option>   
+                           <option>Unverified</option>   
+                        
+                    </select>
+                </label>
+
+            </div>
+    
+    <h4 class="my-4 text-lg font-semibold text-gray-600 dark:text-gray-300">
+       Products
+    </h4>
+
+    <div class="flex flex-wrap justify-between gap-4 my-2">
+        {% comment %} <table class="border-collapse border border-slate-400 table-auto w-9/12">
+            <thead class="bg-slate-300">
+                <tr class="bg-slate-300">
+                    <th class="border border-slate-300 ...">State</th>
+                    <th class="border border-slate-300 ...">City</th>
+                    <th class="border border-slate-300 ...">State</th>
+                    <th class="border border-slate-300 ...">City</th>
+                    <th class="border border-slate-300 ...">State</th>
+                    <th class="border border-slate-300 ...">City</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="h-4 text-center items-center">
+                    <td class="border border-slate-300 px-2 ...">Indiana</td>
+                    <td class="border border-slate-300 px-2 ...">Indianapolis</td>
+                    <td class="border border-slate-300 px-2 ...">Indiana</td>
+                    <td class="border border-slate-300 px-2 ...">Indianapolis</td>
+                    <td class="border border-slate-300 px-2 ...">Indiana</td>
+                    <td class="border border-slate-300 px-2 ...">Indianapolis</td>
+                </tr>
+                <tr class="h-4 text-center items-center">
+                    <td class="border border-slate-300 px-2 ...">Ohio</td>
+                    <td class="border border-slate-300 px-2 ...">Columbus</td>
+                    <td class="border border-slate-300 px-2 ...">Ohio</td>
+                    <td class="border border-slate-300 px-2 ...">Columbus</td>
+                    <td class="border border-slate-300 px-2 ...">Ohio</td>
+                    <td class="border border-slate-300 px-2 ...">Columbus</td>
+                </tr>
+                <tr class="h-4 text-center items-center">
+                    <td class="border border-slate-300 px-2 ...">Michigan</td>
+                    <td class="border border-slate-300 px-2 ...">Detroit</td>
+                    <td class="border border-slate-300 px-2 ...">Michigan</td>
+                    <td class="border border-slate-300 px-2 ...">Detroit</td>
+                    <td class="border border-slate-300 px-2 ...">Michigan</td>
+                    <td class="border border-slate-300 px-2 ...">Detroit</td>
+                </tr>
+            </tbody>
+        </table> {% endcomment %}
+        <div class="w-full my-6 overflow-hidden rounded-lg shadow-xs">
+            <div class="w-full overflow-x-auto">
+                <table class="w-full whitespace-no-wrap" id="myTable">
+                    <thead>
+                        <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                            <th class="px-4 py-3">SN</th>
+                            <th class="px-4 py-3">Invoice No.</th>
+                            <th class="px-4 py-3">Item</th>
+                            <th class="px-4 py-3">Manufacture Date</th>
+                            <th class="px-4 py-3">Expiry Date</th>
+                            <th class="px-4 py-3">Days Before expir</th>
+                            <th class="px-4 py-3">Remaining Days</th>
+                            <th class="px-4 py-3">Notifiy Me</th>
+                            <th class="px-4 py-3">Notification Status</th>
+                            <th class="px-4 py-3">Status</th> 
+                            <th class="px-4 py-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y">
+                         {% for stockout in items|dictsort:"rdays" %}
+                            <tr class="text-gray-700">
+                                <td class="px-4 py-3">
+                                  {{ forloop.counter0|add:items.start_index}}
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                  {{stockout.item_code}}
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                   {{stockout.item}}
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                    {{stockout.manufacture_date}}
+                                </td>
+                                <td class="px-4 py-3 text-xs text-red-600">
+                                    {{stockout.expiry_date}}
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                    {{stockout.days}}
+                                </td> 
+                                <td class="px-4 py-3 text-sm">
+                                    {{stockout.rdays}}
+                                </td> 
+                                <td class="px-4 py-3 text-sm">
+                                    {{stockout.notify_me}}
+                                </td> 
+                                <td class="px-4 py-3 text-sm">
+                                    {% if stockout.n_status == "1" %}
+                                     Enabled
+                                    {% else %}
+                                     Disabled
+                                    {% endif%}
+                                    
+                                </td> 
+                                <td class="px-4 py-3 text-sm">
+                                    {{stockout.status}}
+                                </td> 
+                            </tr>
+                         {% endfor %}
+                         
+                    </tbody>
+                </table>
+                <span class="flex items-center justify-center my-3 col-span-3text-gray-500" id="no-data">
+                 
+                </span>
+            </div>
+            <div class="grid grid-cols-2 mt-3 px-4 py-3 text-xs font-semibold tracking-wide text-gray-500 uppercase border-t bg-gray-50 sm:grid-cols-2">
+                <span class="flex items-center col-span-3">
+                  showing {{items}} 
+                </span>
+                <span class="col-span-2"></span>
+                {% if items.has_other_pages %}
+                    <div class="">
+                        <div class="col">
+                            <nav>
+                                <ul class="pagination inline-flex items-center">
+                                    {% if items.has_previous %}
+                                        <li><a href="?page={{items.previous_page_number}}">
+                                            <button
+                                                class="px-3 py-1 rounded-md rounded-l-lg focus:outline-none focus:shadow-outline-purple"
+                                                aria-label="Previous"
+                                            >
+                                                <svg
+                                                aria-hidden="true"
+                                                class="w-4 h-4 fill-current"
+                                                viewBox="0 0 20 20"
+                                                >
+                                                <path
+                                                    d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                                    clip-rule="evenodd"
+                                                    fill-rule="evenodd"
+                                                ></path>
+                                                </svg>
+                                            </button>
+                                        </a></button></li>
+                                    {% else %}
+                                        <li class="disabled">
+                                            <button
+                                            class="px-3 py-1 rounded-md rounded-l-lg focus:outline-none focus:shadow-outline-purple"
+                                            aria-label="Previous"
+                                            >
+                                            <svg
+                                            aria-hidden="true"
+                                            class="w-4 h-4 fill-current"
+                                            viewBox="0 0 20 20"
+                                            >
+                                            <path
+                                                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                                clip-rule="evenodd"
+                                                fill-rule="evenodd"
+                                            ></path>
+                                            </svg>
+                                            </button>
+                                        </li>
+                                    {% endif %}
+                                    {% for i in items.paginator.page_range %}
+                                    {% if items.number == i %}
+                                        <li class="active border rounded-lg"><button
+                                            class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple"
+                                        >{{ i }} <span class="sr_only"></span></button></li>
+                                    {% else %}
+                                        <li> <button
+                                            class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple"
+                                        ><a href="?page={{ i }}">{{ i }}</a></button></li>
+                                    {% endif %}
+                                    {% endfor %}
+                                    {% if items.has_next %}
+                                        <li><a href="?page={{items.next_page_number}}">
+                                            <button
+                                                class="px-3 py-1 rounded-md rounded-r-lg focus:outline-none focus:shadow-outline-purple"
+                                                aria-label="Next"
+                                            >
+                                                <svg
+                                                class="w-4 h-4 fill-current"
+                                                aria-hidden="true"
+                                                viewBox="0 0 20 20"
+                                                >
+                                                <path
+                                                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                                    clip-rule="evenodd"
+                                                    fill-rule="evenodd"
+                                                ></path>
+                                                </svg>
+                                            </button>
+                                        </a></li>
+                                    {% else %}
+                                        <li class="disabled">
+                                            <button
+                                            class="px-3 py-1 rounded-md rounded-r-lg focus:outline-none focus:shadow-outline-purple"
+                                            aria-label="Next"
+                                            >
+                                                <svg
+                                                class="w-4 h-4 fill-current"
+                                                aria-hidden="true"
+                                                viewBox="0 0 20 20"
+                                                >
+                                                <path
+                                                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                                    clip-rule="evenodd"
+                                                    fill-rule="evenodd"
+                                                ></path>
+                                                </svg>
+                                            </button>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+
+                            </nav>
+                        </div>
+                    </div>
+                {% endif %}
+                <!-- Pagination -->
+                {% comment %} <span class="flex col-span-4 mt-2 sm:mt-auto sm:justify-end">
+                    <nav aria-label="Table navigation">
+                        <ul class="inline-flex items-center">
+                            <li>
+                            <button
+                                class="px-3 py-1 rounded-md rounded-l-lg focus:outline-none focus:shadow-outline-purple"
+                                aria-label="Previous"
+                            >
+                                <svg
+                                aria-hidden="true"
+                                class="w-4 h-4 fill-current"
+                                viewBox="0 0 20 20"
+                                >
+                                <path
+                                    d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                    clip-rule="evenodd"
+                                    fill-rule="evenodd"
+                                ></path>
+                                </svg>
+                            </button>
+                            </li>
+                            <li>
+                            <button
+                                class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple"
+                            >
+                                1
+                            </button>
+                            </li>
+                            <li>
+                            <button
+                                class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple"
+                            >
+                                2
+                            </button>
+                            </li>
+                            <li>
+                            <button
+                                class="px-3 py-1 text-white transition-colors duration-150 bg-slate-200 border border-r-0 border-slate-300 rounded-md focus:outline-none focus:shadow-outline-slate"
+                            >
+                                3
+                            </button>
+                            </li>
+                            <li>
+                            <button
+                                class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple"
+                            >
+                                4
+                            </button>
+                            </li>
+                            <li>
+                            <span class="px-3 py-1">...</span>
+                            </li>
+                            <li>
+                            <button
+                                class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple"
+                            >
+                                8
+                            </button>
+                            </li>
+                            <li>
+                            <button
+                                class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple"
+                            >
+                                9
+                            </button>
+                            </li>
+                            <li>
+                            <button
+                                class="px-3 py-1 rounded-md rounded-r-lg focus:outline-none focus:shadow-outline-purple"
+                                aria-label="Next"
+                            >
+                                <svg
+                                class="w-4 h-4 fill-current"
+                                aria-hidden="true"
+                                viewBox="0 0 20 20"
+                                >
+                                <path
+                                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                    clip-rule="evenodd"
+                                    fill-rule="evenodd"
+                                ></path>
+                                </svg>
+                            </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </span> {% endcomment %}
+            </div>
+        </div>
+
+        <div class=" hidden flex items-center justify-between content-box">
+
+            <div class="h-[100px] rounded-[12px] mb-2 bg-orange-300 border-l-[4px] border-orange-300 flex items-center justify-between px-[38px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out">
+                <div>
+                    <h2 class='text-white text-[14px] leading-[20px] font-bold'>Refresh Page</h2>
+                </div>
+                <div class="ml-5 text-blue-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" class="icon" data-name="Layer 1" viewBox="0 0 128 128" id="sales"><path d="M46.126 83.553a1.998 1.998 0 0 0-2.778.525l-16 23.47a2 2 0 1 0 3.304 2.255l16-23.47a2 2 0 0 0-.526-2.78zM30 80.004a6 6 0 1 0 6 6.001 6.007 6.007 0 0 0-6-6zm0 8.002a2 2 0 1 1 2-2 2.002 2.002 0 0 1-2 2zm12 16.002a6 6 0 1 0 6 6.001 6.007 6.007 0 0 0-6-6zm0 8.001a2 2 0 1 1 2-2 2.002 2.002 0 0 1-2 2z"></path><path d="M56.28 122.301a2.213 2.213 0 0 1-2.573 1.655L11.542 113.91a2.106 2.106 0 0 1-1.48-2.546l17.344-70.407a13.162 13.162 0 0 1 4.841-6.721l13.315-8.212 2.284-6.108L30.148 30.83a17.11 17.11 0 0 0-6.63 9.184l-17.34 70.393a6.08 6.08 0 0 0 4.439 7.395l42.163 10.046a6.333 6.333 0 0 0 7.381-4.58l2.864-11.348-2.611-6.002-4.134 16.383Z"></path><path d="M121.494 99.028 93.35 33.343a15.969 15.969 0 0 0-7.999-7.635l-13.58-4.975a33.583 33.583 0 0 1-.698 4.005l12.9 4.726a12.192 12.192 0 0 1 5.7 5.455l28.144 65.684a2.302 2.302 0 0 1-1.048 2.945s-38.59 18.24-38.687 18.286a1.826 1.826 0 0 1-2.45-.989L46.765 54.491a13.338 13.338 0 0 1-.216-8.256l9.286-24.841a2.103 2.103 0 0 1 2.613-1.282l1.238.454a19.943 19.943 0 0 0 .292-4.154l-.154-.056a5.891 5.891 0 0 0-2.03-.362 6.123 6.123 0 0 0-5.705 3.998L42.8 44.834a17.284 17.284 0 0 0 .295 11.255s28.857 66.325 28.869 66.352a5.877 5.877 0 0 0 7.827 3.01l38.686-18.286a6.3 6.3 0 0 0 3.016-8.137Z"></path><path d="M48.544 14.274a2 2 0 0 0 2.642-3.004 3.217 3.217 0 0 1-1.17-2.823 5.238 5.238 0 0 1 2.552-3.813c3.623-2.173 7.654 1.818 9.278 4.231 2.965 4.41 2.405 11.15 1.024 15.58a30.34 30.34 0 0 1-.544 1.567c-.108-.005-.214-.016-.324-.016a6.023 6.023 0 1 0 4.02 1.561c.243-.64.467-1.28.666-1.92 1.724-5.53 2.228-13.427-1.524-19.005-3.282-4.88-9.266-8.663-14.653-5.428a9.225 9.225 0 0 0-4.48 6.88 7.211 7.211 0 0 0 2.513 6.19zm13.458 19.723a2 2 0 1 1 1.998-2 2.003 2.003 0 0 1-1.998 2zm7.528 20.116a1.822 1.822 0 0 1 .04 1.328 1.654 1.654 0 0 1-.923 1.007 1.698 1.698 0 0 1-1.371.032 1.77 1.77 0 0 1-1.003-.903l-2.307-4.853a1.974 1.974 0 0 0-1.184-1.067 2.118 2.118 0 0 0-2.656 1.203 1.942 1.942 0 0 0 .095 1.585l2.307 4.853a5.88 5.88 0 0 0 1.43 1.835 6.134 6.134 0 0 0 1.941 1.134 5.987 5.987 0 0 0 2.224.342 5.786 5.786 0 0 0 2.247-.535 5.573 5.573 0 0 0 1.886-1.398 6.103 6.103 0 0 0 1.163-1.963 6.02 6.02 0 0 0 .353-2.206 5.26 5.26 0 0 0-.511-2.14l-.882-1.854a1.633 1.633 0 0 1-.067-1.316 1.738 1.738 0 0 1 .87-.979 2.01 2.01 0 0 1 1.432-.078 1.633 1.633 0 0 1 1.01.882l2.308 4.853a1.98 1.98 0 0 0 1.149 1.067 2.027 2.027 0 0 0 1.578-.094 2.26 2.26 0 0 0 1.073-1.192 1.829 1.829 0 0 0-.056-1.502l-2.307-4.853a5.22 5.22 0 0 0-1.43-1.834 6.502 6.502 0 0 0-2.003-1.123 6.247 6.247 0 0 0-2.258-.342 5.617 5.617 0 0 0-2.191.51 5.501 5.501 0 0 0-1.9 1.404 5.847 5.847 0 0 0-1.127 1.93 6.005 6.005 0 0 0-.327 2.192 5.827 5.827 0 0 0 .503 2.194zm17.888 10.12a7.216 7.216 0 0 0-1.772-2.376 7.332 7.332 0 0 0-2.433-1.424 7.528 7.528 0 0 0-2.797-.408 7.827 7.827 0 0 0-2.86.666l-9.206 4.23a1.725 1.725 0 0 0-.962 1.106 1.977 1.977 0 0 0 .098 1.485 1.945 1.945 0 0 0 1.137 1.005 1.92 1.92 0 0 0 1.52-.034l3.162-1.454 2.89 6.081-3.244 1.492a1.726 1.726 0 0 0-.981 1.098 1.994 1.994 0 0 0 .117 1.49 1.967 1.967 0 0 0 1.144.987 1.935 1.935 0 0 0 1.488-.07l9.346-4.295a6.668 6.668 0 0 0 2.32-1.73 7.305 7.305 0 0 0 1.38-2.395 7.027 7.027 0 0 0 .36-2.724 7.345 7.345 0 0 0-.707-2.73zm-3.49 4.245a3.14 3.14 0 0 1-.674 1.105 3.447 3.447 0 0 1-1.096.788l-2.357 1.083-2.89-6.08 2.495-1.148a3.164 3.164 0 0 1 1.282-.29 3.25 3.25 0 0 1 1.254.221 3.632 3.632 0 0 1 1.077.669 3.175 3.175 0 0 1 .78 1.036 3.234 3.234 0 0 1 .327 1.327 3.61 3.61 0 0 1-.198 1.289zm7.978 6.582a1.983 1.983 0 0 0-1.576.061l-13.95 6.41a2.26 2.26 0 0 0-1.073 1.19 1.904 1.904 0 0 0 .082 1.557l3.992 8.398a1.927 1.927 0 0 0 1.144 1.02 2.038 2.038 0 0 0 1.597-.087 1.954 1.954 0 0 0 1.065-1.137 1.881 1.881 0 0 0-.062-1.516l-3.124-6.57 12.092-5.557a1.911 1.911 0 0 0 1.051-1.165 1.946 1.946 0 0 0-.062-1.516 2.052 2.052 0 0 0-1.176-1.088zm8.152 25.357a2.028 2.028 0 0 0 2.726.972 2.016 2.016 0 0 0 1.08-1.143 1.893 1.893 0 0 0-.063-1.55l-3.707-7.798a1.883 1.883 0 0 0-1.204-1.04 2.12 2.12 0 0 0-1.55.08l-13.95 6.41a2.041 2.041 0 0 0-1.017 2.693l3.707 7.798a1.969 1.969 0 0 0 1.157 1.047 2.048 2.048 0 0 0 1.597-.086 1.974 1.974 0 0 0 1.052-1.131 1.895 1.895 0 0 0-.062-1.55l-2.852-6L90.3 97.59l1.983 4.171a2.069 2.069 0 0 0 3.8-.182 1.91 1.91 0 0 0-.055-1.537l-1.984-4.172 3.162-1.452z"></path></svg> 
+                </div>
+            </div>
+
+            <div class="h-[100px] rounded-[12px] my-2 bg-blue-300 border-l-[4px] border-blue-300 flex items-center justify-between px-[38px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out">
+                <div>
+                    <h2 class='text-white text-[14px] leading-[20px] font-bold'><b class="text-[20px]"></b> Total Stockout </h2>
+                    <h1 class='text-[#5a5c69] text-[24px] leading-[30px] mt-[10px] font-bold' type="password" id="amount">{{total_amount}}</h1>
+                </div>
+                <div class="ml-5 text-white" id="toggleButtonContainer">
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" onclick="showAmount()">
+                        <path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4 6-9 6s-9-4.8-9-6c0-1.2 4-6 9-6s9 4.8 9 6Z"/>
+                        <path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                    </svg>
+                      
+                    
+                </div>
+            </div>
+
+            <div class="h-[100px] rounded-[12px] bg-red-300 border-l-[4px] border-red-300 flex items-center justify-between px-[38px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out">
+                <div>
+                    <h2 class='text-white text-[14px] leading-[20px] font-bold'>Today Stockout </h2>
+                    <h1 class='text-[#5a5c69] text-[24px] leading-[30px] mt-[10px] font-bold' id="today-amount">{{today_sales}}</h1>
+                </div>
+                <div class="ml-5 text-white" id="T_toggleButtonContainer">
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" onclick="showTodayAmount()">
+                        <path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4 6-9 6s-9-4.8-9-6c0-1.2 4-6 9-6s9 4.8 9 6Z"/>
+                        <path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <script>
+        
+       function filterItem(selected){
+          // preventDefault()
+
+            const value = selected.value
+            
+            if(value){   
+                $.ajax({
+                    url: '/InspirationControlFilter/'+value+'/',
+                    method: 'GET',
+                    
+                    success: function(data) {
+                        
+                        if(data.items && data.items.length > 0){
+                            var table = $('#myTable tbody')
+                        
+                            table.empty()
+                            var num = 1
+                            data.items.forEach(item => {
+                            num++ 
+                            if(item.status === data.status){
+                                var n_status = ""
+                                if(item.n_status === "1"){
+                                   n_status = "Enabled"
+                                }else{
+                                   n_status = "Disabled"
+                                }
+                                const row = $('<tr id="row" class="text-gray-700">').append(
+                                    $('<td class="px-4 py-3 text-sm">').html(num),
+                                    $('<td class="px-4 py-3 text-sm">').text(item.invoice_no),
+                                    $('<td class="px-4 py-3 text-sm">').text(item.item),
+                                    $('<td class="px-4 py-3 text-sm">').text(item.manufacture_date),
+                                    $('<td class="px-4 py-3 text-sm text-red-500">').text(item.expiry_date),
+                                    $('<td class="px-4 py-3 text-sm">').text(item.days),
+                                    $('<td class="px-4 py-3 text-sm">').text(item.rdays),
+                                    $('<td class="px-4 py-3 text-sm">').text(item.notify_me),
+                                    $('<td class="px-4 py-3 text-sm">').text(n_status),
+                                    $('<td class="px-4 py-3 text-sm">').text(item.status),
+                                   
+                                   
+                                );
+                               // table.animate({left:"100px"}, "slow");
+                                table.append(row);
+                            }else{
+                               $('#no-data').html('No '+value+' product in database')
+                            }
+                           });
+                           
+                        }else{
+                             
+                            alertify.error('No '+value+' product in database')
+                            //alertify.error("Select start_date and end_date")
+                        }
+                    },
+                    error: function(error) {
+                        // Handle the error
+                        console.log(error)
+                    }
+                });
+            }else{
+                alertify.error("Select Invoice number")
+            }
+            
+            
+        }; 
+
+
+
+    
+    </script>
+
+{% endblock home %}
+      
+  

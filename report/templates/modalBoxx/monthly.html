@@ -1,0 +1,179 @@
+{% load humanize %}
+
+<div class="grid gap-3 md:grid-cols-1 xl:grid-cols-2"> 
+    {% for sale in monthly_sales_data%}
+    <dialog id="box{{forloop.counter}}" class="modal py-3 px-3 rounded-lg">
+        <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+        href="#">
+            <div class="flex items-center">
+                <svg
+                    class="w-5 h-5 mr-2"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                >
+                <path
+                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                ></path>
+                </svg>
+                <span>{{sale.month}}, {{sale.year}}</span>
+            </div>
+            <span>
+                <form method="dialog" class="modal-backdrop">
+                    <button class="py-1 px-2 rounded-full bg-red-600 text-[14px] text-white font-semibold">X</button>
+                </form>
+            </span>
+        </a>
+        <div class="modal-box w-full">
+            <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+        
+                <div class=" mx-4 overflow-x-auto table-responsive mt-5" id="{{forloop.counter}}">
+                    {% include 'components/Periodheader.html' %}
+    
+                    <p class="text-center my-3 text-[#2F4F4F] text-md font-bold whitespace-nowrap">{{sale.month}}, {{sale.year}} Sales Report</p>
+                    <table id="example2{{forloop.counter}}" class="sale border" style="width:100%">
+                            <thead>
+                                <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                                    <th class="pr-4 py-3">DATE</th>
+                                    <th class="pr-4 py-3">ITEM CODE</th>
+                                    <th class="pr-4 py-3">ITEM NAME</th>
+                                    <th class="pr-4 py-3">ITEM DESCRIPTION</th>
+                                    <th class="pr-4 py-3">PRICE</th>
+                                    <th class="pr-4 py-3">QTY</th>
+                                    <th class="pr-4 py-3">AMOUNT</th>
+                                    <!-- <th class="px-4 py-3">TAX</th>
+                                    <th class="px-4 py-3">TOTAL</th> -->
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y">
+
+                                
+                                {% for item in sale.sales %}
+                                
+                                <tr class="text-gray-700">
+                                    <td class="text-[10px]">
+                                        {{item.invoice_date |date:""}}
+                                    </td>
+                                    <td class="text-[10px]">
+                                        {{item.itemcode}}
+                                    </td>
+                                    <td class="text-[10px]">
+                                        {{item.item_name}}
+                                    </td>
+                                    <td class="text-[10px]">
+                                        {{item.item_description}}
+                                        
+                                    </td>
+                                    <td class="text-[10px]">
+                                        {{item.unit_p}}
+                                    </td>
+                                    <td class="text-[10px]">
+                                        {{item.qty}}
+                                    </td>
+                                    <td class="text-[10px]">
+                                        {{item.amount}}
+                                    </td>
+                                    <!-- <td class="text-[10px]">
+                                        {{sale.amount_paid}}
+                                    </td>
+                                    <td class="text-[10px]">
+                                        {{""}}
+                                    </td>
+                                    <td class="text-[10px]">
+                                        {{sale.payment_method}}
+                                    </td> -->
+                                
+
+                                </tr>
+
+                                {% endfor %}
+                                {% for item in sale.purchase %}
+                                    
+                                    <tr class="text-red-700">
+                                        <td class="text-[10px]">
+                                            {{item.created_at |date:""}}
+                                        </td>
+                                        <!-- <td class="text-[10px]">
+                                            {{item.itemcode}}
+                                        </td>
+                                        <td class="text-[10px]">
+                                            {{item.item_name}}
+                                        </td>
+                                        <td class="text-[10px]">
+                                            {{item.item_descriptions}}
+                                            
+                                        </td>
+                                        <td class="text-[10px]">
+                                            {{item.unit_p}}
+                                        </td>
+                                        <td class="text-[10px]">
+                                            {{item.qty}}
+                                        </td> -->
+                                        <td class="text-[10px]" colspan="4">
+                                            Expenses
+                                        </td>
+                                        <td class="text-[10px]">
+                                            {{item.amount}}
+                                        </td>
+                                       
+                                    
+            
+                                    </tr>
+            
+                                    {% endfor %}
+
+                            </tbody>
+                            <hr>
+                            {% include 'ModalBoxx/mtfoot.html' %}
+                    </table>
+
+                    <div class="flex justify-end py-3 my-6 bg-white rounded-lg shadow-md">
+                        <div class="">
+                
+                            <label class="flex justify-between gap-6 text-sm">
+                                <span class="text-gray-700">Total Sales:  </span>
+                                <span>
+                                    <b class="mr-1 currency"></b><bold class="" id="sales_total">{{sale.total_sales|floatformat:2|intcomma}}</bold>
+                                </span>
+                            </label>
+                
+                            <label class="flex justify-between gap-6 text-sm">
+                                <span class="text-gray-700 ">Total Expenses:  </span>
+                                <span>
+                                    <b class="mr-1 currency"></b><bold class="" id="purchase_total">{{sale.total_purchase|floatformat:2|intcomma}}</bold>
+                                </span>
+                               
+                            </label>
+                            <label class="flex justify-between gap-6 text-sm">
+                                <span class="text-gray-700 ">Balance:  </span>
+                                <span>
+                                    <b class="mr-1 currency"></b><bold class="" id="total">{{sale.total|floatformat:2|intcomma}}</bold>
+                                </span>
+                            </label>
+                            
+                        </div>
+                        
+                    </div>
+                </div>
+                <!-- <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+                    <button type="button" class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                        href="#" onclick="generatePDF('{{forloop.counter}}')">
+                        Print
+                    </button >
+                    <button type="button" class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                        onclick="convertTableToExcel('{{forloop.counter}}', 'example2{{forloop.counter}}')">
+                        Export to excel
+                    </button >
+                    <button type="button" class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                        href="#" onclick="generatePDF('{{forloop.counter}}')">
+                        Export to PDF
+                    </button >
+                </div> -->
+
+                 <!-- Print Export To Excel and Export to Pdf template -->
+                 {% include 'ModalBoxx/printbtn.html' with container=forloop.counter table="example2" table_no=forloop.counter %}
+            </div>
+        </div>
+        
+    </dialog>
+    {% endfor %}
+</div>

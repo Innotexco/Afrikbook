@@ -1,0 +1,1870 @@
+
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="{% url 'main:grant_permission' %}">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>Edit User</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    <!-- {% if messages %}
+        {% include 'messages.html' %}
+    {% endif %} -->
+
+    <div class="px-4 py-5 my-3 bg-white rounded-lg shadow-md">
+
+        
+            <div class="flex flex-wrap gap-6 ">
+
+                <div class="user_info w-full xl:w-72 overflow-hidden rounded-lg shadow-xs">
+
+                    <h3 class="text-center text-[18px] font-bold text-gray-900 my-5">All Active User</h3>
+                    <div class="w-full overflow-x-auto table-responsive mb-2">
+                        <table id="example" class="display" style="width:100%">
+                            <thead>
+                                <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                                    <th class="px-4 py-3">Id</th>
+                                    <th class="px-4 py-3">Username</th>
+                                    <th class="px-4 py-3">Password</th>
+                                    <th class="px-4 py-3">Outlet</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y">
+            
+                                {% for display in show_user %}
+                                
+                                <tr class="text-gray-700">
+            
+                                    <td class="text-[10px]">
+                                        <div onclick="FetchUser('{{display.id}}')"
+                                            class="flex items-center justify-center hover:text-blue-500 cursor-pointer"
+                                            aria-label="Edit">
+                                            {{display.id}}
+                                        </div>
+                                    </td>
+                                    <td class="text-[10px]">
+                                        <div onclick="FetchUser('{{display.id}}')"
+                                            class="flex items-center justify-center hover:text-blue-500 cursor-pointer"
+                                            aria-label="Edit">
+                                            {{display.username}}
+                                        </div>
+                                    </td>
+                                    <td class="text-[10px]">
+                                        <div onclick="FetchUser('{{display.id}}')"
+                                            class="flex items-center justify-center hover:text-blue-500 cursor-pointer"
+                                            aria-label="Edit">
+                                            {{display.password}}
+                                        </div>
+                                    </td>
+                                    <td class="text-[10px]">
+                                        <div onclick="FetchUser('{{display.id}}')"
+                                            class="flex items-center justify-center hover:text-blue-500"
+                                            aria-label="Edit">
+                                            {{display.outlet}}
+                                        </div>
+                                    </td>
+        
+                                </tr>
+            
+                                {% endfor %}
+            
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3 class="text-center text-[18px] font-bold text-gray-900 mb-2">User Setup</h3>
+
+                    <form id="updateUserForm" action="{% url 'main:update_user' %}" method="POST" novalidate>
+                        {% csrf_token %}
+
+                        <label class="block text-sm">
+                            <span class="text-gray-700">ID</span>
+                            <input 
+                                id="user_id"
+                                name="id"
+                                class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                value=""
+                                readonly
+                            />
+                        </label>
+
+                        <label class="block text-sm">
+                            <span class="text-gray-700">Username</span>
+                            <input 
+                                class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                value=""
+                                id="username"
+                                name="username"
+                            />
+                        </label>
+
+                        <label class="block text-sm">
+                            <span class="text-gray-700 dark:text-gray-400">Password</span>
+                            <input 
+                                class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                value=""
+                                type="password"
+                                id="password"
+                                name="password"
+                            />
+                        </label>
+
+                        <label class="block text-sm">
+                            <span class="text-gray-700 dark:text-gray-400">C-Password</span>
+                            <input 
+                                class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                value=""
+                                type="password"
+                                id="c-password"
+                                name="c-password"
+                            />
+                        </label>
+
+                        <div class="mt-5">
+                            <h3 class="text-center text-[18px] font-bold text-gray-900 mb-2">Choose Outlet</h3>
+                            {% for display in outlet %}
+                            <div class="mt-2">
+                                <label class="inline-flex items-center text-gray-600">
+                                    <input
+                                        type="radio"
+                                        class="text-slate-600 form-radio focus:border-slate-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray"
+                                        name="outlet"
+                                        id="outlet"
+                                        value="{{ display.outlet_name }}"
+                                    />
+                                    <span class="ml-2">{{ display.outlet_name }}</span>
+                                </label>
+                            </div>
+                            {% endfor %}
+                            
+                        </div>
+
+                        <button type="button" onclick="updateUser()" class="block w-full px-4 py-1 mt-5 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-[#2F4F4F] border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 hover:text-gray-600 focus:outline-none focus:shadow-outline-slate">
+                            Update User
+                        </button>
+
+                    </form>
+
+                    <!-- Update User JavaScript code -->
+                    <script>
+                        function updateUser() {
+                            const formData = new FormData(document.getElementById('updateUserForm'));
+                            
+                            const id = document.getElementById("user_id").value
+                            if (id === ""){
+                                alertify.error("Please select a user")
+                            }
+                            else{
+                                $.ajax({
+                                    url: 'update-user/', 
+                                    type: 'POST',
+                                    data: formData,
+                                    processData: false,
+                                    contentType: false,
+                                    success: function (response) {
+                                        if (response.success) {
+                                            alert(response.message);
+                                            // Optionally, you can handle success actions
+                                        } else {
+                                            alert('Error: ' + response.message);
+                                        }
+                                    },
+                                    error: function () {
+                                        alert('An error occurred while updating user');
+                                    }
+                                });
+                            }
+                        }
+                    </script>
+
+                </div>
+
+                <script>
+                    function updatePrivileges() {
+                        const checkboxes = document.getElementsByName("all_page_access[]");
+                        const privilegeData = {
+                            id: document.getElementById("user_id").value,
+                            username: document.getElementById("username").value,
+                            privileges: [],
+                        };
+                
+                        for (let i = 0; i < checkboxes.length; i++) {
+                            if (checkboxes[i].checked) {
+                                privilegeData.privileges.push(checkboxes[i].value);
+                            }
+                            // alert('Permission ='+checkboxes[i].value)
+                        }
+                        // var formData = {
+                        //     'user_id': privilegeData.id,
+                        //     'privileges': privilegeData.privileges
+                        // }          
+                        if (privilegeData.id === ""){
+                          alertify.error("Please select a user")
+                        }
+                        else{
+                            $.ajax({
+                                url: 'Edit-User',  
+                                type: 'POST',
+                                //data: formData,
+                                data: JSON.stringify(privilegeData),
+                                contentType: 'application/json',
+                                dataType: 'json',
+                                success: function (response) {
+                                    if (response.success) {
+                                        alertify.success(response.message);
+                                        if( response.id != null){
+                                            document.getElementById(response.id).checked = true;
+                                        }
+                                        // Optionally, you can handle success actions
+                                    } else {
+                                        alert('Error: ' + response.message);
+                                    }
+                                },
+                                error: function () {
+                                    alert('An error occurred while updating privileges');
+                                }
+                            });
+                        }
+                    }
+                
+                    function removePrivilege(privilegeName) {
+                        const  id = document.getElementById("user_id").value;
+
+                        var checkbox = document.querySelectorAll(`input[type="checkbox"][value="${privilegeName}"]`);
+                        
+                         checkbox.checked = "true";
+                        if ( id === ""){
+                            alertify.error("Please select a user")
+                        }
+                        else{
+                            $.ajax({
+                                url: `/remove-privilege/${privilegeName}/`, 
+                                type: 'POST',
+                                data: {'csrfmiddlewaretoken': '{{ csrf_token }}', id:id},  
+                                dataType: 'json',
+                                success: function (response) {
+                                    if (response.success) {
+                                        alert(response.message);
+                                        checkbox.click();
+                                        // Optionally, you can handle success actions
+                                    } else {
+                                        alert('Error: ' + response.message);
+                                    }
+                                },
+                                error: function () {
+                                    alert('An error occurred while removing privilege');
+                                }
+                            });
+                        }
+                    }
+                </script>
+                
+                <form id="privilegeForm" class=" w-full xl:w-auto">
+                    {% csrf_token %}
+                    <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+
+                        <div class="w-full shadow-xl py-5">
+                            <h3 class="text-center text-[18px] font-bold text-gray-900 mb-2">Privilege Count</h3>
+                            
+                            <div class="block px-5 privilege">
+
+                                <div class="flex justify-between items-center">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Chart of account"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Chart of account
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Chart of account')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Purchase Invoices"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Purchase Invoices
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Purchase Invoices')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Purchase Quotes"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Purchase Quotes
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Purchase Quotes')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Purchase Order"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Purchase Order
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Purchase Order')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Returns Outwards"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Returns Outwards
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Returns Outwards')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Vendor"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Vendor
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Vendor')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Sales Invoices"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Sales Invoices
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Sales Invoices')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Sales Quotes"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Sales Quotes
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Sales Quotes')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Sales Order"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Sales Order
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Sales Order')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Returns Inwards"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Returns Inwards
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Returns Inwards')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Customer"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Customer
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Customer')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Employee"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Employee
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Employee')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Payroll"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Payroll
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Payroll')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Salary Approval"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Salary Approval
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Salary Approval')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Item Receipt"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Item Receipt
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Item Receipt')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Item Issue"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Item Issue
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Item Issue')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Transfer Stock"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Transfer Stock
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Transfer Stock')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Stock Adjustment"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Stock Adjustment
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Stock Adjustment')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Item"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Item
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Item')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Journal Entries"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Journal Entries
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Journal Entries')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Loan Manager"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Loan Manager
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Loan Manager')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Sales Report"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Sales Report
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Sales Report')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Stock In Report"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Stock In Report
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Stock In Report')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Purchase Report"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Purchase Report
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Purchase Report')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Purchase Adjustment"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Purchase Adjustment
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Purchase Adjustment')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Stock Adjustment Outlet"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Stock Adjustment Outlet
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Stock Adjustment Outlet')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Payroll Report"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Payroll Report
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Payroll Report')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Receivables"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Receivables
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Receivables')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Payables"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Payables
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Payables')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Aged Receivables"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Aged Receivables
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Aged Receivables')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Aged Payable"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Aged Payable
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Aged Payable')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Accounts"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Accounts
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Accounts')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="General Ledger"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                General Ledger
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('General Ledger')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Balance Sheet"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Balance Sheet
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Balance Sheet')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Trial Balance"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Trial Balance
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Trial Balance')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Price Management"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Price Management
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Price Management')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Users"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Users
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Users')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Add Warehouse"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Add Warehouse
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Add Warehouse')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Server Setup"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Server Setup
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Server Setup')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Profile Setup"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Profile Setup
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Profile Setup')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Sales Unit"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Sales Unit
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Sales Unit')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Inter Account Transfer"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Inter Account Transfer
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Inter Account Transfer')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Expired Items"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Expired Items
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Expired Items')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Customer Incentives"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Customer Incentives
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Customer Incentives')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+                        
+                        <style>
+                            .privilege {
+                                height: 100px !important;
+                                min-height: 700px !important;
+                                overflow-y: scroll !important;
+                            }
+                            .account_privilege {
+                                height: 100px !important;
+                                min-height: 600px !important;
+                                overflow-y: scroll !important;
+                            }
+                            @media screen and (max-width: 1665px){
+                                .user_info{
+                                    width: 100% !important;
+                                }
+                            }
+                        </style>
+
+                        <div class="w-full shadow-xl py-5">
+                            <h3 class="text-center text-[18px] font-bold text-white mb-2">Privilege Count</h3>
+                            <div class="block px-5 privilege">
+
+
+                                <div class="flex justify-between items-center">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Warehouse to Outlet"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Warehouse to Outlet
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Warehouse to Outlet')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Warehouse to Warehouse"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Warehouse to Warehouse
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Warehouse to Outlet')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Outlet to Warehouse"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Outlet to Warehouse
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Outlet to Warehouse')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Stock Adjustment"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Stock Adjustment
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Stock Adjustment')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Verify Transfer"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Verify Transfer
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Verify Transfer')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+                            
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Add New Journal"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Add New Journal
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Add New Journal')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Receive Payment"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Receive Payment
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Receive Payment')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="View Journal Entries"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                View Journal Entries
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('View Journal Entries')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Profit / Loss"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Profit / Loss
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Profit / Loss')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Other Series"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Other Series
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Other Series')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Customer Ledger"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Customer Ledger
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Customer Ledger')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Sales Ledger"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Sales Ledger
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Sales Ledger')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Purchase Ledger"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Purchase Ledger
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Purchase Ledger')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Vendor Ledger"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Vendor Ledger
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Vendor Ledger')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Add New Item"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Add New Item
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Add New Item')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Item Category"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Item Category
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Item Category')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Stock Level"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Stock Level
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Stock Level')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Dashboard"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Dashboard
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Dashboard')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Profile"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Profile
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Profile')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Purchase Price (Optional)"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Purchase Price (Optional)
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Purchase Price (Optional)')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Selling Price (Retail)"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Selling Price (Retail)
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Selling Price (Retail)')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Selling Price (Wholesale)"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Selling Price (Wholesale)
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Selling Price (Wholesale)')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Change Price"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Change Price
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Change Price')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="2.5% Sales Discount"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                2.5% Sales Discount
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('2.5% Sales Discount')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="5% Sales Discount"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                5% Sales Discount
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('5% Sales Discount')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="7.5% Sales Discount"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                7.5% Sales Discount
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('7.5% Sales Discount')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="10% Sales Discount"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                10% Sales Discount
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('10% Sales Discount')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="12.5% Sales Discount"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                12.5% Sales Discount
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('12.5% Sales Discount')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="all_page_access[]"
+                                                value="Change Sales Price"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                Change Sales Price
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="removePrivilege('Change Sales Price')" class="block w-20 px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 rounded-md hover:bg-slate-300">
+                                        Remove
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                        <div class="block w-full shadow-xl p-5">
+                            
+
+                            <div class="hidden">
+                                <h3 class="text-center text-[18px] font-bold text-gray-900 mb-2">Choose Account</h3>
+                                <div class="account_privilege">
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                1010-000000(Cash)
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                1000-FIDELITY(Account Receivable)
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                1150-DEBTORS(Account Receivable)
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                2010-Purchased(Account Payable)
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                2021-Discount(Other current liabilities)
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                20PUR-DISCOUNT(Other current liabilities)
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                2001-Inwards(Other current liabilities)
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                1004-RETURNS(Inventory)
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                1450-DISCOUNT(Other Current Assets)
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                2000-Tax(Tax)
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                6567(Tax)
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="flex text-sm">
+                                        <label class="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                class="text-slate-600 form-checkbox focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                                            />
+                                            <span class="ml-2">
+                                                2345-Tax(Tax)
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="flex justify-between items-center gap-4 mt-5">
+                                <!-- <a class="block w-full px-4 py-1 mt-5 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                                    href="#">
+                                    Remove Account
+                                </a> -->
+                                <button type="button" onclick="updatePrivileges()" class="block w-full px-4 py-1 mt-5 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                                    href="#">
+                                    Save Changes
+                                </button>
+                            </div>
+
+                            
+                        </div>
+
+                    </div>
+                </form> 
+                
+                
+            </div>
+                
+    </div>
+            
+
+
+    
+    
+    {% endblock content %}
