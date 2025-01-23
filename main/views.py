@@ -355,7 +355,7 @@ def Verify_Payment(request):
 
 
 def BillingPage(request, id):
-  
+   
     country = currency.objects.all()
     
     company = company_table.objects.all()
@@ -365,13 +365,13 @@ def BillingPage(request, id):
         billing = {}
 
     if request.method == "POST":
-        country = request.POST.get('country')
-        number = request.POST.get('number')
-        cvv = request.POST.get('code')
-        month = request.POST.get('month')
-        year = request.POST.get('year')
-        name = request.POST.get('name')
-        address = request.POST.get('address')
+        # country = request.POST.get('country')
+        # number = request.POST.get('number')
+        # cvv = request.POST.get('code')
+        # month = request.POST.get('month')
+        # year = request.POST.get('year')
+        # name = request.POST.get('name')
+        # address = request.POST.get('address')
         plan = request.POST.get('plan')
         sub = request.POST.get('sub')
         user = request.POST.get('user')
@@ -386,13 +386,13 @@ def BillingPage(request, id):
        
         form_data = {
             'company': company_id,
-            'country': country,
-            'card_number': number,
-            'month': month,
-            'year': year,
-            'code': cvv,
-            'holders_name': name,
-            'address': address,
+            # 'country': country,
+            # 'card_number': number,
+            # 'month': month,
+            # 'year': year,
+            # 'code': cvv,
+            # 'holders_name': name,
+            # 'address': address,
             'plan': plan,
             # 'subscription': sub,
             'amount': amount,
@@ -465,6 +465,7 @@ def BillingPage(request, id):
 
     com = company_table.objects.get(id=id)
     us = User.objects.get(company_id=com)
+    print(us.company_id.db_name)
     if us.email == com.email:
         return render(request, "Billing.html", context)
     else:

@@ -85,7 +85,7 @@
             <form action="" method="post" id="billing" class="flex flex-col justify-center items-center  mb-6">
                 {% csrf_token %}
                 <div class="container flex flex-col justify-center md:flex-row my-6">
-                    <div class="w-full">
+                    <div class="w-full" style="display: none;">
                         <div class="order-1 mb-8 w-full  bg-light p-6 md:order-2 md:mb-0 md:p-8 ltr:md:ml-7 rtl:md:mr-7 ltr:lg:ml-9 rtl:lg:mr-9">
                             <h1 class="mb-6 font-sans text-xl font-bold text-heading md:text-2xl text-center">
                                 Billing Information
@@ -290,7 +290,7 @@
                                 </div>
                                
 
-                                <div class="my-3 invisible">
+                                <div class="my-3 invisibl">
                                     <label class="block text-sm">
                                         <span class="text-gray-700 dark:text-gray-400">
                                             Select Your company  
@@ -302,10 +302,10 @@
                                             <option value="{{value.id}}" {% if value.id == id %} selected{% endif %}>{{value.company_name}}</option>
                                             {% endfor %}
                                         </select>
-                                    <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                   
                                 </div>
 
-                                <div class="mb-6 invisible">
+                                <div class="mb-6 " >
 
                                     <div class="flex justify-start w-full  text-black items-center  gap-2">
                                         <input
@@ -329,8 +329,8 @@
                                 <button
                                     id="login"
                                     type="button"
-                                    class="w-full text-center hidden text-white inline-flex items-center justify-center shrink-0 font-semibold leading-none rounded outline-none transition duration-300 ease-in-out focus:outline-0 focus:shadow focus:ring-1 focus:ring-slate-500 primary  text-light border border-transparent hover:bg-blue-300-hover px-5 py-0 h-8">
-                                    Complete
+                                    class="w-full my-3 text-center text-white inline-flex items-center justify-center shrink-0 font-semibold leading-none rounded outline-none transition duration-300 ease-in-out focus:outline-0 focus:shadow focus:ring-1 focus:ring-slate-500 primary  text-light border border-transparent hover:bg-blue-300-hover px-5 py-0 h-8">
+                                    Proceed
                                     <div class="spinner" id="spinner2">
                         
                                 </button>
@@ -480,13 +480,13 @@
             };
 
 
-            function Complete(country, number, cvv, month, year, name, address, plan, sub, user, amount, company, renew){
+            function Complete( plan, sub, user, amount, company, renew){
                
                 $.ajax({
                        url: "/Billing/"+company+"/",
                        method: 'POST',
                        data: {
-                        'country':country, 'number':number, 'code':cvv, 'month':month, 'year':year, 'plan':plan, 'name':name, 'address':address, 'sub':sub, 'user':user, 'amount':amount, 'company':company, 'renew':renew,
+                        'plan':plan,'sub':sub, 'user':user, 'amount':amount, 'company':company, 'renew':renew,
                         csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
                        },
                        success: function(data){
@@ -551,7 +551,7 @@
             
             $("#login").on('click', function () {
                 // Collect input fields and their IDs
-                const fields = ["country", "card_number", "month", "year", "code", "name", "address", "plan", "subscription", "user", "amount", "company"];
+                const fields = ["plan", "subscription", "user", "amount", "company"];
                 const auto_renew = $("#auto_renew").is(":checked");
                 let isValid = true; // Track overall form validity
 
@@ -578,7 +578,7 @@
                 // Check overall form validity
                 if (isValid) {
                     // Perform the required action (e.g., verifyCard)
-                    Complete(fieldValues.country, fieldValues.card_number, fieldValues.code, fieldValues.month, fieldValues.year, fieldValues.name, fieldValues.address, fieldValues.plan, fieldValues.subscription, fieldValues.user, fieldValues.amount, fieldValues.company, auto_renew);
+                    Complete(fieldValues.plan, fieldValues.subscription, fieldValues.user, fieldValues.amount, fieldValues.company, auto_renew);
                 }
             });
 
