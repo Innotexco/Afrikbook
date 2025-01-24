@@ -401,7 +401,7 @@ def BillingPage(request, id):
             'payment_status': "Unverified",
             'auto_renew': renew,
         }
-     
+        print(sub)
         try:
             bill = Billing.objects.get(company__id=company_id)
             form = BillingForm(form_data, instance=bill)
@@ -411,7 +411,10 @@ def BillingPage(request, id):
             if remaining_days > 0:
                 issue_date = bill.date
                 if sub != "Free":
-                    sub = int(bill.subscription) + int(sub)   
+                    if bill.subscription == "Free":
+                         sub = 0 + int(sub)
+                    else:
+                        sub = int(bill.subscription) + int(sub)   
             else:
                 issue_date = timezone.now()
                 sub = sub
@@ -426,7 +429,7 @@ def BillingPage(request, id):
             if sub == 'Free':
                  history = SubHistory.objects.filter(company=company_instance, subscription="Free")
                  if history.exists():
-                    return JsonResponse({'status':False, 'message': f"Your still have  {remaining_days}  days left"}, safe=False)
+                    return JsonResponse({'status':False, 'message': f"Your dont have access to free trial again"}, safe=False)
                  else: 
                     request.session['db_name'] = company_instance.db_name
                     

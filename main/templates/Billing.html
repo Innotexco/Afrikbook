@@ -82,10 +82,10 @@
 
         
         <div class="">
-            <form action="" method="post" id="billing" class="flex flex-col justify-center items-center  mb-6">
+            <form action="" method="post" id="billing" class="mb-6">
                 {% csrf_token %}
-                <div class="container flex flex-col justify-center md:flex-row my-6">
-                    <div class="w-full" style="display: none;">
+                <div class="flex flex-col justify-center md:flex-row my-6 px-4">
+                    <!-- <div class="" style="display: none;">
                         <div class="order-1 mb-8 w-full  bg-light p-6 md:order-2 md:mb-0 md:p-8 ltr:md:ml-7 rtl:md:mr-7 ltr:lg:ml-9 rtl:lg:mr-9">
                             <h1 class="mb-6 font-sans text-xl font-bold text-heading md:text-2xl text-center">
                                 Billing Information
@@ -104,7 +104,7 @@
                                             <option>{{value.Country}}</option>
                                             {% endfor %}
                                         </select>
-                                    <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                   
                                 </div>
                                 <div class="my-6">
                                     <label
@@ -119,7 +119,7 @@
                                         class="flex w-full appearance-none text-black items-center p-5 mt-1 text-sm text-heading transition duration-300 ease-in-out focus:outline-0 focus:ring-0 border-b border-border-base rounded focus:border-slate h-8 bg-slate-300"
                                        
                                     />
-                                    <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                  
                                 </div>
 
                                 <div class="flex justify-between  gap-6">
@@ -144,7 +144,7 @@
                                                 <option value="11">November</option>
                                                 <option value="12">December</option>
                                             </select>
-                                        <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                       
                                     </div> 
                                     <div class="w-full">
                                         <label class="block text-sm">
@@ -154,7 +154,7 @@
                                                 
                                             </select>
                                           </label>
-                                        <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                       
                                     </div> 
 
                                 </div>
@@ -171,7 +171,7 @@
                                         class="flex w-full appearance-none text-black items-center p-5 mt-1 text-sm text-heading transition duration-300 ease-in-out focus:outline-0 focus:ring-0 border-b border-border-base rounded focus:border-slate h-8 bg-slate-300"
                                         placeholder="CVV/CVC"
                                     />
-                                    <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                    
                                 </div>
                                 <div class="my-3">
                                     <label
@@ -186,7 +186,7 @@
                                         class="flex w-full appearance-none text-black items-center p-5 mt-1 text-sm text-heading transition duration-300 ease-in-out focus:outline-0 focus:ring-0 border-b border-border-base rounded focus:border-slate h-8 bg-slate-300"
                                         placeholder=""
                                     />
-                                    <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                   
                                 </div>
                                 <div class="my-6">
                                     <label
@@ -201,7 +201,7 @@
                                         class="flex w-full appearance-none text-black items-center p-5 mt-1 text-sm text-heading transition duration-300 ease-in-out focus:outline-0 focus:ring-0 border-b border-border-base rounded focus:border-slate h-8 bg-slate-300"
                                         
                                     />
-                                    <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                                  
                                 </div>
                                 
                                 <button
@@ -212,133 +212,134 @@
                                     <div class="spinner" id="spinner"></div></button>
     
                         </div>
-                    </div>
-                    <div class="w-full">
-                        <div class="order-1 mb-8 w-full  bg-light p-6 md:order-2 md:mb-0 md:p-8 ltr:md:ml-7 rtl:md:mr-7 ltr:lg:ml-9 rtl:lg:mr-9">
+                    </div> -->
+                    <div class="sm:w-full md:w-6/12 lg:w-4/12 border">
+                        <div class="mb-8 w-ful p-6">
                             <h1 class="mb-6 font-sans text-xl font-bold text-heading md:text-2xl text-center">
                                 Plan
                             </h1>
                             
-                                <div>
-                                    <label class="block text-sm">
-                                        <span class="text-gray-700 dark:text-gray-400">
-                                            Select Plan  
-                                        </span>
-                                    </label>
-                                        <select id="plan" onchange="Plan()" class="block w-full p-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="plan">
-                                            <option disabled> Select plan</option>
-                                            <option>Micro Business</option>
-                                            <option>Small Business</option>
-                                            <option>Meduim Business</option>
-                                            <option>Large Business</option>
-                                        </select>
-                                    <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
-                                </div>
-                                <div class="my-6">
-                                    <label class="block text-sm">
-                                        <span class="text-gray-700 dark:text-gray-400">
-                                            Select Subscription  
-                                        </span>
-                                    </label>
-                                        <select id="subscription" onchange="Plan()" class="block w-full p-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="subscription">
-                                            <option selected value="Free"> Free Trial (6 months)</option>
-                                            <script>
-                                                for(i=1; i <= 5; i++){
-                                                    if(i ==1 ){
-                                                        document.write(`<option value=${i}>${i} year</option>`);
-                                                    }else{
-                                                        document.write(`<option value=${i}>${i} years</option>`);
-                                                    }
-                                                }
-                                            </script>
-                                        </select>
-                                    <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
-                                </div>
-    
-                                <div class="my-3 text-gray-700">
-                                    <label class="block text-sm">
-                                        <span class="text-gray-700 dark:text-gray-400">
-                                            User  
-                                            <span class="user"></span>
-                                        </span>
-                                    </label>
-                                    <select id="user"  class="block w-full p-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="user">
-                                        <option selected value="Free"> Free Trial(6 months)</option>
+                            <div>
+                                <label class="block text-sm">
+                                    <span class="text-gray-700 dark:text-gray-400">
+                                        Select Plan  
+                                    </span>
+                                </label>
+                                    <select id="plan" onchange="Plan()" class="block w-full p-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="plan">
+                                        <option disabled> Select plan</option>
+                                        <option>Micro Business</option>
+                                        <option>Small Business</option>
+                                        <option>Meduim Business</option>
+                                        <option>Large Business</option>
+                                    </select>
+                                <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                            </div>
+                            <div class="my-6">
+                                <label class="block text-sm">
+                                    <span class="text-gray-700 dark:text-gray-400">
+                                        Select Subscription  
+                                    </span>
+                                </label>
+                                    <select id="subscription" onchange="Plan()" class="block w-full p-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="subscription">
+                                        <option selected value="Free"> Free Trial (6 months)</option>
                                         <script>
-                                            for(i=7; i <= 50; i++){
-                                                document.write(`<option value=${i}>${i}</option>`);
+                                            for(i=1; i <= 5; i++){
+                                                if(i ==1 ){
+                                                    document.write(`<option value=${i}>${i} year</option>`);
+                                                }else{
+                                                    document.write(`<option value=${i}>${i} years</option>`);
+                                                }
                                             }
                                         </script>
                                     </select>
-                                    <span class="text-red-500 error"></span>
-                                </div>
-                                <div class="my-3 text-gray-700">
-                                    <label class="block text-sm">
-                                        <span class="text-gray-700 dark:text-gray-400">
-                                            Amount
-                                        </span>
-                                    </label>
-                                    <input
-                                       readonly
-                                        id="amount"
-                                        name="amount"
-                                        value="0"
-                                        type="text"
-                                        class="flex w-full appearance-none text-black items-center mt-1 p-5 text-sm text-heading transition duration-300 ease-in-out focus:outline-0 focus:ring-0 border-b border-border-base rounded focus:border-slate h-8 bg-slate-300"
-                                    />
-                                    <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
-                                </div>
-                               
+                                <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                            </div>
 
-                                <div class="my-3 invisibl">
-                                    <label class="block text-sm">
-                                        <span class="text-gray-700 dark:text-gray-400">
-                                            Select Your company  
-                                        </span>
-                                    </label>
-                                        <select id="company" class="block w-full p-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="company">
-                                            <option disabled selected> Select Country</option>
-                                            {% for value in company %}
-                                            <option value="{{value.id}}" {% if value.id == id %} selected{% endif %}>{{value.company_name}}</option>
-                                            {% endfor %}
-                                        </select>
-                                   
-                                </div>
+                            <div class="my-3 text-gray-700">
+                                <label class="block text-sm">
+                                    <span class="text-gray-700 dark:text-gray-400">
+                                        User  
+                                        <span class="user"></span>
+                                    </span>
+                                </label>
+                                <select id="user"  class="block w-full p-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="user">
+                                    <option selected value="Free"> Free Trial(6 months)</option>
+                                    <script>
+                                        for(i=7; i <= 50; i++){
+                                            document.write(`<option value=${i}>${i}</option>`);
+                                        }
+                                    </script>
+                                </select>
+                                <span class="text-red-500 error"></span>
+                            </div>
+                            <div class="my-3 text-gray-700">
+                                <label class="block text-sm">
+                                    <span class="text-gray-700 dark:text-gray-400">
+                                        Amount
+                                    </span>
+                                </label>
+                                <input
+                                    readonly
+                                    id="amount"
+                                    name="amount"
+                                    value="0"
+                                    type="text"
+                                    class="flex w-full appearance-none text-black items-center mt-1 p-5 text-sm text-heading transition duration-300 ease-in-out focus:outline-0 focus:ring-0 border-b border-border-base rounded focus:border-slate h-8 bg-slate-300"
+                                />
+                                <!-- <p class="py-2 text-red-500 errors">{{form.username.errors}}</p> -->
+                            </div>
+                            
 
-                                <div class="mb-6 " >
-
-                                    <div class="flex justify-start w-full  text-black items-center  gap-2">
-                                        <input
-                                        name="auto_renew"
-                                        type="checkbox"
-                                        id="auto_renew"
-                                        checked
-                                        class="transition duration-300 ease-in-out focus:outline-0 focus:ring-0 border-b border-border-base rounded focus:border-slate h-10 my-4  bg-slate-300"
-                                        
-                                        />
-                                        <label
-                                            for="email"
-                                            class="block text-sm font-semibold leading-none text-gray-700">
-                                            Auto renew
-                                        </label>
-                                        
-                                    </div>
-                                </div>
+                            <div class="my-3 invisible">
+                                <label class="block text-sm">
+                                    <span class="text-gray-700 dark:text-gray-400">
+                                        Select Your company  
+                                    </span>
+                                </label>
+                                    <select id="company" class="block w-full p-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="company">
+                                        <option disabled selected> Select Country</option>
+                                        {% for value in company %}
+                                        <option value="{{value.id}}" {% if value.id == id %} selected{% endif %}>{{value.company_name}}</option>
+                                        {% endfor %}
+                                    </select>
                                 
-       
-                                <button
-                                    id="login"
-                                    type="button"
-                                    class="w-full my-3 text-center text-white inline-flex items-center justify-center shrink-0 font-semibold leading-none rounded outline-none transition duration-300 ease-in-out focus:outline-0 focus:shadow focus:ring-1 focus:ring-slate-500 primary  text-light border border-transparent hover:bg-blue-300-hover px-5 py-0 h-8">
-                                    Proceed
-                                    <div class="spinner" id="spinner2">
-                        
-                                </button>
+                            </div>
+
+                            <div class="mb-6 hidden">
+
+                                <div class="flex justify-start w-full  text-black items-center  gap-2">
+                                    <input
+                                    name="auto_renew"
+                                    type="checkbox"
+                                    id="auto_renew"
+                                    checked
+                                    class="transition duration-300 ease-in-out focus:outline-0 focus:ring-0 border-b border-border-base rounded focus:border-slate h-10 my-4  bg-slate-300"
+                                    
+                                    />
+                                    <label
+                                        for="email"
+                                        class="block text-sm font-semibold leading-none text-gray-700">
+                                        Auto renew
+                                    </label>
+                                    
+                                </div>
+                            </div>
+                            
+    
+                            <button
+                                id="login"
+                                type="button"
+                                class="w-full my-3 text-center text-white inline-flex items-center justify-center shrink-0 font-semibold leading-none rounded outline-none transition duration-300 ease-in-out focus:outline-0 focus:shadow focus:ring-1 focus:ring-slate-500 primary  text-light border border-transparent hover:bg-blue-300-hover px-5 py-0 h-8">
+                                Proceed
+                                <div class="spinner" id="spinner2">
+                    
+                            </button>
                         </div>
                     </div>
                 </div>
             </form>
         </div>
+        
         
         
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
