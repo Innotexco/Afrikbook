@@ -161,6 +161,7 @@ def Forgot_Password(request):
         if us.exists():
             id = us.first().id
             password = us.first().password
+            username= us.first().username
             
             title = "Forgot Password"
             message = f"""
@@ -176,9 +177,9 @@ def Forgot_Password(request):
                                 />
                             </div>
                             <div style="text-align: center;">
-                                <p>Hello</p>
+                                <p>Heello {{username}}</p>
                                 <p></p>
-                                <p><a href="https://acc.afrikbook.com/{id}/{password}" style="color: #fff; background-color: blue; padding:10px;">Click to reset your password</a></p>
+                                <p><a href="https://acc.afrikbook.com/Reset-password/{id}/{password}" style="color: #fff; background-color: blue; padding:10px;">Click to reset your password</a></p>
                             </div>
                             <div style="margin-top: 24px; text-align: center;">
                                 <p>© 2023 Afrikbook™. All Rights Reserved.</p>
