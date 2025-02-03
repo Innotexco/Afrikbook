@@ -26,6 +26,8 @@
   </form>
 {% endblock content %}
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1-crypto-js.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/crypto-js@3.1.9-1/build/crypto-js.js"></script>
 
 <script>
   
@@ -38,7 +40,17 @@
     return randomNumber
   }
 
+//   function encryptData(data) {
+//     var secretKey = 'your-secret-key'; // This key should be securely managed
+//     var ciphertext = CryptoJS.AES.encrypt(data, secretKey).toString();
+//     return ciphertext;
+// }
+//   var password = 12345
+//   const encodedPwd = encryptData(password);
+//   console.log(encodedPwd)
+
   function set_session(code) {
+
       sessionStorage.setItem('verify_email_code', code)
       setInterval(function(){
         sessionStorage.setItem('verify_email_code', "Expired")

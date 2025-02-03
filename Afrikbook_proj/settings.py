@@ -17,6 +17,10 @@ from django.conf.global_settings import AUTHENTICATION_BACKENDS
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -25,11 +29,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-bdad%tpby&zszmtofy=7ye6o2@98!=9#lq4tqy)$h&gz+x#&$-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG')
 
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'isdoremartins23@gmail.com'
-EMAIL_HOST_PASSWORD = 'etwkejogsyfimzbi'
+#EMAIL_HOST = 'smtp.gmail.com'
+#EMAIL_HOST_USER = 'isdoremartins23@gmail.com'
+#EMAIL_HOST_PASSWORD = 'etwkejogsyfimzbi'
+
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 # EMAIL_PORT = 587
 EMAIL_PORT = 465
 EMAIL_USE_TLS = False
@@ -38,7 +46,7 @@ EMAIL_USE_SSL = True # CHANGE EMAIL_USE_TLS = False
 EMAIL_BACKEND= 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_BACKEND= 'django.core.mail.backends.console.EmailBackend'
 
-PAYSTACK_SECRET_KEY = 'sk_test_bb57ab30603730713998315da706e30831857137'
+PAYSTACK_SECRET_KEY = os.getenv('PAYSTACK_SECRET_KEY')
 
 ALLOWED_HOSTS = ['*']
 
@@ -128,9 +136,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'Afrikbook_db',
-        'USER': 'Afrikbook',
-        'PASSWORD': 'afrik',
-        'HOST': 'localhost',
+        'USER': os.getenv('DATABASE_USER'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+        'HOST': os.getenv('DATABASE_HOST'),
         'PORT': '5432',
     },
     

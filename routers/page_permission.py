@@ -3,6 +3,7 @@ from main.models import Privilege
 from django.contrib import messages
 from main.functions.verification import check_sub
 from django.urls import reverse
+from main.functions.company.company import CreatePostgresDatabase_Migration
 def urls_name(name):
     # print(name)
 

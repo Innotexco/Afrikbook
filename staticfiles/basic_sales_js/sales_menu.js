@@ -187,6 +187,7 @@
         }
     });
     $(document).ready(function(){
+        
         // SEARCH BY BARCODE
         $('#scannerInput').on('input', function() {
             let searchItem      =  $('#scannerInput').val();
@@ -463,7 +464,8 @@
               console.error("Error: Item not found or missing required properties.");
           }
       }
-      
+     
+      var skip = false  
 
       function AddQty(id, generated_code, image, item_name, selling_price) {
    
@@ -484,27 +486,30 @@
         if (existingItemIndex !== -1 && list[existingItemIndex] && list[existingItemIndex][4] !== undefined) {
             CheckQuantity(generated_code,  function(result){
                 if (result > list[existingItemIndex][4]){
- 
-                    list[existingItemIndex][4] = Number(list[existingItemIndex][4]) + 1 || 1;
-                    sessionStorage.setItem('Items', JSON.stringify(list));
-        
-                    displayCartItems();
+                    QtyPlusOne(list, existingItemIndex)
                 }else{
-                    alert("Quantity exceeds stock level. Available quantity: "+result)
-                    alertify.defaults.glossary.title = "Oops";
-                    alertify.confirm("Quantity exceeds stock level. Available quantity: "+result+" \n proceed anyway",
-                    // if proceed
-                    function(){                              
-                        list[existingItemIndex][4] = Number(list[existingItemIndex][4]) + 1 || 1;
-                        sessionStorage.setItem('Items', JSON.stringify(list));
-        
-                        displayCartItems();                             
-                    },
-                    //if Cancel
-                    function(){
+                    if(skip){
+                        QtyPlusOne(list, existingItemIndex) 
+                    }else{
+                        // alert("Quantity exceeds stock level. Available quantity: "+result)
+                        alertify.defaults.glossary.title = "Oops";
+                        alertify.confirm("Quantity exceeds stock level. Available quantity: "+result+" proceed anyway<br><br>Skip next time <input type='checkbox' id='skip'/>",
+                        // if proceed
+                        function(){
+                            skip = document.getElementById('skip').checked   
+                            QtyPlusOne(list, existingItemIndex)                        
+                            // list[existingItemIndex][4] = Number(list[existingItemIndex][4]) + 1 || 1;
+                            // sessionStorage.setItem('Items', JSON.stringify(list));
+            
+                            // displayCartItems();                             
+                        },
+                        //if Cancel
+                        function(){
+    
+    
+                        }).set('labels',{ok:'Proceed', cancel:'Cancel'});
 
-
-                    }).set('labels',{ok:'Proceed', cancel:'Cancel'});
+                    }
                 }
                
             });
@@ -519,6 +524,12 @@
         }
     }
     
+    function QtyPlusOne(list, existingItemIndex){
+        list[existingItemIndex][4] = Number(list[existingItemIndex][4]) + 1 || 1;
+        sessionStorage.setItem('Items', JSON.stringify(list));
+
+        displayCartItems();
+    }
     
     // DELETE FROM CART
     function RemoveItem(id, generated_code, image, item_name, selling_price) {
@@ -621,7 +632,7 @@
                 total_price_with_or_without_vat = (VAT == 'Yes') ? totalPrice += total_price_withVAT : totalPrice += total_price_withoutVAT; // Assuming item[3] is the price and item[4] is the quantity
                 // console.log(item[0], item[1], item[2], item[3], item[4], 'item[1]item[1]item[1]item[1]')
                 // let AddedItems = [generated_code, image, item_name, selling_price, qty]
-
+                
                 const cartItemHtml = `
                     <div class="card sm:overflow-x">
                         <div class="mb-3 bg-blue-gray-50 rounded-lg w-full text-blue-gray-700 py-2 px-2 flex justify-between items-center">
@@ -705,7 +716,8 @@
 
         var format = new Intl.NumberFormat()
         total_Sum = format.format(total_price_with_or_without_vat)
-        
+       
+        document.getElementById('vat_value').value = VATvalue
         // Display the count and total price
         const cartSummaryHtml = `
             ${(VAT == 'Yes') ? `<b class="">TOTAL <span class="text-sm ">VAT(7.5%) </span></b> ` : `<b>TOTAL:</b>`} 
@@ -756,11 +768,11 @@
        
         if(!CheckIfItemExist(list, generated_code)){
             let qty = document.getElementById('qty'+id).value;
+            let AddedItems = [generated_code, image, item_name, selling_price, qty]
             CheckQuantity(generated_code,  function(result){
                 // console.log(result)
                 if (result > qty){
     
-                    let AddedItems = [generated_code, image, item_name, selling_price, qty]
         
                     list.push(AddedItems);
         
@@ -772,22 +784,28 @@
         
                     displayCartItems();
                 }else{
-                    // alert("Item not in logged in user oulet")
-                    alertify.defaults.glossary.title = "Oops";
-                    alertify.confirm("Quantity exceeds stock level. Available quantity: "+result+" \n proceed anyway",
-                    // if proceed
-                    function(){                              
-                        let AddedItems = [generated_code, image, item_name, selling_price, qty]
-        
+                    if(skip){
                         list.push(AddedItems);
-        
                         sessionStorage.setItem('Items', JSON.stringify(list));  
-                        displayCartItems();                          
-                    },
-                    //if Cancel
-                    function(){
-                       
-                    }).set('labels',{ok:'Proceed', cancel:'Cancel'});
+                        displayCartItems();
+                    }else{
+
+                        // alert("Item not in logged in user oulet")
+                        alertify.defaults.glossary.title = "Oops";
+                        alertify.confirm("Quantity exceeds stock level. Available quantity: "+result+" proceed anyway<br><br>Skip next time <input type='checkbox' id='skip'/>",
+                        // if proceed
+                        function(){
+                            skip = document.getElementById('skip').checked                              
+            
+                            list.push(AddedItems);
+                            sessionStorage.setItem('Items', JSON.stringify(list));  
+                            displayCartItems();                          
+                        },
+                        //if Cancel
+                        function(){
+                           
+                        }).set('labels',{ok:'Proceed', cancel:'Cancel'});
+                    }
                 }
                
             });
@@ -795,37 +813,41 @@
 
         }else {
             CheckQuantity(generated_code,  function(result){
+                const existingItemIndex = list.findIndex(item => item[0] === generated_code);
                 if (result > list[existingItemIndex][4] + 1){
     
-                    const existingItemIndex = list.findIndex(item => item[0] === generated_code);
-    
-                    // Increment the quantity of the existing item
-                    //list[existingItemIndex][4] += 1;
+                    QtyPlusOne(list, existingItemIndex)
+                    // // Increment the quantity of the existing item
+                    // //list[existingItemIndex][4] += 1;
                     
                     
-                    list[existingItemIndex][4] = Number(list[existingItemIndex][4]) + 1 || 1;
-                    sessionStorage.setItem('Items', JSON.stringify(list));
+                    // list[existingItemIndex][4] = Number(list[existingItemIndex][4]) + 1 || 1;
+                    // sessionStorage.setItem('Items', JSON.stringify(list));
         
-                    displayCartItems();
+                    // displayCartItems();
                 }else{
-                    // alert("Quantity exceeds stock level. Available quantity: "+result)
-                    alertify.defaults.glossary.title = "Oops";
-                    alertify.confirm("Quantity exceeds stock level. Available quantity: "+result+" \n proceed anyway",
-                    // if proceed
-                    function(){                              
-                        const existingItemIndex = list.findIndex(item => item[0] === generated_code);
-                
-                
-                        list[existingItemIndex][4] = Number(list[existingItemIndex][4]) + 1 || 1;
-                        sessionStorage.setItem('Items', JSON.stringify(list));
+                    if(skip){
+                        QtyPlusOne(list, existingItemIndex) 
+                    }else{
+                        // alert("Quantity exceeds stock level. Available quantity: "+result)
+                        alertify.defaults.glossary.title = "Oops";
+                        alertify.confirm("Quantity exceeds stock level. Available quantity: "+result+" proceed anyway<br><br>Skip next time <input type='checkbox' id='skip'/>",
+                        // if proceed
+                        function(){
+                            skip = document.getElementById('skip').checked   
+                            QtyPlusOne(list, existingItemIndex)                        
+                            // list[existingItemIndex][4] = Number(list[existingItemIndex][4]) + 1 || 1;
+                            // sessionStorage.setItem('Items', JSON.stringify(list));
             
-                        displayCartItems();                             
-                    },
-                    //if Cancel
-                    function(){
+                            // displayCartItems();                             
+                        },
+                        //if Cancel
+                        function(){
+    
+    
+                        }).set('labels',{ok:'Proceed', cancel:'Cancel'});
 
-
-                    }).set('labels',{ok:'Proceed', cancel:'Cancel'});
+                    }
                 }
                
             });
@@ -896,15 +918,15 @@
                     showmodal()
                 }
 
-            }else if(payment_method == "Cash"){
-                showmodal()
-            }else{
+            }else if(payment_method == "Transfer"){
                 // alert(account)
                 if(account == null || account == ""){
                     alert("Make sure account is selected")
                 }else{
                     showmodal()
                 }
+            }else{
+                showmodal()
             }
         }
 
