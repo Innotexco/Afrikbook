@@ -9,6 +9,8 @@ from datetime import datetime, date, timedelta
 from settings.models import company_table
 import re
 
+
+
 class Verification(PayStackBase):
 
     def verify_card(email, amount, card_details):
@@ -42,7 +44,7 @@ class Verification(PayStackBase):
         # if request.method == "POST":
         # email = request.POST.get("email")
         amount = float(amount) * 100  # Convert to Kobo
-        callback_url = "http://127.0.0.1:8000/Verify-Payment"
+        callback_url = "https://acc.afrikbook.com/Verify-Payment"
         # Call Paystack Initialize API
         headers = {
             "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
@@ -132,21 +134,24 @@ class Verification(PayStackBase):
 
 
 def add_user(request):
-    user =  2 #User.objects.filter(company_id=request.user.company_id.id).count()
 
     try:
-        plan =  Billing.objects.get(company=request.user.company_id.id).plan
-       
-        if plan == "Micro Business":
-             return True if user < 2 else False
-        elif plan == "Small Business":
-            return True if user < 4 else False
-        elif plan == "Medium Business":
-            return True if user < 6 else False
-        elif plan == "Large Business":
-            return True if user < 50 else False
+        if request.user.is_authenticated:
+            user =  User.objects.filter(company_id=request.user.company_id.id).count()
+            plan = Billing.objects.get(company=request.user.company_id.id).plan
+            
+            if plan == "Micro Business":
+                return True if user < 2 else False
+            elif plan == "Small Business":
+                return True if user < 4 else False
+            elif plan == "Medium Business":
+                return True if user < 6 else False
+            elif plan == "Large Business":
+                return True if user < 50 else False
+            else:
+                return False
         else:
-            return False
+            return True
     except Billing.DoesNotExist:
         return True
     
@@ -208,35 +213,38 @@ def check_sub_history(request, id,  company_id):
    
     return remaining_days, plan
 
-def VerifyEmail(request):
-    email = request.GET.get('email')
-    code = request.GET.get('code')
-    title = "Email Verification"
-    message = f"""
-                    <div style="display: flex; justify-content: center; align-items: center; padding: 8px; text-align: center;">
-                        <div style="padding: 16px; width: fit-content; margin: auto;">
-                            <div style="margin-bottom: 24px; text-align: center;">
-                                <img
-                                    alt="Contact"
-                                    loading="lazy"
-                                    decoding="async"
-                                    style="height: 80px; width: 80px; border: 1px solid #e2e8f0; border-radius: 9999px; display: block; margin: auto;"
-                                    src="http://account.afrikbook.com/static/logo/log.png"
-                                />
-                            </div>
-                            <div style="text-align: center;">
-                                <p>Hello</p>
-                                <p>Your verification code is</p>
-                                <h1>{code}</h1>
-                            </div>
-                            <div style="margin-top: 24px; text-align: center;">
-                                <p>© 2023 Afrikbook™. All Rights Reserved.</p>
-                                <p><a href="account.afrikbook.com" style="color: #007BFF;">Afrikbook.com</a></p>
-                            </div>
-                        </div>
-                    </div>
-                """
 
-    send = send_email([email], title, message)
+
+
+# def VerifyEmail(request):
+#     email = request.GET.get('email')
+#     code = request.GET.get('code')
+#     title = "Email Verification"
+#     message = f"""
+#                     <div style="display: flex; justify-content: center; align-items: center; padding: 8px; text-align: center;">
+#                         <div style="padding: 16px; width: fit-content; margin: auto;">
+#                             <div style="margin-bottom: 24px; text-align: center;">
+#                                 <img
+#                                     alt="Contact"
+#                                     loading="lazy"
+#                                     decoding="async"
+#                                     style="height: 80px; width: 80px; border: 1px solid #e2e8f0; border-radius: 9999px; display: block; margin: auto;"
+#                                     src="http://account.afrikbook.com/static/logo/log.png"
+#                                 />
+#                             </div>
+#                             <div style="text-align: center;">
+#                                 <p>Hello</p>
+#                                 <p>Your verification code is</p>
+#                                 <h1>{code}</h1>
+#                             </div>
+#                             <div style="margin-top: 24px; text-align: center;">
+#                                 <p>© 2023 Afrikbook™. All Rights Reserved.</p>
+#                                 <p><a href="account.afrikbook.com" style="color: #007BFF;">Afrikbook.com</a></p>
+#                             </div>
+#                         </div>
+#                     </div>
+#                 """
+
+#     send = send_email([email], title, message)
     
-    return JsonResponse(send, safe=False)
+#     return JsonResponse(send, safe=False)

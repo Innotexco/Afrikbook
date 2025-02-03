@@ -18,3 +18,19 @@ urlpatterns = [
     path('SalesInvoice', views.SalesInvoice, name='SalesInvoice'),
     
 ]
+
+
+
+
+# Afrik!24
+
+
+#ses-smtp-user.20250128-111643
+
+#AKIARSU7KXMCVSJNHFMR
+
+#BK9PkGX/S7zyEOfBWmt6CZP4I7FYTNNmKc/BKTP2xlbt
+
+
+
+#K9PkGX/S7zyEOfBWmt6CZP4I7FYTNNmKc/BKTP2xlbt

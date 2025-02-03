@@ -13,7 +13,7 @@
         <title>
             
             {% block title %}
-                Afrikbook Setup
+                Afrikbook Subscription
             {% endblock title %}
                 
         </title>
@@ -74,6 +74,25 @@
             }
             to {
                 transform: rotate(360deg);
+            }
+        }
+        .box {
+            width: 30%;
+            margin-top: 100px;
+
+        }
+         @media (max-width: 1200px) {
+            .box {
+               width: 50%;
+               margin-top: 100px;
+
+            }
+        } 
+        @media (max-width: 800px) {
+            .box {
+            width: 100%;
+            margin-top: 10px;
+
             }
         }
     </style>
@@ -213,10 +232,10 @@
     
                         </div>
                     </div> -->
-                    <div class="sm:w-full md:w-6/12 lg:w-4/12 border">
-                        <div class="mb-8 w-ful p-6">
+                    <div class="box border">
+                        <div class="mb-8 w-full p-6">
                             <h1 class="mb-6 font-sans text-xl font-bold text-heading md:text-2xl text-center">
-                                Plan
+                                Afrikbook Subscription
                             </h1>
                             
                             <div>
@@ -262,8 +281,8 @@
                                         <span class="user"></span>
                                     </span>
                                 </label>
-                                <select id="user"  class="block w-full p-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="user">
-                                    <option selected value="Free"> Free Trial(6 months)</option>
+                                <select id="user" disabled class="block  w-full p-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="user">
+                                    <!-- <option selected value="Free"> Free Trial(6 months)</option> -->
                                     <script>
                                         for(i=7; i <= 50; i++){
                                             document.write(`<option value=${i}>${i}</option>`);
@@ -349,7 +368,7 @@
             function Plan(){
                 var plan = $('#plan').val()
                 var duration = $('#subscription').val()
-
+          
                 if(duration == 'Free'){duration= 1}
                
                 if(plan != "" && duration != ""){
@@ -388,10 +407,10 @@
             function user_feild(){
                 var plan = $('#plan').val()
                 if (plan == "Large Business"){
-                    $("#user").attr('readonly', false)
+                    $("#user").attr('disabled', false)
                     $(".user").text(' (you can add 7-50 users)')
                 }else{
-                    $("#user").attr('readonly', true)
+                    $("#user").attr('disabled', true)
                     $(".user").text('')
                 }
                 if (plan == "Personal"){
@@ -428,18 +447,18 @@
 
 
 
-            const yearSelect = document.getElementById('year');
-            const currentYear = new Date().getFullYear();
-            // const startYear = currentYear - 10; // 10 years before the current year
-            const endYear = currentYear + 10;  // 10 years after the current year
+            // const yearSelect = document.getElementById('year');
+            // const currentYear = new Date().getFullYear();
+            // // const startYear = currentYear - 10; // 10 years before the current year
+            // const endYear = currentYear + 10;  // 10 years after the current year
 
-            for (let year = currentYear; year <= endYear; year++) {
-                val = String(year).slice(2);
-                const option = document.createElement('option');
-                option.textContent = year;
-                option.value = val;
-                yearSelect.appendChild(option);
-            }
+            // for (let year = currentYear; year <= endYear; year++) {
+            //     val = String(year).slice(2);
+            //     const option = document.createElement('option');
+            //     option.textContent = year;
+            //     option.value = val;
+            //     yearSelect.appendChild(option);
+            // }
 
 
 

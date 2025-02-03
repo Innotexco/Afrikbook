@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="Afrikbook.">
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i&display=swap" rel="stylesheet">
+        
+        <title>
+            
+            {% block title %}
+                Afrikbook.
+            {% endblock title %}
+                
+        </title>
+
+
+
+        <!-- Additional CSS Files -->
+        <link rel="stylesheet" href="{% static 'src/styles.css' %}">
+ 
+        
+        <script src="{% static 'js/jquery.js' %}"></script>
+        <script src="{% static 'js/jquery.min.js' %}"></script>
+
+    
+       
+    </head>
+    <style>
+        .bg-neutral-700 {
+            --tw-bg-opacity: 1; 
+            background-color: #fff;
+        }
+        .primary{
+            background-color: #018786;
+        }
+    </style>
+
+    <body class="body-wrapper">
+
+    
+
+        
+        <div id="__next">
+            <div dir="ltr">
+                
+                
+                <div class="flex justify-center bg-neutral-700  items-center h-screen m-auto  transition-colors duration-150">
+                    <div class="text-center text-gray-200 text-2xl">
+                        <p>Opps</p>
+                        <p>We did not receive your password reset request. Please try again</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+</body>
+</html>

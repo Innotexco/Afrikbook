@@ -66,7 +66,7 @@
                 </div>
                 <div class="my-4">
                     <h2 class='text-blue-500 text-[16px] leading-[25px] font-bold'>Subscription</h2>
-                    <h1 class='text-[#5a5c69] text-[14px] leading-[20px] mt-[10px] font-bold'>{{billing.subscription}} {% if billing.subscription == '1' %}year{% else %} years {% endif %}</h1>
+                    <h1 class='text-[#5a5c69] text-[14px] leading-[20px] mt-[10px] font-bold'>{{billing.subscription}} {% if billing.subscription == '1' %} year {% elif  billing.subscription == 'Free' %}{% else %} years {% endif %}</h1>
                 </div>
                 <div class="my-4">
                     <h2 class='text-blue-500 text-[16px] leading-[25px] font-bold'>Amount</h2>
@@ -363,7 +363,7 @@
 
   function EditUser(id, state, user){
       if(state == 'True'){msg= "Disable"}
-      if(state == 'TFalse'){msg= "Eable"}
+      if(state == 'False'){msg= "Enable"}
       if(id){
         alertify.defaults.glossary.title = "Oops";
         alertify.confirm("Do you want to "+msg+" "+ user,

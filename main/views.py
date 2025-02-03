@@ -46,6 +46,8 @@ from.utils import pagenation
 
 from .functions.verification import *
 
+import base64
+
 
 
 @never_cache
@@ -88,7 +90,7 @@ def register_user(request):
 def Login(request):
    
     form = LoginForm()
-
+    
     if request.method == "POST":
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -104,6 +106,9 @@ def Login(request):
             if user:
                 try:
                     company = company_table.objects.get(id=user.company_id_id)
+                    if user.last_login is None:
+                       makemigrations(company.db_name)
+     
                     try:
                         billing = Billing.objects.get(company=company)
 
@@ -151,8 +156,46 @@ def Login(request):
     }
     return render(request, 'login.html', context)
 
+def VerifyEmail(request):
+    email = request.GET.get('email')
+    code = request.GET.get('code')
+    title = "Email Verification"
+    message = f"""
+                    <div style="display: flex; justify-content: center; align-items: center; padding: 8px; text-align: center; border: #018786 1px solid; background-color: #018786;">
+                        <div style="padding: 16px; width: fit-content; margin: auto;">
+                            <div style="margin-bottom: 24px; text-align: center;">
+                                <img
+                                    alt="afrikbook"
+                                    loading="lazy"
+                                    decoding="async"
+                                    style="height: 80px; width: 80px; border: 1px solid #e2e8f0; border-radius: 9999px; display: block; margin: auto;"
+                                    src="http://account.afrikbook.com/static/logo/log.png"
+                                />
+                            </div>
+                            <div style="text-align: start; color: #e2e8f0;">
+                                <p>Hi </p>
+                                <p>You should never share this code with anyone claiming to be an Afrikbook agent.</p>
+                                <p>If you did not attemt to register Afrikbook web services, it is safe to ignore this email or contact us at <a href="https://afrikbook.com/contact" style="color: blue;">support team</a></p>
+                            </div>
+                            <div style="text-align: center; margin: 20px 0; color: #e2e8f0;">
+                                <p>Your verification code is</p>
+                                <h1>{code}</h1>
+                            </div>
+                            <div style="margin-top: 44px; text-align: center; color: #e2e8f0;">
+                                <p>© 2023 Afrikbook™. All Rights Reserved.</p>
+                                <p><a href="account.afrikbook.com" style="color: #007BFF;">Afrikbook.com</a></p>
+                            </div>
+                        </div>
+                    </div>
+                """
+
+    send = send_email([email], title, message)
+    
+    return JsonResponse(send, safe=False)
+
 @not_logged_in_required
 def Forgot_Password(request):
+    
     tag =""
 
     if request.method == "POST":  
@@ -160,29 +203,42 @@ def Forgot_Password(request):
         us =  User.objects.filter(email=email)
         if us.exists():
             id = us.first().id
+<<<<<<< HEAD
             password = us.first().password
             username= us.first().username
+=======
+            password = base64.urlsafe_b64encode(us.first().password.encode()).decode() 
+            username = us.first().username
+>>>>>>> 7390130 (Updated files)
             
             title = "Forgot Password"
             message = f"""
-                    <div style="display: flex; justify-content: center; align-items: center; padding: 8px; text-align: center;">
+                    <div style="display: flex; justify-content: center; align-items: center; padding: 8px; text-align: center; border: #018786 1px solid; background-color: #018786;">
                         <div style="padding: 16px; width: fit-content; margin: auto;">
                             <div style="margin-bottom: 24px; text-align: center;">
                                 <img
-                                    alt="Contact"
+                                    alt="afrikbook"
                                     loading="lazy"
                                     decoding="async"
                                     style="height: 80px; width: 80px; border: 1px solid #e2e8f0; border-radius: 9999px; display: block; margin: auto;"
                                     src="https://acc.afrikbook.com/static/logo/log.png"
                                 />
                             </div>
+<<<<<<< HEAD
                             <div style="text-align: center;">
                                 <p>Heello {{username}}</p>
                                 <p></p>
                                 <p><a href="https://acc.afrikbook.com/Reset-password/{id}/{password}" style="color: #fff; background-color: blue; padding:10px;">Click to reset your password</a></p>
+=======
+                            <div style="text-align: start; color: #e2e8f0;">
+                                <p style="margin: 20px 0;">Hi {username}</p>
+                                <p>We receive a request to reset your password.</p>
+                                <p>If you did not request for password reset, it is safe to ignore this email or contact us at <a href="https://afrikbook.com/contact" style="color: blue;">support team</a></p>
+                                <p style="margin: 20px 0;"><a href="https://acc.afrikbook.com/Reset-password/{id}/{password}" style="color: #fff; background-color: blue; padding:10px;">Click to reset your password</a></p>
+>>>>>>> 7390130 (Updated files)
                             </div>
-                            <div style="margin-top: 24px; text-align: center;">
-                                <p>© 2023 Afrikbook™. All Rights Reserved.</p>
+                            <div style="margin-top: 44px; text-align: center; color: #e2e8f0;">
+                                <p>© 2023 Afrikbook™.  All Rights Reserved.</p>
                                 <p><a href="https://acc.afrikbook.com" style="color: #007BFF;">Afrikbook.com</a></p>
                             </div>
                         </div>
@@ -194,7 +250,9 @@ def Forgot_Password(request):
                 
                 messages.success(request, "Reset link was sent to "+email)
                 tag= 'success'
+                request.session['reset'] = id
             except Exception as e:
+                print(e)
                
                 messages.success(request, "Please check your internet connection")
                 tag = 'error'
@@ -206,18 +264,25 @@ def Forgot_Password(request):
     return render(request, 'Forgot_password.html', context)
 
 def Reset_Password(request, id, pwd):
+    reset = request.session.get('reset')
+    
+
+    decoded_pwd = base64.urlsafe_b64decode(pwd).decode()
    
     if request.method == "POST":  
-        us =  User.objects.get(id=id, password=pwd)
+        us =  User.objects.get(id=id, password=decoded_pwd)
         password = request.POST.get('password')
    
         us.set_password(password)
         us.save()
+        messages.success(request, "Password reset successful")
+        del request.session['reset']
         return redirect('main:login')
     
-
-
-    return render(request, 'Reset_password.html')
+    if reset:
+        return render(request, 'Reset_password.html')
+    else:
+        return render(request, 'Reset_error.html')
 
 def SetState(request):
    countries = currency.objects.all() 
@@ -402,7 +467,7 @@ def BillingPage(request, id):
             'payment_status': "Unverified",
             'auto_renew': renew,
         }
-        print(sub)
+   
         try:
             bill = Billing.objects.get(company__id=company_id)
             form = BillingForm(form_data, instance=bill)
@@ -469,7 +534,7 @@ def BillingPage(request, id):
 
     com = company_table.objects.get(id=id)
     us = User.objects.get(company_id=com)
-    print(us.company_id.db_name)
+  
     if us.email == com.email:
         return render(request, "Billing.html", context)
     else:
@@ -482,9 +547,9 @@ def MigrationPage(request):
  
     if db_name:
         CreatePostgresDatabase_Migration(request, db_name)
+        del request.session['db_name']      
     else:
         return redirect('/')
-    # request.session.delete('db_name')
     return render(request, "Migration.html")
 
 
@@ -503,7 +568,7 @@ def AddCompany(request):
             if add_user(request):
                 feedback = add_company(request, db_name)
                 if feedback:
-                    return  redirect('main:Billing')
+                    return  redirect('main:login')
                 else:
                     messages.success(request, "All fields must be filled in to submit")
             else:
@@ -547,7 +612,8 @@ def GetCompany(request):
         return JsonResponse({'data':list(company)})
     except company_table.DoesNotExist: 
         return JsonResponse({'error': 'Company not found'}, status=404)
-
+    
+@login_required(login_url='/')
 def ManageCompany(request, id):
     company = company_table.objects.get(id=id)
     users = User.objects.filter(company_id=company)
@@ -583,25 +649,28 @@ def ManageCompany(request, id):
         try:
             user = User.objects.filter(id=id)
             user.is_active = state
-            user.save()
+            # user.save()
             return JsonResponse(True, safe=False)
         except User.DoesNotExist:
             return JsonResponse(False, safe=False)
         
     return render(request, "ManageCompany.html", context)
 
+@login_required(login_url='/')
 def enable_disable_user(request, id, state):
     next = request.GET.get('next')
-    state = True if state == "True" else False
     
     try:
         user = User.objects.get(id=id)
-        user.is_active = state
-        if not user.is_superuser:
-           user.save()
-           messages.success(request, "Changes saved")
+        if user.is_superuser:
+            messages.error(request, f"{user.username} cannot be disabled.")
         else:
-            messages.error(request, user.username+" cannot be disabled")
+            if user.is_active:
+                user.is_active = False
+            else:
+                user.is_active = True
+            user.save()
+            messages.success(request, "Changes saved.")
         return redirect(next)
     except User.DoesNotExist:
         messages.error(request, "An error occour")
@@ -1646,12 +1715,10 @@ class Charts():
         month = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
         data = []
         for i in month:
-             monthly_sales = customer_invoice.objects.using(db).filter(
-                invoice_date__year=current_year,
-                invoice_date__month=i
-            )
+             monthly_sales = customer_invoice.objects.using(db).filter(invoice_date__year=current_year, invoice_date__month=i)
+
              total_sales = monthly_sales.values("invoiceID").distinct().aggregate(total_sales=Sum('amount_expected'))['total_sales'] or 0.0
-            #  if total_sales:
+   
              data.append(int(total_sales))
 
  
