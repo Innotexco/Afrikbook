@@ -234,6 +234,7 @@ def SalesInvoice(request):
 
 
 from main .views import send_email, send_email_with_pdf
+
 @login_required(login_url='/')
 @urls_name(name="Sales Quotes")
 def AddSalesQuote(request):

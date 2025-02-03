@@ -7,6 +7,9 @@ from django.contrib import messages
 from django.db import connection
 from Stockin.utils import generate_company_id
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 import time
 import subprocess
 from django.urls import reverse
@@ -100,9 +103,9 @@ def CreateDatabase_Migration(request, db_name):
 
 
 def CreatePostgresDatabase_Migration(request, db_name):
-    db_user = 'Afrikbook'
-    db_password = 'afrik'
-    db_host = 'localhost'
+    db_user = os.getenv('DATABASE_USER')
+    db_password = os.getenv('DATABASE_PASSWORD')
+    db_host = os.getenv('DATABASE_HOST')
     db_port = '5432'  # Default PostgreSQL port
 
     try:
@@ -123,16 +126,18 @@ def CreatePostgresDatabase_Migration(request, db_name):
 
         # Update settings.py for the new database
         with open('Afrikbook_proj/settings.py', 'a') as f:
-            f.write(f"\nDATABASES['{db_name}'] = {{\n  'ENGINE': 'django.db.backends.postgresql',\n  'NAME': '{db_name}', \n  'USER': '{db_user}',\n  'PASSWORD': '{db_password}',\n  'HOST': '{db_host}',\n  'PORT': '{db_port}',\n}}")
+            f.write(f"\nDATABASES['{db_name}'] = {{\n  'ENGINE': 'django.db.backends.postgresql',\n  'NAME': '{db_name}', \n  'USER': '{os.getenv('DATABASE_USER')}',\n  'PASSWORD': '{os.getenv('DATABASE_PASSWORD')}',\n  'HOST': '{os.getenv('DATABASE_HOST')}',\n  'PORT': '{db_port}',\n}}")
     except psycopg2.Error as e:
         pass
-        print(f"An error occurred while checking the database: {e}")
+        # print(f"An error occurred while checking the database: {e}")
         # return False
+    except Exception as e:
+        pass
     finally:
         # Close the connection
         if 'connection' in locals() and connection:
             connection.close()
-            print("Database connection closed.")
+            # print("Database connection closed.")
 
     makemigrations(db_name)
 
@@ -142,8 +147,9 @@ def makemigrations(db_name):
         # Sync database migrations for the new database
         call_command('makemigrations')
         call_command('migrate', '--database', db_name)
+      
     except Exception as e:
-        print(e)
+        pass
        
 
 
@@ -183,10 +189,11 @@ def create_pages(request):
 def create_profile(request, loginuser):
     
     user = loginuser.company_id
+    # if loginuser.last_login is None:
     makemigrations(user.db_name)
     try:
         
-        CreateProfile.objects.using(user.db_name).get(CompanyName=user.company_name, email=user.email)
+        CreateProfile.objects.using(user.db_name).filter(CompanyName=user.company_name, email=user.email)
      
     except CreateProfile.DoesNotExist:
 
