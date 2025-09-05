@@ -17,6 +17,7 @@ from settings.models import CreateProfile
 from account.models import chart_of_account
 from django.core.management import call_command
 import psycopg2
+from main.db_router import add_db_connection
 
 def add_company(request, db_name):
     form = CompanyForm(request.POST or None)
@@ -125,14 +126,23 @@ def CreatePostgresDatabase_Migration(request, db_name):
             cursor.execute(f"CREATE DATABASE {db_name};") 
 
         # Update settings.py for the new database
-        with open('Afrikbook_proj/settings.py', 'a') as f:
-            f.write(f"\nDATABASES['{db_name}'] = {{\n  'ENGINE': 'django.db.backends.postgresql',\n  'NAME': '{db_name}', \n  'USER': '{os.getenv('DATABASE_USER')}',\n  'PASSWORD': '{os.getenv('DATABASE_PASSWORD')}',\n  'HOST': '{os.getenv('DATABASE_HOST')}',\n  'PORT': '{db_port}',\n}}")
+        #with open('Afrikbook_proj/settings.py', 'a') as f:
+            #f.write(f"\nDATABASES['{db_name}'] = {{\n  'ENGINE': 'django.db.backends.postgresql',\n  'NAME': '{db_name}', \n  'USER': '{os.getenv('DATABASE_USER')}',\n  'PASSWORD': '{os.getenv('DATABASE_PASSWORD')}',\n  'HOST': '{os.getenv('DATABASE_HOST')}',\n  'PORT': '{db_port}',\n}}")
+        add_db_connection(db_name)
+            try:
+                call_command('makemigrations')
+                call_command('migrate', '--database', db_name)
+            except Exception as e:
+                #pass
+                print(f"third error: {e}")
+                
     except psycopg2.Error as e:
         pass
-        # print(f"An error occurred while checking the database: {e}")
+        print(f"An error occurred while checking the database: {e}")
         # return False
     except Exception as e:
-        pass
+        #pass
+        print(f"second error: {e}")
     finally:
         # Close the connection
         if 'connection' in locals() and connection:
