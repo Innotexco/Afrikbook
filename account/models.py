@@ -18,7 +18,7 @@ class transfer_account(models.Model):
     paid_from       = models.CharField(max_length=255)
     amount          = models.DecimalField(default=0.00, max_digits=65, decimal_places=2)
     received_in     = models.CharField(max_length=255)
-    token_id        = models.CharField(max_length=12, default=generate_unique_id(), blank=True)
+    token_id        = models.CharField(max_length=12, default=generate_unique_id, blank=True)
     user            = models.CharField(max_length=255, blank=True, null=True)
     status          = models.CharField(max_length=255, blank=True, null=True)
 
@@ -35,7 +35,7 @@ class chart_of_account(models.Model):
     status              = models.CharField(max_length=255, default="Inactive")
     code                = models.CharField(max_length=255, null=True, blank=True)
     credit_limit        = models.CharField(max_length=255, null=True, blank=True)
-    token_id            = models.CharField(max_length=255, default=generate_unique_id())
+    token_id            = models.CharField(max_length=255, default=generate_unique_id)
     actual_balance      = models.DecimalField(default=0.00, max_digits=65, decimal_places=2)
     cleared_bal         = models.DecimalField(default=0.00, max_digits=10, decimal_places=2)
     pending_deposit     = models.CharField(max_length=255, null=True, blank=True)
@@ -89,12 +89,12 @@ class accounts(models.Model):
 #====== ALL ACCOUNT LOG ======
 
 class account_log(models.Model):
-    transactionId       = models.CharField(max_length = 255, default=generate_unique_id())
+    transactionId       = models.CharField(max_length = 255, default=generate_unique_id)
     transaction_source  = models.CharField(max_length = 255, default="INTER ACCOUNT TRANSFER")
     amount              = models.DecimalField(default=0.00, max_digits=10, decimal_places=2)
     date                = models.DateField(auto_now_add=True)
     timestamp           = models.TimeField(auto_now_add=True)
-    token_id            = models.CharField(max_length=255, default=generate_token_id())
+    token_id            = models.CharField(max_length=255, default=generate_token_id)
     account             = models.CharField(max_length=255)
     account_type        = models.CharField(max_length=255, default="Cash")
     dateTimeSt          = models.DateTimeField(auto_now_add=True)
