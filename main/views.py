@@ -203,14 +203,8 @@ def Forgot_Password(request):
         us =  User.objects.filter(email=email)
         if us.exists():
             id = us.first().id
-<<<<<<< HEAD
             password = us.first().password
             username= us.first().username
-=======
-            password = base64.urlsafe_b64encode(us.first().password.encode()).decode() 
-            username = us.first().username
->>>>>>> 7390130 (Updated files)
-            
             title = "Forgot Password"
             message = f"""
                     <div style="display: flex; justify-content: center; align-items: center; padding: 8px; text-align: center; border: #018786 1px solid; background-color: #018786;">
@@ -224,22 +218,15 @@ def Forgot_Password(request):
                                     src="https://acc.afrikbook.com/static/logo/log.png"
                                 />
                             </div>
-<<<<<<< HEAD
-                            <div style="text-align: center;">
-                                <p>Heello {{username}}</p>
-                                <p></p>
-                                <p><a href="https://acc.afrikbook.com/Reset-password/{id}/{password}" style="color: #fff; background-color: blue; padding:10px;">Click to reset your password</a></p>
-=======
                             <div style="text-align: start; color: #e2e8f0;">
                                 <p style="margin: 20px 0;">Hi {username}</p>
                                 <p>We receive a request to reset your password.</p>
                                 <p>If you did not request for password reset, it is safe to ignore this email or contact us at <a href="https://afrikbook.com/contact" style="color: blue;">support team</a></p>
-                                <p style="margin: 20px 0;"><a href="https://acc.afrikbook.com/Reset-password/{id}/{password}" style="color: #fff; background-color: blue; padding:10px;">Click to reset your password</a></p>
->>>>>>> 7390130 (Updated files)
+                                <p style="margin: 20px 0;"><a href="https://console.afrikbook.com/Reset-password/{id}/{password}" style="color: #fff; background-color: blue; padding:10px;">Click to reset your password</a></p>
                             </div>
                             <div style="margin-top: 44px; text-align: center; color: #e2e8f0;">
                                 <p>© 2023 Afrikbook™.  All Rights Reserved.</p>
-                                <p><a href="https://acc.afrikbook.com" style="color: #007BFF;">Afrikbook.com</a></p>
+                                <p><a href="https://console.afrikbook.com" style="color: #007BFF;">Afrikbook.com</a></p>
                             </div>
                         </div>
                     </div>
