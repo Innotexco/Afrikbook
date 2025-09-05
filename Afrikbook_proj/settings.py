@@ -48,7 +48,7 @@ EMAIL_BACKEND= 'django.core.mail.backends.smtp.EmailBackend'
 
 PAYSTACK_SECRET_KEY = os.getenv('PAYSTACK_SECRET_KEY')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['69.10.53.253', 'console.afrikbook.com']
 
 
 # Application definition
@@ -135,7 +135,7 @@ WSGI_APPLICATION = 'Afrikbook_proj.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Afrikbook_db',
+        'NAME': 'afrikbook_db',
         'USER': os.getenv('DATABASE_USER'),
         'PASSWORD': os.getenv('DATABASE_PASSWORD'),
         'HOST': os.getenv('DATABASE_HOST'),
