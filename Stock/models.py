@@ -279,7 +279,7 @@ class Category(models.Model):
     description         = models.CharField(max_length = 255)
     state               = models.IntegerField(default=0)
     cat_img             = models.ImageField(null=True, blank=True, upload_to="category_img/", max_length=255)
-    token_id            = models.CharField(max_length=25, blank=True, default=generate_unique_id())
+    token_id            = models.CharField(max_length=25, blank=True, default=generate_unique_id)
     Userlogin           = models.CharField(max_length = 255, blank=True)
 
         
