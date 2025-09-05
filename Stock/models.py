@@ -387,7 +387,7 @@ class Item(models.Model):
     state                   = models.CharField(max_length=255, null=True, blank=True)
     discount_price          = models.DecimalField(max_digits=65, decimal_places=2, default=0.00)
     discount_percentage     = models.DecimalField(max_digits=65, decimal_places=2, default=0.00, blank=True)
-    token_id                = models.CharField(max_length = 255, default=generate_unique_id())
+    token_id                = models.CharField(max_length = 255, default=generate_unique_id)
     Userlogin               = models.CharField(max_length = 255, blank=True, null=True)
     slug                    = models.SlugField(unique=True, max_length=100, null=True, blank=True)
     qty_state               = models.CharField(max_length=255, default="Quantify")
