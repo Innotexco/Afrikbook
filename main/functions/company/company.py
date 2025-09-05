@@ -108,7 +108,7 @@ def CreatePostgresDatabase_Migration(request, db_name):
     db_password = os.getenv('DATABASE_PASSWORD')
     db_host = os.getenv('DATABASE_HOST')
     db_port = '5432'  # Default PostgreSQL port
-    
+
     try:
         # Establish a connection to PostgreSQL
         connection = psycopg2.connect(
@@ -119,37 +119,37 @@ def CreatePostgresDatabase_Migration(request, db_name):
             port=db_port
         )
         connection.autocommit = True
-        
+
         # CREATE DATABASE in PostgreSQL
         with connection.cursor() as cursor:
             # Create the new database owned by the specified user
             cursor.execute(f"CREATE DATABASE {db_name};") 
-        
+
         # Update settings.py for the new database
-        add_db_connection(db_name)
-        
-        try:
-            # Only run migrate, don't create new migrations from web requests
-            call_command('migrate', '--database', db_name, '--run-syncdb')
-            
-        except Exception as e:
-            print(f"Migration error: {e}")
-            # Log the error but don't fail the entire process
-            
+        #with open('Afrikbook_proj/settings.py', 'a') as f:
+            #f.write(f"\nDATABASES['{db_name}'] = {{\n  'ENGINE': 'django.db.backends.postgresql',\n  'NAME': '{db_name}', \n  'USER': '{os.getenv('DATABASE_USER')}',\n  'PASSWORD': '{os.getenv('DATABASE_PASSWORD')}',\n  'HOST': '{os.getenv('DATABASE_HOST')}',\n  'PORT': '{db_port}',\n}}")
+        #add_db_connection(db_name)
+            #try:
+              #  call_command('makemigrations')
+               # call_command('migrate', '--database', db_name)
+            #except Exception as e:
+                #pass
+               # print(f"third error: {e}")
+                
     except psycopg2.Error as e:
-        print(f"Database error: {e}")
-        return False
-        
+        pass
+        print(f"An error occurred while checking the database: {e}")
+        # return False
     except Exception as e:
-        print(f"General error: {e}")
-        return False
-        
+        #pass
+        print(f"second error: {e}")
     finally:
         # Close the connection
         if 'connection' in locals() and connection:
             connection.close()
-    
-    return True
+            # print("Database connection closed.")
+
+    makemigrations(db_name)
 
 
 def makemigrations(db_name):
