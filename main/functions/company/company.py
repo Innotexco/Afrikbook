@@ -79,7 +79,7 @@ def CreateUser(request, db_name, username, email, password):
         
         AssignPrevilage(request, user, username)
         # CreateDatabase_Migration(request, db_name)
-        # CreatePostgresDatabase_Migration(request, db_name)
+        CreatePostgresDatabase_Migration(request, db_name)
 
 
 
@@ -128,13 +128,13 @@ def CreatePostgresDatabase_Migration(request, db_name):
         # Update settings.py for the new database
         #with open('Afrikbook_proj/settings.py', 'a') as f:
             #f.write(f"\nDATABASES['{db_name}'] = {{\n  'ENGINE': 'django.db.backends.postgresql',\n  'NAME': '{db_name}', \n  'USER': '{os.getenv('DATABASE_USER')}',\n  'PASSWORD': '{os.getenv('DATABASE_PASSWORD')}',\n  'HOST': '{os.getenv('DATABASE_HOST')}',\n  'PORT': '{db_port}',\n}}")
-        #add_db_connection(db_name)
-            #try:
-              #  call_command('makemigrations')
-               # call_command('migrate', '--database', db_name)
-            #except Exception as e:
-                #pass
-               # print(f"third error: {e}")
+        add_db_connection(db_name)
+        try:
+            call_command('makemigrations')
+            call_command('migrate', '--database', db_name)
+        except Exception as e:
+            #pass
+            print(f"third error: {e}")
                 
     except psycopg2.Error as e:
         pass
