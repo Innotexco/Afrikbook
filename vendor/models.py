@@ -6,7 +6,7 @@ from vendor.utils import generate_customer_id, generate_unique_id, generate_orde
 
 
 class Vendor_invoice(models.Model):
-    cusID               = models.CharField(max_length = 25, default=generate_customer_id(), blank=True)
+    cusID               = models.CharField(max_length = 25, default=generate_customer_id, blank=True)
     vendor_name         = models.CharField(max_length=255)
     invoiceID           = models.CharField(max_length = 255)
     orderID             = models.CharField(max_length = 255, blank=True, null=True)
@@ -20,7 +20,7 @@ class Vendor_invoice(models.Model):
     unit_p              = models.CharField(max_length = 255)
     discount_price      = models.DecimalField(max_digits=65, decimal_places=2, default=0.00, blank=True)
     amount              = models.DecimalField(max_digits=65, decimal_places=2, default=0.00)
-    token_id            = models.CharField(max_length = 255, default=generate_unique_id(), blank=True)
+    token_id            = models.CharField(max_length = 255, default=generate_unique_id, blank=True)
     amount_paid         = models.DecimalField(max_digits=65, decimal_places=2, default=0.00, blank=True)
     amount_expected     = models.DecimalField(max_digits=65, decimal_places=2, default=0.00, blank=True)
     cancellation        = models.IntegerField(default=0, blank=True)
@@ -34,7 +34,7 @@ class Vendor_invoice(models.Model):
 
 class Vendor_Quote(models.Model):
     genby               = models.CharField(max_length = 255)
-    quote_ID            = models.CharField(max_length = 255, default=generate_order_id(), blank=True, null=True)
+    quote_ID            = models.CharField(max_length = 255, default=generate_order_id, blank=True, null=True)
     referenceID         = models.CharField(max_length = 255, blank=True, null=True)
     Gdescription        = models.TextField()
     quote_date          = models.DateField(max_length=250, auto_now_add=True)
@@ -46,8 +46,8 @@ class Vendor_Quote(models.Model):
     discount            = models.DecimalField(decimal_places=2, max_digits=62, blank=True, null=True)	
     amount              = models.DecimalField(decimal_places=2, max_digits=62, blank=True, null=True)	
     total               = models.DecimalField(decimal_places=2, max_digits=62, blank=True, null=True)	
-    token_id            = models.CharField(max_length = 25, default=generate_customer_id(), blank=True, null=True)
-    custID              = models.CharField(max_length = 25, default=generate_unique_id(), blank=True, null=True)
+    token_id            = models.CharField(max_length = 25, default=generate_customer_id, blank=True, null=True)
+    custID              = models.CharField(max_length = 25, default=generate_unique_id, blank=True, null=True)
     Userlogin           = models.CharField(max_length = 255, blank=True, null=True)
 
     class Meta:
@@ -56,7 +56,7 @@ class Vendor_Quote(models.Model):
 
 class Vendor_Order(models.Model):
     genby               = models.CharField(max_length = 255)
-    order_ID            = models.CharField(max_length = 25, default=generate_order_id(), blank=True, null=True)
+    order_ID            = models.CharField(max_length = 25, default=generate_order_id, blank=True, null=True)
     referenceID         = models.CharField(max_length = 255, blank=True, null=True)
     Gdescription        = models.TextField()
     order_date          = models.DateField(max_length=250, auto_now_add=True)
@@ -68,8 +68,8 @@ class Vendor_Order(models.Model):
     discount            = models.DecimalField(decimal_places=2, max_digits=62, blank=True, null=True)	
     amount              = models.DecimalField(decimal_places=2, max_digits=62, blank=True, null=True)	
     total               = models.DecimalField(decimal_places=2, max_digits=62, blank=True, null=True)	
-    token_id            = models.CharField(max_length = 25, default=generate_customer_id(), blank=True, null=True)
-    custID              = models.CharField(max_length = 25, default=generate_unique_id(), blank=True, null=True)
+    token_id            = models.CharField(max_length = 25, default=generate_customer_id, blank=True, null=True)
+    custID              = models.CharField(max_length = 25, default=generate_unique_id, blank=True, null=True)
 
     class Meta:
         db_table = "vendor_order"
@@ -77,7 +77,7 @@ class Vendor_Order(models.Model):
 
 class Vendor_Return(models.Model):
     genby               = models.CharField(max_length = 255, blank=True)
-    cusID               = models.CharField(max_length = 255, blank=True, default=generate_unique_id())
+    cusID               = models.CharField(max_length = 255, blank=True, default=generate_unique_id)
     invoiceID           = models.CharField(max_length = 255, blank=True)
     reference_ID        = models.CharField(max_length = 255, blank=True, null=True)
     Gdescription        = models.TextField(blank=True)
@@ -89,7 +89,7 @@ class Vendor_Return(models.Model):
     unit_p              = models.DecimalField(decimal_places=2, max_digits=62, blank=True, null=True)	
     discount            = models.DecimalField(decimal_places=2, max_digits=62, blank=True, null=True)	
     amount              = models.DecimalField(decimal_places=2, max_digits=62, blank=True, null=True)	
-    token_id            = models.CharField(max_length = 25, default=generate_customer_id(), blank=True, null=True)
+    token_id            = models.CharField(max_length = 25, default=generate_customer_id, blank=True, null=True)
     amount_paid         = models.DecimalField(decimal_places=2, max_digits=62, blank=True, null=True)
     amount_expected     = models.DecimalField(decimal_places=2, max_digits=62, blank=True, null=True)	
     cur_date            = models.DateField(max_length=250, auto_now_add=True)
