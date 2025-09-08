@@ -12,7 +12,7 @@ class user_account(models.Model):
     outlet          = models.CharField(max_length=250)
     Userlogin       = models.CharField(max_length=250)
     account_type    = models.CharField(max_length=100)
-    token_ID        = models.CharField(max_length=12, default=generate_unique_id())
+    token_ID        = models.CharField(max_length=12, default=generate_unique_id)
 
     class Meta:
         db_table = "user_account"
@@ -73,8 +73,8 @@ class sales_outlet(models.Model):
 class Warehouse(models.Model):
     warehouse_name        = models.CharField(max_length=255)
     description           = models.CharField(max_length=255)
-    code                  = models.CharField(max_length=255, default=generate_order_id())
-    token_id              = models.CharField(max_length=255, default=generate_unique_id())
+    code                  = models.CharField(max_length=255, default=generate_order_id)
+    token_id              = models.CharField(max_length=255, default=generate_unique_id)
     Userlogin             = models.CharField(max_length=255, blank=True)
 
     class Meta:
