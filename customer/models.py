@@ -47,7 +47,7 @@ class customer_table(models.Model):
 
 class sales_quote(models.Model):
     genby            = models.CharField(max_length=20)
-    quote_ID         = models.CharField(max_length=50, default=generate_order_id(), blank=True, null=True)	
+    quote_ID         = models.CharField(max_length=50, default=generate_order_id, blank=True, null=True)	
     referenceID      = models.CharField(max_length=50, blank=True, null=True)
     Gdescription     = models.CharField(max_length=225, blank=True, null=True)	
     quote_date       = models.DateField()
@@ -69,7 +69,7 @@ class sales_quote(models.Model):
 
 class sales_order(models.Model):
     genby            = models.CharField(max_length=20)
-    order_ID         = models.CharField(max_length=50, default=generate_order_id(), blank=True, null=True)	
+    order_ID         = models.CharField(max_length=50, default=generate_order_id, blank=True, null=True)	
     referenceID      = models.CharField(max_length=50,blank=True, null=True)
     Gdescription     = models.CharField(max_length=225, blank=True, null=True)	
     order_date       = models.DateField()
