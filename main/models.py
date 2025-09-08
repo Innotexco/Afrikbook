@@ -30,7 +30,7 @@ class User(AbstractUser):
     outlet   = models.CharField(max_length=250, blank=True)
     priviledge = models.CharField(max_length=250)
     company_id = models.ForeignKey(company_table,  on_delete=models.CASCADE, blank=True, null=True)
-    Token_ID = models.CharField(max_length=12, default=generate_unique_id())
+    Token_ID = models.CharField(max_length=12, default=generate_unique_id)
     Userlogin = models.CharField(max_length=250, blank=True)
     
     class Meta:
@@ -61,7 +61,7 @@ class Privilege(models.Model):
 
 class Pages(models.Model):
     page_name = models.CharField(max_length=255)
-    token_id = models.CharField(max_length = 255, default=generate_unique_id())
+    token_id = models.CharField(max_length = 255, default=generate_unique_id)
 
 
     def __str__(self):
