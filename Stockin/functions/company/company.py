@@ -2,6 +2,7 @@ from django.core.management import call_command
 from django.db import connection
 from django.contrib import messages
 import subprocess
+from main.db_router import add_db_connection
 
 def CreateDatabase_Migration(request, db_name):
     db_user = 'root'
@@ -16,8 +17,9 @@ def CreateDatabase_Migration(request, db_name):
         
         # Update settings.py - but this is problematic in production
         # Consider using add_db_connection() function instead
-        with open('Afrikbook_proj/settings.py', 'a') as f:
-            f.write(f"\nDATABASES['{db_name}'] = {{\n  'ENGINE': 'django.db.backends.mysql',\n  'NAME':  '{db_name}', \n  'USER':  '{db_user}',\n  'PASSWORD': '{db_password}',\n  'HOST': '{db_host}',\n  'PORT': '{db_port}',\n}} ")
+        add_db_connection(db_name)
+        #with open('Afrikbook_proj/settings.py', 'a') as f:
+            #f.write(f"\nDATABASES['{db_name}'] = {{\n  'ENGINE': 'django.db.backends.mysql',\n  'NAME':  '{db_name}', \n  'USER':  '{db_user}',\n  'PASSWORD': '{db_password}',\n  'HOST': '{db_host}',\n  'PORT': '{db_port}',\n}} ")
         
         # DON'T run makemigrations - use existing migrations only
         # Run migrate using Django's call_command instead of subprocess
