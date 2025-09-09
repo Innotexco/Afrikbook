@@ -38,7 +38,7 @@ def get_currency(request):
    
     if user.outlet is None or user.outlet == "":
         
-        currency_ = CreateProfile.objects.using(db).get(country=user.company_id.country).currency
+        currency_ = CreateProfile.objects.using(db).get(country=user.company_id.country).Currency
     else:
         
         currency_ = currency.objects.get(Country=user.company_id.country).Currency
