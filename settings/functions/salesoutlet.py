@@ -41,5 +41,5 @@ def get_currency(request):
         currency_ = CreateProfile.objects.using(db).get(country=user.company_id.country).Currency
     else:
         
-        currency_ = currency.objects.get(Country=user.company_id.country).Currency
+        currency_ = currency.objects.get(Country=user.company_id.country).currency
     return currency_
