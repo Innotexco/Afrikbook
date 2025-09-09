@@ -149,7 +149,7 @@ def CreatePostgresDatabase_Migration(request, db_name):
             connection.close()
             # print("Database connection closed.")
 
-    makemigrations(db_name)
+    #makemigrations(db_name)
 
 
 def makemigrations(db_name):
