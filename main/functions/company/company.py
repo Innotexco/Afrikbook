@@ -198,24 +198,28 @@ def create_pages(request):
             
 
 def create_profile(request, loginuser):
+    company = loginuser.company_id  # get the related company object, not just ID
     
-    user = loginuser.company_id
-    # if loginuser.last_login is None:
-    makemigrations(user.db_name)
-    try:
-        
-        CreateProfile.objects.using(user.db_name).filter(CompanyName=user.company_name, email=user.email)
-     
-    except CreateProfile.DoesNotExist:
+    # Make sure migrations are run for this database
+    makemigrations(company.db_name)
 
-        cu = currency.objects.get(Country=user.country).Currency
-        CreateProfile.objects.using(user.db_name).create(
-            CompanyName = user.company_name,
-            phone = user.phone,
-            email = user.email,
-            address = user.address,
-            country = user.country,
-            currency = cu
+    # Check if profile exists
+    if not CreateProfile.objects.using(company.db_name).filter(
+        CompanyName=company.company_name, email=company.email
+    ).exists():
+        try:
+            cu = currency.objects.get(Country=company.country).Currency
+        except currency.DoesNotExist:
+            cu = None  # fallback if currency not found
+
+        # Create profile
+        CreateProfile.objects.using(company.db_name).create(
+            CompanyName=company.company_name,
+            phone=company.phone,
+            email=company.email,
+            address=company.address,
+            country=company.country,
+            currency=cu,
         )
     
     #Create default Accounts
