@@ -270,7 +270,7 @@ def create_profile(request, loginuser):
         )
     
     #Create default Accounts
-    default_account(request, user.db_name)
+    default_account(request, company.db_name)
 
 def default_account(request, db):
    
