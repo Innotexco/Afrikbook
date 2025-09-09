@@ -65,7 +65,7 @@ INSTALLED_APPS = [
     'main.apps.MainConfig',
 
     # my apps
-    'main',
+    #'main',
     'customer',
     'settings',
     'employee',
