@@ -810,7 +810,7 @@ def NewItem(request):
             notify.save(using=db)
             messages.success(request,"Item was Created successfully")
         else:
-            return form
+            messages.error(request, "Please correct the errors below.")
     else:
         form = ItemForm()
     context = {
