@@ -56,7 +56,8 @@ def add_purchase_quote(request, db):
                     messages.success(request, "Purchase Quote was added successfully")
                     message_displayed = True  # Update the message_displayed variable
             else:
-                pass
+                #pass
+                messages.error(request, "Purchase Quote was not added successfully")
                 # return HttpResponse('Error')
             
 
