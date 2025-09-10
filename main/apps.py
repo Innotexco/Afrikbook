@@ -57,7 +57,6 @@ class MainConfig(AppConfig):
                         
                         settings.DATABASES[db_name] = db_config
                         connections.databases[db_name] = db_config
-                        print(f"Loaded database connection: {db_name}")
             
             pg_connection.close()
             
