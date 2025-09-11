@@ -62,7 +62,7 @@ def create_client_dtails(request, db, username, email, fallback_token):
         'company_db'  : company.db_name,
         'company_db_pass'  :  os.getenv('DATABASE_PASSWORD'),
         'company_db_user'  : os.getenv('DATABASE_USER'),
-        'phone'  : company.phone_number,
+        'phone'  : company.phone,
     }
 
     url = f"{settings.MY_URL}"
