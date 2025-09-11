@@ -66,10 +66,10 @@ def create_client_dtails(request, db, username, email):
     
     def get_csrf_token():
          try:
-             requests.get('http://127.0.0.1:8000/Newcustomer', timeout=10)
+             requests.get('https://console.afrikbook.com/Newcustomerr', timeout=10)
             
              # Logic to retrieve CSRF token from cookies (if running in a Django app context)
-             return requests.get('http://127.0.0.1:8000/Newcustomer').cookies['csrftoken']
+             return requests.get('https://console.afrikbook.com/Newcustomer').cookies['csrftoken']
          except requests.RequestException:
              pass
 
@@ -80,7 +80,7 @@ def create_client_dtails(request, db, username, email):
         }
     # Send the POST request
     try:
-        response = requests.post('http://127.0.0.1:8000/create_new_customer', json=payload, headers=headers, timeout=10)
+        response = requests.post('https://console.afrikbook.com/Newcustomer', json=payload, headers=headers, timeout=10)
     except requests.RequestException:
         pass
 
