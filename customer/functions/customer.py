@@ -18,6 +18,7 @@ def add_customer(request, db):
     form = CustomerForm(request.POST or None)
     db = AfrikBookDB(request)
     email = request.POST.get('email')
+    csrftoken = request.POST.get('csrfmiddlewaretoken')
   
     if form.is_valid():
         form_i = form.save(commit=False)
@@ -35,7 +36,7 @@ def add_customer(request, db):
                messages.error(request, "Customer with e"+form.cleaned_data.get('email')+" already exist")
             else:
                 
-                client = create_client_dtails(request, db, form.cleaned_data.get('name'), email)
+                client = create_client_dtails(request, db, form.cleaned_data.get('name'), email, csrftoken)
                
                 if client:  
                     form_i.save(using=db)
