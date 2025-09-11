@@ -36,7 +36,7 @@ class Vendor_Quote(models.Model):
     genby               = models.CharField(max_length = 255)
     quote_ID            = models.CharField(max_length = 255, default=generate_order_id, blank=True, null=True)
     referenceID         = models.CharField(max_length = 255, blank=True, null=True)
-    Gdescription        = models.TextField()
+    Gdescription        = models.TextField(blank=True, null=True)
     quote_date          = models.DateField(max_length=250, auto_now_add=True)
     itemcode            = models.CharField(max_length = 255, blank=True, null=True)
     item_name           = models.CharField(max_length = 255, blank=True, null=True)
