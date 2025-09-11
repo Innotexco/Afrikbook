@@ -10,6 +10,7 @@ from customer.functions.generalFunction import *
 from client.models import client_companies
 from django.views.decorators.csrf import csrf_exempt
 import os
+from django.conf import settings
 
 def AfrikBookDB(request):
     db = request.user.company_id.db_name
