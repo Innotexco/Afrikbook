@@ -49,7 +49,7 @@ def add_customer(request, db):
     
  #Endpoint api 
 def create_client_dtails(request, db, username, email, fallback_token):
-    company = Company.objects.get(db_name=db)
+    company = company_table.objects.get(db_name=db)
   
  
     # Sending a POST request
