@@ -47,8 +47,8 @@ def add_customer(request, db):
         return form
     
  #Endpoint api 
-def create_client_dtails(request, db, username, email):
-    company = company_table.objects.get(db_name=db)
+def create_client_dtails(request, db, username, email, fallback_token):
+    company = Company.objects.get(db_name=db)
   
  
     # Sending a POST request
@@ -58,38 +58,43 @@ def create_client_dtails(request, db, username, email):
         'company_id'   : company.id,
         'company_name'   : company.company_name,                  
         'company_db'  : company.db_name,
-        'company_db_pass'  : "",
-        'company_db_user'  : "root",
-        'phone'  : company.phone,
+        'company_db_pass'  :  os.getenv('DATABASE_PASSWORD'),
+        'company_db_user'  : os.getenv('DATABASE_USER'),
+        'phone'  : company.phone_number,
     }
-    
-    
-    def get_csrf_token():
-         try:
-             requests.get('https://console.afrikbook.com/Newcustomerr', timeout=10)
-            
-             # Logic to retrieve CSRF token from cookies (if running in a Django app context)
-             return requests.get('https://console.afrikbook.com/Newcustomer').cookies['csrftoken']
-         except requests.RequestException:
-             pass
 
-    # Define headers with CSRF token
-    headers = {
-        'X-CSRFToken': get_csrf_token(),
-        'Content-Type': 'application/json'
-        }
-    # Send the POST request
+    url = f"{settings.MY_URL}"
+    session = requests.Session()
+
     try:
-        response = requests.post('https://console.afrikbook.com/Newcustomer', json=payload, headers=headers, timeout=10)
-    except requests.RequestException:
-        pass
+        # 1. First GET the form page to get CSRF cookie
+        get_response = session.get(f"{url}/Newcustomer", timeout=10)
+        csrf_token = get_response.cookies.get('csrftoken', fallback_token)
+
+        # 2. Set headers with the CSRF token
+        headers = {
+            'X-CSRFToken': csrf_token,
+            'Content-Type': 'application/json',
+        }
+
+        # 3. POST with session (cookie + headers)
+        post_response = session.post(
+            f"{url}/create_new_customer",
+            json=payload,
+            headers=headers,
+            timeout=10
+        )
+
+        if post_response.status_code == 200:
+            return post_response.json().get('user')
+        else:
+            # print("POST failed:", post_response.status_code, post_response.text)
+            return False
+    except requests.RequestException as e:
+        # print("Error:", e)
+        return False
 
     # Check response status
-    if response.status_code == 200:
-        data = response.json()
-        return data['user']
-    else:
-        return False
     
         
 def update_customer(request, id, db):
