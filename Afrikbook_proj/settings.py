@@ -351,9 +351,9 @@ DATABASES['afrikbook_3175'] = {
 DATABASES['afrikbook_client'] = {
   'ENGINE': 'django.db.backends.postgresql',
   'NAME': 'afrikbook_client', 
-  'USER': 'Afrikbook',
-  'PASSWORD': 'afrik',
-  'HOST': 'localhost',
+  'USER': os.getenv('DATABASE_USER'),
+  'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+  'HOST': os.getenv('DATABASE_HOST'),
   'PORT': '5432',
 }
 
