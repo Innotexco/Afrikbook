@@ -55,4 +55,7 @@ def add_purchase_order(request, db):
                     messages.success(request, "Sales Order was added successfully")
                     message_displayed = True  # Update the message_displayed variable
             else:
-                return HttpResponse('Error')
+                #return HttpResponse('Error')
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        messages.error(request, f"{field}: {error}")
