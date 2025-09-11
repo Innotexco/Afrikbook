@@ -97,7 +97,7 @@ def AddCustomer(request):
     
     #Endpoint api 
     try:
-        response = requests.get('http://127.0.0.1:8000/address', timeout=10)
+        response = requests.get('https://console.afrikbook.com/address', timeout=10)
         if response.status_code == 200:
             data = response.json()
 
@@ -108,8 +108,8 @@ def AddCustomer(request):
             for cus in customer:
                 cus.ship = 0
     except requests.RequestException:
-        # messages.error(request, "Endpoint not available")
-        pass
+        messages.error(request, "Endpoint not available")
+        #pass
     
     form = None
     if request.method == 'POST':
