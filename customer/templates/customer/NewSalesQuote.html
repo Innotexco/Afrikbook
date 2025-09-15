@@ -304,7 +304,7 @@
             function(){
                 if(value && customer == false){
                     Email_PDF(div);  
-                    $('#form_id').submit();
+                    $(this).submit();  
                 }else{
                     $("#div").val(div);
                     email_modal.showModal();
