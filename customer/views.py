@@ -200,7 +200,7 @@ def SalesInvoice(request):
 
     #Endpoint api 
     try:
-        response = requests.get(''https://console.afrikbook.com/address', timeout=10)
+        response = requests.get('https://console.afrikbook.com/address', timeout=10)
         if response.status_code == 200:
             shipping_address = response.json() 
         else:
