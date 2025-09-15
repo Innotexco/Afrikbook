@@ -22,7 +22,7 @@ def create_shipping_address(request, csrftoken, id, addr_id, city, state, countr
     # Send the POST request
     
     try:
-        response = requests.post('http://127.0.0.1:8000/create_new_shippping_address', json=ship_address, headers=headers)
+        response = requests.post('https://console.afrikbook.com/create_new_shippping_address', json=ship_address, headers=headers)
         
     except requests.RequestException:
         pass
