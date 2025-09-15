@@ -255,24 +255,8 @@ def AddSalesQuote(request):
             # add_purchase_quote(request, db)
         else:
             messages.error(request, "Select customer or vendor")
-
-        # Check if user requested email
-        if request.POST.get("send_email") == "true":
-            email = request.POST.get("email")
-            title = request.POST.get("title")
-            message = request.POST.get("message")
-
-            if email and title and message:
-                try:
-                    email_sent = send_email(email, title, message)
-                    if email_sent:
-                        messages.success(request, "Email sent successfully.")
-                    else:
-                        messages.error(request, "Email sending failed.")
-                except Exception as e:
-                    messages.error(request, f"Email error: {str(e)}")
-            else:
-                messages.error(request, "Missing email, title, or message.")
+            
+            send_email()
 
     context = {
         'customers': customer,
