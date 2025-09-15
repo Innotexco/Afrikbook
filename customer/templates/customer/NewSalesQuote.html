@@ -296,23 +296,22 @@
     {% include 'customer_grid_table.html' %}
     <script>
         function Email(div){
-                
             var value = $("#email").val();
             var customer = $("#Casual_Customer").prop('checked');
-       
-            alertify.defaults.glossary.title = "{{request.user.username}}"
+        
+            alertify.defaults.glossary.title = "{{request.user.username}}";
             alertify.confirm("Would you like to send quote as PDF",
             function(){
                 if(value && customer == false){
-                    Email_PDF(div)  
-                    $(#form_id).submit();
-                           
+                    Email_PDF(div);  
+                    $('#form_id').submit();
                 }else{
                     $("#div").val(div);
-                    email_modal.showModal()
+                    email_modal.showModal();
                 }
             }).set('labels',{ok:'Yes', cancel:'No'});
-          }
+        }
+
 
           function customer_exists(){
             var customer = $("#Casual_Customer").prop('checked');
