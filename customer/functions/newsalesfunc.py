@@ -284,7 +284,7 @@ def add_new_sales(request, db):
                     messages.success(request, "New Sales Invoice was added successfully")
                     message_displayed = True
             else:
-              
+                messages.error(request, "New Sales Invoice was not added  successfully")
                 return cus_form
         elif len(itemcode) == 1 and itemcode[i] == "0":
             if not executed:
