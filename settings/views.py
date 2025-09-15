@@ -250,7 +250,8 @@ def Shipping_Address(request):
                 # f.save(using="afrikbook_client")
                 create_shipping_address(request, csrftoken, False, addr_id, city, state, country, address)
             else:
-                pass
+                #pass
+                messages.error(request, "shipping address not created")
                
     else:
         form = ShippingAddressForm()
