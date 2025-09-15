@@ -518,8 +518,6 @@ def ViewCustomerReturnedItem(request, code, invoice):
             lookups |= Q(id=code_int) | Q(customer_code=code_int)
 
         customer = customer_table.objects.using(db).filter(lookups).first()
-        print("customer.pk:", customer.pk)
-
         if customer is None:
             messages.error(request, f"Customer with {code} and {invoice} does not exist")
             return redirect('customer:ViewReturnsInWards')
