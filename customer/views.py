@@ -503,26 +503,36 @@ def ReturnInward(request):
 @urls_name(name="Returns Inwards")
 def ViewCustomerReturnedItem(request, code, invoice):
     db = request.user.company_id.db_name
+    customer = None
+    invoice1 = None
+    invoices = []
+
     if code:
-        #lookups = Q(id__iexact=code) | Q(customer_code__iexact=code)
-        lookups = Q(id=code) | Q(customer_code__iexact=code)
-   
+        try:
+            code_int = int(code)
+        except ValueError:
+            code_int = None
+
+        lookups = Q()
+        if code_int is not None:
+            lookups |= Q(id=code_int) | Q(customer_code=code_int)
+
         customer = customer_table.objects.using(db).filter(lookups).first()
-    
+
         if customer is None:
-            messages.error(request, "Customer with " + str(code) + " and "+ invoice +" does not exits")
+            messages.error(request, f"Customer with {code} and {invoice} does not exist")
             return redirect('customer:ViewReturnsInWards')
         else:
             invoice1 = customer_invoice.objects.using(db).filter(cusID=customer.pk, invoiceID=invoice).first()
             invoices = customer_invoice.objects.using(db).filter(cusID=customer.pk, invoiceID=invoice)
+
     context = { 
-        "customer":customer,
+        "customer": customer,
         "invoice": invoice1,
         "invoices": invoices
-        
-    }    
-    return render(request,"customer/ViewCustomerReturnedItem.html", context)
+    }
 
+    return render(request, "customer/ViewCustomerReturnedItem.html", context)
 
 def ReturnedInwardChangeDate(request):
     db = request.user.company_id.db_name
