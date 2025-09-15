@@ -22,7 +22,7 @@
         <span>Home &RightArrow;</span>
     </a>
 
-    <form method="POST">
+    <form method="POST" id="submit_form">
         {% csrf_token %}
     <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
 
@@ -285,6 +285,7 @@
              Email_PDF(div)         
          }
          $(this).submit();
+         $("#submit_form").submit();
        }
    </script> 
 {% endblock content %}
