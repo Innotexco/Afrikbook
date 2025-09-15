@@ -224,7 +224,7 @@ def Shipping_Address(request):
     customer = User.objects.using("afrikbook_client").all()
     #Endpoint api 
     try:
-        response = requests.get('http://127.0.0.1:8000/address', timeout=10)
+        response = requests.get('https://console.afrikbook.com/address', timeout=10)
         if response.status_code == 200:
             data = response.json()
             shipping_address = data['ship']
