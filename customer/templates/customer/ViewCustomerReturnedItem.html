@@ -55,25 +55,25 @@
                     </thead>
                     <tbody id="dynamic_row_add">
                         
-                        {% for invoice in invoices %}
+                        {% for inv in invoices %}
                             <tr>
                                 <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">
                                     {{forloop.counter}}
                                 </td>
                                 <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">
-                                    {{invoice.item_description}}
+                                    {{inv.item_description}}
                                 </td>
                                 <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">
-                                    {{invoice.qty}}
+                                    {{inv.qty}}
                                 </td>
                                 <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">
-                                    {{invoice.unit_p}}
+                                    {{inv.unit_p}}
                                 </td>
                                 <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">
-                                    {{invoice.discount}}
+                                    {{inv.discount}}
                                 </td>
                                 <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">
-                                    {{invoice.amount}}
+                                    {{inv.amount}}
                                 </td>
                             </tr>
                         {% endfor %}
@@ -94,7 +94,7 @@
                     class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
                     id="total"
                     name="total"
-                    value="{{invoice.amount_expected}}"
+                    value="{{inv.amount_expected}}"
                     disabled/>
             </label>
         {% comment %} </div> {% endcomment %}
