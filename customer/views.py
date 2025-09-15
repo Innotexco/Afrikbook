@@ -522,8 +522,8 @@ def ViewCustomerReturnedItem(request, code, invoice):
             messages.error(request, f"Customer with {code} and {invoice} does not exist")
             return redirect('customer:ViewReturnsInWards')
         else:
-            invoice1 = customer_invoice.objects.using(db).filter(cusID=customer.pk, invoiceID=invoice).first()
-            invoices = customer_invoice.objects.using(db).filter(cusID=customer.pk, invoiceID=invoice)
+            invoice1 = customer_invoice.objects.using(db).filter(cusID=customer, invoiceID=invoice).first()
+            invoices = customer_invoice.objects.using(db).filter(cusID=customer, invoiceID=invoice)
 
     context = { 
         "customer": customer,
