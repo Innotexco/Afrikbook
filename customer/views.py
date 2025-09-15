@@ -504,7 +504,8 @@ def ReturnInward(request):
 def ViewCustomerReturnedItem(request, code, invoice):
     db = request.user.company_id.db_name
     if code:
-        lookups = Q(id__iexact=code) | Q(customer_code__iexact=code)
+        #lookups = Q(id__iexact=code) | Q(customer_code__iexact=code)
+        lookups = Q(id=code) | Q(customer_code__iexact=code)
    
         customer = customer_table.objects.using(db).filter(lookups).first()
     
