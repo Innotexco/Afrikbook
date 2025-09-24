@@ -317,5 +317,6 @@ def refund_customer(request, db):
                 messages.success(request, "Amount Refunded")
             else:
                 return receivable_form
+                messages.error(request, "Amount not Refunded")
         else:
             messages.error(request,"Make sure account and  customer are selected")
