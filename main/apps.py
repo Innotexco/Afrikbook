@@ -73,7 +73,7 @@ class YourAppConfig(AppConfig):
     
     def ready(self):
         # Import here to avoid circular imports
-        from main.functions.company.company import load_dynamic_databases
+        from main.db_router import load_dynamic_databases
         
         # Load all dynamic databases when worker starts
         try:
