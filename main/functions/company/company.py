@@ -19,43 +19,136 @@ from django.core.management import call_command
 import psycopg2
 from main.db_router import add_db_connection
 
-def add_company(request, db_name):
-    form = CompanyForm(request.POST or None)
+def add_db_connection(db_name):
+    """
+    Safely add a dynamic database connection that works across Gunicorn workers
+    """
+    with _db_lock:
+        # Check if connection already exists
+        if db_name in connections.databases:
+            print(f'Database {db_name} already exists, setting up connection...')
+            return True
+        
+        # Database configuration
+        db_config = {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": db_name,
+            'USER': os.getenv('DATABASE_USER'),
+            'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+            'HOST': os.getenv('DATABASE_HOST'),
+            'PORT': '5432',
+            'TIME_ZONE': 'UTC',
+            "OPTIONS": {"options": "-c timezone=UTC"},
+            "CONN_HEALTH_CHECKS": False,
+            "CONN_MAX_AGE": 0,
+            "AUTOCOMMIT": True, 
+            "ATOMIC_REQUESTS": False,   
+        }
+        
+        try:
+            # Add to settings.DATABASES
+            settings.DATABASES[db_name] = db_config
+            
+            # Add to connections.databases
+            connections.databases[db_name] = db_config
+            
+            # Store in cache so other workers can discover it
+            # Use a reasonable timeout (e.g., 1 hour)
+            cache_key = f'dynamic_db_{db_name}'
+            cache.set(cache_key, db_config, timeout=3600)
+            
+            # Also maintain a set of all dynamic databases
+            dynamic_dbs = cache.get('dynamic_databases_list', set())
+            dynamic_dbs.add(db_name)
+            cache.set('dynamic_databases_list', dynamic_dbs, timeout=None)
+            
+            print(f'Successfully registered database: {db_name}')
+            return True
+            
+        except Exception as e:
+            print(f"Error registering database {db_name}: {e}")
+            return False
+
+
+def ensure_db_connection(db_name):
+    """
+    Ensure database connection exists, checking cache if not in current worker
+    """
+    with _db_lock:
+        # If connection exists locally, we're good
+        if db_name in connections.databases:
+            return True
+        
+        # Check if another worker registered this database
+        cache_key = f'dynamic_db_{db_name}'
+        db_config = cache.get(cache_key)
+        
+        if db_config:
+            # Found in cache, add to this worker
+            settings.DATABASES[db_name] = db_config
+            connections.databases[db_name] = db_config
+            print(f'Loaded database {db_name} from cache')
+            return True
+        
+        # Database doesn't exist anywhere
+        return False
+
+
+def load_dynamic_databases():
+    """
+    Load all dynamic databases from cache on worker startup
+    Call this in your AppConfig.ready() method
+    """
+    dynamic_dbs = cache.get('dynamic_databases_list', set())
     
-    db_name = db_name
-    username = request.POST.get('username')
-    email = request.POST.get('email')
-    password = request.POST.get('password')
-    company_name = request.POST.get('company_name')
-    country = request.POST.get('country')
-    phone = request.POST.get('phone')
-    address = request.POST.get('address')
+    for db_name in dynamic_dbs:
+        if db_name not in connections.databases:
+            cache_key = f'dynamic_db_{db_name}'
+            db_config = cache.get(cache_key)
+            
+            if db_config:
+                settings.DATABASES[db_name] = db_config
+                connections.databases[db_name] = db_config
+                print(f'Pre-loaded database: {db_name}')
+
+
+# def add_company(request, db_name):
+#     form = CompanyForm(request.POST or None)
+    
+#     db_name = db_name
+#     username = request.POST.get('username')
+#     email = request.POST.get('email')
+#     password = request.POST.get('password')
+#     company_name = request.POST.get('company_name')
+#     country = request.POST.get('country')
+#     phone = request.POST.get('phone')
+#     address = request.POST.get('address')
 
    
 
-    db = company_table.objects.filter(db_name=db_name)
-    Email = User.objects.filter(email=email)
-    Username = User.objects.filter(username=username)
+#     db = company_table.objects.filter(db_name=db_name)
+#     Email = User.objects.filter(email=email)
+#     Username = User.objects.filter(username=username)
     
-    if Email.exists():
-        messages.success(request, "Email already exists")
-    elif Username.exists():
-        messages.success(request, "Username already exists")
-    else:
-        if form.is_valid():
-            form_instance = form.save(commit=False)
-            form_instance.db_name = db_name
-            form_instance.save()
+#     if Email.exists():
+#         messages.success(request, "Email already exists")
+#     elif Username.exists():
+#         messages.success(request, "Username already exists")
+#     else:
+#         if form.is_valid():
+#             form_instance = form.save(commit=False)
+#             form_instance.db_name = db_name
+#             form_instance.save()
 
-            request.session['company_id'] = form_instance.id
-            request.session['db_name'] = db_name
-            CreateUser(request, db_name, username, email, password)
+#             request.session['company_id'] = form_instance.id
+#             request.session['db_name'] = db_name
+#             CreateUser(request, db_name, username, email, password)
             
-            return True
-        else:
-            # messages.error(request, form.errors)
+#             return True
+#         else:
+#             # messages.error(request, form.errors)
             
-            return False
+#             return False
         
 def update_company(request, id):
     customer = company_table.objects.get(id=id)
