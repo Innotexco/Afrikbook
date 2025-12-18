@@ -104,18 +104,121 @@ def CreateDatabase_Migration(request, db_name):
 
 
 
+# def CreatePostgresDatabase_Migration(request, db_name):
+#     db_user = os.getenv('DATABASE_USER')
+#     db_password = os.getenv('DATABASE_PASSWORD')
+#     db_host = os.getenv('DATABASE_HOST')
+#     db_port = '5432'  # Default PostgreSQL port
+    
+#     pg_connection = None
+    
+#     try:
+#         # Establish a connection to PostgreSQL
+#         pg_connection = psycopg2.connect(
+#             dbname="postgres",  # Connect to the default 'postgres' database
+#             user=db_user,
+#             password=db_password,
+#             host=db_host,
+#             port=db_port
+#         )
+#         pg_connection.autocommit = True
+        
+#         # Check if database already exists first
+#         with pg_connection.cursor() as cursor:
+#             cursor.execute("SELECT 1 FROM pg_database WHERE datname = %s", (db_name,))
+#             if cursor.fetchone():
+#                 print(f"Database {db_name} already exists, setting up connection...")
+                
+#                 # Add connection for existing database
+#                 if not ensure_db_connection(db_name):
+                    
+#                     add_db_connection(db_name)
+                
+#                 # Also add to current process settings
+#                 settings.DATABASES[db_name] = {
+#                     'ENGINE': 'django.db.backends.postgresql',
+#                     'NAME': db_name,
+#                     'USER': db_user,
+#                     'PASSWORD': db_password,
+#                     'HOST': db_host,
+#                     'PORT': db_port,
+#                 }
+#                 connections.databases[db_name] = settings.DATABASES[db_name]
+                
+#                 messages.success(request, f"Connected to existing database {db_name}")
+#                 return True
+            
+#             # Create the new database if it doesn't exist
+#             cursor.execute(f"CREATE DATABASE {db_name};")
+#             print(f"Created new database: {db_name}")
+        
+#         # Add database connection to Django settings
+#         add_db_connection(db_name)
+        
+#         # Also add to current process settings
+#         settings.DATABASES[db_name] = {
+#             'ENGINE': 'django.db.backends.postgresql',
+#             'NAME': db_name,
+#             'USER': db_user,
+#             'PASSWORD': db_password,
+#             'HOST': db_host,
+#             'PORT': db_port,
+#         }
+#         connections.databases[db_name] = settings.DATABASES[db_name]
+        
+#         try:
+#             # DON'T run makemigrations - use existing migrations only
+#             call_command('migrate', '--database', db_name, '--fake-initial')
+#             messages.success(request, "Database created and migrated successfully")
+#             return True
+            
+#         except Exception as migrate_error:
+#             print(f"Migration error: {migrate_error}")
+#             # Try alternative migration approach
+#             try:
+#                 call_command('migrate', '--database', db_name, '--run-syncdb')
+#                 messages.success(request, "Database created with syncdb")
+#                 return True
+#             except Exception as sync_error:
+#                 print(f"Sync error: {sync_error}")
+#                 messages.error(request, f"Database created but migration failed: {migrate_error}")
+#                 return False
+                
+#     except psycopg2.Error as db_error:
+#         print(f"PostgreSQL error: {db_error}")
+#         messages.error(request, f"Database operation failed: {db_error}")
+#         return False
+        
+#     except Exception as general_error:
+#         print(f"General error: {general_error}")
+#         messages.error(request, f"An error occurred: {general_error}")
+#         return False
+        
+#     finally:
+#         # Close the PostgreSQL connection
+#         if pg_connection:
+#             pg_connection.close()
+
+    #makemigrations(db_name)
+
+
+
 def CreatePostgresDatabase_Migration(request, db_name):
+    """
+    Create PostgreSQL database and run migrations
+    Enhanced version with proper connection management
+    """
     db_user = os.getenv('DATABASE_USER')
     db_password = os.getenv('DATABASE_PASSWORD')
     db_host = os.getenv('DATABASE_HOST')
-    db_port = '5432'  # Default PostgreSQL port
+    db_port = '5432'
     
     pg_connection = None
     
     try:
         # Establish a connection to PostgreSQL
         pg_connection = psycopg2.connect(
-            dbname="postgres",  # Connect to the default 'postgres' database
+            dbname="postgres",
             user=db_user,
             password=db_password,
             host=db_host,
@@ -123,66 +226,50 @@ def CreatePostgresDatabase_Migration(request, db_name):
         )
         pg_connection.autocommit = True
         
-        # Check if database already exists first
+        # Check if database already exists
         with pg_connection.cursor() as cursor:
             cursor.execute("SELECT 1 FROM pg_database WHERE datname = %s", (db_name,))
-            if cursor.fetchone():
+            db_exists = cursor.fetchone() is not None
+            
+            if db_exists:
                 print(f"Database {db_name} already exists, setting up connection...")
-                
-                # Add connection for existing database
-                if not ensure_db_connection(db_name):
-                    
-                    add_db_connection(db_name)
-                
-                # Also add to current process settings
-                settings.DATABASES[db_name] = {
-                    'ENGINE': 'django.db.backends.postgresql',
-                    'NAME': db_name,
-                    'USER': db_user,
-                    'PASSWORD': db_password,
-                    'HOST': db_host,
-                    'PORT': db_port,
-                }
-                connections.databases[db_name] = settings.DATABASES[db_name]
-                
-                messages.success(request, f"Connected to existing database {db_name}")
-                return True
-            
-            # Create the new database if it doesn't exist
-            cursor.execute(f"CREATE DATABASE {db_name};")
-            print(f"Created new database: {db_name}")
+            else:
+                # Create the new database
+                cursor.execute(f'CREATE DATABASE "{db_name}"')
+                print(f"Created new database: {db_name}")
         
-        # Add database connection to Django settings
-        add_db_connection(db_name)
-        
-        # Also add to current process settings
-        settings.DATABASES[db_name] = {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': db_name,
-            'USER': db_user,
-            'PASSWORD': db_password,
-            'HOST': db_host,
-            'PORT': db_port,
-        }
-        connections.databases[db_name] = settings.DATABASES[db_name]
-        
-        try:
-            # DON'T run makemigrations - use existing migrations only
-            call_command('migrate', '--database', db_name, '--fake-initial')
-            messages.success(request, "Database created and migrated successfully")
-            return True
-            
-        except Exception as migrate_error:
-            print(f"Migration error: {migrate_error}")
-            # Try alternative migration approach
-            try:
-                call_command('migrate', '--database', db_name, '--run-syncdb')
-                messages.success(request, "Database created with syncdb")
-                return True
-            except Exception as sync_error:
-                print(f"Sync error: {sync_error}")
-                messages.error(request, f"Database created but migration failed: {migrate_error}")
+        # Ensure the connection is registered in this worker AND in cache
+        if not ensure_db_connection(db_name):
+            success = add_db_connection(db_name)
+            if not success:
+                messages.error(request, f"Failed to register database connection for {db_name}")
                 return False
+        else:
+            # Even if it exists in this worker, make sure it's in cache for other workers
+            add_db_connection(db_name)
+        
+        # Run migrations
+        if not db_exists:
+            try:
+                print(f"Running migrations for new database {db_name}...")
+                call_command('migrate', '--database', db_name, '--fake-initial')
+                messages.success(request, "Database created and migrated successfully")
+                return True
+                
+            except Exception as migrate_error:
+                print(f"Migration error: {migrate_error}")
+                # Try alternative migration approach
+                try:
+                    call_command('migrate', '--database', db_name, '--run-syncdb')
+                    messages.success(request, "Database created with syncdb")
+                    return True
+                except Exception as sync_error:
+                    print(f"Sync error: {sync_error}")
+                    messages.error(request, f"Database created but migration failed: {migrate_error}")
+                    return False
+        else:
+            messages.success(request, f"Connected to existing database {db_name}")
+            return True
                 
     except psycopg2.Error as db_error:
         print(f"PostgreSQL error: {db_error}")
@@ -191,15 +278,44 @@ def CreatePostgresDatabase_Migration(request, db_name):
         
     except Exception as general_error:
         print(f"General error: {general_error}")
+        import traceback
+        traceback.print_exc()
         messages.error(request, f"An error occurred: {general_error}")
         return False
         
     finally:
-        # Close the PostgreSQL connection
         if pg_connection:
             pg_connection.close()
 
-    #makemigrations(db_name)
+
+def migrate_database_safe(db_name):
+    """
+    Run migrations on an existing database
+    Use this for first-time user logins
+    """
+    try:
+        # Ensure connection exists
+        if not ensure_db_connection(db_name):
+            success = add_db_connection(db_name)
+            if not success:
+                print(f"Failed to establish connection to {db_name}")
+                return False
+        
+        # Verify connection is available
+        if db_name not in connections.databases:
+            print(f"Database {db_name} still not available after registration")
+            return False
+        
+        print(f"Running migrate for {db_name}...")
+        call_command('migrate', '--database', db_name, verbosity=0, interactive=False)
+        print(f"Successfully migrated {db_name}")
+        return True
+        
+    except Exception as e:
+        print(f"Migration error for {db_name}: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
 
 
 def makemigrations(db_name):
