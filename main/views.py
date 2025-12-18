@@ -45,6 +45,7 @@ from django.db.models import Sum, Q
 from.utils import pagenation
 
 from .functions.verification import *
+from main.db_router import add_db_connection, ensure_db_connection
 
 import base64
 
@@ -95,23 +96,38 @@ def Login(request):
         form = LoginForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data.get('username')
-            us =  User.objects.filter(email=email)
+            us = User.objects.filter(email=email)
             if us.exists():
                 username = us.first().username
             else:
                 username = email
          
-            user = authenticate( username=username, password = form.cleaned_data.get('password'))
+            user = authenticate(username=username, password=form.cleaned_data.get('password'))
           
             if user:
                 try:
                     company = company_table.objects.get(id=user.company_id_id)
+                    
+                    # CRITICAL FIX: Ensure database connection exists BEFORE using it
+                    db_name = company.db_name
+                    if not ensure_db_connection(db_name):
+                        # Database not found in cache, register it now
+                        success = add_db_connection(db_name)
+                        if not success:
+                            messages.error(request, "Database connection error. Please contact support.")
+                            return render(request, 'login.html', {"form": form})
+                    
+                    # Now it's safe to run migrations for first-time users
                     if user.last_login is None:
-                       makemigrations(company.db_name)
+                        try:
+                            makemigrations(db_name)
+                        except Exception as e:
+                            print(f"Migration error for {db_name}: {e}")
+                            # Don't block login if migrations fail
+                            messages.warning(request, "Some database updates are pending.")
      
                     try:
                         billing = Billing.objects.get(company=company)
-
                         if billing.subscription == "Free":
                             create_profile(request, user)
                             login(request, user)
@@ -120,14 +136,13 @@ def Login(request):
                             if int(billing.subscription) > 0 and billing.payment_status == "Verified":
                                 remaining_days, plan = check_sub(request, company.id)
                                 if remaining_days <= 0:
-                                   billing_url = reverse('main:Billing', args=[request.user.company_id.id])
-                                   return redirect(billing_url)
+                                    billing_url = reverse('main:Billing', args=[request.user.company_id.id])
+                                    return redirect(billing_url)
                                 else:
                                     create_profile(request, user)
                                     login(request, user)
                                     return redirect('main:home')
                             else:
-                                # messages.error(request, "Your last payment was not succesful")
                                 reference = billing.reference  
                                 url = reverse('main:Verify-Payment') 
                                 redirect_url = f"{url}?reference={reference}"  
@@ -135,22 +150,21 @@ def Login(request):
                     except Billing.DoesNotExist:
                         billing_url = reverse('main:Billing', args=[company.id])
                         return redirect(billing_url)
+                        
                 except company_table.DoesNotExist:
-                   return redirect('main:NewCompany')
+                    return redirect('main:NewCompany')
             else:
-                us =  User.objects.filter(username=username)
+                us = User.objects.filter(username=username)
                 if us.exists():
                     if us.first().is_active:
-                        messages.warning(request, "Invalid Credentials !")
+                        messages.warning(request, "Invalid Credentials!")
                     else:
                         messages.warning(request, "Your account is currently restricted")
                 else:
-                    messages.warning(request, "Invalid Credentials !")
-
+                    messages.warning(request, "Invalid Credentials!")
         else:
             pass
             
-
     context = {
         "form": form
     }
