@@ -45,6 +45,7 @@ from django.db.models import Sum, Q
 from.utils import pagenation
 
 from .functions.verification import *
+from .functions.company.company import migrate_database_safe
 from main.db_router import add_db_connection, ensure_db_connection
 
 import base64
@@ -86,6 +87,7 @@ def register_user(request):
 
 
 
+
 @never_cache
 @not_logged_in_required
 def Login(request):
@@ -107,24 +109,25 @@ def Login(request):
             if user:
                 try:
                     company = company_table.objects.get(id=user.company_id_id)
-                    
-                    # CRITICAL FIX: Ensure database connection exists BEFORE using it
                     db_name = company.db_name
+                    
+                    # CRITICAL: Ensure database connection exists BEFORE any operations
                     if not ensure_db_connection(db_name):
-                        # Database not found in cache, register it now
+                        print(f"Database {db_name} not found in worker, registering...")
                         success = add_db_connection(db_name)
                         if not success:
-                            messages.error(request, "Database connection error. Please contact support.")
+                            messages.error(request, "Database connection error. Please try again or contact support.")
                             return render(request, 'login.html', {"form": form})
                     
-                    # Now it's safe to run migrations for first-time users
+                    # Run migrations for first-time users (optional - can be removed if not needed)
                     if user.last_login is None:
                         try:
-                            makemigrations(db_name)
+                            print(f"First-time login for {user.username}, running migrations...")
+                            migrate_database_safe(db_name)
                         except Exception as e:
                             print(f"Migration error for {db_name}: {e}")
-                            # Don't block login if migrations fail
-                            messages.warning(request, "Some database updates are pending.")
+                            # Don't block login if migrations fail - they might already be done
+                            pass
      
                     try:
                         billing = Billing.objects.get(company=company)
@@ -153,6 +156,7 @@ def Login(request):
                         
                 except company_table.DoesNotExist:
                     return redirect('main:NewCompany')
+                    
             else:
                 us = User.objects.filter(username=username)
                 if us.exists():
