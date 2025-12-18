@@ -1,6 +1,21 @@
 from django.db import connections
 import os
+import threading
 from django.conf import settings
+
+_db_lock = threading.Lock()
+
+def _get_cache_safely():
+    """
+    Safely get cache instance, return None if not available
+    """
+    try:
+        from django.core.cache import cache
+        # Test if cache is actually working
+        cache.set('_test_key', 'test', 1)
+        return cache
+    except Exception:
+        return None
 
 
 def add_db_connection(db_name):
@@ -36,21 +51,29 @@ def add_db_connection(db_name):
             # Add to connections.databases
             connections.databases[db_name] = db_config
             
-            # Store in cache so other workers can discover it
-            # Use a reasonable timeout (e.g., 1 hour)
-            cache_key = f'dynamic_db_{db_name}'
-            cache.set(cache_key, db_config, timeout=3600)
-            
-            # Also maintain a set of all dynamic databases
-            dynamic_dbs = cache.get('dynamic_databases_list', set())
-            dynamic_dbs.add(db_name)
-            cache.set('dynamic_databases_list', dynamic_dbs, timeout=None)
+            # Try to store in cache if available
+            cache = _get_cache_safely()
+            if cache:
+                try:
+                    cache_key = f'dynamic_db_{db_name}'
+                    cache.set(cache_key, db_config, timeout=3600)
+                    
+                    # Also maintain a set of all dynamic databases
+                    dynamic_dbs = cache.get('dynamic_databases_list', set())
+                    if not isinstance(dynamic_dbs, set):
+                        dynamic_dbs = set()
+                    dynamic_dbs.add(db_name)
+                    cache.set('dynamic_databases_list', dynamic_dbs, timeout=None)
+                except Exception as e:
+                    print(f"Cache storage failed for {db_name}: {e}")
             
             print(f'Successfully registered database: {db_name}')
             return True
             
         except Exception as e:
             print(f"Error registering database {db_name}: {e}")
+            import traceback
+            traceback.print_exc()
             return False
 
 
@@ -63,16 +86,21 @@ def ensure_db_connection(db_name):
         if db_name in connections.databases:
             return True
         
-        # Check if another worker registered this database
-        cache_key = f'dynamic_db_{db_name}'
-        db_config = cache.get(cache_key)
-        
-        if db_config:
-            # Found in cache, add to this worker
-            settings.DATABASES[db_name] = db_config
-            connections.databases[db_name] = db_config
-            print(f'Loaded database {db_name} from cache')
-            return True
+        # Try to get from cache
+        cache = _get_cache_safely()
+        if cache:
+            try:
+                cache_key = f'dynamic_db_{db_name}'
+                db_config = cache.get(cache_key)
+                
+                if db_config:
+                    # Found in cache, add to this worker
+                    settings.DATABASES[db_name] = db_config
+                    connections.databases[db_name] = db_config
+                    print(f'Loaded database {db_name} from cache')
+                    return True
+            except Exception as e:
+                print(f"Cache retrieval failed for {db_name}: {e}")
         
         # Database doesn't exist anywhere
         return False
@@ -83,18 +111,35 @@ def load_dynamic_databases():
     Load all dynamic databases from cache on worker startup
     Call this in your AppConfig.ready() method
     """
-    dynamic_dbs = cache.get('dynamic_databases_list', set())
+    cache = _get_cache_safely()
+    if not cache:
+        print("Cache not available, skipping dynamic database loading")
+        return
     
-    for db_name in dynamic_dbs:
-        if db_name not in connections.databases:
-            cache_key = f'dynamic_db_{db_name}'
-            db_config = cache.get(cache_key)
-            
-            if db_config:
-                settings.DATABASES[db_name] = db_config
-                connections.databases[db_name] = db_config
-                print(f'Pre-loaded database: {db_name}')
-
+    try:
+        dynamic_dbs = cache.get('dynamic_databases_list', set())
+        
+        if not isinstance(dynamic_dbs, set):
+            print("Invalid dynamic databases list in cache")
+            return
+        
+        loaded_count = 0
+        for db_name in dynamic_dbs:
+            if db_name not in connections.databases:
+                cache_key = f'dynamic_db_{db_name}'
+                db_config = cache.get(cache_key)
+                
+                if db_config:
+                    settings.DATABASES[db_name] = db_config
+                    connections.databases[db_name] = db_config
+                    loaded_count += 1
+        
+        if loaded_count > 0:
+            print(f'Pre-loaded {loaded_count} dynamic database(s)')
+    except Exception as e:
+        print(f"Error loading dynamic databases: {e}")
+        import traceback
+        traceback.print_exc()
 
 # def add_db_connection(db_name):
 #     # Check if connection already exists in both places
@@ -151,6 +196,7 @@ class MultiTenantRouter:
     def allow_migrate(self, db, app_label, model_name=None, **hints):
         """Only allow migrations on the default database."""
         return db == "default"  # Prevents accidental migrations on tenant DBs
+
 
 
 
