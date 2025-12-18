@@ -66,17 +66,30 @@
 
 
 from django.apps import AppConfig
+import sys
 
-class YourAppConfig(AppConfig):
+class MainConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'your_app_name'
+    name = 'main'
     
     def ready(self):
-        # Import here to avoid circular imports
-        from main.db_router import load_dynamic_databases
+        # Skip on migration/management commands to avoid issues
+        if 'migrate' in sys.argv or 'makemigrations' in sys.argv:
+            return
         
-        # Load all dynamic databases when worker starts
+        # Only run in actual worker processes, not during collectstatic, etc.
+        if 'runserver' not in sys.argv and 'gunicorn' not in sys.argv[0]:
+            return
+            
+        # Import here to avoid circular imports
         try:
+            from .db_utils import load_dynamic_databases
             load_dynamic_databases()
+        except ImportError:
+            # db_utils doesn't exist yet, skip
+            pass
         except Exception as e:
-            print(f"Error loading dynamic databases on startup: {e}")
+            # Log but don't crash - let the app start
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Could not load dynamic databases on startup: {e}")
