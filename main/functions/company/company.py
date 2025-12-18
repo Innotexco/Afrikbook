@@ -17,7 +17,7 @@ from settings.models import CreateProfile
 from account.models import chart_of_account
 from django.core.management import call_command
 import psycopg2
-from main.db_router import add_db_connection
+from main.db_router import add_db_connection, ensure_db_connection
 
 
 def add_company(request, db_name):
@@ -130,7 +130,9 @@ def CreatePostgresDatabase_Migration(request, db_name):
                 print(f"Database {db_name} already exists, setting up connection...")
                 
                 # Add connection for existing database
-                add_db_connection(db_name)
+                if not ensure_db_connection(db_name):
+                    
+                    add_db_connection(db_name)
                 
                 # Also add to current process settings
                 settings.DATABASES[db_name] = {
