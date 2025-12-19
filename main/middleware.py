@@ -17,7 +17,64 @@
 #         return response
 
 
+"""
+Universal Database Connection Middleware
+Ensures all authenticated users have their company database connection available
+"""
+import os
+from django.conf import settings
+from django.db import connections
+from django.utils.deprecation import MiddlewareMixin
 
+
+class EnsureDatabaseConnectionMiddleware(MiddlewareMixin):
+    """
+    Middleware that ensures the user's company database connection 
+    exists before processing any request
+    """
+    
+    def process_request(self, request):
+        # Only for authenticated users
+        if not request.user.is_authenticated:
+            return None
+        
+        # Check if user has a company
+        if not hasattr(request.user, 'company_id') or not request.user.company_id:
+            return None
+        
+        try:
+            db_name = request.user.company_id.db_name
+            
+            # Ensure the database connection exists
+            if db_name not in connections.databases:
+                connections.databases[db_name] = {
+                    'ENGINE': 'django.db.backends.postgresql',
+                    'NAME': db_name,
+                    'USER': os.getenv('DATABASE_USER'),
+                    'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+                    'HOST': os.getenv('DATABASE_HOST'),
+                    'PORT': '5432',
+                    'TIME_ZONE': 'UTC',
+                    'OPTIONS': {'options': '-c timezone=UTC'},
+                    'CONN_HEALTH_CHECKS': False,
+                    'CONN_MAX_AGE': 0,
+                    'AUTOCOMMIT': True,
+                    'ATOMIC_REQUESTS': False,
+                }
+                settings.DATABASES[db_name] = connections.databases[db_name]
+                print(f"[Worker {os.getpid()}] Registered database: {db_name} for user {request.user.username}")
+            
+            # Store on request for easy access in views
+            request.tenant_db = db_name
+            
+        except AttributeError as e:
+            print(f"Could not get company database for user {request.user.username}: {e}")
+        except Exception as e:
+            print(f"Error in EnsureDatabaseConnectionMiddleware: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        return None
 
 
 
@@ -88,4 +145,5 @@ class DatabaseMiddleware(MiddlewareMixin):
                         "AUTOCOMMIT": True,
                         "ATOMIC_REQUESTS": False,
                     }
+
 
