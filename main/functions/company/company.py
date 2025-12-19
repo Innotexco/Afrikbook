@@ -19,6 +19,7 @@ from django.core.management import call_command
 import psycopg2
 from main.db_router import add_db_connection, ensure_db_connection
 from django.conf import settings
+from django.db import connections
 
 
 def add_company(request, db_name):
