@@ -1,4 +1,4 @@
-<section class="hidden">
+<!-- <section class="hidden">
     <p class="text-center hhh my-1 text-[#2F4F4F] text-2xl font-bold whitespace-nowrap">{{company.company_name| upper}}</p>
     <address class="text-center  text-sm font-light whitespace-nowrap">{{company.address}}, {{company.city}}, {{company.state}}, {{company.country}}</address>
 
@@ -15,5 +15,46 @@
             <p class="self-center  text-sm font-light whitespace-nowrap" id="sales_p">Sales Person: {{request.user.email}}</p>
         </div>
     </div> -->
+<!-- </section> --> 
+
+
+
+<!-- periodheader.html - Updated with both templates -->
+
+<!-- Classic Template -->
+<section class="hidden template-classic">
+    <p class="text-center hhh my-1 text-[#2F4F4F] text-2xl font-bold whitespace-nowrap">{{company.company_name| upper}}</p>
+    <address class="text-center text-sm font-light whitespace-nowrap">{{company.address}}, {{company.city}}, {{company.state}}, {{company.country}}</address>
+    <p class="text-center text-sm font-light whitespace-nowrap">{{company.email}}, {{company.phone}}</p>
+    <hr class="my-3">
+    <p class="flex justify-end mb-3 self-center text-sm font-light whitespace-nowrap report_date">Gen. on:</p>
+</section>
+
+<!-- Modern Template -->
+<section class="hidden template-modern">
+    <div class="flex gap-4 mb-4">
+        <!-- Sidebar -->
+        <div class="w-1/4 bg-blue-500 text-white p-4 rounded-lg">
+            <h3 class="font-bold text-lg mb-2">{{company.company_name| upper}}</h3>
+            <div class="text-sm opacity-90 space-y-1">
+                <p>{{company.address}}</p>
+                <p>{{company.city}}, {{company.state}}</p>
+                <p>{{company.country}}</p>
+                <div class="mt-4 pt-4 border-t border-white/30">
+                    <p>{{company.email}}</p>
+                    <p>{{company.phone}}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="flex-1">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">Sales Ledger</h2>
+                <p class="text-sm text-gray-600 report_date">Generated on:</p>
+            </div>
+            <hr class="mb-4">
+        </div>
+    </div>
 </section>
 
