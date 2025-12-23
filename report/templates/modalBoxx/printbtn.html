@@ -1,6 +1,6 @@
 
 
-<div class="grid gap-6 md:grid-cols-3 xl:grid-cols-3">
+<!-- <div class="grid gap-6 md:grid-cols-3 xl:grid-cols-3">
     <button type="button" class="block w-full px-1 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
     href="#" onclick="generatePDF('{{container}}')">
     Print
@@ -14,8 +14,78 @@
     Export to PDF
     </button >
         
+</div> -->
+
+
+
+
+<!-- Enhanced printbtn.html with template selector -->
+<div class="space-y-4">
+    <!-- Template Selector Badge -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+            <div>
+                <p class="text-sm font-medium text-gray-700">PDF Template</p>
+                <p class="text-xs text-gray-500">Current: <span id="current-template" class="font-semibold capitalize">Classic</span></p>
+            </div>
+        </div>
+        <a href="{% url 'main:pdf-template-settings' %}" 
+           class="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center">
+            Change
+            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+        </a>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="grid gap-4 md:grid-cols-3">
+        <button type="button" 
+                class="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
+                onclick="generatePDF('{{container}}')">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+            </svg>
+            Print
+        </button>
+        
+        <button type="button" 
+                class="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 bg-white border-2 border-green-300 rounded-lg hover:bg-green-50 hover:border-green-400 transition-all shadow-sm"
+                onclick="exportTableToExcel('{{table}}{{table_no}}')">
+            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Export Excel
+        </button>
+        
+        <button type="button" 
+                class="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-red-500 border-2 border-red-500 rounded-lg hover:bg-red-600 hover:border-red-600 transition-all shadow-sm"
+                onclick="generatePDF('{{container}}')">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+            Export PDF
+        </button>
+    </div>
 </div>
 
+<script>
+    // Update the template display
+    $(document).ready(function() {
+        $.ajax({
+            url: '/get-pdf-template/',
+            method: 'GET',
+            success: function(response) {
+                if (response.success && response.template) {
+                    $('#current-template').text(response.template.charAt(0).toUpperCase() + response.template.slice(1));
+                }
+            }
+        });
+    });
+</script>
 
  <!-- <button type="button" class="block w-full px-1 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
     onclick="convertTableToExcel('{{container}}', '{{table}}{{table_no}}')">
