@@ -801,44 +801,189 @@
 
 
     // DOWNLOAD AS PDF
-    function generatePDF(div) {
+    // function generatePDF(div) {
 
-        //hide and show elements
-        var $section = $(`#${div}`).find('section'); 
-        $section.removeClass('hidden'); 
-        hide_elements(true) 
+    //     //hide and show elements
+    //     var $section = $(`#${div}`).find('section'); 
+    //     $section.removeClass('hidden'); 
+    //     hide_elements(true) 
 
         
        
-        const element = document.getElementById(div);  
-        // Add a footer element
-        const footer = document.createElement('div');
-        footer.style.textAlign = 'left';
-        footer.style.marginTop = '20px';
-        footer.innerHTML = '<p class="text-gray-700">{{note}}</p>'; // Customize your footer note here
-        element.appendChild(footer);
+    //     const element = document.getElementById(div);  
+    //     // Add a footer element
+    //     const footer = document.createElement('div');
+    //     footer.style.textAlign = 'left';
+    //     footer.style.marginTop = '20px';
+    //     footer.innerHTML = '<p class="text-gray-700">{{note}}</p>'; // Customize your footer note here
+    //     element.appendChild(footer);
 
-        html2pdf(element, {
-            margin: 10,
-            filename: 'report.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            }).then(function (pdf) {
+    //     html2pdf(element, {
+    //         margin: 10,
+    //         filename: 'report.pdf',
+    //         image: { type: 'jpeg', quality: 0.98 },
+    //         html2canvas: { scale: 2 },
+    //         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    //         }).then(function (pdf) {
                 
-            // You can save or display the generated PDF as needed
-            pdf.save();
-        });
+    //         // You can save or display the generated PDF as needed
+    //         pdf.save();
+    //     });
         
         
-        //hide and show elements
+    //     //hide and show elements
+    //     setTimeout(() => {
+    //         $section.addClass('hidden');
+    //         hide_elements(false)
+    //         element.removeChild(footer);
+            
+    //     }, 0);
+    // }
+
+    /**
+ * Updated PDF Generation Functions with Template Support
+ * Add this to your base template or main JS file
+ */
+
+// Global variable to store user's template preference
+let userPdfTemplate = 'classic';
+
+// Load user's PDF template preference on page load
+$(document).ready(function() {
+    loadUserPdfTemplate();
+});
+
+// Function to load user's saved template preference
+function loadUserPdfTemplate() {
+    $.ajax({
+        url: '/get-pdf-template/',
+        method: 'GET',
+        success: function(response) {
+            if (response.success) {
+                userPdfTemplate = response.template || 'classic';
+                console.log('User PDF template:', userPdfTemplate);
+            }
+        },
+        error: function(error) {
+            console.error('Error loading PDF template preference:', error);
+            userPdfTemplate = 'classic'; // Fallback to classic
+        }
+    });
+}
+
+// Updated generatePDF function with template selection
+function generatePDF(div) {
+    // Determine which template to show based on user preference
+    const templateClass = userPdfTemplate === 'modern' ? '.template-modern' : '.template-classic';
+    
+    // Show the selected template
+    var $section = $(`#${div}`).find(`section${templateClass}`);
+    $section.removeClass('hidden');
+    
+    // Hide other template
+    const otherTemplateClass = userPdfTemplate === 'modern' ? '.template-classic' : '.template-modern';
+    $(`#${div}`).find(`section${otherTemplateClass}`).addClass('hidden');
+    
+    // Hide UI elements
+    hide_elements(true);
+    
+    const element = document.getElementById(div);
+    
+    // Add footer
+    const footer = document.createElement('div');
+    footer.style.textAlign = 'left';
+    footer.style.marginTop = '20px';
+    footer.innerHTML = '<p class="text-gray-700">{{note}}</p>';
+    element.appendChild(footer);
+    
+    // Generate PDF based on template
+    const pdfOptions = getPdfOptions(userPdfTemplate);
+    
+    html2pdf(element, pdfOptions).then(function(pdf) {
+        pdf.save();
+        
+        // Cleanup
         setTimeout(() => {
             $section.addClass('hidden');
-            hide_elements(false)
+            hide_elements(false);
             element.removeChild(footer);
-            
-        }, 0);
+        }, 100);
+    });
+}
+
+// Function to get PDF options based on template
+function getPdfOptions(template) {
+    if (template === 'modern') {
+        return {
+            margin: [10, 5, 10, 5],
+            filename: 'report_modern.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { 
+                scale: 2,
+                useCORS: true,
+                logging: false
+            },
+            jsPDF: { 
+                unit: 'mm', 
+                format: 'a4', 
+                orientation: 'landscape' // Modern template works better in landscape
+            }
+        };
+    } else {
+        // Classic template (default)
+        return {
+            margin: 10,
+            filename: 'report_classic.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { 
+                scale: 2,
+                useCORS: true 
+            },
+            jsPDF: { 
+                unit: 'mm', 
+                format: 'a4', 
+                orientation: 'portrait'
+            }
+        };
     }
+}
+
+// Function to show template selection modal (optional)
+function showTemplateSelector() {
+    // You can create a modal to let users change template on-the-fly
+    const templates = ['classic', 'modern'];
+    const currentIdx = templates.indexOf(userPdfTemplate);
+    const nextTemplate = templates[(currentIdx + 1) % templates.length];
+    
+    if (confirm(`Switch to ${nextTemplate} template for this PDF?`)) {
+        userPdfTemplate = nextTemplate;
+        return true;
+    }
+    return false;
+}
+
+// Enhanced hide_elements function (if not already defined)
+function hide_elements(hide) {
+    const elements = [
+        'button',
+        '.no-print',
+        'input[type="date"]',
+        'select',
+        '.hover\\:bg-slate-300'
+    ];
+    
+    elements.forEach(selector => {
+        $(selector).each(function() {
+            if (hide) {
+                $(this).css('display', 'none');
+            } else {
+                $(this).css('display', '');
+            }
+        });
+    });
+}
+
+    
 
     function printPDF() {
         generatePDF();
