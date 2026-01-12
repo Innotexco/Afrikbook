@@ -118,6 +118,16 @@ class CreateProfile(models.Model):
     Token_ID            = models.CharField(max_length=250, null=True, blank=True)  
     vat                 = models.CharField(max_length=250, null=True, blank=True)  
     Userlogin           = models.CharField(max_length=200, null=True, blank=True)  
+    pdf_template_preference = models.CharField(
+        max_length=20,
+        choices=[
+            ('classic', 'Classic - Minimalist'),
+            ('modern', 'Modern - Branded Header'),
+            ('invoice', 'Invoice - Full Details')
+        ],
+        default='classic',
+        help_text='Preferred PDF template for reports'
+    )
    
     class Meta:
         db_table = 'profile'  # Specify the table name
