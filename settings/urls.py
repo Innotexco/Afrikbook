@@ -5,6 +5,8 @@ from . import views
 app_name = 'settings'
 
 urlpatterns = [
+    path('get-pdf-template/', views.get_pdf_template, name='get-pdf-template'),
+    path('save-pdf-template/', views.save_pdf_template, name='save-pdf-template'),
     path('price-management-history', views.PriceChangeHistory, name='price-management-history'),
     path('PriceManagement', views.AddPriceChangeHistory, name='PriceManagement'),
     path('update/<int:id>/', views.UpdatePriceChangeHistory, name='update-price-history'),
