@@ -122,7 +122,6 @@ class CreateProfile(models.Model):
         max_length=20,
         choices=[
             ('classic', 'Classic - Minimalist'),
-            ('modern', 'Modern - Branded Header'),
             ('invoice', 'Invoice - Full Details')
         ],
         default='classic',
