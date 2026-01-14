@@ -371,6 +371,91 @@ logger = logging.getLogger(__name__)
 
 
 
+# @login_required(login_url='Profile Setup')
+# @urls_name(name="Profile Setup")
+# def Create_UpdateNewProfile(request):
+#     db = request.user.company_id.db_name
+#     profileID = request.POST.get('id')
+    
+#     forms = ProfileSetupForm(request.POST, request.FILES or None)
+#     profiledata = CreateProfile.objects.using(db).all()
+#     randomtoken = random_string_generator()
+#     country = currency.objects.all() 
+#     context = {
+#         'form': forms,
+#         'submit': False,
+#         'token': 'Token_'+randomtoken,
+#         'profile':profiledata.first(),
+#         'country': country
+#     }
+#     if request.method == 'POST':
+        
+        
+
+#         if forms.is_valid():
+#             getdata = forms.cleaned_data
+#             name=getdata.get('ownerName')
+#             business_type=request.POST.get('salesinterface')
+#             token=getdata.get('Token_ID')
+#             logo=getdata.get('logo')
+#             Userlogin=getdata.get('Userlogin')
+            
+#             if profiledata.count() > 0:
+#                 profileIMG = CreateProfile.objects.using(db).get(id=profileID)
+#                 formsUpdate = ProfileSetupForm(request.POST, request.FILES or None, instance=profileIMG)
+#                 # profileIMG = CreateProfile.objects.using(db).all().first()
+                
+#                 if logo is not None:
+#                     try:
+#                         path = profileIMG.logo.url
+#                         file_system_path = os.path.join(settings.MEDIA_ROOT, path[len(settings.MEDIA_URL):])
+#                         if os.path.exists(file_system_path):
+#                             os.remove(file_system_path)
+#                             # profileIMG.logo = logo
+
+#                     except:
+#                         pass
+
+#                 # updateProfile           = CreateProfile.objects.using(db).update(**getdata)
+#                 updateProfile           = formsUpdate.save(commit=False)
+#                 updateProfile.save(using=db)
+#                 updatesaleinterface     = SalesInterface.objects.using(db).update(name=name, business_type=business_type, token=token, Userlogin=Userlogin)
+#                 if updateProfile or updatesaleinterface:
+#                     context["success_message"] =  'Profile Successfully Updated' 
+#             else:
+#                 profile_instance = forms.save(commit=False)
+#                 profile_instance.save(using=db)
+#                 SalesInterface.objects.using(db).create(name=name, business_type=business_type, token=token, Userlogin=Userlogin)
+#                 if profile_instance:
+#                     context["success_message"] =  'Profile Successfully Created' 
+#                     return redirect('settings:ProfileSetup')
+#                 else:
+#                     logger.error("Failed to create profile")
+#         else:
+#             logger.warning("Form is not valid")
+#             logger.warning(forms.errors.as_data())
+
+#     if profiledata.count() > 0:
+#         context['submit'] = 'Update Profile'
+#     else:
+#         context['submit']  = 'Create Profile'
+    
+#     return render(request, 'settings/ProfileSetup.html', context)
+
+
+"""
+Updated Create_UpdateNewProfile view with PDF template preference support
+"""
+import os
+import logging
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.conf import settings
+from .decorators import urls_name
+from .utils import random_string_generator
+
+logger = logging.getLogger(__name__)
+
 @login_required(login_url='Profile Setup')
 @urls_name(name="Profile Setup")
 def Create_UpdateNewProfile(request):
@@ -381,64 +466,93 @@ def Create_UpdateNewProfile(request):
     profiledata = CreateProfile.objects.using(db).all()
     randomtoken = random_string_generator()
     country = currency.objects.all() 
+    
     context = {
         'form': forms,
         'submit': False,
         'token': 'Token_'+randomtoken,
-        'profile':profiledata.first(),
+        'profile': profiledata.first(),
         'country': country
     }
+    
     if request.method == 'POST':
-        
-        
-
         if forms.is_valid():
             getdata = forms.cleaned_data
-            name=getdata.get('ownerName')
-            business_type=request.POST.get('salesinterface')
-            token=getdata.get('Token_ID')
-            logo=getdata.get('logo')
-            Userlogin=getdata.get('Userlogin')
+            name = getdata.get('ownerName')
+            business_type = request.POST.get('salesinterface')
+            token = getdata.get('Token_ID')
+            logo = getdata.get('logo')
+            Userlogin = getdata.get('Userlogin')
+            
+            # Get PDF template preference from POST data
+            pdf_template = request.POST.get('pdf_template_preference', 'classic')
             
             if profiledata.count() > 0:
+                # UPDATE existing profile
                 profileIMG = CreateProfile.objects.using(db).get(id=profileID)
                 formsUpdate = ProfileSetupForm(request.POST, request.FILES or None, instance=profileIMG)
-                # profileIMG = CreateProfile.objects.using(db).all().first()
                 
+                # Handle logo deletion if new logo uploaded
                 if logo is not None:
                     try:
                         path = profileIMG.logo.url
                         file_system_path = os.path.join(settings.MEDIA_ROOT, path[len(settings.MEDIA_URL):])
                         if os.path.exists(file_system_path):
                             os.remove(file_system_path)
-                            # profileIMG.logo = logo
-
-                    except:
-                        pass
-
-                # updateProfile           = CreateProfile.objects.using(db).update(**getdata)
-                updateProfile           = formsUpdate.save(commit=False)
+                    except Exception as e:
+                        logger.warning(f"Could not delete old logo: {e}")
+                
+                # Save the updated profile
+                updateProfile = formsUpdate.save(commit=False)
+                
+                # Add PDF template preference
+                updateProfile.pdf_template_preference = pdf_template
+                
                 updateProfile.save(using=db)
-                updatesaleinterface     = SalesInterface.objects.using(db).update(name=name, business_type=business_type, token=token, Userlogin=Userlogin)
+                
+                # Update sales interface
+                updatesaleinterface = SalesInterface.objects.using(db).update(
+                    name=name, 
+                    business_type=business_type, 
+                    token=token, 
+                    Userlogin=Userlogin
+                )
+                
                 if updateProfile or updatesaleinterface:
-                    context["success_message"] =  'Profile Successfully Updated' 
+                    context["success_message"] = 'Profile Successfully Updated'
+                    logger.info(f"Profile updated with PDF template: {pdf_template}")
             else:
+                # CREATE new profile
                 profile_instance = forms.save(commit=False)
+                
+                # Add PDF template preference
+                profile_instance.pdf_template_preference = pdf_template
+                
                 profile_instance.save(using=db)
-                SalesInterface.objects.using(db).create(name=name, business_type=business_type, token=token, Userlogin=Userlogin)
+                
+                # Create sales interface
+                SalesInterface.objects.using(db).create(
+                    name=name, 
+                    business_type=business_type, 
+                    token=token, 
+                    Userlogin=Userlogin
+                )
+                
                 if profile_instance:
-                    context["success_message"] =  'Profile Successfully Created' 
+                    context["success_message"] = 'Profile Successfully Created'
+                    logger.info(f"Profile created with PDF template: {pdf_template}")
                     return redirect('settings:ProfileSetup')
                 else:
                     logger.error("Failed to create profile")
         else:
             logger.warning("Form is not valid")
             logger.warning(forms.errors.as_data())
-
+    
+    # Set button text
     if profiledata.count() > 0:
         context['submit'] = 'Update Profile'
     else:
-        context['submit']  = 'Create Profile'
+        context['submit'] = 'Create Profile'
     
     return render(request, 'settings/ProfileSetup.html', context)
 
