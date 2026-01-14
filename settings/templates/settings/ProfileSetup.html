@@ -157,8 +157,32 @@
                         value="{{profile.address}}"
                     ></input>
                 </label>
+                
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Select Country  
+                    </span>
+                    <select class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="country">
+                        <option disabled> Select Country</option>
+                        {% for value in country %}
+                        <option onclick="Currency('{{value.Currency}}')" {% if profile.country == value.Country %}selected {% endif %}>{{value.Country}}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Select Currency
+                    </span>
+                    <select id="currency" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="currency">
+                        {% for currency in country %}
+                        <option {% if profile.currency == currency.Currency %}selected {% endif %}>{{currency.Currency}}</option>
+                        {% endfor %}
+                        
+                    </select>
+                </label>
 
-                 <!-- PDF Template Preference Section -->
+                                 <!-- PDF Template Preference Section -->
         <div class="mt-8 pt-6 border-t-2 border-gray-200">
             <div class="mb-4">
                 <h2 class="text-lg font-semibold text-gray-700 flex items-center">
@@ -283,29 +307,6 @@
             </div>
         </div>
                 
-                <label class="block text-sm">
-                    <span class="text-gray-700 dark:text-gray-400">
-                        Select Country  
-                    </span>
-                    <select class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="country">
-                        <option disabled> Select Country</option>
-                        {% for value in country %}
-                        <option onclick="Currency('{{value.Currency}}')" {% if profile.country == value.Country %}selected {% endif %}>{{value.Country}}</option>
-                        {% endfor %}
-                    </select>
-                </label>
-                
-                <label class="block text-sm">
-                    <span class="text-gray-700 dark:text-gray-400">
-                        Select Currency
-                    </span>
-                    <select id="currency" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="currency">
-                        {% for currency in country %}
-                        <option {% if profile.currency == currency.Currency %}selected {% endif %}>{{currency.Currency}}</option>
-                        {% endfor %}
-                        
-                    </select>
-                </label>
                 <input type="hidden" value="{{token}}" name="{{form.Token_ID.name}}">
                 <input type="hidden" value="admin" name="{{form.Userlogin.name}}">
 
