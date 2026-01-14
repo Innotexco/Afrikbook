@@ -446,16 +446,6 @@ logger = logging.getLogger(__name__)
 """
 Updated Create_UpdateNewProfile view with PDF template preference support
 """
-import os
-import logging
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.conf import settings
-from .decorators import urls_name
-from .utils import random_string_generator
-
-logger = logging.getLogger(__name__)
-
 @login_required(login_url='Profile Setup')
 @urls_name(name="Profile Setup")
 def Create_UpdateNewProfile(request):
