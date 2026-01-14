@@ -442,6 +442,114 @@ logger = logging.getLogger(__name__)
     
 #     return render(request, 'settings/ProfileSetup.html', context)
 
+import json
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+
+@login_required
+@require_http_methods(["GET"])
+def get_pdf_template(request):
+    """
+    Get user's saved PDF template preference
+    API endpoint for AJAX calls
+    """
+    try:
+        company = request.user.company_id
+        db_name = company.db_name
+        
+        # Ensure database connection exists
+        if db_name not in connections.databases:
+            connections.databases[db_name] = {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': db_name,
+                'USER': os.getenv('DATABASE_USER'),
+                'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+                'HOST': os.getenv('DATABASE_HOST'),
+                'PORT': '5432',
+            }
+            settings.DATABASES[db_name] = connections.databases[db_name]
+        
+        # Get profile
+        profile = CreateProfile.objects.using(db_name).filter(
+            CompanyName=company.company_name
+        ).first()
+        
+        if profile and profile.pdf_template_preference:
+            template = profile.pdf_template_preference
+        else:
+            template = 'classic'  # Default fallback
+        
+        return JsonResponse({
+            'success': True,
+            'template': template
+        })
+        
+    except Exception as e:
+        print(f"Error getting PDF template: {e}")
+        return JsonResponse({
+            'success': True,
+            'template': 'classic'  # Fallback on error
+        })
+
+
+@login_required
+@require_http_methods(["POST"])
+def save_pdf_template(request):
+    """
+    Save user's PDF template preference
+    API endpoint for AJAX calls from settings page
+    """
+    try:
+        data = json.loads(request.body)
+        template = data.get('template')
+        
+        # Validate template choice
+        if template not in ['classic', 'invoice']:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid template choice'
+            })
+        
+        company = request.user.company_id
+        db_name = company.db_name
+        
+        # Ensure database connection
+        if db_name not in connections.databases:
+            connections.databases[db_name] = {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': db_name,
+                'USER': os.getenv('DATABASE_USER'),
+                'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+                'HOST': os.getenv('DATABASE_HOST'),
+                'PORT': '5432',
+            }
+            settings.DATABASES[db_name] = connections.databases[db_name]
+        
+        # Update profile
+        profile = CreateProfile.objects.using(db_name).filter(
+            CompanyName=company.company_name
+        ).first()
+        
+        if profile:
+            profile.pdf_template_preference = template
+            profile.save(using=db_name)
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({
+                'success': False,
+                'error': 'Profile not found'
+            })
+            
+    except Exception as e:
+        print(f"Error saving PDF template: {e}")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+
 
 """
 Updated Create_UpdateNewProfile view with PDF template preference support
