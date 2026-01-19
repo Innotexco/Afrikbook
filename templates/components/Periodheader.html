@@ -70,8 +70,8 @@
     
     <!-- Logo Section -->
     <div style="display: flex; flex-direction: column; align-items: center; margin: 10px 0; color: #2F4F4F;">
-        {% if profile.logo %}
-            <img src="{{profile.logo.url}}" 
+        {% if company.logo %}
+            <img src="{{company.logo.url}}" 
                  style="width: 590px; max-width: 100%; height: auto; padding-top: 16px;" 
                  alt="Company Logo">
         {% else %}
@@ -110,8 +110,8 @@
         </div>
     
         <!-- RC Number -->
-        {% if company.RC %}
-        <span style="font-weight: 500;">RC: {{company.RC}}</span>
+        {% if company.Rc %}
+        <span style="font-weight: 500;">RC: {{company.Rc}}</span>
         {% endif %}
     
     </div>
