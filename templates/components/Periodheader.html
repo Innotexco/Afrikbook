@@ -58,34 +58,35 @@
     </div>
 </section> -->
 
-
-<div class="flex flex-col items-center my-1 text-[#2F4F4F]">
-		<img src="{{profile.logo.url}}" class="w-[590px] pt-4 h-auto">
-</div>
-
- <address class="text-center text-sm pl-32 -mt-6 whitespace-nowrap not-italic">
-            {{company.address}}, {{company.city}}, {{company.state}},
-</address>
-
-<div class="flex ml-16 justify-center items-center gap-6 text-sm font-light whitespace-nowrap text-gray-700">
-    <!-- Email -->
-    <div class="flex items-center gap-2">
-        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v.01L12 13 2 6.01V6z"/>
-            <path d="M2 8.5V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8.5l-9.4 6.27a1 1 0 0 1-1.2 0L2 8.5z"/>
-        </svg>
-        <span>{{company.email}}</span>
-    </div>
-
-    <!-- Phone -->
-    <div class="flex items-center gap-2">
-        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M2.01 5.87a2 2 0 0 1 2-2h3.2a1 1 0 0 1 .96.73l1.1 3.86a1 1 0 0 1-.45 1.14l-1.7 1.02a15.05 15.05 0 0 0 6.59 6.59l1.02-1.7a1 1 0 0 1 1.14-.45l3.86 1.1a1 1 0 0 1 .73.96v3.2a2 2 0 0 1-2 2A18 18 0 0 1 2.01 5.87z"/>
-        </svg>
-        <span>{{company.phone}}, {{company.phone2}}</span>
-    </div>
-
-    <!-- RC -->
-    <span class="font-medium">{{company.Rc}}</span>
-
-</div>
+<section class="hidden template-invoice">
+	<div class="flex flex-col items-center my-1 text-[#2F4F4F]">
+			<img src="{{profile.logo.url}}" class="w-[590px] pt-4 h-auto">
+	</div>
+	
+	 <address class="text-center text-sm pl-32 -mt-6 whitespace-nowrap not-italic">
+	            {{company.address}}, {{company.city}}, {{company.state}},
+	</address>
+	
+	<div class="flex ml-16 justify-center items-center gap-6 text-sm font-light whitespace-nowrap text-gray-700">
+	    <!-- Email -->
+	    <div class="flex items-center gap-2">
+	        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+	            <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v.01L12 13 2 6.01V6z"/>
+	            <path d="M2 8.5V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8.5l-9.4 6.27a1 1 0 0 1-1.2 0L2 8.5z"/>
+	        </svg>
+	        <span>{{company.email}}</span>
+	    </div>
+	
+	    <!-- Phone -->
+	    <div class="flex items-center gap-2">
+	        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+	            <path d="M2.01 5.87a2 2 0 0 1 2-2h3.2a1 1 0 0 1 .96.73l1.1 3.86a1 1 0 0 1-.45 1.14l-1.7 1.02a15.05 15.05 0 0 0 6.59 6.59l1.02-1.7a1 1 0 0 1 1.14-.45l3.86 1.1a1 1 0 0 1 .73.96v3.2a2 2 0 0 1-2 2A18 18 0 0 1 2.01 5.87z"/>
+	        </svg>
+	        <span>{{company.phone}}, {{company.phone2}}</span>
+	    </div>
+	
+	    <!-- RC -->
+	    <span class="font-medium">{{company.Rc}}</span>
+	
+	</div>
+</section>
