@@ -900,7 +900,7 @@ def SalesLedger(request):
     sales = customer_invoice.objects.using(db).filter(invoice_state="Supplied").exclude(invoiceID__icontains=str('returned')) #.distinct()
     unique_invoices = {sale.invoiceID: sale for sale in sales}.values()
     company = company_table.objects.get(id=request.user.company_id_id)
-    profile = CreateProfile.objects.using(db).get(CompanyName=request.user.company_id.company_name)
+    profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
 
     sales_total = customer_invoice.objects.using(db).values("invoiceID").distinct().count()
     amount_total = customer_invoice.objects.using(db).values("invoiceID").distinct().aggregate(total_amount=Sum("amount"))['total_amount']
