@@ -657,20 +657,68 @@ def Create_UpdateNewProfile(request):
     
     return render(request, 'settings/ProfileSetup.html', context)
 
+# def complete_profileSetup(request):
+#     db = request.user.company_id.db_name
+#     profileID = request.POST.get('id')
+#     profile = CreateProfile.objects.using(db).get(id=profileID)
+#     form = ProfileSetupForm(request.POST, request.FILES or None, instance=profile)
+
+#     if form.is_valid():
+#         form_save = form.save(commit=False)
+#         form_save.save(using=db)
+#     else:
+#         logger.error("Failed to update profile")
+
+
+#     return redirect("/")
+
+
+import logging
+from django.shortcuts import redirect
+from django.http import HttpResponseBadRequest
+
+logger = logging.getLogger(__name__)
+
 def complete_profileSetup(request):
-    db = request.user.company_id.db_name
-    profileID = request.POST.get('id')
-    profile = CreateProfile.objects.using(db).get(id=profileID)
-    form = ProfileSetupForm(request.POST, request.FILES or None, instance=profile)
+    try:
+        db = request.user.company_id.db_name
 
-    if form.is_valid():
-        form_save = form.save(commit=False)
-        form_save.save(using=db)
-    else:
-        logger.error("Failed to update profile")
+        profile_id = request.POST.get('id')
+        if not profile_id:
+            logger.error("Profile ID missing in POST data")
+            return HttpResponseBadRequest("Profile ID is required")
 
+        try:
+            profile = CreateProfile.objects.using(db).get(id=profile_id)
+        except CreateProfile.DoesNotExist:
+            logger.exception(f"Profile with ID {profile_id} does not exist")
+            return HttpResponseBadRequest("Profile not found")
 
-    return redirect("/")
+        form = ProfileSetupForm(
+            request.POST,
+            request.FILES or None,
+            instance=profile
+        )
+
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.save(using=db)
+            logger.info(f"Profile {profile_id} updated successfully")
+        else:
+            # 🔥 THIS IS WHAT YOU NEED
+            logger.error("ProfileSetupForm validation failed")
+            logger.error(f"Form errors: {form.errors}")
+            logger.error(f"Non-field errors: {form.non_field_errors()}")
+
+            return HttpResponseBadRequest(form.errors.as_json())
+
+        return redirect("/")
+
+    except Exception as e:
+        # 🔥 FULL TRACEBACK
+        logger.exception("Unexpected error during profile setup")
+        return HttpResponseBadRequest(str(e))
+
 
 @login_required(login_url='Profile Setup')
 @urls_name(name="Profile")
