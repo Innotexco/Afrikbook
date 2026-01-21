@@ -188,6 +188,43 @@
                             
                         </select>
                     </label>
+                    
+                    <!-- <label class="block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">
+                            Select Template Preference
+                        </span>
+                        <select class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="pdf_template_preference ">
+                            <option>classic</option>
+                            
+                            
+                            
+                        </select>
+                    </label> -->
+                    <label class="block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">
+                            Select Template Preference
+                        </span>
+                    
+                        <select
+                            name="pdf_template_preference"
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md
+                                   focus:border-slate-300 focus:outline-none
+                                   text-slate-600 shadow-lg"
+                        >
+                            <option value="classic"
+                                {% if profile.pdf_template_preference == "classic" %}selected{% endif %}
+                            >
+                                Classic – Minimalist
+                            </option>
+                    
+                            <option value="invoice"
+                                {% if profile.pdf_template_preference == "invoice" %}selected{% endif %}
+                            >
+                                Invoice – Full Details
+                            </option>
+                        </select>
+                    </label>
+
                     <input type="hidden" value="{{token}}" name="{{form.Token_ID.name}}">
                     <input type="hidden" value="admin" name="{{form.Userlogin.name}}">
     
