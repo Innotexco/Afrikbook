@@ -474,10 +474,10 @@ def get_pdf_template(request):
             settings.DATABASES[db_name] = connections.databases[db_name]
         
         # Get profile
-        # profile = CreateProfile.objects.using(db_name).filter(
-        #     CompanyName=company.company_name
-        # ).first()
-        profile = CreateProfile.objects.using(db_name).filter( user=request.user).first()
+        profile = CreateProfile.objects.using(db_name).filter(
+            CompanyName=company.company_name
+        ).get()
+        
         
         if profile and profile.pdf_template_preference:
             template = profile.pdf_template_preference
