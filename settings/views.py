@@ -667,7 +667,7 @@ def complete_profileSetup(request):
         form_save = form.save(commit=False)
         form_save.save(using=db)
     else:
-        pass
+        logger.error("Failed to update profile")
 
 
     return redirect("/")
