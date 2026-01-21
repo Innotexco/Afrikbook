@@ -476,7 +476,7 @@ def get_pdf_template(request):
         # Get profile
         profile = CreateProfile.objects.using(db_name).filter(
             CompanyName=company.company_name
-        ).get()
+        ).first()
         
         
         if profile and profile.pdf_template_preference:
