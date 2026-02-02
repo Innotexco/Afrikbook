@@ -179,7 +179,7 @@ def transfer_to_bin(request, db, status, invoice_no):
 
         if j.vendor_name:
             ven = vendor_table.objects.using(db).get(name=j.vendor_name)
-            DebitPayable(request, db, ven, j.date, j.narration, "Transfer", account.account_id, j.debit)
+            DebitPayable(request, db, ven, j.date, j.narration, account.account_type, "Transfer", account.account_id, j.debit)
 
         journal.delete()
 
