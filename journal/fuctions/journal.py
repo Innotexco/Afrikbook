@@ -121,7 +121,6 @@ def create_new_journal_enty(request, db):
                                         Userlogin = request.user.username
                                     )
                                 
-                                #DebitPayable(request, db, ven, date, narration, account.account_type, "Transfer", account.account_id,  amount_paid)
                                 DebitPayable(request, db, ven, date, narration, "Transfer", account.account_id, amount_paid)
                                 CreditPayable(request, db, ven, date, narration, "Transfer", account.account_id,  total_debit)
                             CreateLog(db, account, amount_paid)
