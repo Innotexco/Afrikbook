@@ -76,7 +76,7 @@
                     <select id="vendors_id" name="genby" required class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
                         <option  value="{{instance.genby}}">{{instance.genby}}</option>
                         {% for display in supplier %}
-                        <option  value="{{display.id}}">{{display.name}}</option>
+                        <option  value="{{display.name}}">{{display.name}}</option>
                         {% endfor %}
                             
                     </select>
