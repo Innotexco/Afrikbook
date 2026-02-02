@@ -53,7 +53,7 @@
                         name="referenceID"
                         class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
                         placeholder=""
-                        value="{{instance.referenceID}}"
+                        value="{{instance.referenceID|default:'' }}"
                     />
                     <span class="py-2 text-red-500 errors">{{form.referenceID.errors}}</span>
                 </label>
@@ -65,7 +65,7 @@
                         name="Gdescription"
                         class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
                         placeholder=""
-                        value="{{instance.Gdescription}}"
+                        value="{{instance.Gdescription|default:'' }}"
                     />
                 </label>
 
@@ -128,7 +128,7 @@
                                             name="item_name"
                                             id="name"
                                             class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                                            value="{{quote.item_name}}"
+                                            value="{{ quote.item_name|default:'' }}"
                                             readonly
                                         />
                                     </td>
@@ -139,7 +139,7 @@
                                             name="desc[]"
                                             id="desc"
                                             class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                                            value="{{quote.item_descriptions}}"
+                                            value="{{quote.item_descriptions|default:'' }}"
                                         />
                                         <input 
                                             type="hidden"
@@ -166,7 +166,7 @@
                                             id="unit"
                                             class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
                                             placeholder=""
-                                            value="{{quote.unit_p}}"
+                                            value="{{quote.unit_p|default:'' }}"
                                         />
                                     </td>
                                     <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
@@ -176,7 +176,7 @@
                                             id="discount"
                                             class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
                                             placeholder=""
-                                            value="{{quote.discount}}"
+                                            value="{{quote.discount|default:'' }}"
                                         />
                                     </td>
                                     <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
@@ -186,7 +186,7 @@
                                             id="amount"
                                             class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
                                             placeholder=""
-                                            value="{{quote.amount}}"
+                                            value="{{quote.amount|default:'' }}"
                                         />
                                     </td>
                                     <td class="border border-slate-300 py-0 my-0">
