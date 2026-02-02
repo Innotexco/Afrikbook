@@ -29,7 +29,7 @@
 
     <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
 
-        <form action="{% url 'vendor:UpdatePurchaseQuote' display.id %}" method="POST">
+        <form action="{% url 'vendor:UpdatePurchaseQuote' pk=instance.pk %}" method="POST">
             {% csrf_token %}
 
             <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
