@@ -141,7 +141,7 @@
                                     {{forloop.counter}}
                                 </td>
                                 <td class="text-[10px]">
-                                    {{vendorInvoice.invoice_date}}
+                                    {{ vendorInvoice.invoice_date|date:"d M Y" }}
                                 </td>
                                 <td class="text-[10px]">
                                     {{vendorInvoice.invoiceID}}
