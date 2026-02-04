@@ -265,53 +265,146 @@ def cancle_invoice(request, context, form_invoiceID, db, form_id):
 
 # @login_required(login_url="/")
 # @urls_name(name="Purchase Invoices")
-def update_invoice(db, context, form_id, form_invoiceID, form_qty, request):
-    getqty_outlet_stockinlog=None
-    getqty_stockinlog=None
+# def update_invoice(db, context, form_id, form_invoiceID, form_qty, request):
+#     getqty_outlet_stockinlog=None
+#     getqty_stockinlog=None
       
+#     try:
+#         vendorInv = Vendor_invoice.objects.using(db).get(invoiceID=form_invoiceID, id=form_id)
+
+#         try:
+#             getqty_stockinlog = CreateStockInLog.objects.using(db).get(invoice_no=form_invoiceID, item_code=vendorInv.itemcode)
+#             getqty_stockinlog.quantity = form_qty
+#             getqty_stockinlog.save(using=db)
+
+#         except CreateStockInLog.DoesNotExist:
+#             pass
+
+#         try:
+#             getqty_outlet_stockinlog = CreateOutletStockInLog.objects.using(db).get(invoice_no=form_invoiceID, item_code=vendorInv.itemcode)
+#             getqty_outlet_stockinlog.quantity = form_qty
+#             getqty_outlet_stockinlog.save(using=db)
+#         except CreateOutletStockInLog.DoesNotExist:
+#             pass
+
+#         if getqty_stockinlog is not None:
+#             try:
+#                 get_qty_from_stockin = CreateStockIn.objects.using(db).get(warehouse=getqty_stockinlog.warehouse, item_code=getqty_stockinlog.item_code)
+#                 stockinQty =get_qty_from_stockin.quantity
+                
+#                 get_qty_from_stockin.quantity = stock_adjustment_arithmetic_logic(stockinQty, form_qty, vendorInv)
+#                 # stockin qty update
+#                 get_qty_from_stockin.save(using=db)
+#             except CreateStockIn.DoesNotExist:
+#                 pass
+            
+
+#         elif getqty_outlet_stockinlog is not None :
+
+#             try:
+#                 get_qty_from_stockin = CreateOutletStockIn.objects.using(db).get(warehouse=getqty_outlet_stockinlog.warehouse, item_code=getqty_outlet_stockinlog.item_code)
+#                 stockinQty =get_qty_from_stockin.quantity
+#                 get_qty_from_stockin.quantity = stock_adjustment_arithmetic_logic(stockinQty, form_qty, vendorInv)
+#                 # stockin qty update
+#                 get_qty_from_stockin.save(using=db)
+#             except CreateOutletStockIn.DoesNotExist:
+#                 pass
+
+#         else:
+#             context['error_message']   = 'Update Failed'
+
+
+def update_invoice(db, context, form_id, form_invoiceID, form_qty, request):
+    # Safety: make sure form_qty is integer
+    try:
+        form_qty = int(form_qty)
+    except (ValueError, TypeError):
+        form_qty = 0
+        context['error_message'] = 'Invalid quantity value'
+        return
+
+    # Default/fallback value — prevents UnboundLocalError
+    stockinQty = 0
+
+    getqty_outlet_stockinlog = None
+    getqty_stockinlog = None
+
     try:
         vendorInv = Vendor_invoice.objects.using(db).get(invoiceID=form_invoiceID, id=form_id)
 
+        # Try to update regular stock-in log
         try:
-            getqty_stockinlog = CreateStockInLog.objects.using(db).get(invoice_no=form_invoiceID, item_code=vendorInv.itemcode)
+            getqty_stockinlog = CreateStockInLog.objects.using(db).get(
+                invoice_no=form_invoiceID,
+                item_code=vendorInv.itemcode
+            )
             getqty_stockinlog.quantity = form_qty
             getqty_stockinlog.save(using=db)
-
         except CreateStockInLog.DoesNotExist:
             pass
 
+        # Try to update outlet stock-in log
         try:
-            getqty_outlet_stockinlog = CreateOutletStockInLog.objects.using(db).get(invoice_no=form_invoiceID, item_code=vendorInv.itemcode)
+            getqty_outlet_stockinlog = CreateOutletStockInLog.objects.using(db).get(
+                invoice_no=form_invoiceID,
+                item_code=vendorInv.itemcode
+            )
             getqty_outlet_stockinlog.quantity = form_qty
             getqty_outlet_stockinlog.save(using=db)
         except CreateOutletStockInLog.DoesNotExist:
             pass
 
+        # Update main stock quantity (warehouse or outlet)
         if getqty_stockinlog is not None:
             try:
-                get_qty_from_stockin = CreateStockIn.objects.using(db).get(warehouse=getqty_stockinlog.warehouse, item_code=getqty_stockinlog.item_code)
-                stockinQty =get_qty_from_stockin.quantity
-                
-                get_qty_from_stockin.quantity = stock_adjustment_arithmetic_logic(stockinQty, form_qty, vendorInv)
-                # stockin qty update
+                get_qty_from_stockin = CreateStockIn.objects.using(db).get(
+                    warehouse=getqty_stockinlog.warehouse,
+                    item_code=getqty_stockinlog.item_code
+                )
+                stockinQty = get_qty_from_stockin.quantity
+                get_qty_from_stockin.quantity = stock_adjustment_arithmetic_logic(
+                    stockinQty, form_qty, vendorInv
+                )
                 get_qty_from_stockin.save(using=db)
             except CreateStockIn.DoesNotExist:
                 pass
-            
 
-        elif getqty_outlet_stockinlog is not None :
-
+        elif getqty_outlet_stockinlog is not None:
             try:
-                get_qty_from_stockin = CreateOutletStockIn.objects.using(db).get(warehouse=getqty_outlet_stockinlog.warehouse, item_code=getqty_outlet_stockinlog.item_code)
-                stockinQty =get_qty_from_stockin.quantity
-                get_qty_from_stockin.quantity = stock_adjustment_arithmetic_logic(stockinQty, form_qty, vendorInv)
-                # stockin qty update
+                get_qty_from_stockin = CreateOutletStockIn.objects.using(db).get(
+                    warehouse=getqty_outlet_stockinlog.warehouse,
+                    item_code=getqty_outlet_stockinlog.item_code
+                )
+                stockinQty = get_qty_from_stockin.quantity
+                get_qty_from_stockin.quantity = stock_adjustment_arithmetic_logic(
+                    stockinQty, form_qty, vendorInv
+                )
                 get_qty_from_stockin.save(using=db)
             except CreateOutletStockIn.DoesNotExist:
                 pass
 
         else:
-            context['error_message']   = 'Update Failed'
+            context['error_message'] = 'No matching stock-in log found'
+
+    except Vendor_invoice.DoesNotExist:
+        context['error_message'] = 'Invoice not found'
+        return  # ← stop early
+
+    # Now safe to create log — stockinQty is always defined
+    Stock_Adjustment_Log = StockAdjustmentLog.objects.using(db).create(
+        invoice_no=form_invoiceID,
+        initial_qty=stockinQty,
+        new_qty=form_qty,
+        item_code=vendorInv.itemcode,
+        Userlogin=request.user.username,  # ← use .username if field is CharField
+        type='purchase',
+    )
+
+    # Update invoice quantity
+    vendorInv.qty = form_qty
+    vendorInv.save(using=db)
+
+    context['success_message'] = 'Quantity Updated'
 
 
     except Vendor_invoice.DoesNotExist:
