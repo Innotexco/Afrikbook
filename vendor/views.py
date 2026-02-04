@@ -263,8 +263,8 @@ def cancle_invoice(request, context, form_invoiceID, db, form_id):
         context['error_message']   = 'Cancellation Failed'
 
 
-@login_required(login_url="/")
-@urls_name(name="Purchase Invoices")
+# @login_required(login_url="/")
+# @urls_name(name="Purchase Invoices")
 def update_invoice(db, context, form_id, form_invoiceID, form_qty, request):
     getqty_outlet_stockinlog=None
     getqty_stockinlog=None
