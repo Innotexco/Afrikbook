@@ -266,8 +266,11 @@ def cancle_invoice(request, context, form_invoiceID, db, form_id):
 # @login_required(login_url="/")
 # @urls_name(name="Purchase Invoices")
 def update_invoice(db, context, form_id, form_invoiceID, form_qty, request):
+    
     getqty_outlet_stockinlog=None
     getqty_stockinlog=None
+
+    stockinQty = 0
       
     try:
         vendorInv = Vendor_invoice.objects.using(db).get(invoiceID=form_invoiceID, id=form_id)
