@@ -64,7 +64,7 @@
                     <select name="addr_id" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg">
                         <option slected disabled>Select Customer</option>
                         {% for cus in customer %}
-                           <option {% if address.addr_id == cus%} selected {% endif %} value="{{cus.id}}">{{cus.username}}</option>                          
+                           <option {% if address.addr_id == cus%} selected {% endif %} value="{{cus.id}}">{{cus.name}}</option>                          
                         {% endfor %}
                         
                     </select>
