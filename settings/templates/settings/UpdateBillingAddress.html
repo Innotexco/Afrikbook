@@ -61,14 +61,13 @@
                     <span class="text-gray-700 dark:text-gray-400">
                         Customer
                     </span>
-                    <select name="addr_id" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg">
-                        <option slected disabled>Select Customer</option>
-                        <option slected disabled>{{ address.addr_id.name }}</option>
-                        {% for cus in customer %}
-                           <option {% if address.addr_id == cus %} selected {% endif %} value="{{cus.id}}">{{cus.name}}</option>                          
-                        {% endfor %}
-                        
-                    </select>
+                    <input 
+                        type="text"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder=""
+                        name="addr_id"
+                        value="{{address.addr_id.name}}"
+                    />
                     <p class="text-red-500 error">{{ form.customer.errors }}</p>
                 </label>
     
