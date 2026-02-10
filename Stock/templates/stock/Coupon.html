@@ -83,6 +83,7 @@
                         </td>
                         <td class="text-[10px]">
                             <a href="{% url 'Stock:delete_coupon' display.id %}"
+                                 onclick="return confirm('Are you sure you want to delete this coupon? \n\nThis action cannot be undone.');"
                                 class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-red-600 rounded-lg focus:outline-none focus:shadow-outline-gray"
                                 aria-label="Delete"
                                 >
