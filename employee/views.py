@@ -70,7 +70,7 @@ def DeleteEmployee(request, id):
     employe_guarantor = employee_guarantor.objects.using(db).get(employee_id=id)
 
     employe.delete()
-    employe_account()
+    employe_account.delete()
     employe_guarantor.delete()
     messages.error(request, "Employee was deleted successfully")
     return redirect("employee:Employee") 
