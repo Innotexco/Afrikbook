@@ -65,9 +65,9 @@ def UpdateEmployee(request, id):
 @urls_name(name="Employee")
 def DeleteEmployee(request, id):
     db = request.user.company_id.db_name
-    employe = employee.objects.usig(db).get(id=id)
+    employe = employee.objects.using(db).get(id=id)
     employe_account = employee_account_details.objects.using(db).get(employee_id=employe.staff_ID)
-    employe_guarantor = employee_guarantor.objects.usig(db).get(employee_id=id)
+    employe_guarantor = employee_guarantor.objects.using(db).get(employee_id=id)
 
     employe.delete()
     employe_account()
