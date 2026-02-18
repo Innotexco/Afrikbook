@@ -44,7 +44,7 @@ class Verification(PayStackBase):
         # if request.method == "POST":
         # email = request.POST.get("email")
         amount = float(amount) * 100  # Convert to Kobo
-        callback_url = "https://acc.afrikbook.com/Verify-Payment"
+        callback_url = "https://console.afrikbook.com/Verify-Payment"
         # Call Paystack Initialize API
         headers = {
             "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
