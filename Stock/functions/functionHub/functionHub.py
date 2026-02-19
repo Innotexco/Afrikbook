@@ -583,6 +583,11 @@ def add_stockin_invoice(request, db):
     amount_paid = request.POST.get('amount_paid')
     amount_expected = request.POST.get('amount_expected')
     
+   # Validate that at least one valid item was selected
+    valid_items = [code for code in itemcode if str(code) != "0"]
+    if not valid_items:
+        messages.error(request, "Please select at least one item")
+        return  # Exit early
 
 
     # total = float(request.POST['total'])
@@ -652,7 +657,7 @@ def add_stockin_invoice(request, db):
                 
                 # stock_in = Stock_In.objects.filter(warehouse=warehouse, item_code=itemcode).first()
                
-               if outlet is not "":
+               if outlet != "":
                   try:
                         stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=outlet, item_code=itemcode[i])
                         stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
@@ -670,7 +675,7 @@ def add_stockin_invoice(request, db):
                      messages.error(request, "Select outlet or warehouse")
                   else:
                      # STOCK IN WAREHOUSE
-                     if warehouse is not '':
+                     if warehouse != '':
                            try:
                               stock_in_query = CreateStockIn.objects.using(db).get(warehouse=warehouse, item_code=itemcode[i])
                               stock_in_query.quantity += int(quantities[i])
