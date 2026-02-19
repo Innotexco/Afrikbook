@@ -190,7 +190,7 @@ function fetchSubcategories(id) {
                     document.getElementById('desc').innerHTML = data.category.description || 'No description available';
                     
                     // Handle category image with fallback
-                    if (data.category.cat_img && data.category.cat_img.url) {
+                    if (data.category.cat_img.url) {
                         // Image exists - show it
                         catImgInfo.innerHTML = `
                             <img class="w-24 h-24 mb-3 rounded-full shadow-lg object-cover" 
