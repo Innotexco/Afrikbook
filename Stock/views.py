@@ -1264,6 +1264,7 @@ def NewStockin(request):
         # outlet = User.objects.get(id = request.user.id).outlet
         # if outlet:
            add_stockin_invoice(request, db)
+           return redirect('Stock:NewStokin')
         # else:
         #     messages.error(request, "Assign outlet to logged in user")
      
