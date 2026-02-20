@@ -589,7 +589,7 @@ def add_stockin_invoice(request, db):
        if not message_displayed:
           messages.error(request, "Please select at least one item")
           massage_displayed = True
-        return  # Exit early
+    return  # Exit early
 
 
     # total = float(request.POST['total'])
