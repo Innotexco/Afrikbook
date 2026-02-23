@@ -585,10 +585,10 @@ def add_stockin_invoice(request, db):
     
    # Validate that at least one valid item was selected
     valid_items = [code for code in itemcode if str(code) != "0"]
+    print("itemcode received:", itemcode)       # see what's actually coming in
+    print("valid_items:", valid_items)
     if not valid_items:
-       if not message_displayed:
-          messages.error(request, "Please select at least one item")
-          massage_displayed = True
+       messages.error(request, "Please select at least one item")
     return  # Exit early
 
 
