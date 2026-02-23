@@ -350,9 +350,9 @@
                         $("#text").html("Name :  "+data.name +"\n"+"Customer ID :  "+data.custID+"\n"+"Phone :  "+data.phone+"\n"+"Email :  "+data.email +"\n"+"Company Name :  "+data.company_name +"\n"+"Address :  "+data.address)
                      
                     },
-                    // error: function(error){
-                    //     alert(error);
-                    // }
+                     error: function(error){
+                         alert(error);
+                     }
                  });
             }
         
