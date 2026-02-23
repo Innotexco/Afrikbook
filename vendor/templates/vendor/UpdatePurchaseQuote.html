@@ -348,7 +348,7 @@
                     
                     success: function(data){
                         $("#text").html("Name :  "+data.name +"\n"+"Customer ID :  "+data.custID+"\n"+"Phone :  "+data.phone+"\n"+"Email :  "+data.email +"\n"+"Company Name :  "+data.company_name +"\n"+"Address :  "+data.address)
-                     
+                         console.log("success")
                     },
                      error: function(error){
                          alert(error);
