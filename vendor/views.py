@@ -647,7 +647,17 @@ def UpdatePurchaseQuote(request, pk):
 
     return render(request, 'vendor/UpdatePurchaseQuote.html', context)
   
-  
+
+@login_required(login_url="/")
+@urls_name(name='Purchase Quotes')
+def delete_PurchaseQuote(request, id):
+    db = request.user.company_id.db_name
+    delete_PurchaseQuote = Vendor_Quote.objects.using(db).get(id=id)
+    delete_PurchaseQuote.delete()
+    messages.success(request, "Purchase Quote deleted successfully")
+    return redirect('vendor:ViewPurchaseQuote')
+
+
 
 @login_required(login_url='/')
 @urls_name(name = "Purchase Quotes")
