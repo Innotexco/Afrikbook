@@ -21,6 +21,7 @@ urlpatterns = [
     path('new-purchase-quote', NewPurchaseQuote, name='NewPurchaseQuote'),
     path('view-purchase-quote/', ViewPurchaseQuote, name='ViewPurchaseQuote'),
     path('update-purchase-quote/<str:pk>/', UpdatePurchaseQuote, name='UpdatePurchaseQuote'),
+    path('delete_PurchaseQuote/<int:id>/', delete_PurchaseQuote, name='delete_PurchaseQuote'),
     path('new-purchase-order',NewPurchaseOrder, name='NewPurchaseOrder'),
     path('view-purchase-order',ViewPurchaseOrder, name='ViewPurchaseOrder'),
     path('return-items', ReturnItems, name='ReturnItems'),
