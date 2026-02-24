@@ -520,14 +520,13 @@ def GetSubCategory(request, id):
 #         return JsonResponse({'error': 'Vendor not found'}, status=404)
 
 
-def GetVendorDetails(request, id):
+def GetVendorDetails(request, id):  # 'id' here is already 'Victory' from the URL
     db = request.user.company_id.db_name
-    venID = request.GET.get('venID')  
     
-    if not venID:
+    if not id:
         return JsonResponse({'error': 'No vendor ID provided'}, status=400)
     
-    lookup = Q(id=venID) | Q(custID__iexact=venID)
+    lookup = Q(id=id) | Q(custID__iexact=id) | Q(name__iexact=id)  # add name lookup too
     try:
         vendor = vendor_table.objects.using(db).get(lookup)
         data = {
