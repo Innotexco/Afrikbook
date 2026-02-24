@@ -501,23 +501,48 @@ def GetSubCategory(request, id):
 
 
 
+# def GetVendorDetails(request, id):
+#     db = request.user.company_id.db_name
+#     venID =   request.POST.get('venID')
+#     lookup = Q(id__iexact=venID) | Q(custID__iexact=venID)
+#     try:
+#         vendor = vendor_table.objects.using(db).get(Q(lookup))
+#         data = {
+#                 'name': vendor.name,
+#                 'phone': vendor.phone,
+#                 'email': vendor.email,
+#                 'custID': vendor.custID,
+#                 'company_name': vendor.company_name,
+#                 'address': vendor.address,
+#             }
+#         return JsonResponse(data)
+#     except vendor_table.DoesNotExist:
+#         return JsonResponse({'error': 'Vendor not found'}, status=404)
+
+
 def GetVendorDetails(request, id):
     db = request.user.company_id.db_name
-    venID =   request.POST.get('venID')
-    lookup = Q(id__iexact=venID) | Q(custID__iexact=venID)
+    venID = request.GET.get('venID')  
+    
+    if not venID:
+        return JsonResponse({'error': 'No vendor ID provided'}, status=400)
+    
+    lookup = Q(id=venID) | Q(custID__iexact=venID)
     try:
-        vendor = vendor_table.objects.using(db).get(Q(lookup))
+        vendor = vendor_table.objects.using(db).get(lookup)
         data = {
-                'name': vendor.name,
-                'phone': vendor.phone,
-                'email': vendor.email,
-                'custID': vendor.custID,
-                'company_name': vendor.company_name,
-                'address': vendor.address,
-            }
+            'name': vendor.name,
+            'phone': vendor.phone,
+            'email': vendor.email,
+            'custID': vendor.custID,
+            'company_name': vendor.company_name,
+            'address': vendor.address,
+        }
         return JsonResponse(data)
     except vendor_table.DoesNotExist:
         return JsonResponse({'error': 'Vendor not found'}, status=404)
+    except vendor_table.MultipleObjectsReturned:
+        return JsonResponse({'error': 'Multiple vendors found'}, status=400)
 
 
 
