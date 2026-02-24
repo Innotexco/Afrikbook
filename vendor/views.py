@@ -520,14 +520,19 @@ def GetSubCategory(request, id):
 #         return JsonResponse({'error': 'Vendor not found'}, status=404)
 
 
-def GetVendorDetails(request, id):  # 'id' here is already 'Victory' from the URL
+def GetVendorDetails(request, id):
     db = request.user.company_id.db_name
     
     if not id:
         return JsonResponse({'error': 'No vendor ID provided'}, status=400)
     
-    lookup = Q(id=id) | Q(custID__iexact=id) | Q(name__iexact=id)  # add name lookup too
     try:
+        # Build lookup based on whether id is numeric or not
+        if id.isdigit():
+            lookup = Q(id=id) | Q(custID__iexact=id) | Q(name__iexact=id)
+        else:
+            lookup = Q(custID__iexact=id) | Q(name__iexact=id)
+            
         vendor = vendor_table.objects.using(db).get(lookup)
         data = {
             'name': vendor.name,
@@ -542,7 +547,6 @@ def GetVendorDetails(request, id):  # 'id' here is already 'Victory' from the UR
         return JsonResponse({'error': 'Vendor not found'}, status=404)
     except vendor_table.MultipleObjectsReturned:
         return JsonResponse({'error': 'Multiple vendors found'}, status=400)
-
 
 
 
