@@ -71,9 +71,10 @@
                                         ></path>
                                     </svg>
                                 </a>
-                                <a href=""
+                                <a href="{% url 'vendor:delete_PurchaseQuote' display.id %}"
                                     class="flex items-center justify-center text-red-600"
                                     aria-label="Delete"
+                                    onclick="return confirm('Are you sure you want to delete this purchase quote? This action cannot be undone!');"
                                     >
                                     <svg
                                         class="w-5 h-5"
