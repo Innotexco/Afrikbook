@@ -1143,8 +1143,11 @@ def DeleteExpiredItems(request):
     today = date.today()
     items = ExpiryDate.objects.using(db).filter(expiry_date__lte=today).count()
     log = CreateStockInLog.objects.using(db).filter(status="Expired").count()
-    items.delete()
-    log.delete()
+ 
+    delete_items = ExpiryDate.objects.using(db).filter(expiry_date__lte=today)
+    delete_log = CreateStockInLog.objects.using(db).filter(status="Expired")
+    delete_items.delete()
+    delete_log.delete()
     messages.success(request, "Delete successfully")
     return redirect("settings:ViewExpiredItems")
 
