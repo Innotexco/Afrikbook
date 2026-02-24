@@ -1133,7 +1133,8 @@ def DeleteExpiredItem(request, invoice_no, item_code):
     db = request.user.company_id.db_name
     item = ExpiryDate.objects.using(db).get(invoice_no=invoice_no, item_code=item_code)
     log = CreateStockInLog.objects.using(db).get(invoice_no=invoice_no, item_code=item_code)
-  
+    item.delete()
+    log.delete()
     messages.success(request, "Delete successfully")
     return redirect("settings:ViewExpiredItems")
 
