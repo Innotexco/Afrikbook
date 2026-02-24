@@ -635,6 +635,7 @@ def UpdatePurchaseQuote(request, pk):
 
     if request.method == "POST":
         update_purchase_quote(request, instance, db)
+        return redirect('ViewPurchaseQuote')
     
     context = {
         
