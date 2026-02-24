@@ -117,9 +117,9 @@ def update_purchase_quote(request, instance, db):
                     messages.success(request, "Purchase Quote was added successfully")
                     message_displayed = True  # Update the message_displayed variable
             else:
-                if not message_displayed:
-                    messages.error(request, "Purchase Quote was not added successfully")
-                    message_displayed = True  # Update the message_displayed variable
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        messages.error(request, f"{field}: {error}")
                 # pass
                 # return HttpResponse('Error')
             
