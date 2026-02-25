@@ -325,6 +325,24 @@ def add_new_sales(request, db):
                         pass
                     create_add_vat(db, invoiceID, vat)
 
+                    if acountType == "Customer":
+                        customer = customer_table.objects.using(db).get(id=cusID)
+                        if customer.email:
+                            success, msg = email_invoice_to_customer(
+                                request, db, invoiceID, customer.email, customer_name
+                            )
+                            if success:
+                                messages.success(request, f"Invoice emailed to {customer.email}")
+                            else:
+                                messages.warning(request, f"Invoice saved but email failed: {msg}")
+    
+                    elif acountType == "Vendor":
+                        vendor = vendor_table.objects.using(db).get(id=venID)
+                        if vendor.email:
+                            success, msg = email_invoice_to_customer(
+                                request, db, invoiceID, vendor.email, customer_name
+                            )
+
                     messages.success(request, "New Sales Invoice was added successfully")
                     message_displayed = True
             else:
