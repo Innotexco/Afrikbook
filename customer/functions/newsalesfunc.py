@@ -47,6 +47,50 @@ def billing_shipping_reference(db, invoice, cusID, shipping, method, cost):
         
     
 
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from weasyprint import HTML
+from django.conf import settings
+import tempfile
+import os
+
+def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_name):
+    try:
+        # Get all invoice lines
+        invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoiceID)
+        
+        if not invoice_items.exists():
+            return False, "Invoice not found"
+        
+        invoice = invoice_items.first()
+        
+        # Render invoice HTML template
+        html_content = render_to_string('customer/invoice_pdf.html', {
+            'invoice': invoice,
+            'invoice_items': invoice_items,
+            'company': request.user.company_id,
+        })
+        
+        # Convert HTML to PDF
+        pdf_file = HTML(string=html_content, base_url=request.build_absolute_uri()).write_pdf()
+        
+        # Compose email
+        email = EmailMessage(
+            subject=f"Invoice {invoiceID} from {request.user.company_id.company_name}",
+            body=f"Dear {customer_name},\n\nPlease find your invoice {invoiceID} attached.\n\nThank you for your business.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[customer_email],
+        )
+        
+        # Attach PDF
+        email.attach(f"Invoice_{invoiceID}.pdf", pdf_file, 'application/pdf')
+        email.send()
+        
+        return True, "Invoice emailed successfully"
+    
+    except Exception as e:
+        return False, str(e)
+
 
 def add_new_sales(request, db):
     
