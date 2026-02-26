@@ -59,6 +59,7 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
     try:
         # Get all invoice lines
         invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoiceID)
+        print("DEBUG count:", invoice_items.count())
         
         if not invoice_items.exists():
             return False, "Invoice not found"
