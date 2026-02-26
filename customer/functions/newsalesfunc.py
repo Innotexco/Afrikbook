@@ -99,8 +99,8 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
         
         return True, "Invoice emailed successfully"
     
-    except Exception as e:
-        return False, str(e)
+      except Exception as e:
+            return False, str(e)
 
 
 def add_new_sales(request, db):
