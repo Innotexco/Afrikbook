@@ -63,12 +63,12 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
             return False, "Invoice not found"
         
         invoice = invoice_items.first()
-        
+        company = CreateProfile.objects.using(db).filter(Userlogin=request.user.username).first()
         # Render invoice HTML template
         html_content = render_to_string('customer/invoice_pdf.html', {
             'invoice': invoice,
             'invoice_items': invoice_items,
-            'company': request.user.company_id,
+            'company': company,
         })
         
         # Convert HTML to PDF
