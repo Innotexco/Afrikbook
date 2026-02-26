@@ -46,7 +46,7 @@ def billing_shipping_reference(db, invoice, cusID, shipping, method, cost):
     except shipping_cost.DoesNotExist:
         shipping_cost.objects.using(db).create(invoiceID=invoice, amount=cost, custID=cusID)
         
-    
+
 
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
@@ -58,14 +58,18 @@ import os
 def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_name):
     try:
         # Get all invoice lines
-        invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoiceID)
-        print("DEBUG count:", invoice_items.count())
+        invoice = customer_invoice.objects.using(db).filter(invoiceID=invoiceID).values()
+        invoice_items = list(invoice)
         
         if not invoice_items.exists():
             return False, "Invoice not found"
         
         invoice = invoice_items.first()
-        company = CreateProfile.objects.using(db).get(CompanyName=request.user.company_id.company_name)
+        
+        company = CreateProfile.objects.using(db).get(
+            CompanyName=request.user.company_id.company_name
+        )
+
         # Render invoice HTML template
         html_content = render_to_string('customer/invoice_pdf.html', {
             'invoice': invoice,
@@ -74,7 +78,10 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
         })
         
         # Convert HTML to PDF
-        pdf_file = HTML(string=html_content, base_url=request.build_absolute_uri()).write_pdf()
+        pdf_file = HTML(
+            string=html_content,
+            base_url=request.build_absolute_uri()
+        ).write_pdf()
         
         # Compose email
         email = EmailMessage(
@@ -89,10 +96,9 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
         email.send()
         
         return True, "Invoice emailed successfully"
-        
-       except Exception as e:
-            return False, str(e)
     
+    except Exception as e:
+        return False, str(e)
  
 
 
