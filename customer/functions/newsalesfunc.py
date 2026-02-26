@@ -61,10 +61,14 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
         invoice = customer_invoice.objects.using(db).filter(invoiceID=invoiceID).values()
         invoice_items = list(invoice)
         
-        if not invoice_items.exists():
+        # if not invoice_items.exists():
+        #     return False, "Invoice not found"
+        if not invoice_items:
             return False, "Invoice not found"
+
         
-        invoice = invoice_items.first()
+        # invoice = invoice_items.first()
+        invoice = invoice_items[0]
         
         company = CreateProfile.objects.using(db).get(
             CompanyName=request.user.company_id.company_name
