@@ -56,19 +56,10 @@ import tempfile
 import os
 
 def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_name):
-    # try:
-    #     # Get all invoice lines
-    #     invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoiceID)
-    #     print("DEBUG count:", invoice_items.count())
-     try:
-        print("DEBUG invoiceID received:", repr(invoiceID))  # repr shows hidden spaces
-        print("DEBUG db:", db)
-        
+    try:
+        # Get all invoice lines
         invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoiceID)
         print("DEBUG count:", invoice_items.count())
-        
-        # Also check what invoiceIDs exist in db
-        print("DEBUG sample invoiceIDs:", list(customer_invoice.objects.using(db).values_list('invoiceID', flat=True)[:5]))
         
         if not invoice_items.exists():
             return False, "Invoice not found"
@@ -98,9 +89,11 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
         email.send()
         
         return True, "Invoice emailed successfully"
-    
-      except Exception as e:
+        
+       except Exception as e:
             return False, str(e)
+    
+ 
 
 
 def add_new_sales(request, db):
