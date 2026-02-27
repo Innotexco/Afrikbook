@@ -54,21 +54,19 @@ from weasyprint import HTML
 from django.conf import settings
 import tempfile
 import os
+import logging
 
 def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_name):
     try:
         # Get all invoice lines
-        invoice = customer_invoice.objects.using(db).filter(invoiceID=invoiceID).values()
-        invoice_items = list(invoice)
+        invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoiceID)
         
-        # if not invoice_items.exists():
-        #     return False, "Invoice not found"
-        if not invoice_items:
+        if not invoice_items.exists():
             return False, "Invoice not found"
+        
 
         
-        # invoice = invoice_items.first()
-        invoice = invoice_items[0]
+        invoice = invoice_items.first()
         
         company = CreateProfile.objects.using(db).get(
             CompanyName=request.user.company_id.company_name
@@ -102,7 +100,8 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
         return True, "Invoice emailed successfully"
     
     except Exception as e:
-        return False, str(e)
+        logging.error(f"Invoice email failed: {e}")
+        return False, "Failed to send invoice email"
  
 
 
