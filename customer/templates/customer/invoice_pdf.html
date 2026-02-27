@@ -3,6 +3,326 @@
 <head>
     <meta charset="UTF-8">
     <title>Invoice {{ invoice.invoiceID }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #fff;
+            color: #374151;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+
+        /* ── Header ── */
+        .header {
+            text-align: center;
+            padding-top: 16px;
+            color: #2F4F4F;
+        }
+        .header img {
+            width: 500px;
+            max-width: 100%;
+            height: auto;
+        }
+        .header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2F4F4F;
+        }
+        .address {
+            text-align: center;
+            font-size: 11px;
+            font-style: normal;
+            color: #374151;
+            margin-top: 4px;
+        }
+
+        /* ── Contact bar — TABLE not flex ── */
+        .contact-table {
+            width: auto;
+            margin: 6px auto 0;
+            border-collapse: collapse;
+        }
+        .contact-table td {
+            padding: 0 12px;
+            font-size: 11px;
+            font-weight: 300;
+            color: #374151;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+        .rc { font-weight: 600; }
+
+        /* ── Invoice Meta — TABLE not flex ── */
+        .meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            background: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .meta-table td {
+            padding: 10px 16px;
+            vertical-align: top;
+        }
+        .label {
+            color: #6b7280;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .value {
+            font-weight: 600;
+            font-size: 12px;
+            color: #2F4F4F;
+            margin-top: 2px;
+        }
+
+        /* ── Customer Info — TABLE not flex ── */
+        .customer-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .customer-table td {
+            padding: 10px 24px;
+            vertical-align: top;
+        }
+        .block-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9ca3af;
+            margin-bottom: 4px;
+        }
+        .block-value {
+            font-size: 12px;
+            color: #111827;
+            font-weight: 500;
+        }
+        .block-sub {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        /* ── Items Table ── */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+        .items-table thead tr { background: #f3f4f6; }
+        .items-table thead th {
+            padding: 8px 12px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6b7280;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .items-table tbody tr { border-bottom: 1px solid #f3f4f6; }
+        .items-table tbody tr:last-child { border-bottom: none; }
+        .items-table tbody td {
+            padding: 8px 12px;
+            font-size: 10px;
+            color: #374151;
+        }
+        .items-table tfoot td { padding: 10px 12px; font-size: 11px; }
+        .total-row { background: #f9fafb; border-top: 2px solid #2F4F4F; }
+        .total-row td { font-weight: 700; font-size: 12px; color: #2F4F4F; }
+
+        /* ── Badge ── */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-supplied { background: #d1fae5; color: #065f46; }
+        .badge-pending  { background: #fef3c7; color: #92400e; }
+
+        /* ── Footer ── */
+        hr { border: none; border-top: 1px solid #e5e7eb; margin: 16px 0; }
+        .footer {
+            font-size: 10px;
+            font-weight: 300;
+            color: #6b7280;
+            padding: 0 24px 8px;
+        }
+
+        /* ── WeasyPrint page config ── */
+        @page { margin: 1cm; }
+        table { page-break-inside: auto; }
+        tr    { page-break-inside: avoid; page-break-after: auto; }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        {% if company.logo %}
+            <img src="{{ company.logo.url }}" alt="{{ company.CompanyName }}">
+        {% else %}
+            <h2>{{ company.CompanyName }}</h2>
+        {% endif %}
+    </div>
+
+    <address class="address">{{ company.address }}</address>
+
+    <!-- Contact bar (TABLE — no flexbox) -->
+    <table class="contact-table">
+        <tr>
+            <td>&#9993; {{ company.email }}</td>
+            <td>&#9742; {{ company.phone }}{% if company.phone2 %}, {{ company.phone2 }}{% endif %}</td>
+            {% if company.Rc %}<td class="rc">RC {{ company.Rc }}</td>{% endif %}
+        </tr>
+    </table>
+
+    <!-- Invoice Meta (TABLE — no flexbox) -->
+    <table class="meta-table">
+        <tr>
+            <td>
+                <div class="label">Invoice ID</div>
+                <div class="value">{{ invoice.invoiceID }}</div>
+            </td>
+            <td>
+                <div class="label">Invoice Date</div>
+                <div class="value">{{ invoice.invoice_date|date:"d/m/Y" }}</div>
+            </td>
+            <td>
+                <div class="label">Due Date</div>
+                <div class="value">{{ invoice.due_date|date:"d/m/Y" }}</div>
+            </td>
+            <td>
+                <div class="label">Status</div>
+                <div class="value">
+                    <span class="badge {% if invoice.invoice_state == 'Supplied' %}badge-supplied{% else %}badge-pending{% endif %}">
+                        {{ invoice.invoice_state }}
+                    </span>
+                </div>
+            </td>
+            {% if invoice.order_ID %}
+            <td>
+                <div class="label">Order Ref</div>
+                <div class="value">{{ invoice.order_ID }}</div>
+            </td>
+            {% endif %}
+        </tr>
+    </table>
+
+    <!-- Customer Info (TABLE — no flexbox) -->
+    <table class="customer-table">
+        <tr>
+            <td>
+                <div class="block-label">Bill To</div>
+                <div class="block-value">{{ invoice.customer_name }}</div>
+                <div class="block-sub">ID: {{ invoice.cusID }}</div>
+            </td>
+            {% if invoice.Gdescription %}
+            <td style="text-align:right;">
+                <div class="block-label">Description</div>
+                <div class="block-value">{{ invoice.Gdescription }}</div>
+            </td>
+            {% endif %}
+        </tr>
+    </table>
+
+    <!-- Items Table -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>SN</th>
+                <th>Item</th>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Discount</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in invoice_items %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.item_name }}</td>
+                <td>{{ item.item_description }}</td>
+                <td>{{ item.qty }}</td>
+                <td>{{ item.unit_p|floatformat:2 }}</td>
+                <td>{% if item.discount %}{{ item.discount|floatformat:2 }}{% else %}&#8212;{% endif %}</td>
+                <td><b>{{ item.amount|floatformat:2 }}</b></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align:center; color:#9ca3af; padding:16px;">No items found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr><td colspan="7" style="padding:4px;"></td></tr>
+            <tr class="total-row">
+                <td colspan="5" style="text-align:right; padding-right:12px;">Total Amount</td>
+                <td colspan="2">{{ invoice.amount_expected|floatformat:2 }}</td>
+            </tr>
+            {% if invoice.amount_paid and invoice.amount_paid != invoice.amount_expected %}
+            <tr style="background:#fff;">
+                <td colspan="5" style="text-align:right; padding-right:12px; color:#6b7280;">Amount Paid</td>
+                <td colspan="2" style="color:#059669; font-weight:600;">{{ invoice.amount_paid|floatformat:2 }}</td>
+            </tr>
+            {% endif %}
+        </tfoot>
+    </table>
+
+    <hr>
+
+    <p class="footer">
+        Generated on: {% now "d/m/Y H:i" %} &nbsp;&nbsp;|&nbsp;&nbsp; Prepared by: {{ invoice.Userlogin }}
+    </p>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice {{ invoice.invoiceID }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -167,7 +487,7 @@
 <body>
 
     <!-- Header -->
-    <div class="header">
+    <!-- <div class="header">
         {% if company.logo %}
             <img src="{{ company.logo.url }}" alt="{{ company.company_name }}">
         {% else %}
@@ -179,7 +499,7 @@
 
     <div class="contact-bar">
         <!-- Email -->
-        <div class="contact-item">
+        <!-- <div class="contact-item">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v.01L12 13 2 6.01V6z"/>
                 <path d="M2 8.5V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8.5l-9.4 6.27a1 1 0 0 1-1.2 0L2 8.5z"/>
@@ -187,7 +507,7 @@
             <span>{{ company.email }}</span>
         </div>
         <!-- Phone -->
-        <div class="contact-item">
+        <!-- <div class="contact-item">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M2.01 5.87a2 2 0 0 1 2-2h3.2a1 1 0 0 1 .96.73l1.1 3.86a1 1 0 0 1-.45 1.14l-1.7 1.02a15.05 15.05 0 0 0 6.59 6.59l1.02-1.7a1 1 0 0 1 1.14-.45l3.86 1.1a1 1 0 0 1 .73.96v3.2a2 2 0 0 1-2 2A18 18 0 0 1 2.01 5.87z"/>
             </svg>
@@ -199,7 +519,7 @@
     </div>
 
     <!-- Invoice Meta -->
-    <div class="invoice-meta">
+    <!-- <div class="invoice-meta">
         <div>
             <div class="label">Invoice ID</div>
             <div class="value">{{ invoice.invoiceID }}</div>
@@ -226,10 +546,10 @@
             <div class="value">{{ invoice.order_ID }}</div>
         </div>
         {% endif %}
-    </div>
+    </div> -->
 
     <!-- Customer Info -->
-    <div class="customer-section">
+    <!-- <div class="customer-section">
         <div class="block">
             <div class="block-label">Bill To</div>
             <div class="block-value">{{ invoice.customer_name }}</div>
@@ -241,10 +561,10 @@
             <div class="block-value">{{ invoice.Gdescription }}</div>
         </div>
         {% endif %}
-    </div>
+    </div> -->
 
     <!-- Items Table -->
-    <div class="table-wrap">
+    <!-- <div class="table-wrap">
         <table>
             <thead>
                 <tr>
@@ -303,8 +623,8 @@
         Generated on: {% now "d/m/Y H:i" %} &nbsp;&nbsp;|&nbsp;&nbsp; Prepared by: {{ invoice.Userlogin }}
     </p>
 
-</body>
-</html>
+</body> -->
+<!-- </html>    -->
 
 
 
