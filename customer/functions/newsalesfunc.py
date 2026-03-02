@@ -62,8 +62,17 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
         # Get all invoice lines
         invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoiceID)
 
-        print("SQL:", str(invoice_items.query))
-        print("Count:", invoice_items.count())
+        print("\n" + "="*60)
+        print(f"DEBUG - invoiceID = {invoiceID}")
+        print(f"Database alias = {db}")
+        print(f"Raw SQL: {str(invoice_items.query)}")
+        print(f"Count: {invoice_items.count()}")
+        
+        # List actual items (very revealing)
+        for i, item in enumerate(invoice_items, 1):
+            print(f"  {i:2d} | {item.item_name:.<30} | qty={item.qty} | amt={item.amount}")
+        
+        print("="*60 + "\n")
         
         if not invoice_items.exists():
             return False, "Invoice not found"
