@@ -55,11 +55,15 @@ from django.conf import settings
 import tempfile
 import os
 import logging
+from django.db import connection
 
 def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_name):
     try:
         # Get all invoice lines
         invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoiceID)
+
+        print("SQL:", str(invoice_items.query))
+        print("Count:", invoice_items.count())
         
         if not invoice_items.exists():
             return False, "Invoice not found"
@@ -67,12 +71,6 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
 
         
         invoice = invoice_items.first()
-       from django.db import connection
-
-        invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoiceID)
-
-        print("SQL:", str(invoice_items.query))
-        print("Count:", invoice_items.count())
         
         company = CreateProfile.objects.using(db).get(
             CompanyName=request.user.company_id.company_name
