@@ -67,9 +67,12 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
 
         
         invoice = invoice_items.first()
-        print("Using DB:", db)
-        print("invoiceID passed:", invoiceID)
-        print("Matching rows:", invoice_items.count())
+       from django.db import connection
+
+        invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoiceID)
+
+        print("SQL:", str(invoice_items.query))
+        print("Count:", invoice_items.count())
         
         company = CreateProfile.objects.using(db).get(
             CompanyName=request.user.company_id.company_name
