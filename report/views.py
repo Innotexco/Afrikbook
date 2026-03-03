@@ -909,7 +909,8 @@ def SalesLedger(request):
         'sales':unique_invoices,
         'amount_total':amount_total,
         'item_name':item_name,
-        'company':company
+        'company':company,
+        'profile' :profile
     }
    
    
