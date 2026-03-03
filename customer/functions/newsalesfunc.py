@@ -57,61 +57,96 @@ import os
 import logging
 from django.db import connection
 
+# def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_name):
+#     try:
+#         # Get all invoice lines
+#         invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoiceID)
+        
+#         if not invoice_items.exists():
+#             return False, "Invoice not found"
+        
+#         invoice = invoice_items.first()
+        
+#         company = CreateProfile.objects.using(db).get(
+#             CompanyName=request.user.company_id.company_name
+#         )
+
+#         # Render invoice HTML template
+#         html_content = render_to_string('customer/invoice_pdf.html', {
+#             'invoice': invoice,
+#             'invoice_items': invoice_items,
+#             'company': company,
+#         })
+        
+#         # Convert HTML to PDF
+#         pdf_file = HTML(
+#             string=html_content,
+#             base_url=request.build_absolute_uri()
+#         ).write_pdf()
+        
+#         # Compose email
+#         email = EmailMessage(
+#             subject=f"Invoice {invoiceID} from {request.user.company_id.company_name}",
+#             body=f"Dear {customer_name},\n\nPlease find your invoice {invoiceID} attached.\n\nThank you for your business.",
+#             from_email=settings.DEFAULT_FROM_EMAIL,
+#             to=[customer_email],
+#         )
+        
+#         # Attach PDF
+#         email.attach(f"Invoice_{invoiceID}.pdf", pdf_file, 'application/pdf')
+#         email.send()
+        
+#         return True, "Invoice emailed successfully"
+    
+#     except Exception as e:
+#         logging.error(f"Invoice email failed: {e}")
+#         return False, "Failed to send invoice email"
+
+
+
+
 def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_name):
     try:
-        # Get all invoice lines
-        invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoiceID)
+        invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoiceID).values()
+        serialized_data = list(invoice_items)
 
-        print("\n" + "="*60)
-        print(f"DEBUG - invoiceID = {invoiceID}")
-        print(f"Database alias = {db}")
-        print(f"Raw SQL: {str(invoice_items.query)}")
-        print(f"Count: {invoice_items.count()}")
-        
-        # List actual items (very revealing)
-        for i, item in enumerate(invoice_items, 1):
-            print(f"  {i:2d} | {item.item_name:.<30} | qty={item.qty} | amt={item.amount}")
-        
-        print("="*60 + "\n")
-        
-        if not invoice_items.exists():
+        if not serialized_data:
             return False, "Invoice not found"
-        
 
-        
-        invoice = invoice_items.first()
-        
+        invoice = serialized_data[0]  # first item as dict for header info
+
+        amount_total = customer_invoice.objects.using(db).filter(invoiceID=invoiceID).values("invoiceID").distinct().aggregate(total_amount=Sum("amount"))['total_amount']
+
         company = CreateProfile.objects.using(db).get(
             CompanyName=request.user.company_id.company_name
         )
 
-        # Render invoice HTML template
         html_content = render_to_string('customer/invoice_pdf.html', {
-            'invoice': invoice,
-            'invoice_items': invoice_items,
+            'invoice': invoice,           # dict — access with {{ invoice.invoiceID }}
+            'invoice_items': serialized_data,  # list of dicts for the loop
+            'amount_total': amount_total,
             'company': company,
         })
-        
-        # Convert HTML to PDF
+
         pdf_file = HTML(
             string=html_content,
             base_url=request.build_absolute_uri()
         ).write_pdf()
-        
-        # Compose email
+
         email = EmailMessage(
             subject=f"Invoice {invoiceID} from {request.user.company_id.company_name}",
             body=f"Dear {customer_name},\n\nPlease find your invoice {invoiceID} attached.\n\nThank you for your business.",
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[customer_email],
         )
-        
-        # Attach PDF
+
         email.attach(f"Invoice_{invoiceID}.pdf", pdf_file, 'application/pdf')
         email.send()
-        
+
         return True, "Invoice emailed successfully"
-    
+
+    except customer_invoice.DoesNotExist:
+        return False, "Invoice not found"
     except Exception as e:
         logging.error(f"Invoice email failed: {e}")
         return False, "Failed to send invoice email"
