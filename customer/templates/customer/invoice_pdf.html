@@ -182,6 +182,7 @@
     </table>
 
     <!-- Invoice Meta (TABLE — no flexbox) -->
+    <!-- invoice is a dict from .values() so no date filter — already a string/datetime -->
     <table class="meta-table">
         <tr>
             <td>
@@ -190,18 +191,20 @@
             </td>
             <td>
                 <div class="label">Invoice Date</div>
-                <div class="value">{{ invoice.invoice_date|date:"d/m/Y" }}</div>
+                <div class="value">{{ invoice.invoice_date }}</div>  {# string from .values() #}
             </td>
             <td>
                 <div class="label">Due Date</div>
-                <div class="value">{{ invoice.due_date|date:"d/m/Y" }}</div>
+                <div class="value">{{ invoice.due_date }}</div>  {# string from .values() #}
             </td>
             <td>
                 <div class="label">Status</div>
                 <div class="value">
-                    <span class="badge {% if invoice.invoice_state == 'Supplied' %}badge-supplied{% else %}badge-pending{% endif %}">
-                        {{ invoice.invoice_state }}
-                    </span>
+                    {% if invoice.invoice_state == 'Supplied' %}
+                        <span class="badge badge-supplied">Supplied</span>
+                    {% else %}
+                        <span class="badge badge-pending">{{ invoice.invoice_state }}</span>
+                    {% endif %}
                 </div>
             </td>
             {% if invoice.order_ID %}
@@ -231,6 +234,7 @@
     </table>
 
     <!-- Items Table -->
+    <!-- invoice_items is a list of dicts from list(.values()) -->
     <table class="items-table">
         <thead>
             <tr>
@@ -250,9 +254,9 @@
                 <td>{{ item.item_name }}</td>
                 <td>{{ item.item_description }}</td>
                 <td>{{ item.qty }}</td>
-                <td>{{ item.unit_p|floatformat:2 }}</td>
-                <td>{% if item.discount %}{{ item.discount|floatformat:2 }}{% else %}&#8212;{% endif %}</td>
-                <td><b>{{ item.amount|floatformat:2 }}</b></td>
+                <td>{{ item.unit_p }}</td>
+                <td>{% if item.discount %}{{ item.discount }}{% else %}&#8212;{% endif %}</td>
+                <td><b>{{ item.amount }}</b></td>
             </tr>
             {% empty %}
             <tr>
@@ -264,12 +268,12 @@
             <tr><td colspan="7" style="padding:4px;"></td></tr>
             <tr class="total-row">
                 <td colspan="5" style="text-align:right; padding-right:12px;">Total Amount</td>
-                <td colspan="2">{{ invoice.amount_expected|floatformat:2 }}</td>
+                <td colspan="2">{{ amount_total }}</td>  {# ✅ from aggregate in view #}
             </tr>
-            {% if invoice.amount_paid and invoice.amount_paid != invoice.amount_expected %}
+            {% if invoice.amount_paid %}
             <tr style="background:#fff;">
                 <td colspan="5" style="text-align:right; padding-right:12px; color:#6b7280;">Amount Paid</td>
-                <td colspan="2" style="color:#059669; font-weight:600;">{{ invoice.amount_paid|floatformat:2 }}</td>
+                <td colspan="2" style="color:#059669; font-weight:600;">{{ invoice.amount_paid }}</td>
             </tr>
             {% endif %}
         </tfoot>
@@ -283,7 +287,6 @@
 
 </body>
 </html>
-
 
 
 
