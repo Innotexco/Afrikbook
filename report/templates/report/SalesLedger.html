@@ -78,9 +78,9 @@
             </div>
         <!-- </form> -->
        
-        <div class="w-full overflow-x-auto table-responsive mt-6" id="sl">
-            {% include 'components/Periodheader.html' %}
-          <table id="example" class="display" style="width:100%">
+        <!-- <div class="w-full overflow-x-auto table-responsive mt-6" id="sl"> -->
+            <!-- {% include 'components/Periodheader.html' %} -->
+          <!-- <table id="example" class="display" style="width:100%">
                 <thead>
                     <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
                         <th class="px-4 py-3">SN</th>
@@ -89,7 +89,7 @@
                         <th class="px-4 py-3">Customer Name</th>
                         <th class="px-4 py-3">Item Name</th>
                         <th class="px-4 py-3">Total Amount</th>
-                        <th class="px-4 py-3">
+                        <th class="px-4 py-3"> -->
                             <!-- {% comment %} <a onclick="my_modal_view_sales_ledger.showModal()"  href="#"
                                 class="flex items-center justify-center text-blue-500"
                                 aria-label="Edit">
@@ -104,14 +104,14 @@
                                     ></path>
                                 </svg>
                             </a> {% endcomment %} -->
-                            View
+                            <!-- View
                         </th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y mb-6" id="'+i+'">
+                <tbody class="bg-white divide-y mb-6" id="'+i+'"> -->
 
                     
-                    {% for display in sales %}
+                    <!-- {% for display in sales %}
                     
                     <tr class="text-gray-700">
 
@@ -159,10 +159,10 @@
                     <tr>
                         <td class="py-4"></td>
                     </tr>
-                    <tr class="">
+                    <tr class=""> -->
                         <!-- <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-5"> -->
             
-                        <td class="pt-6 text-sm">
+                        <!-- <td class="pt-6 text-sm">
                             <span class="text-gray-700">Total Amount</span>
                         </td>
                         <td class="pt-6 text-sm">
@@ -170,7 +170,7 @@
                         </td>
                     </tr>
                 </tfoot>
-            </table>
+            </table> -->
             <!-- <div class="flex justify-end py-3 my-5 bg-white rounded-lg shadow-md">
 
                 <div class="">
@@ -189,8 +189,64 @@
                 </div>
         
             </div> -->
-        </div>
+        <!-- </div>
+    </div> -->
+
+
+
+    <div class="w-full overflow-x-auto table-responsive mt-6" id="sl">
+    {% include 'components/Periodheader.html' %}
+
+    <div class="table-wrap" style="width:100%; overflow-x:auto; margin-top:12px;">
+        <table id="example" style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="background:#f3f4f6;">
+                    <th style="padding:8px 12px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:#6b7280; text-align:left; border-bottom:1px solid #e5e7eb;">SN</th>
+                    <th style="padding:8px 12px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:#6b7280; text-align:left; border-bottom:1px solid #e5e7eb;">Date</th>
+                    <th style="padding:8px 12px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:#6b7280; text-align:left; border-bottom:1px solid #e5e7eb;">Invoice ID</th>
+                    <th style="padding:8px 12px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:#6b7280; text-align:left; border-bottom:1px solid #e5e7eb;">Customer Name</th>
+                    <th style="padding:8px 12px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:#6b7280; text-align:left; border-bottom:1px solid #e5e7eb;">Item Name</th>
+                    <th style="padding:8px 12px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:#6b7280; text-align:left; border-bottom:1px solid #e5e7eb;">Total Amount</th>
+                    <th style="padding:8px 12px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:#6b7280; text-align:left; border-bottom:1px solid #e5e7eb;">View</th>
+                </tr>
+            </thead>
+            <tbody style="background:#fff;">
+                {% for display in sales %}
+                <tr style="border-bottom:1px solid #f3f4f6;">
+                    <td style="padding:8px 12px; font-size:10px; color:#374151;">{{ forloop.counter }}</td>
+                    <td style="padding:8px 12px; font-size:10px; color:#374151;">{{ display.invoice_date }}</td>
+                    <td style="padding:8px 12px; font-size:10px; color:#374151;">{{ display.invoiceID }}</td>
+                    <td style="padding:8px 12px; font-size:10px; color:#374151;">{{ display.customer_name }}</td>
+                    <td style="padding:8px 12px; font-size:10px; color:#374151;">{{ display.item_name }}</td>
+                    <td style="padding:8px 12px; font-size:10px; color:#374151; font-weight:600;">{{ display.amount_expected }}</td>
+                    <td style="padding:8px 12px; font-size:10px;">
+                        <a onclick="showModal('{{ display.invoiceID }}')"
+                            style="display:flex; align-items:center; justify-content:center; color:#1e40af; cursor:pointer;"
+                            aria-label="View">
+                            <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                            </svg>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align:center; color:#9ca3af; padding:16px; font-size:10px;">No records found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr><td colspan="7" style="padding:4px;"></td></tr>
+                <tr style="background:#f9fafb; border-top:2px solid #2F4F4F;">
+                    <td colspan="5" style="padding:10px 12px; text-align:right; padding-right:12px; font-size:11px; font-weight:700; color:#2F4F4F;">Total Amount</td>
+                    <td colspan="2" style="padding:10px 12px; font-size:12px; font-weight:700; color:#2F4F4F;">
+                        <b class="currency"></b><span id="amount_total">{{ amount_total|floatformat:2|intcomma }}</span>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
     </div>
+</div>
 
 
     
