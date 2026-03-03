@@ -114,7 +114,7 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
         if not serialized_data:
             return False, "Invoice not found"
 
-        invoice = serialized_data[0]  # first item as dict for header info
+        invoice = serialized_data[1]  # first item as dict for header info
 
         amount_total = customer_invoice.objects.using(db).filter(invoiceID=invoiceID).values("invoiceID").distinct().aggregate(total_amount=Sum("amount"))['total_amount']
 
