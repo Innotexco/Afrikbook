@@ -56,53 +56,72 @@ import tempfile
 import os
 import logging
 from django.db import connection
+from .models import Vat
 # from django.db.models import Sum
 
 def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_name):
     try:
-        # Get all invoice lines
+        # Get all invoice line items
         invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoiceID)
-        
+
         if not invoice_items.exists():
             return False, "Invoice not found"
-        
+
         invoice = invoice_items.first()
-        
+
         company = CreateProfile.objects.using(db).get(
             CompanyName=request.user.company_id.company_name
         )
 
+        # Subtotal: sum of all line item amounts
+        subtotal = sum(item.amount for item in invoice_items)
+
+        # VAT entries linked to this invoice
+        vat_items = Vat.objects.using(db).filter(source=invoiceID)
+        vat_total = sum(v.amount for v in vat_items)
+
+        # Grand total and balance
+        grand_total = subtotal + vat_total
+        balance_due = grand_total - (invoice.amount_paid or 0)
+
         # Render invoice HTML template
         html_content = render_to_string('customer/invoice_pdf.html', {
-            'invoice': invoice,
+            'invoice':       invoice,
             'invoice_items': invoice_items,
-            'company': company,
+            'company':       company,
+            'subtotal':      subtotal,
+            'vat_items':     vat_items,
+            'vat_total':     vat_total,
+            'grand_total':   grand_total,
+            'balance_due':   balance_due,
         })
-        
+
         # Convert HTML to PDF
         pdf_file = HTML(
             string=html_content,
             base_url=request.build_absolute_uri()
         ).write_pdf()
-        
-        # Compose email
+
+        # Compose and send email
         email = EmailMessage(
             subject=f"Invoice {invoiceID} from {request.user.company_id.company_name}",
-            body=f"Dear {customer_name},\n\nPlease find your invoice {invoiceID} attached.\n\nThank you for your business.",
+            body=(
+                f"Dear {customer_name},\n\n"
+                f"Please find your invoice {invoiceID} attached.\n\n"
+                f"Thank you for your business."
+            ),
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[customer_email],
         )
-        
-        # Attach PDF
+
         email.attach(f"Invoice_{invoiceID}.pdf", pdf_file, 'application/pdf')
         email.send()
-        
+
         return True, "Invoice emailed successfully"
-    
+
     except Exception as e:
         logging.error(f"Invoice email failed: {e}")
         return False, "Failed to send invoice email"
-
 
 
 
