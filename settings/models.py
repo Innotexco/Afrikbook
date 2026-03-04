@@ -114,10 +114,10 @@ class CreateProfile(models.Model):
     country             = models.CharField(max_length=255, null=True, blank=True)
     currency            = models.CharField(max_length=250, null=True, blank=True)
     logo                = models.ImageField(upload_to='profiles', null=True, blank=True)
-    show_customer_info  = models.CharField(max_length=250, null=True, blank=True)  
-    Token_ID            = models.CharField(max_length=250, null=True, blank=True)  
-    vat                 = models.CharField(max_length=250, null=True, blank=True)  
-    Userlogin           = models.CharField(max_length=200, null=True, blank=True)  
+    show_customer_info  = models.CharField(max_length=250, null=True, blank=True)
+    Token_ID            = models.CharField(max_length=250, null=True, blank=True)
+    vat                 = models.CharField(max_length=250, null=True, blank=True)
+    Userlogin           = models.CharField(max_length=200, null=True, blank=True)
     pdf_template_preference = models.CharField(
         max_length=20,
         choices=[
@@ -127,9 +127,11 @@ class CreateProfile(models.Model):
         default='classic',
         help_text='Preferred PDF template for reports'
     )
-   
+    send_email_invoice    = models.BooleanField(default=True,  help_text='Send invoice to customer via email')
+    send_whatsapp_invoice = models.BooleanField(default=False, help_text='Send invoice to customer via WhatsApp')
+
     class Meta:
-        db_table = 'profile'  # Specify the table name
+        db_table = 'profile'
 
 
 
