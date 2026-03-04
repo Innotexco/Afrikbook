@@ -404,10 +404,13 @@ logger = logging.getLogger(__name__)
 
 
 def clean_decimal(value):
-    """Strip commas, whitespace and convert to Decimal safely."""
+    """Strip commas, whitespace, convert to Decimal and quantize to 2dp."""
     try:
         cleaned = str(value).replace(',', '').replace(' ', '').strip()
-        return decimal.Decimal(cleaned)
+        return decimal.Decimal(cleaned).quantize(
+            decimal.Decimal('0.01'), 
+            rounding=decimal.ROUND_HALF_UP
+        )
     except (decimal.InvalidOperation, TypeError, ValueError) as e:
         logger.error(f"[clean_decimal] Failed to convert value={value!r} | {e}")
         return decimal.Decimal('0.00')
