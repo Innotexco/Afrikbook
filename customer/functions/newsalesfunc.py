@@ -129,56 +129,335 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
  
 
 
+# def add_new_sales(request, db):
+    
+#     message_displayed = False  # Initialize the message_displayed variable
+#     executed = False  
+#     user = False  
+   
+#     cusID             = request.POST['cusID']
+#     venID             = request.POST['venID']
+#     acountType        = request.POST['accountType']
+#     customer_name     = request.POST['genby']
+#     invoice_date      = request.POST['invoice_date']
+#     due_date          = request.POST['due_date']
+#     invoiceID         = request.POST['invoiceID']
+#     order_id          = request.POST['order_id']
+#     Gdescription      = request.POST['Gdescription']
+#     invoice_state     = request.POST.get('invoice_state')
+#     credit_sales      = request.POST.get('credit_sales')
+#     item_name         = request.POST.getlist('item_name')
+#     purchaseP         = request.POST.getlist('purchaseP')
+#     itemcode          = request.POST.getlist('item[]')
+#     item_descriptions = request.POST.getlist('desc[]')
+#     quantities        = request.POST.getlist('qty[]')
+#     unit              = request.POST.getlist('unit[]')
+#     discount          = request.POST.getlist('discount[]')
+#     amount            = request.POST.getlist('amount[]')
+#     vat               = request.POST.get('vat') #[:-1]
+#     sub_total         = request.POST['sub-total']
+#     total             = request.POST['total']
+#     account_ID = request.POST.get('t_account')
+#     transfer = request.POST.get('transfer_amount')
+#     cash = request.POST.get('cash_amount')
+#     payment_method = request.POST.get('payment_method')
+#     method = request.POST.get('shipping_method')
+#     shipping = request.POST.get('shipping_address')
+#     shipping_cost = request.POST.get('shipping_cost')
+
+#     instant_stockout = request.session.get('IN_STOCKOUT', 'Yes')
+    
+    
+#     if instant_stockout == "Yes":
+#         status = 1
+#     else:
+#         status = 0
+  
+#     if invoice_state:
+#         invoice_state = "Pending"
+#     else:
+#         invoice_state = "Supplied"
+    
+#     # Note if any changes in this statement you have to make same chabges on return inward function
+#     if credit_sales:
+#         amount_paid = 0.00
+#         amount_expected = total
+#     else:
+#         amount_paid = total
+#         amount_expected = total
+
+#     # amount_paid = total
+#     # amount_expected = sub_total
+    
+    
+    
+#     int_purchaseP = [int(num) if num.isdigit() else 0 for num in purchaseP ]
+
+#     total_purchaseP = sum(int_purchaseP)
+
+#     if cusID:
+#         res = billing_shipping_address(request, customer_name)    
+#         customer_code = customer_table.objects.using(db).get(id=cusID).customer_code
+
+#     elif venID:
+#         res = False
+#         customer_code = vendor_table.objects.using(db).get(id=venID).custID
+#     else:        
+#         customer_code = None
+
+    
+#     date_ = datetime.strptime(invoice_date, "%Y-%m-%d").date()
+#     current_time = datetime.now().time()
+
+#     date_time = datetime.combine(date_, current_time)
+   
+#     for i in range(len(itemcode)):
+#             # Check if the itemcode (value) is equal to 0
+#         if i < len(itemcode) and str(itemcode[i]) != "0":
+#              # Check if quantity (value) is equal to 0 or empty 
+#             if not quantities[i] or int(quantities[i]) == 0:
+#                 #Automatically change the quantity to 1
+#                 quantities[i] = 1
+        
+#             form_data = {
+#                 'cusID': customer_code,
+#                 'customer_name':customer_name,
+#                 'invoice_date':date_time,
+#                 'due_date': due_date,
+#                 'invoiceID':invoiceID ,
+#                 'order_ID':order_id ,
+#                 'Gdescription': Gdescription,
+#                 'item_name': item_name[i],
+#                 'itemcode': itemcode[i],
+#                 'item_description': item_descriptions[i],
+#                 'qty': quantities[i],
+#                 'unit_p': unit[i],
+#                 'discount': discount[i],
+#                 'amount': amount[i],
+#                 'amount_paid': amount_paid,
+#                 'amount_expected': amount_expected,
+
+#                 "cancellation_status":0,
+#                 "status":status,
+#                 "Transfer":0,
+#                 "POS":0,
+#                 "Cash":0,
+#                 "Customer_account":0,
+#                 "Cheque":0,
+#                 "invoice_state":invoice_state,
+#                 "purchaseP":purchaseP[i],
+#                 "total_purchaseP":total_purchaseP,
+#                 "outlet": request.user.outlet
+#             }
+#             cus_form = CustomerSalesForm(form_data)
+      
+#             receivable_form = ReceivableForm({"date":invoice_date,	"description":Gdescription,"type": "Debit",	"amount": amount_paid, "payment_method": "Transfer","account_posted":"","invoice_status": "Unused"})
+            
+                
+#             if cus_form.is_valid() and receivable_form.is_valid():
+#                 form  = cus_form.save(commit=False)
+#                 form.Userlogin = request.user.username
+#                 form.save(using=db)
+                
+#                 #Reduce stock quantity
+#                 if invoice_state == "Supplied":
+#                     outlet= request.user.outlet
+                   
+#                     ReduceOutletStockinItemQuantity(db, outlet, itemcode[i], quantities[i])
+
+#                 if not message_displayed:
+#                     if acountType == "Customer":
+#                         cus = customer_table.objects.using(db).get(id=cusID)
+#                         cus.invoice = cus.invoice + 1
+#                         cus.save()
+                        
+#                     elif acountType == "Vendor":
+#                         ven = vendor_table.objects.using(db).get(id=venID)
+#                         ven.invoices = int(ven.invoices) + 1
+#                         ven.save()
+#                     if credit_sales == None:
+#                         # insert into recievable
+#                         if account_ID:
+#                             account = chart_of_account.objects.using(db).get(account_id=account_ID)
+#                             if acountType == "Customer":
+#                                 DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account_ID, total)  
+#                             elif acountType == "Vendor":
+#                                 DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account_ID, total) 
+                            
+                            
+#                             if payment_method == "Transfer":
+#                                 if acountType == "Customer":
+#                                     CreditReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account_ID, total)
+#                                 elif acountType == "Vendor":
+#                                     CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account_ID, total)
+#                                 CreateLog(db, account, total) 
+                               
+
+#                             elif payment_method == "Transfer and Cash":
+#                                 # Transfer 
+#                                 if acountType == "Customer":
+#                                    CreditReceivable(request, db, cus, invoice_date, Gdescription, "Transfer", account_ID, transfer)
+#                                 elif acountType == "Vendor":
+#                                     CreditPayable(request, db, cus, invoice_date, Gdescription, "Transfer", account_ID, transfer)
+#                                 CreateLog(db, account, transfer)
+#                                 # Cash
+#                                 cash_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+#                                 if acountType == "Customer":
+#                                    CreditReceivable(request, db, cus, invoice_date, Gdescription, "Cash", cash_account.account_id, cash)
+#                                 elif acountType == "Vendor":
+#                                     CreditPayable(request, db, cus, invoice_date, Gdescription, "Cash", cash_account.account_id, cash)
+#                                 CreateLog(db, cash_account, cash)
+
+#                             elif payment_method == "Cheque":
+#                                 account = chart_of_account.objects.using(db).get(account_bankname="Account Receivable")     
+#                                 CreateLog(db, account, total)
+#                             else:
+#                                 account = chart_of_account.objects.using(db).get(account_bankname="Sales account")
+#                                 if acountType == "Customer":
+#                                     CreditReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total)
+#                                 elif acountType == "Vendor":
+#                                     CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total)
+                                   
+#                                 CreateLog(db, account, total)
+
+#                         else:
+#                             if acountType == "Customer":
+#                                 account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+#                                 DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total)
+#                                 CreditReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total)
+#                                 CreateLog(db, account, total)
+#                             elif acountType == "Vendor":
+#                                 account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+#                                 DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total)
+#                                 CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total) 
+#                                 CreateLog(db, account, total)
+  
+#                     else:
+#                         if acountType == "Customer":
+#                             account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+#                             account.actual_balance += decimal.Decimal(total)
+#                             # account.save()
+#                             DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total)
+#                             CreateLog(db, account, total)
+#                         elif acountType == "Vendor":
+#                             account = chart_of_account.objects.using(db).get(account_bankname="Purchase Account")
+#                             account.actual_balance += decimal.Decimal(total)
+#                             # account.save()
+#                             DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total)
+#                             CreateLog(db, account, total)
+                        
+#                         acc_log = account_log(
+#                                 transaction_source  = "Sales",
+#                                 amount              = total,
+#                                 date                = invoice_date,
+#                                 account             = account.account_id,
+#                                 account_type        = account.account_type,
+#                                 Userlogin = request.user.username
+#                             )
+#                         # acc_log.save(using=db)
+
+#                     if res:
+#                         billing_shipping_reference(db, invoiceID, cusID, shipping, method, shipping_cost)
+#                     else:
+#                         pass
+#                     create_add_vat(db, invoiceID, vat)
+
+#                     messages.success(request, "New Sales Invoice was added successfully")
+#                     message_displayed = True
+#             else:
+#                 messages.error(request, "New Sales Invoice was not added  successfully")
+#                 return cus_form
+#         elif len(itemcode) == 1 and itemcode[i] == "0":
+#             if not executed:
+#                 messages.error(request, "Select at least one item")
+#                 executed = True
+
+#     if message_displayed:
+#         if acountType == "Customer":
+#             customer = customer_table.objects.using(db).get(id=cusID)
+#             if customer.email:
+#                 success, msg = email_invoice_to_customer(
+#                     request, db, invoiceID, customer.email, customer_name
+#                 )
+#                 if success:
+#                     messages.success(request, f"Invoice emailed to {customer.email}")
+#                 else:
+#                     messages.warning(request, f"Invoice saved but email failed: {msg}")
+        
+#         elif acountType == "Vendor":
+#             vendor = vendor_table.objects.using(db).get(id=venID)
+#             if vendor.email:
+#                 success, msg = email_invoice_to_customer(
+#                     request, db, invoiceID, vendor.email, customer_name
+#                 )
+   
+
+
+
+
+import logging
+import traceback
+
+logger = logging.getLogger(__name__)
+
 def add_new_sales(request, db):
     
-    message_displayed = False  # Initialize the message_displayed variable
+    message_displayed = False
     executed = False  
     user = False  
-   
-    cusID             = request.POST['cusID']
-    venID             = request.POST['venID']
-    acountType        = request.POST['accountType']
-    customer_name     = request.POST['genby']
-    invoice_date      = request.POST['invoice_date']
-    due_date          = request.POST['due_date']
-    invoiceID         = request.POST['invoiceID']
-    order_id          = request.POST['order_id']
-    Gdescription      = request.POST['Gdescription']
-    invoice_state     = request.POST.get('invoice_state')
-    credit_sales      = request.POST.get('credit_sales')
-    item_name         = request.POST.getlist('item_name')
-    purchaseP         = request.POST.getlist('purchaseP')
-    itemcode          = request.POST.getlist('item[]')
-    item_descriptions = request.POST.getlist('desc[]')
-    quantities        = request.POST.getlist('qty[]')
-    unit              = request.POST.getlist('unit[]')
-    discount          = request.POST.getlist('discount[]')
-    amount            = request.POST.getlist('amount[]')
-    vat               = request.POST.get('vat') #[:-1]
-    sub_total         = request.POST['sub-total']
-    total             = request.POST['total']
-    account_ID = request.POST.get('t_account')
-    transfer = request.POST.get('transfer_amount')
-    cash = request.POST.get('cash_amount')
-    payment_method = request.POST.get('payment_method')
-    method = request.POST.get('shipping_method')
-    shipping = request.POST.get('shipping_address')
-    shipping_cost = request.POST.get('shipping_cost')
+
+    try:
+        cusID             = request.POST['cusID']
+        venID             = request.POST['venID']
+        acountType        = request.POST['accountType']
+        customer_name     = request.POST['genby']
+        invoice_date      = request.POST['invoice_date']
+        due_date          = request.POST['due_date']
+        invoiceID         = request.POST['invoiceID']
+        order_id          = request.POST['order_id']
+        Gdescription      = request.POST['Gdescription']
+        invoice_state     = request.POST.get('invoice_state')
+        credit_sales      = request.POST.get('credit_sales')
+        item_name         = request.POST.getlist('item_name')
+        purchaseP         = request.POST.getlist('purchaseP')
+        itemcode          = request.POST.getlist('item[]')
+        item_descriptions = request.POST.getlist('desc[]')
+        quantities        = request.POST.getlist('qty[]')
+        unit              = request.POST.getlist('unit[]')
+        discount          = request.POST.getlist('discount[]')
+        amount            = request.POST.getlist('amount[]')
+        vat               = request.POST.get('vat')
+        sub_total         = request.POST['sub-total']
+        total             = request.POST['total']
+        account_ID        = request.POST.get('t_account')
+        transfer          = request.POST.get('transfer_amount')
+        cash              = request.POST.get('cash_amount')
+        payment_method    = request.POST.get('payment_method')
+        method            = request.POST.get('shipping_method')
+        shipping          = request.POST.get('shipping_address')
+        shipping_cost     = request.POST.get('shipping_cost')
+
+        logger.info(
+            f"[add_new_sales] START | invoiceID={invoiceID} | db={db} | "
+            f"user={request.user.username} | acountType={acountType} | "
+            f"cusID={cusID} | venID={venID} | total={total} | "
+            f"credit_sales={credit_sales} | invoice_state={invoice_state} | "
+            f"payment_method={payment_method} | items={len(itemcode)}"
+        )
+
+    except KeyError as e:
+        logger.error(f"[add_new_sales] Missing POST field: {e}")
+        messages.error(request, f"Missing required field: {e}")
+        return None
 
     instant_stockout = request.session.get('IN_STOCKOUT', 'Yes')
-    
-    
-    if instant_stockout == "Yes":
-        status = 1
-    else:
-        status = 0
-  
+    status = 1 if instant_stockout == "Yes" else 0
+
     if invoice_state:
         invoice_state = "Pending"
     else:
         invoice_state = "Supplied"
-    
-    # Note if any changes in this statement you have to make same chabges on return inward function
+
     if credit_sales:
         amount_paid = 0.00
         amount_expected = total
@@ -186,211 +465,330 @@ def add_new_sales(request, db):
         amount_paid = total
         amount_expected = total
 
-    # amount_paid = total
-    # amount_expected = sub_total
-    
-    
-    
-    int_purchaseP = [int(num) if num.isdigit() else 0 for num in purchaseP ]
+    logger.debug(
+        f"[add_new_sales] Computed | invoice_state={invoice_state} | "
+        f"amount_paid={amount_paid} | amount_expected={amount_expected} | "
+        f"instant_stockout={instant_stockout} | status={status}"
+    )
 
-    total_purchaseP = sum(int_purchaseP)
+    try:
+        int_purchaseP = [int(num) if num.isdigit() else 0 for num in purchaseP]
+        total_purchaseP = sum(int_purchaseP)
+    except Exception as e:
+        logger.error(f"[add_new_sales] Failed to compute purchaseP totals: {e}")
+        total_purchaseP = 0
 
-    if cusID:
-        res = billing_shipping_address(request, customer_name)    
-        customer_code = customer_table.objects.using(db).get(id=cusID).customer_code
+    try:
+        if cusID:
+            res = billing_shipping_address(request, customer_name)
+            customer_code = customer_table.objects.using(db).get(id=cusID).customer_code
+            logger.debug(f"[add_new_sales] Customer resolved | cusID={cusID} | customer_code={customer_code}")
 
-    elif venID:
-        res = False
-        customer_code = vendor_table.objects.using(db).get(id=venID).custID
-    else:        
-        customer_code = None
+        elif venID:
+            res = False
+            customer_code = vendor_table.objects.using(db).get(id=venID).custID
+            logger.debug(f"[add_new_sales] Vendor resolved | venID={venID} | customer_code={customer_code}")
 
-    
-    date_ = datetime.strptime(invoice_date, "%Y-%m-%d").date()
-    current_time = datetime.now().time()
+        else:
+            customer_code = None
+            res = False
+            logger.warning(f"[add_new_sales] No cusID or venID provided for invoiceID={invoiceID}")
 
-    date_time = datetime.combine(date_, current_time)
-   
+    except customer_table.DoesNotExist:
+        logger.error(f"[add_new_sales] Customer not found | cusID={cusID}")
+        messages.error(request, f"Customer ID {cusID} not found.")
+        return None
+    except vendor_table.DoesNotExist:
+        logger.error(f"[add_new_sales] Vendor not found | venID={venID}")
+        messages.error(request, f"Vendor ID {venID} not found.")
+        return None
+    except Exception as e:
+        logger.error(f"[add_new_sales] Error resolving customer/vendor: {e}\n{traceback.format_exc()}")
+        messages.error(request, "Failed to resolve customer or vendor.")
+        return None
+
+    try:
+        date_ = datetime.strptime(invoice_date, "%Y-%m-%d").date()
+        current_time = datetime.now().time()
+        date_time = datetime.combine(date_, current_time)
+    except ValueError as e:
+        logger.error(f"[add_new_sales] Invalid invoice_date format: {invoice_date} | {e}")
+        messages.error(request, f"Invalid date format: {invoice_date}")
+        return None
+
+    logger.debug(f"[add_new_sales] Processing {len(itemcode)} item(s) for invoiceID={invoiceID}")
+
     for i in range(len(itemcode)):
-            # Check if the itemcode (value) is equal to 0
-        if i < len(itemcode) and str(itemcode[i]) != "0":
-             # Check if quantity (value) is equal to 0 or empty 
-            if not quantities[i] or int(quantities[i]) == 0:
-                #Automatically change the quantity to 1
-                quantities[i] = 1
-        
-            form_data = {
-                'cusID': customer_code,
-                'customer_name':customer_name,
-                'invoice_date':date_time,
-                'due_date': due_date,
-                'invoiceID':invoiceID ,
-                'order_ID':order_id ,
-                'Gdescription': Gdescription,
-                'item_name': item_name[i],
-                'itemcode': itemcode[i],
-                'item_description': item_descriptions[i],
-                'qty': quantities[i],
-                'unit_p': unit[i],
-                'discount': discount[i],
-                'amount': amount[i],
-                'amount_paid': amount_paid,
-                'amount_expected': amount_expected,
+        logger.debug(f"[add_new_sales] Item [{i}] | itemcode={itemcode[i]} | qty={quantities[i]} | amount={amount[i]}")
 
-                "cancellation_status":0,
-                "status":status,
-                "Transfer":0,
-                "POS":0,
-                "Cash":0,
-                "Customer_account":0,
-                "Cheque":0,
-                "invoice_state":invoice_state,
-                "purchaseP":purchaseP[i],
-                "total_purchaseP":total_purchaseP,
-                "outlet": request.user.outlet
-            }
-            cus_form = CustomerSalesForm(form_data)
-      
-            receivable_form = ReceivableForm({"date":invoice_date,	"description":Gdescription,"type": "Debit",	"amount": amount_paid, "payment_method": "Transfer","account_posted":"","invoice_status": "Unused"})
-            
-                
-            if cus_form.is_valid() and receivable_form.is_valid():
-                form  = cus_form.save(commit=False)
+        if len(itemcode) == 1 and itemcode[i] == "0":
+            if not executed:
+                logger.warning(f"[add_new_sales] No item selected | invoiceID={invoiceID}")
+                messages.error(request, "Select at least one item")
+                executed = True
+            continue
+
+        if str(itemcode[i]) == "0":
+            logger.debug(f"[add_new_sales] Skipping itemcode=0 at index {i}")
+            continue
+
+        if not quantities[i] or int(quantities[i]) == 0:
+            quantities[i] = 1
+            logger.debug(f"[add_new_sales] Auto-set qty=1 for item [{i}] | itemcode={itemcode[i]}")
+
+        form_data = {
+            'cusID':               customer_code,
+            'customer_name':       customer_name,
+            'invoice_date':        date_time,
+            'due_date':            due_date,
+            'invoiceID':           invoiceID,
+            'order_ID':            order_id,
+            'Gdescription':        Gdescription,
+            'item_name':           item_name[i],
+            'itemcode':            itemcode[i],
+            'item_description':    item_descriptions[i],
+            'qty':                 quantities[i],
+            'unit_p':              unit[i],
+            'discount':            discount[i],
+            'amount':              amount[i],
+            'amount_paid':         amount_paid,
+            'amount_expected':     amount_expected,
+            'cancellation_status': 0,
+            'status':              status,
+            'Transfer':            0,
+            'POS':                 0,
+            'Cash':                0,
+            'Customer_account':    0,
+            'Cheque':              0,
+            'invoice_state':       invoice_state,
+            'purchaseP':           purchaseP[i],
+            'total_purchaseP':     total_purchaseP,
+            'outlet':              request.user.outlet,
+        }
+
+        cus_form = CustomerSalesForm(form_data)
+        receivable_form = ReceivableForm({
+            "date":           invoice_date,
+            "description":    Gdescription,
+            "type":           "Debit",
+            "amount":         amount_paid,
+            "payment_method": "Transfer",
+            "account_posted": "",
+            "invoice_status": "Unused",
+        })
+
+        if not cus_form.is_valid():
+            logger.error(
+                f"[add_new_sales] CustomerSalesForm invalid | item [{i}] | "
+                f"invoiceID={invoiceID} | errors={cus_form.errors.as_json()}"
+            )
+
+        if not receivable_form.is_valid():
+            logger.error(
+                f"[add_new_sales] ReceivableForm invalid | item [{i}] | "
+                f"invoiceID={invoiceID} | errors={receivable_form.errors.as_json()}"
+            )
+
+        if cus_form.is_valid() and receivable_form.is_valid():
+            try:
+                form = cus_form.save(commit=False)
                 form.Userlogin = request.user.username
                 form.save(using=db)
-                
-                #Reduce stock quantity
-                if invoice_state == "Supplied":
-                    outlet= request.user.outlet
-                   
-                    ReduceOutletStockinItemQuantity(db, outlet, itemcode[i], quantities[i])
+                logger.info(f"[add_new_sales] Invoice line saved | item [{i}] | invoiceID={invoiceID} | itemcode={itemcode[i]}")
 
-                if not message_displayed:
+            except Exception as e:
+                logger.error(
+                    f"[add_new_sales] Failed to save invoice line | item [{i}] | "
+                    f"invoiceID={invoiceID} | {e}\n{traceback.format_exc()}"
+                )
+                messages.error(request, "New Sales Invoice was not added successfully")
+                return cus_form
+
+            # Reduce stock
+            if invoice_state == "Supplied":
+                try:
+                    outlet = request.user.outlet
+                    ReduceOutletStockinItemQuantity(db, outlet, itemcode[i], quantities[i])
+                    logger.info(f"[add_new_sales] Stock reduced | outlet={outlet} | itemcode={itemcode[i]} | qty={quantities[i]}")
+                except Exception as e:
+                    logger.error(f"[add_new_sales] Stock reduction failed | itemcode={itemcode[i]} | {e}\n{traceback.format_exc()}")
+
+            if not message_displayed:
+                try:
                     if acountType == "Customer":
                         cus = customer_table.objects.using(db).get(id=cusID)
-                        cus.invoice = cus.invoice + 1
+                        cus.invoice += 1
                         cus.save()
-                        
+                        logger.debug(f"[add_new_sales] Customer invoice count incremented | cusID={cusID}")
+
                     elif acountType == "Vendor":
                         ven = vendor_table.objects.using(db).get(id=venID)
                         ven.invoices = int(ven.invoices) + 1
                         ven.save()
-                    if credit_sales == None:
-                        # insert into recievable
+                        logger.debug(f"[add_new_sales] Vendor invoice count incremented | venID={venID}")
+
+                except Exception as e:
+                    logger.error(f"[add_new_sales] Failed to increment invoice count | {e}\n{traceback.format_exc()}")
+
+                # Accounting entries
+                try:
+                    if credit_sales is None:
                         if account_ID:
                             account = chart_of_account.objects.using(db).get(account_id=account_ID)
+                            logger.debug(f"[add_new_sales] Account resolved | account_ID={account_ID} | payment_method={payment_method}")
+
                             if acountType == "Customer":
-                                DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account_ID, total)  
+                                DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account_ID, total)
                             elif acountType == "Vendor":
-                                DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account_ID, total) 
-                            
-                            
+                                DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account_ID, total)
+
                             if payment_method == "Transfer":
                                 if acountType == "Customer":
                                     CreditReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account_ID, total)
                                 elif acountType == "Vendor":
                                     CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account_ID, total)
-                                CreateLog(db, account, total) 
-                               
+                                CreateLog(db, account, total)
 
                             elif payment_method == "Transfer and Cash":
-                                # Transfer 
                                 if acountType == "Customer":
-                                   CreditReceivable(request, db, cus, invoice_date, Gdescription, "Transfer", account_ID, transfer)
+                                    CreditReceivable(request, db, cus, invoice_date, Gdescription, "Transfer", account_ID, transfer)
                                 elif acountType == "Vendor":
                                     CreditPayable(request, db, cus, invoice_date, Gdescription, "Transfer", account_ID, transfer)
                                 CreateLog(db, account, transfer)
-                                # Cash
+
                                 cash_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
                                 if acountType == "Customer":
-                                   CreditReceivable(request, db, cus, invoice_date, Gdescription, "Cash", cash_account.account_id, cash)
+                                    CreditReceivable(request, db, cus, invoice_date, Gdescription, "Cash", cash_account.account_id, cash)
                                 elif acountType == "Vendor":
                                     CreditPayable(request, db, cus, invoice_date, Gdescription, "Cash", cash_account.account_id, cash)
                                 CreateLog(db, cash_account, cash)
+                                logger.debug(f"[add_new_sales] Transfer+Cash split posted | transfer={transfer} | cash={cash}")
 
                             elif payment_method == "Cheque":
-                                account = chart_of_account.objects.using(db).get(account_bankname="Account Receivable")     
+                                account = chart_of_account.objects.using(db).get(account_bankname="Account Receivable")
                                 CreateLog(db, account, total)
+                                logger.debug(f"[add_new_sales] Cheque payment logged | total={total}")
+
                             else:
                                 account = chart_of_account.objects.using(db).get(account_bankname="Sales account")
                                 if acountType == "Customer":
                                     CreditReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total)
                                 elif acountType == "Vendor":
                                     CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total)
-                                   
                                 CreateLog(db, account, total)
+                                logger.debug(f"[add_new_sales] Other payment method posted | method={payment_method}")
 
                         else:
+                            # No account_ID provided — use default Sales Account
+                            logger.warning(f"[add_new_sales] No account_ID provided, using default Sales Account | invoiceID={invoiceID}")
+                            account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
                             if acountType == "Customer":
-                                account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
                                 DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total)
                                 CreditReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total)
-                                CreateLog(db, account, total)
                             elif acountType == "Vendor":
-                                account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
                                 DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total)
-                                CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total) 
-                                CreateLog(db, account, total)
-  
+                                CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total)
+                            CreateLog(db, account, total)
+
                     else:
+                        # Credit sales
+                        logger.debug(f"[add_new_sales] Credit sale path | acountType={acountType} | total={total}")
                         if acountType == "Customer":
                             account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
                             account.actual_balance += decimal.Decimal(total)
-                            # account.save()
                             DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total)
                             CreateLog(db, account, total)
                         elif acountType == "Vendor":
                             account = chart_of_account.objects.using(db).get(account_bankname="Purchase Account")
                             account.actual_balance += decimal.Decimal(total)
-                            # account.save()
                             DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total)
                             CreateLog(db, account, total)
-                        
-                        acc_log = account_log(
-                                transaction_source  = "Sales",
-                                amount              = total,
-                                date                = invoice_date,
-                                account             = account.account_id,
-                                account_type        = account.account_type,
-                                Userlogin = request.user.username
-                            )
-                        # acc_log.save(using=db)
 
+                        acc_log = account_log(
+                            transaction_source = "Sales",
+                            amount             = total,
+                            date               = invoice_date,
+                            account            = account.account_id,
+                            account_type       = account.account_type,
+                            Userlogin          = request.user.username,
+                        )
+                        logger.debug(f"[add_new_sales] account_log built (not saved) | invoiceID={invoiceID}")
+
+                except chart_of_account.DoesNotExist as e:
+                    logger.error(f"[add_new_sales] Chart of account not found | {e}\n{traceback.format_exc()}")
+                    messages.error(request, "Accounting entry failed: account not found.")
+                    return None
+                except Exception as e:
+                    logger.error(f"[add_new_sales] Accounting entry failed | invoiceID={invoiceID} | {e}\n{traceback.format_exc()}")
+                    messages.error(request, "Accounting entry failed.")
+                    return None
+
+                # Shipping
+                try:
                     if res:
                         billing_shipping_reference(db, invoiceID, cusID, shipping, method, shipping_cost)
-                    else:
-                        pass
+                        logger.debug(f"[add_new_sales] Shipping reference saved | invoiceID={invoiceID}")
+                except Exception as e:
+                    logger.error(f"[add_new_sales] Shipping reference failed | invoiceID={invoiceID} | {e}\n{traceback.format_exc()}")
+
+                # VAT
+                try:
                     create_add_vat(db, invoiceID, vat)
+                    logger.debug(f"[add_new_sales] VAT recorded | invoiceID={invoiceID} | vat={vat}")
+                except Exception as e:
+                    logger.error(f"[add_new_sales] VAT creation failed | invoiceID={invoiceID} | {e}\n{traceback.format_exc()}")
 
-                    messages.success(request, "New Sales Invoice was added successfully")
-                    message_displayed = True
-            else:
-                messages.error(request, "New Sales Invoice was not added  successfully")
-                return cus_form
-        elif len(itemcode) == 1 and itemcode[i] == "0":
-            if not executed:
-                messages.error(request, "Select at least one item")
-                executed = True
+                messages.success(request, "New Sales Invoice was added successfully")
+                message_displayed = True
+                logger.info(f"[add_new_sales] Invoice saved successfully | invoiceID={invoiceID}")
 
+        else:
+            logger.error(
+                f"[add_new_sales] Form validation failed | item [{i}] | invoiceID={invoiceID} | "
+                f"cus_form_errors={cus_form.errors.as_json()} | "
+                f"receivable_form_errors={receivable_form.errors.as_json()}"
+            )
+            messages.error(request, "New Sales Invoice was not added successfully")
+            return cus_form
+
+    # Email invoice
     if message_displayed:
-        if acountType == "Customer":
-            customer = customer_table.objects.using(db).get(id=cusID)
-            if customer.email:
-                success, msg = email_invoice_to_customer(
-                    request, db, invoiceID, customer.email, customer_name
-                )
-                if success:
-                    messages.success(request, f"Invoice emailed to {customer.email}")
+        try:
+            if acountType == "Customer":
+                customer = customer_table.objects.using(db).get(id=cusID)
+                if customer.email:
+                    logger.info(f"[add_new_sales] Emailing invoice | invoiceID={invoiceID} | to={customer.email}")
+                    success, msg = email_invoice_to_customer(request, db, invoiceID, customer.email, customer_name)
+                    if success:
+                        messages.success(request, f"Invoice emailed to {customer.email}")
+                        logger.info(f"[add_new_sales] Email sent | invoiceID={invoiceID} | to={customer.email}")
+                    else:
+                        messages.warning(request, f"Invoice saved but email failed: {msg}")
+                        logger.warning(f"[add_new_sales] Email failed | invoiceID={invoiceID} | reason={msg}")
                 else:
-                    messages.warning(request, f"Invoice saved but email failed: {msg}")
-        
-        elif acountType == "Vendor":
-            vendor = vendor_table.objects.using(db).get(id=venID)
-            if vendor.email:
-                success, msg = email_invoice_to_customer(
-                    request, db, invoiceID, vendor.email, customer_name
-                )
-   
+                    logger.debug(f"[add_new_sales] No email on customer | cusID={cusID} | skipping email")
+
+            elif acountType == "Vendor":
+                vendor = vendor_table.objects.using(db).get(id=venID)
+                if vendor.email:
+                    logger.info(f"[add_new_sales] Emailing invoice to vendor | invoiceID={invoiceID} | to={vendor.email}")
+                    success, msg = email_invoice_to_customer(request, db, invoiceID, vendor.email, customer_name)
+                    if success:
+                        messages.success(request, f"Invoice emailed to {vendor.email}")
+                        logger.info(f"[add_new_sales] Vendor email sent | invoiceID={invoiceID} | to={vendor.email}")
+                    else:
+                        messages.warning(request, f"Invoice saved but email failed: {msg}")
+                        logger.warning(f"[add_new_sales] Vendor email failed | invoiceID={invoiceID} | reason={msg}")
+                else:
+                    logger.debug(f"[add_new_sales] No email on vendor | venID={venID} | skipping email")
+
+        except Exception as e:
+            logger.error(f"[add_new_sales] Email step failed | invoiceID={invoiceID} | {e}\n{traceback.format_exc()}")
+            messages.warning(request, "Invoice saved but email could not be sent.")
+
+    logger.info(f"[add_new_sales] END | invoiceID={invoiceID} | message_displayed={message_displayed}")
+
+
 
 
 def create_add_vat(db, invoiceID, vat):
