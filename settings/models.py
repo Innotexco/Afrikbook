@@ -127,7 +127,7 @@ class CreateProfile(models.Model):
         default='classic',
         help_text='Preferred PDF template for reports'
     )
-    send_email_invoice    = models.BooleanField(default=True,  help_text='Send invoice to customer via email')
+    send_email_invoice    = models.BooleanField(default=False,  help_text='Send invoice to customer via email')
     send_whatsapp_invoice = models.BooleanField(default=False, help_text='Send invoice to customer via WhatsApp')
 
     class Meta:
