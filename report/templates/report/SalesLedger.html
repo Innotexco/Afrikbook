@@ -78,7 +78,7 @@
             </div>
         <!-- </form> -->
        
-        <div class="w-full overflow-x-auto table-responsive mt-6" id="sl">
+       <div class="w-full overflow-x-auto table-responsive mt-6" id="sl">
             {% include 'components/Periodheader.html' %}
           <table id="example" class="display" style="width:100%">
                 <thead>
@@ -89,7 +89,7 @@
                         <th class="px-4 py-3">Customer Name</th>
                         <th class="px-4 py-3">Item Name</th>
                         <th class="px-4 py-3">Total Amount</th>
-                        <th class="px-4 py-3"> 
+                        <th class="px-4 py-3">
                             <!-- {% comment %} <a onclick="my_modal_view_sales_ledger.showModal()"  href="#"
                                 class="flex items-center justify-center text-blue-500"
                                 aria-label="Edit">
@@ -104,14 +104,14 @@
                                     ></path>
                                 </svg>
                             </a> {% endcomment %} -->
-                             View
+                            View
                         </th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y mb-6" id="'+i+'"> -->
+                <tbody class="bg-white divide-y mb-6" id="'+i+'">
 
                     
-                   {% for display in sales %}
+                    {% for display in sales %}
                     
                     <tr class="text-gray-700">
 
@@ -159,10 +159,10 @@
                     <tr>
                         <td class="py-4"></td>
                     </tr>
-                    <tr class=""> 
-                        <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-5"> 
+                    <tr class="">
+                        <!-- <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-5"> -->
             
-                         <td class="pt-6 text-sm">
+                        <td class="pt-6 text-sm">
                             <span class="text-gray-700">Total Amount</span>
                         </td>
                         <td class="pt-6 text-sm">
@@ -170,11 +170,11 @@
                         </td>
                     </tr>
                 </tfoot>
-            </table> 
-             <div class="flex justify-end py-3 my-5 bg-white rounded-lg shadow-md">
+            </table>
+            <!-- <div class="flex justify-end py-3 my-5 bg-white rounded-lg shadow-md">
 
                 <div class="">
-                   <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-5"> 
+                    <!-- <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-5"> 
         
                     <label class="block text-sm">
                         <span class="text-gray-700">Total Amount</span>
@@ -191,7 +191,6 @@
             </div> -->
         </div>
     </div>
-
 
 
     
