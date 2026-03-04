@@ -56,7 +56,7 @@ import tempfile
 import os
 import logging
 from django.db import connection
-from .models import Vat
+from customers.models import Vat
 # from django.db.models import Sum
 
 def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_name):
