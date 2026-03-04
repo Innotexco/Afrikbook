@@ -303,14 +303,14 @@
                 </tr>
 
                 <!-- VAT lines -->
-                <!-- {% for vat in vat_items %}
+                {% for vat in vat_items %}
                 <tr class="summary-row">
-                    <td colspan="5" style="text-align:right; padding-right:12px;">
+                    <!-- <td colspan="5" style="text-align:right; padding-right:12px;">
                         VAT — {{ vat.source }}
-                    </td>
+                    </td> -->
                     <td colspan="2">{{ vat.amount|floatformat:2|intcomma }}</td>
                 </tr>
-                {% endfor %} -->
+                {% endfor %}
 
                 <!-- VAT Total (only if more than one VAT line) -->
                 {% if vat_items|length > 1 %}
