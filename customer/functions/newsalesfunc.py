@@ -61,30 +61,31 @@ from customer.models import Vat
 
 def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_name):
     try:
-        # Get all invoice line items
         invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoiceID)
-
         if not invoice_items.exists():
             return False, "Invoice not found"
 
         invoice = invoice_items.first()
 
-        company = CreateProfile.objects.using(db).get(
-            CompanyName=request.user.company_id.company_name
-        )
+        try:
+            company = CreateProfile.objects.using(db).first()
+        except CreateProfile.DoesNotExist:
+            company = None
 
-        # Subtotal: sum of all line item amounts
-        subtotal = sum(item.amount for item in invoice_items)
-
-        # VAT entries linked to this invoice
-        vat_items = Vat.objects.using(db).filter(source=invoiceID)
-        vat_total = sum(v.amount for v in vat_items)
-
-        # Grand total and balance
+        subtotal    = sum(item.amount for item in invoice_items)
+        vat_items   = Vat.objects.using(db).filter(source=invoiceID)
+        vat_total   = sum(v.amount for v in vat_items)
         grand_total = subtotal + vat_total
         balance_due = grand_total - (invoice.amount_paid or 0)
 
-        # Render invoice HTML template
+        # ── Company footer details ───────────────────────────────────────────
+        company_name    = company.CompanyName if company and company.CompanyName else request.user.company_id.company_name
+        company_address = company.address     if company and company.address     else ""
+        company_email   = company.email       if company and company.email       else ""
+        company_phone   = company.phone       if company and company.phone       else ""
+        company_rc      = company.Rc          if company and company.Rc          else ""
+
+        # ── PDF attachment ───────────────────────────────────────────────────
         html_content = render_to_string('customer/invoice_pdf.html', {
             'invoice':       invoice,
             'invoice_items': invoice_items,
@@ -95,33 +96,42 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
             'grand_total':   grand_total,
             'balance_due':   balance_due,
         })
-
-        # Convert HTML to PDF
         pdf_file = HTML(
             string=html_content,
             base_url=request.build_absolute_uri()
         ).write_pdf()
 
-        # Compose and send email
+        # ── Compose email ────────────────────────────────────────────────────
+        footer_lines = [company_name]
+        if company_address: footer_lines.append(company_address)
+        if company_email:   footer_lines.append(company_email)
+        if company_phone:   footer_lines.append(company_phone)
+        if company_rc:      footer_lines.append(f"RC {company_rc}")
+
+        footer = "\n".join(footer_lines)
+
         email = EmailMessage(
-            subject=f"Invoice {invoiceID} from {request.user.company_id.company_name}",
-            body=(
+            subject    = f"Invoice {invoiceID} from {company_name}",
+            body       = (
                 f"Dear {customer_name},\n\n"
                 f"Please find your invoice {invoiceID} attached.\n\n"
-                f"Thank you for your business."
+                f"Thank you for your business.\n\n"
+                f"──────────────────────────\n"
+                f"{footer}\n"
+                f"──────────────────────────"
             ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[customer_email],
+            from_email = settings.DEFAULT_FROM_EMAIL,
+            to         = [customer_email],
         )
-
         email.attach(f"Invoice_{invoiceID}.pdf", pdf_file, 'application/pdf')
         email.send()
 
+        logger.info(f"[email_invoice_to_customer] Sent | invoiceID={invoiceID} | to={customer_email}")
         return True, "Invoice emailed successfully"
 
     except Exception as e:
-        logging.error(f"Invoice email failed: {e}")
-        return False, "Failed to send invoice email"
+        logger.error(f"[email_invoice_to_customer] Failed | invoiceID={invoiceID} | {e}\n{traceback.format_exc()}")
+        return False, str(e)
 
 
 
