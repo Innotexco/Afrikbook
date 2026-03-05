@@ -126,7 +126,42 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
 
 
 
- 
+def send_whatsapp_invoice(phone_number, invoiceID, customer_name, grand_total, company_name):
+    """
+    Generates a wa.me link that opens WhatsApp with a pre-filled message.
+    Returns the URL — the view/template must render it as a clickable link or
+    trigger it via window.open() on the frontend.
+    """
+    try:
+        # Clean phone number — strip everything except digits and leading +
+        clean_phone = str(phone_number).replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
+        if not clean_phone.startswith('+'):
+            clean_phone = '+' + clean_phone
+
+        message = (
+            f"Dear {customer_name},\n\n"
+            f"Your invoice *{invoiceID}* from *{company_name}* is ready.\n"
+            f"Total Amount: *{grand_total}*\n\n"
+            f"Thank you for your business! 🙏"
+        )
+
+        # URL-encode the message
+        from urllib.parse import quote
+        encoded_message = quote(message)
+        whatsapp_url    = f"https://wa.me/{clean_phone}?text={encoded_message}"
+
+        logger.info(
+            f"[send_whatsapp_invoice] URL generated | invoiceID={invoiceID} | "
+            f"phone={clean_phone}"
+        )
+        return True, whatsapp_url
+
+    except Exception as e:
+        logger.error(
+            f"[send_whatsapp_invoice] Failed | invoiceID={invoiceID} | "
+            f"phone={phone_number} | {e}\n{traceback.format_exc()}"
+        )
+        return False, str(e) 
 
 
 # def add_new_sales(request, db):
@@ -861,15 +896,28 @@ def add_new_sales(request, db):
             return cus_form
 
     # ── 7. Email invoice ─────────────────────────────────────────────────────
+    # ── 7. Email & WhatsApp invoice ──────────────────────────────────────────
     if message_displayed:
         try:
+            # Reload company profile to get notification preferences
+            company = CreateProfile.objects.using(db).get(
+                CompanyName=request.user.company_id.company_name
+            )
+
+            send_email     = company.send_email_invoice
+            send_whatsapp  = company.send_whatsapp_invoice
+
+            logger.debug(
+                f"[add_new_sales] Notification prefs | "
+                f"send_email={send_email} | send_whatsapp={send_whatsapp}"
+            )
+
             if acountType == "Customer":
                 customer = customer_table.objects.using(db).get(id=cusID)
-                if customer.email:
-                    logger.info(
-                        f"[add_new_sales] Emailing invoice | "
-                        f"invoiceID={invoiceID} | to={customer.email}"
-                    )
+
+                # Email
+                if send_email and customer.email:
+                    logger.info(f"[add_new_sales] Emailing invoice | invoiceID={invoiceID} | to={customer.email}")
                     success, msg = email_invoice_to_customer(
                         request, db, invoiceID, customer.email, customer_name
                     )
@@ -879,16 +927,35 @@ def add_new_sales(request, db):
                     else:
                         messages.warning(request, f"Invoice saved but email failed: {msg}")
                         logger.warning(f"[add_new_sales] Email failed | invoiceID={invoiceID} | reason={msg}")
+                elif not send_email:
+                    logger.debug(f"[add_new_sales] Email disabled in profile | skipping")
                 else:
                     logger.debug(f"[add_new_sales] No email on customer | cusID={cusID} | skipping")
 
+                # WhatsApp
+                if send_whatsapp and customer.phone:
+                    logger.info(f"[add_new_sales] Sending WhatsApp | invoiceID={invoiceID} | to={customer.phone}")
+                    success, msg = send_whatsapp_invoice(
+                        customer.phone, invoiceID, customer_name,
+                        f"{grand_total:,.2f}", request.user.company_id.company_name
+                    )
+                    if success:
+                        messages.success(request, f"Invoice sent via WhatsApp to {customer.phone}")
+                        logger.info(f"[add_new_sales] WhatsApp sent | invoiceID={invoiceID} | to={customer.phone}")
+                    else:
+                        messages.warning(request, f"Invoice saved but WhatsApp failed: {msg}")
+                        logger.warning(f"[add_new_sales] WhatsApp failed | invoiceID={invoiceID} | reason={msg}")
+                elif not send_whatsapp:
+                    logger.debug(f"[add_new_sales] WhatsApp disabled in profile | skipping")
+                else:
+                    logger.debug(f"[add_new_sales] No phone on customer | cusID={cusID} | skipping")
+
             elif acountType == "Vendor":
                 vendor = vendor_table.objects.using(db).get(id=venID)
-                if vendor.email:
-                    logger.info(
-                        f"[add_new_sales] Emailing invoice to vendor | "
-                        f"invoiceID={invoiceID} | to={vendor.email}"
-                    )
+
+                # Email
+                if send_email and vendor.email:
+                    logger.info(f"[add_new_sales] Emailing invoice to vendor | invoiceID={invoiceID} | to={vendor.email}")
                     success, msg = email_invoice_to_customer(
                         request, db, invoiceID, vendor.email, customer_name
                     )
@@ -898,21 +965,49 @@ def add_new_sales(request, db):
                     else:
                         messages.warning(request, f"Invoice saved but email failed: {msg}")
                         logger.warning(f"[add_new_sales] Vendor email failed | invoiceID={invoiceID} | reason={msg}")
+                elif not send_email:
+                    logger.debug(f"[add_new_sales] Email disabled in profile | skipping")
                 else:
                     logger.debug(f"[add_new_sales] No email on vendor | venID={venID} | skipping")
 
+                # WhatsApp
+                # WhatsApp — Customer
+                if send_whatsapp and customer.phone:
+                    success, whatsapp_url = send_whatsapp_invoice(
+                        customer.phone, invoiceID, customer_name,
+                        f"{grand_total:,.2f}", request.user.company_id.company_name
+                    )
+                    if success:
+                        # Store the URL in the session so the frontend can open it
+                        request.session['whatsapp_url'] = whatsapp_url
+                        logger.info(f"[add_new_sales] WhatsApp URL stored | invoiceID={invoiceID} | to={customer.phone}")
+                    else:
+                        messages.warning(request, f"Could not generate WhatsApp link: {whatsapp_url}")
+                        logger.warning(f"[add_new_sales] WhatsApp URL failed | invoiceID={invoiceID}")
+                
+                # WhatsApp — Vendor (same pattern)
+                if send_whatsapp and vendor.phone:
+                    success, whatsapp_url = send_whatsapp_invoice(
+                        vendor.phone, invoiceID, customer_name,
+                        f"{grand_total:,.2f}", request.user.company_id.company_name
+                    )
+                    if success:
+                        request.session['whatsapp_url'] = whatsapp_url
+                        logger.info(f"[add_new_sales] WhatsApp URL stored | invoiceID={invoiceID} | to={vendor.phone}")
+                    else:
+                        messages.warning(request, f"Could not generate WhatsApp link: {whatsapp_url}")
+                        logger.warning(f"[add_new_sales] WhatsApp URL failed | invoiceID={invoiceID}")
         except Exception as e:
             logger.error(
-                f"[add_new_sales] Email step failed | "
+                f"[add_new_sales] Notification step failed | "
                 f"invoiceID={invoiceID} | {e}\n{traceback.format_exc()}"
             )
-            messages.warning(request, "Invoice saved but email could not be sent.")
+            messages.warning(request, "Invoice saved but notifications could not be sent.")
 
     logger.info(
         f"[add_new_sales] END | invoiceID={invoiceID} | "
         f"message_displayed={message_displayed}"
     )
-
 
 def create_add_vat(db, invoiceID, vat):
    
