@@ -105,7 +105,6 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
         footer_lines = [company_name]
         if company_address: footer_lines.append(company_address)
         if company_email:   footer_lines.append(company_email)
-        if company_phone:   footer_lines.append(company_phone)
         if company_rc:      footer_lines.append(f"RC {company_rc}")
 
         footer = "\n".join(footer_lines)
@@ -114,8 +113,8 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
             subject    = f"Invoice {invoiceID} from {company_name}",
             body       = (
                 f"Dear {customer_name},\n\n"
-                f"Please find your invoice {invoiceID} attached.\n\n"
-                f"Thank you for your business.\n\n"
+                f"Here is your invoice {invoiceID} .We appreciate your business!\n"
+                f"Please find the attached document for your invoice details.\n"
                 f"──────────────────────────\n"
                 f"{footer}\n"
                 f"──────────────────────────"
