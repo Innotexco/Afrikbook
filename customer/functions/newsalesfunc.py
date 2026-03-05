@@ -898,73 +898,73 @@ def add_new_sales(request, db):
    
     # ── 7. Email & WhatsApp invoice ──────────────────────────────────────────
     if message_displayed:
-    try:
-        # ── Calculate grand_total for WhatsApp message ──────────────
-        from decimal import Decimal
         try:
-            vat_items  = Vat.objects.using(db).filter(source=invoiceID)
-            vat_total  = sum(v.amount for v in vat_items)
-            subtotal   = Decimal(str(total_decimal))   # total_decimal already calculated above
-            grand_total = subtotal + vat_total
+            # ── Calculate grand_total for WhatsApp message ──────────────
+            from decimal import Decimal
+            try:
+                vat_items  = Vat.objects.using(db).filter(source=invoiceID)
+                vat_total  = sum(v.amount for v in vat_items)
+                subtotal   = Decimal(str(total_decimal))   # total_decimal already calculated above
+                grand_total = subtotal + vat_total
+            except Exception as e:
+                logger.warning(f"[add_new_sales] Could not compute grand_total | {e}")
+                grand_total = total_decimal  # fallback to subtotal if VAT lookup fails
+            # ────────────────────────────────────────────────────────────
+    
+            company       = CreateProfile.objects.using(db).get(CompanyName=request.user.company_id.company_name)
+            send_email    = company.send_email_invoice
+            send_whatsapp = company.send_whatsapp_invoice
+    
+            if acountType == "Customer":
+                customer = customer_table.objects.using(db).get(id=cusID)
+    
+                # Email
+                if send_email and customer.email:
+                    success, msg = email_invoice_to_customer(request, db, invoiceID, customer.email, customer_name)
+                    if success:
+                        messages.success(request, f"Invoice emailed to {customer.email}")
+                    else:
+                        messages.warning(request, f"Invoice saved but email failed: {msg}")
+    
+                # WhatsApp
+                if send_whatsapp and customer.phone:
+                    success, whatsapp_url = send_whatsapp_invoice(
+                        customer.phone, invoiceID, customer_name,
+                        f"{grand_total:,.2f}", request.user.company_id.company_name
+                    )
+                    if success:
+                        request.session['whatsapp_url'] = whatsapp_url
+                        logger.info(f"[add_new_sales] WhatsApp URL stored | invoiceID={invoiceID} | to={customer.phone}")
+                    else:
+                        messages.warning(request, f"Could not generate WhatsApp link: {whatsapp_url}")
+    
+            elif acountType == "Vendor":
+                vendor = vendor_table.objects.using(db).get(id=venID)
+    
+                # Email
+                if send_email and vendor.email:
+                    success, msg = email_invoice_to_customer(request, db, invoiceID, vendor.email, customer_name)
+                    if success:
+                        messages.success(request, f"Invoice emailed to {vendor.email}")
+                    else:
+                        messages.warning(request, f"Invoice saved but email failed: {msg}")
+    
+                # WhatsApp
+                if send_whatsapp and vendor.phone:
+                    success, whatsapp_url = send_whatsapp_invoice(
+                        vendor.phone, invoiceID, customer_name,
+                        f"{grand_total:,.2f}", request.user.company_id.company_name
+                    )
+                    if success:
+                        request.session['whatsapp_url'] = whatsapp_url
+                        logger.info(f"[add_new_sales] WhatsApp URL stored | invoiceID={invoiceID} | to={vendor.phone}")
+                    else:
+                        messages.warning(request, f"Could not generate WhatsApp link: {whatsapp_url}")
+    
         except Exception as e:
-            logger.warning(f"[add_new_sales] Could not compute grand_total | {e}")
-            grand_total = total_decimal  # fallback to subtotal if VAT lookup fails
-        # ────────────────────────────────────────────────────────────
-
-        company       = CreateProfile.objects.using(db).get(CompanyName=request.user.company_id.company_name)
-        send_email    = company.send_email_invoice
-        send_whatsapp = company.send_whatsapp_invoice
-
-        if acountType == "Customer":
-            customer = customer_table.objects.using(db).get(id=cusID)
-
-            # Email
-            if send_email and customer.email:
-                success, msg = email_invoice_to_customer(request, db, invoiceID, customer.email, customer_name)
-                if success:
-                    messages.success(request, f"Invoice emailed to {customer.email}")
-                else:
-                    messages.warning(request, f"Invoice saved but email failed: {msg}")
-
-            # WhatsApp
-            if send_whatsapp and customer.phone:
-                success, whatsapp_url = send_whatsapp_invoice(
-                    customer.phone, invoiceID, customer_name,
-                    f"{grand_total:,.2f}", request.user.company_id.company_name
-                )
-                if success:
-                    request.session['whatsapp_url'] = whatsapp_url
-                    logger.info(f"[add_new_sales] WhatsApp URL stored | invoiceID={invoiceID} | to={customer.phone}")
-                else:
-                    messages.warning(request, f"Could not generate WhatsApp link: {whatsapp_url}")
-
-        elif acountType == "Vendor":
-            vendor = vendor_table.objects.using(db).get(id=venID)
-
-            # Email
-            if send_email and vendor.email:
-                success, msg = email_invoice_to_customer(request, db, invoiceID, vendor.email, customer_name)
-                if success:
-                    messages.success(request, f"Invoice emailed to {vendor.email}")
-                else:
-                    messages.warning(request, f"Invoice saved but email failed: {msg}")
-
-            # WhatsApp
-            if send_whatsapp and vendor.phone:
-                success, whatsapp_url = send_whatsapp_invoice(
-                    vendor.phone, invoiceID, customer_name,
-                    f"{grand_total:,.2f}", request.user.company_id.company_name
-                )
-                if success:
-                    request.session['whatsapp_url'] = whatsapp_url
-                    logger.info(f"[add_new_sales] WhatsApp URL stored | invoiceID={invoiceID} | to={vendor.phone}")
-                else:
-                    messages.warning(request, f"Could not generate WhatsApp link: {whatsapp_url}")
-
-    except Exception as e:
-        logger.error(
-            f"[add_new_sales] Notification step failed | invoiceID={invoiceID} | {e}\n{traceback.format_exc()}"
-        )
+            logger.error(
+                f"[add_new_sales] Notification step failed | invoiceID={invoiceID} | {e}\n{traceback.format_exc()}"
+            )
 
 def create_add_vat(db, invoiceID, vat):
    
