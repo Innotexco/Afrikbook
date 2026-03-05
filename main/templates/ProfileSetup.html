@@ -40,7 +40,7 @@
                     placeholder="" />
             </label>
             <label class="block text-sm">
-                <span class="text-gray-700 dark:text-gray-400">Business Name</span>hjyyjyjhnhjnhdngnggggg
+                <span class="text-gray-700 dark:text-gray-400">Business Name</span>
                 <input type="text" name="business_name"
                     class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
                     placeholder="" />
@@ -199,7 +199,6 @@
         </div>
 
         <!-- ── Invoice Notification Preferences ───────────────────────── -->
-        
         <div class="mt-8 pt-6 border-t-2 border-gray-200">
             <div class="mb-4">
                 <h2 class="text-lg font-semibold text-gray-700 flex items-center">
@@ -210,9 +209,9 @@
                 </h2>
                 <p class="text-sm text-gray-600 ml-8">Choose how invoices are automatically sent to customers after saving</p>
             </div>
-        
+
             <div class="bg-gray-50 rounded-lg border border-gray-200 divide-y divide-gray-200">
-        
+
                 <!-- Send via Email -->
                 <div class="flex items-center justify-between px-5 py-4">
                     <div class="flex items-center gap-3">
@@ -226,25 +225,18 @@
                             <p class="text-xs text-gray-400">Automatically email invoice PDF to customer after saving</p>
                         </div>
                     </div>
-                    <!-- Toggle -->
-                    <div class="toggle-wrap" onclick="toggleSwitch(this)">
-                        <input type="checkbox" name="send_email_invoice" id="send_email_invoice"
-                            {% if profile.send_email_invoice %}checked{% endif %}
-                            style="display:none;">
-                        <div class="toggle-track" style="
-                            width:44px; height:24px; border-radius:9999px; cursor:pointer;
-                            background: {% if profile.send_email_invoice %}#0d9488{% else %}#d1d5db{% endif %};
-                            position:relative; transition:background 0.2s;">
-                            <div class="toggle-thumb" style="
-                                width:20px; height:20px; border-radius:9999px;
-                                background:#fff; position:absolute; top:2px;
-                                left: {% if profile.send_email_invoice %}22px{% else %}2px{% endif %};
-                                transition:left 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
-                            </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="send_email_invoice" id="send_email_invoice" class="sr-only peer"
+                            {% if profile.send_email_invoice %}checked{% endif %}>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer
+                                    peer-checked:after:translate-x-full peer-checked:after:border-white
+                                    after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                                    after:bg-white after:border-gray-300 after:border after:rounded-full
+                                    after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600">
                         </div>
-                    </div>
+                    </label>
                 </div>
-        
+
                 <!-- Send via WhatsApp -->
                 <div class="flex items-center justify-between px-5 py-4">
                     <div class="flex items-center gap-3">
@@ -258,29 +250,22 @@
                             <p class="text-xs text-gray-400">Automatically send invoice notification to customer via WhatsApp after saving</p>
                         </div>
                     </div>
-                    <!-- Toggle -->
-                    <div class="toggle-wrap" onclick="toggleSwitch(this)">
-                        <input type="checkbox" name="send_whatsapp_invoice" id="send_whatsapp_invoice"
-                            {% if profile.send_whatsapp_invoice %}checked{% endif %}
-                            style="display:none;">
-                        <div class="toggle-track" style="
-                            width:44px; height:24px; border-radius:9999px; cursor:pointer;
-                            background: {% if profile.send_whatsapp_invoice %}#22c55e{% else %}#d1d5db{% endif %};
-                            position:relative; transition:background 0.2s;">
-                            <div class="toggle-thumb" style="
-                                width:20px; height:20px; border-radius:9999px;
-                                background:#fff; position:absolute; top:2px;
-                                left: {% if profile.send_whatsapp_invoice %}22px{% else %}2px{% endif %};
-                                transition:left 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
-                            </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="send_whatsapp_invoice" id="send_whatsapp_invoice" class="sr-only peer"
+                            {% if profile.send_whatsapp_invoice %}checked{% endif %}>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer
+                                    peer-checked:after:translate-x-full peer-checked:after:border-white
+                                    after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                                    after:bg-white after:border-gray-300 after:border after:rounded-full
+                                    after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500">
                         </div>
-                    </div>
+                    </label>
                 </div>
-        
+
             </div>
         </div>
-<!-- ── End Notification Preferences ──────────────────────────── -->
-        
+        <!-- ── End Notification Preferences ──────────────────────────── -->
+
         <!-- Submit Button -->
         <div class="mt-8 flex justify-center">
             <button type="submit" class="px-8 py-3 text-sm font-medium text-white bg-blue-500 border border-transparent rounded-lg hover:bg-blue-600 focus:outline-none focus:shadow-outline-blue transition-colors">
@@ -292,26 +277,6 @@
         </div>
     </form>
 </div>
-
-
-<script>
-    function toggleSwitch(wrap) {
-        const checkbox   = wrap.querySelector('input[type="checkbox"]');
-        const track      = wrap.querySelector('.toggle-track');
-        const thumb      = wrap.querySelector('.toggle-thumb');
-        const isEmail    = checkbox.name === 'send_email_invoice';
-
-        checkbox.checked = !checkbox.checked;
-
-        if (checkbox.checked) {
-            track.style.background = isEmail ? '#0d9488' : '#22c55e';
-            thumb.style.left       = '22px';
-        } else {
-            track.style.background = '#d1d5db';
-            thumb.style.left       = '2px';
-        }
-    }
-</script>
 
 <script>
     function previewLogo(input) {
