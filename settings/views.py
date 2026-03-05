@@ -613,6 +613,22 @@ def Create_UpdateNewProfile(request):
                 updateProfile.send_email_invoice      = send_email_invoice      # ← added
                 updateProfile.send_whatsapp_invoice   = send_whatsapp_invoice   # ← added
                 updateProfile.save(using=db)
+                new_company_name = request.POST.get('CompanyName') or getdata.get('CompanyName')
+                if new_company_name:
+                    try:
+                        company_record = company_table.objects.get(id=request.user.company_id_id)
+                        if company_record.company_name != new_company_name:
+                            old_name = company_record.company_name
+                            company_record.company_name = new_company_name
+                            company_record.save()
+                            logger.info(
+                                f"[Create_UpdateNewProfile] company_table synced | "
+                                f"old={old_name} | new={new_company_name}"
+                            )
+                    except company_table.DoesNotExist:
+                        logger.warning(f"[Create_UpdateNewProfile] company_table record not found | id={request.user.company_id_id}")
+                    except Exception as e:
+                        logger.error(f"[Create_UpdateNewProfile] Failed to sync company_table | {e}", exc_info=True)
 
                 updatesaleinterface = SalesInterface.objects.using(db).update(
                     name          = name,
@@ -686,11 +702,9 @@ def complete_profileSetup(request):
     try:
         db         = request.user.company_id.db_name
         profile_id = request.POST.get('id')
-
         if not profile_id:
             logger.error("[complete_profileSetup] Profile ID missing in POST data")
             return HttpResponseBadRequest("Profile ID is required")
-
         try:
             profile = CreateProfile.objects.using(db).get(id=profile_id)
         except CreateProfile.DoesNotExist:
@@ -698,16 +712,48 @@ def complete_profileSetup(request):
             return HttpResponseBadRequest("Profile not found")
 
         form = ProfileSetupForm(request.POST, request.FILES or None, instance=profile)
-
         if form.is_valid():
-            obj                         = form.save(commit=False)
-            obj.send_email_invoice      = request.POST.get('send_email_invoice') == 'on'     # ← added
-            obj.send_whatsapp_invoice   = request.POST.get('send_whatsapp_invoice') == 'on'  # ← added
+            obj                       = form.save(commit=False)
+            obj.send_email_invoice    = request.POST.get('send_email_invoice') == 'on'
+            obj.send_whatsapp_invoice = request.POST.get('send_whatsapp_invoice') == 'on'
             obj.save(using=db)
             logger.info(
                 f"[complete_profileSetup] Profile {profile_id} updated | "
                 f"send_email={obj.send_email_invoice} | send_whatsapp={obj.send_whatsapp_invoice}"
             )
+
+            # ── Sync company name to company_table ──────────────────────────
+            new_company_name = request.POST.get('CompanyName')
+            if new_company_name:
+                try:
+                    company_record = company_table.objects.get(id=request.user.company_id_id)
+                    if company_record.company_name != new_company_name:
+                        old_name                    = company_record.company_name
+                        company_record.company_name = new_company_name
+                        company_record.save()
+                        logger.info(
+                            f"[complete_profileSetup] company_table synced | "
+                            f"old={old_name} | new={new_company_name}"
+                        )
+                    else:
+                        logger.debug(
+                            f"[complete_profileSetup] company_name unchanged | "
+                            f"value={new_company_name}"
+                        )
+                except company_table.DoesNotExist:
+                    logger.warning(
+                        f"[complete_profileSetup] company_table record not found | "
+                        f"id={request.user.company_id_id}"
+                    )
+                except Exception as e:
+                    logger.error(
+                        f"[complete_profileSetup] Failed to sync company_table | {e}",
+                        exc_info=True
+                    )
+            else:
+                logger.debug("[complete_profileSetup] No CompanyName in POST — skipping company_table sync")
+            # ────────────────────────────────────────────────────────────────
+
         else:
             logger.error("[complete_profileSetup] ProfileSetupForm validation failed")
             logger.error(f"[complete_profileSetup] Form errors: {form.errors}")
