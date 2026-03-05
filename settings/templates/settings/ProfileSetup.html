@@ -243,3 +243,70 @@
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" name="send_whatsapp_invoice" id="send_whatsapp_invoice" class="sr-only peer"
+                                {% if profile.send_whatsapp_invoice %}checked{% endif %}>
+                            <div class="relative w-11 h-6 bg-gray-200 rounded-full peer
+                                        peer-checked:bg-green-500
+                                        after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                                        after:bg-white after:border-gray-300 after:border after:rounded-full
+                                        after:h-5 after:w-5 after:transition-all
+                                        peer-checked:after:translate-x-full peer-checked:after:border-white">
+                            </div>
+                        </label>
+                    </div>
+
+                </div>
+            </div>
+            <!-- ── End Notification Preferences ──────────────────────────── -->
+
+            <input type="hidden" value="{{token}}" name="{{form.Token_ID.name}}">
+            <input type="hidden" value="admin" name="{{form.Userlogin.name}}">
+
+            <button type="submit"
+                class="block w-full h-8 px-4 py-1 mt-6 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
+                {% if submit %}{{ submit }}{% endif %}
+            </button>
+
+        </form>
+    </div>
+
+    <script>
+        function Currency(value){
+            $("#currency option:selected").text(value)
+        }
+
+        function SalesInterface(){
+            var value = $('#interface').val();
+            if(value){
+                localStorage.setItem('salesInterface', value);
+                var storedValue = localStorage.getItem('salesInterface');
+                if(storedValue === 'Sales Point'){
+                    $('#sales_interface').attr("href", `{% url 'basic_sales_app:SalesMenu' %}`);
+                    $('#side_sales_interface').attr("href", `{% url 'basic_sales_app:SalesMenu' %}`);
+                    $('#sales_interface').attr("target", `_blank`);
+                    $('#side_sales_interface').attr("target", `_blank`);
+                } else {
+                    $('#sales_interface').attr("href", `{% url 'customer:NewSales' %}`);
+                    $('#side_sales_interface').attr("href", `{% url 'customer:NewSales' %}`);
+                    $('#sales_interface').removeAttr("target");
+                    $('#side_sales_interface').removeAttr("target");
+                }
+                alertify.success(value + " mode activated");
+            }
+        }
+
+        $(document).ready(function(){
+            var storedValue = localStorage.getItem('salesInterface');
+            if(storedValue){
+                var bsp = ""
+                var sp  = ""
+                if(storedValue == "Basic Sales Point"){ bsp = "selected" }
+                if(storedValue == "Sales Point")      { sp  = "selected" }
+                $("#interface").html(`
+                    <option ${bsp} value="Basic Sales Point">Basic Sales Point</option>
+                    <option ${sp}  value="Sales Point">Sales Point</option>
+                `)
+            }
+        })
+    </script>
+
+{% endblock content %}
