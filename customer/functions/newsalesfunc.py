@@ -129,14 +129,25 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
 def send_whatsapp_invoice(phone_number, invoiceID, customer_name, grand_total, company_name):
     """
     Generates a wa.me link that opens WhatsApp with a pre-filled message.
-    Returns the URL — the view/template must render it as a clickable link or
-    trigger it via window.open() on the frontend.
+    Works universally — mobile opens the app, desktop opens WhatsApp Web.
     """
     try:
-        # Clean phone number — strip everything except digits and leading +
-        clean_phone = str(phone_number).replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
-        if not clean_phone.startswith('+'):
-            clean_phone = '+' + clean_phone
+        from urllib.parse import quote
+
+        # Clean phone — digits only, no +, spaces, dashes or brackets
+        clean_phone = (
+            str(phone_number)
+            .replace(' ', '')
+            .replace('-', '')
+            .replace('(', '')
+            .replace(')', '')
+            .replace('+', '')   # wa.me requires no + prefix
+            .strip()
+        )
+
+        # Ensure it has a country code — if it starts with 0, assume Nigeria (+234)
+        if clean_phone.startswith('0'):
+            clean_phone = '234' + clean_phone[1:]
 
         message = (
             f"Dear {customer_name},\n\n"
@@ -145,8 +156,6 @@ def send_whatsapp_invoice(phone_number, invoiceID, customer_name, grand_total, c
             f"Thank you for your business! 🙏"
         )
 
-        # URL-encode the message
-        from urllib.parse import quote
         encoded_message = quote(message)
         whatsapp_url    = f"https://wa.me/{clean_phone}?text={encoded_message}"
 
@@ -161,7 +170,7 @@ def send_whatsapp_invoice(phone_number, invoiceID, customer_name, grand_total, c
             f"[send_whatsapp_invoice] Failed | invoiceID={invoiceID} | "
             f"phone={phone_number} | {e}\n{traceback.format_exc()}"
         )
-        return False, str(e) 
+        return False, str(e)
 
 
 # def add_new_sales(request, db):
