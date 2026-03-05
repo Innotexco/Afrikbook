@@ -185,50 +185,49 @@ def RefundCustomer(request):
 @login_required(login_url='/')
 @urls_name(name="Sales Invoices")
 def SalesInvoice(request):
-    db = request.user.company_id.db_name
-    customer = customer_table.objects.using(db).all()
-    vendor = vendor_table.objects.using(db).all()
-    accounts = chart_of_account.objects.using(db).all()
-    # shipping_address = shipping_addr.objects.using('afrikbook_client').all()
+    db             = request.user.company_id.db_name
+    customer       = customer_table.objects.using(db).all()
+    vendor         = vendor_table.objects.using(db).all()
+    accounts       = chart_of_account.objects.using(db).all()
     billing_address = billing_addr.objects.using('afrikbook_client').all()
-    company = company_table.objects.get(id=request.user.company_id_id)
+    company        = company_table.objects.get(id=request.user.company_id_id)
+    item           = Item.objects.using(db).all()
+    method         = shipping_method.objects.using(db).all()
 
-    stocked = CreateStockIn.objects.using(db).values_list('item_code', flat=True).distinct()
-    # item = Item.objects.using(db).filter(generated_code__in=stocked)
-    item = Item.objects.using(db).all()
-    method = shipping_method.objects.using(db).all()
-
-    #Endpoint api 
     try:
         response = requests.get('https://console.afrikbook.com/address', timeout=10)
-        if response.status_code == 200:
-            shipping_address = response.json() 
-        else:
-            shipping_address = []
+        shipping_address = response.json() if response.status_code == 200 else []
     except requests.RequestException:
-       shipping_address = []
-       
+        shipping_address = []
+
     invoice = generate_invoice_id()
-    form = None
+    form    = None
+
+    # Pop WhatsApp URL from session — cleared after one render
+    whatsapp_url = request.session.pop('whatsapp_url', None)
+
     if request.method == "POST":
-        outlet = User.objects.get(id = request.user.id).outlet
+        outlet = User.objects.get(id=request.user.id).outlet
         if outlet:
-           form = add_new_sales(request, db)
+            form = add_new_sales(request, db)
+            # Re-pop in case add_new_sales just set it this request
+            whatsapp_url = request.session.pop('whatsapp_url', None)
         else:
             messages.error(request, "Assign outlet to logged in user")
-     
+
     context = {
-        'customers': customer,
-        'vendor':vendor,
-        'accounts': accounts,
-        'items': item,
-        'invoice':invoice,
-        'form': form,
-        'company': company,
+        'customers':        customer,
+        'vendor':           vendor,
+        'accounts':         accounts,
+        'items':            item,
+        'invoice':          invoice,
+        'form':             form,
+        'company':          company,
         'shipping_address': shipping_address,
-        'billing_address': billing_address,
-        'shipping_method': method
-    }    
+        'billing_address':  billing_address,
+        'shipping_method':  method,
+        'whatsapp_url':     whatsapp_url,   # ← passed to template
+    }
     return render(request, "customer/NewSales.html", context)
 
 
