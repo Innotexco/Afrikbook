@@ -560,101 +560,104 @@ Updated Create_UpdateNewProfile view with PDF template preference support
 @login_required(login_url='Profile Setup')
 @urls_name(name="Profile Setup")
 def Create_UpdateNewProfile(request):
-    db = request.user.company_id.db_name
-    profileID = request.POST.get('id')
-    
-    forms = ProfileSetupForm(request.POST, request.FILES or None)
+    db          = request.user.company_id.db_name
+    profileID   = request.POST.get('id')
+
+    forms       = ProfileSetupForm(request.POST, request.FILES or None)
     profiledata = CreateProfile.objects.using(db).all()
     randomtoken = random_string_generator()
-    country = currency.objects.all() 
-    
+    country     = currency.objects.all()
+
     context = {
-        'form': forms,
-        'submit': False,
-        'token': 'Token_'+randomtoken,
+        'form':    forms,
+        'submit':  False,
+        'token':   'Token_' + randomtoken,
         'profile': profiledata.first(),
-        'country': country
+        'country': country,
     }
-    
+
     if request.method == 'POST':
         if forms.is_valid():
-            getdata = forms.cleaned_data
-            name = getdata.get('ownerName')
+            getdata       = forms.cleaned_data
+            name          = getdata.get('ownerName')
             business_type = request.POST.get('salesinterface')
-            token = getdata.get('Token_ID')
-            logo = getdata.get('logo')
-            Userlogin = getdata.get('Userlogin')
-            
-            # Get PDF template preference from POST data
-            pdf_template = request.POST.get('pdf_template_preference', 'classic')
-            
+            token         = getdata.get('Token_ID')
+            logo          = getdata.get('logo')
+            Userlogin     = getdata.get('Userlogin')
+
+            pdf_template          = request.POST.get('pdf_template_preference', 'classic')
+            send_email_invoice    = request.POST.get('send_email_invoice') == 'on'      # ← added
+            send_whatsapp_invoice = request.POST.get('send_whatsapp_invoice') == 'on'   # ← added
+
+            logger.debug(
+                f"[Create_UpdateNewProfile] Prefs | pdf={pdf_template} | "
+                f"send_email={send_email_invoice} | send_whatsapp={send_whatsapp_invoice}"
+            )
+
             if profiledata.count() > 0:
                 # UPDATE existing profile
-                profileIMG = CreateProfile.objects.using(db).get(id=profileID)
+                profileIMG  = CreateProfile.objects.using(db).get(id=profileID)
                 formsUpdate = ProfileSetupForm(request.POST, request.FILES or None, instance=profileIMG)
-                
-                # Handle logo deletion if new logo uploaded
+
                 if logo is not None:
                     try:
-                        path = profileIMG.logo.url
+                        path             = profileIMG.logo.url
                         file_system_path = os.path.join(settings.MEDIA_ROOT, path[len(settings.MEDIA_URL):])
                         if os.path.exists(file_system_path):
                             os.remove(file_system_path)
                     except Exception as e:
-                        logger.warning(f"Could not delete old logo: {e}")
-                
-                # Save the updated profile
-                updateProfile = formsUpdate.save(commit=False)
-                
-                # Add PDF template preference
+                        logger.warning(f"[Create_UpdateNewProfile] Could not delete old logo: {e}")
+
+                updateProfile                         = formsUpdate.save(commit=False)
                 updateProfile.pdf_template_preference = pdf_template
-                
+                updateProfile.send_email_invoice      = send_email_invoice      # ← added
+                updateProfile.send_whatsapp_invoice   = send_whatsapp_invoice   # ← added
                 updateProfile.save(using=db)
-                
-                # Update sales interface
+
                 updatesaleinterface = SalesInterface.objects.using(db).update(
-                    name=name, 
-                    business_type=business_type, 
-                    token=token, 
-                    Userlogin=Userlogin
+                    name          = name,
+                    business_type = business_type,
+                    token         = token,
+                    Userlogin     = Userlogin,
                 )
-                
+
                 if updateProfile or updatesaleinterface:
-                    context["success_message"] = 'Profile Successfully Updated'
-                    logger.info(f"Profile updated with PDF template: {pdf_template}")
+                    context['success_message'] = 'Profile Successfully Updated'
+                    logger.info(
+                        f"[Create_UpdateNewProfile] Profile updated | pdf={pdf_template} | "
+                        f"send_email={send_email_invoice} | send_whatsapp={send_whatsapp_invoice}"
+                    )
+
             else:
                 # CREATE new profile
-                profile_instance = forms.save(commit=False)
-                
-                # Add PDF template preference
+                profile_instance                        = forms.save(commit=False)
                 profile_instance.pdf_template_preference = pdf_template
-                
+                profile_instance.send_email_invoice      = send_email_invoice      # ← added
+                profile_instance.send_whatsapp_invoice   = send_whatsapp_invoice   # ← added
                 profile_instance.save(using=db)
-                
-                # Create sales interface
+
                 SalesInterface.objects.using(db).create(
-                    name=name, 
-                    business_type=business_type, 
-                    token=token, 
-                    Userlogin=Userlogin
+                    name          = name,
+                    business_type = business_type,
+                    token         = token,
+                    Userlogin     = Userlogin,
                 )
-                
+
                 if profile_instance:
-                    context["success_message"] = 'Profile Successfully Created'
-                    logger.info(f"Profile created with PDF template: {pdf_template}")
+                    context['success_message'] = 'Profile Successfully Created'
+                    logger.info(
+                        f"[Create_UpdateNewProfile] Profile created | pdf={pdf_template} | "
+                        f"send_email={send_email_invoice} | send_whatsapp={send_whatsapp_invoice}"
+                    )
                     return redirect('settings:ProfileSetup')
                 else:
-                    logger.error("Failed to create profile")
+                    logger.error("[Create_UpdateNewProfile] Failed to create profile")
+
         else:
-            logger.warning("Form is not valid")
+            logger.warning("[Create_UpdateNewProfile] Form is not valid")
             logger.warning(forms.errors.as_data())
-    
-    # Set button text
-    if profiledata.count() > 0:
-        context['submit'] = 'Update Profile'
-    else:
-        context['submit'] = 'Create Profile'
-    
+
+    context['submit'] = 'Update Profile' if profiledata.count() > 0 else 'Create Profile'
     return render(request, 'settings/ProfileSetup.html', context)
 
 # def complete_profileSetup(request):
@@ -681,44 +684,41 @@ logger = logging.getLogger(__name__)
 
 def complete_profileSetup(request):
     try:
-        db = request.user.company_id.db_name
-
+        db         = request.user.company_id.db_name
         profile_id = request.POST.get('id')
+
         if not profile_id:
-            logger.error("Profile ID missing in POST data")
+            logger.error("[complete_profileSetup] Profile ID missing in POST data")
             return HttpResponseBadRequest("Profile ID is required")
 
         try:
             profile = CreateProfile.objects.using(db).get(id=profile_id)
         except CreateProfile.DoesNotExist:
-            logger.exception(f"Profile with ID {profile_id} does not exist")
+            logger.exception(f"[complete_profileSetup] Profile ID {profile_id} does not exist")
             return HttpResponseBadRequest("Profile not found")
 
-        form = ProfileSetupForm(
-            request.POST,
-            request.FILES or None,
-            instance=profile
-        )
+        form = ProfileSetupForm(request.POST, request.FILES or None, instance=profile)
 
         if form.is_valid():
-            obj = form.save(commit=False)
+            obj                         = form.save(commit=False)
+            obj.send_email_invoice      = request.POST.get('send_email_invoice') == 'on'     # ← added
+            obj.send_whatsapp_invoice   = request.POST.get('send_whatsapp_invoice') == 'on'  # ← added
             obj.save(using=db)
-            logger.info(f"Profile {profile_id} updated successfully")
+            logger.info(
+                f"[complete_profileSetup] Profile {profile_id} updated | "
+                f"send_email={obj.send_email_invoice} | send_whatsapp={obj.send_whatsapp_invoice}"
+            )
         else:
-            # 🔥 THIS IS WHAT YOU NEED
-            logger.error("ProfileSetupForm validation failed")
-            logger.error(f"Form errors: {form.errors}")
-            logger.error(f"Non-field errors: {form.non_field_errors()}")
-
+            logger.error("[complete_profileSetup] ProfileSetupForm validation failed")
+            logger.error(f"[complete_profileSetup] Form errors: {form.errors}")
+            logger.error(f"[complete_profileSetup] Non-field errors: {form.non_field_errors()}")
             return HttpResponseBadRequest(form.errors.as_json())
 
         return redirect("/")
 
     except Exception as e:
-        # 🔥 FULL TRACEBACK
-        logger.exception("Unexpected error during profile setup")
+        logger.exception("[complete_profileSetup] Unexpected error during profile setup")
         return HttpResponseBadRequest(str(e))
-
 
 @login_required(login_url='Profile Setup')
 @urls_name(name="Profile")
