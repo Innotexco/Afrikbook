@@ -17,28 +17,32 @@ logger = logging.getLogger(__name__)
 
 
 def amount_to_words(amount):
-    """Convert a decimal amount to words e.g. 15000.00 → Fifteen Thousand Naira Only"""
     try:
-        amount      = float(amount)
-        naira       = int(amount)
-        kobo        = round((amount - naira) * 100)
+        amount = float(amount)
+        naira  = int(amount)
+        kobo   = round((amount - naira) * 100)
 
-        ones  = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven',
-                 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen',
-                 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen']
-        tens  = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty',
-                 'Sixty', 'Seventy', 'Eighty', 'Ninety']
+        ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven',
+                'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen',
+                'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen']
+        tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty',
+                'Sixty', 'Seventy', 'Eighty', 'Ninety']
 
         def words(n):
             if n == 0:   return ''
             if n < 20:   return ones[n]
             if n < 100:  return tens[n // 10] + ((' ' + ones[n % 10]) if n % 10 else '')
-            if n < 1000: return ones[n // 100] + ' Hundred' + ((' ' + words(n % 100)) if n % 100 else '')
+            if n < 1000:
+                remainder = n % 100
+                return ones[n // 100] + ' Hundred' + ((' and ' + words(remainder)) if remainder else '')
             if n < 1_000_000:
-                return words(n // 1000) + ' Thousand' + ((' ' + words(n % 1000)) if n % 1000 else '')
+                remainder = n % 1000
+                return words(n // 1000) + ' Thousand' + ((' ' + words(remainder)) if remainder else '')
             if n < 1_000_000_000:
-                return words(n // 1_000_000) + ' Million' + ((' ' + words(n % 1_000_000)) if n % 1_000_000 else '')
-            return words(n // 1_000_000_000) + ' Billion' + ((' ' + words(n % 1_000_000_000)) if n % 1_000_000_000 else '')
+                remainder = n % 1_000_000
+                return words(n // 1_000_000) + ' Million' + ((' ' + words(remainder)) if remainder else '')
+            remainder = n % 1_000_000_000
+            return words(n // 1_000_000_000) + ' Billion' + ((' ' + words(remainder)) if remainder else '')
 
         result = (words(naira) or 'Zero') + ' Naira'
         if kobo:
@@ -47,7 +51,6 @@ def amount_to_words(amount):
 
     except Exception:
         return ''
-
 
 
 
