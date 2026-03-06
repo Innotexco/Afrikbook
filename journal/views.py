@@ -179,7 +179,8 @@ def ReceivePayment(request):
     db = request.user.company_id.db_name
     customers = customer_table.objects.using(db).all()
     vendor = vendor_table.objects.using(db).all()
-    accounts = chart_of_account.objects.using(db).filter(series_name="Assets", account_type="Cash")
+    accounts = chart_of_account.objects.using(db).filter(series_name="Assets",account_type="Cash").exclude(account_bankname__icontains="return outward")
+    # accounts = chart_of_account.objects.using(db).filter(series_name="Assets", account_type="Cash")
     form = None
     if request.method == "POST":
         form = receive_payment(request, db)
