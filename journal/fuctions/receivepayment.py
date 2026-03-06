@@ -81,17 +81,20 @@ def receive_payment(request, db):
 
             customer_name  = ""
             customer_email = ""
+            customer_code  = ""
 
             if accountype == "Customer":
                 customer       = customer_table.objects.using(db).get(id=customer_id)
                 customer_name  = customer.name
                 customer_email = customer.email
+                customer_code  = customer.customer_code
                 CreditReceivable(request, db, customer, date, description, payment_method, account_id, amount)
 
             elif accountype == "Vendor":
                 vendor         = vendor_table.objects.using(db).get(id=vendor_id)
                 customer_name  = vendor.name
                 customer_email = vendor.email
+                customer_code  = getattr(vendor, 'custID', '')
                 CreditPayable(request, db, vendor, date, description, payment_method, account_id, amount)
 
             # Update account balance
@@ -129,6 +132,7 @@ def receive_payment(request, db):
                         'company':        company,
                         'customer_name':  customer_name,
                         'invoice_no':     invoice_no,
+                        'customer_code':    customer_code,
                         'date':           date,
                         'amount':         amount,
                         'amount_in_words': amount_in_words,
