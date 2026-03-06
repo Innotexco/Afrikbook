@@ -8,6 +8,7 @@ from customer.functions.generalFunction import *
 from django.core.mail import EmailMessage
 from weasyprint import HTML
 from django.template.loader import render_to_string
+import logging
 
 
 def amount_to_words(amount):
