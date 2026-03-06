@@ -149,46 +149,53 @@
         </div>
     </div>
 
-    <!-- Name -->
-    <div class="field-row">
-        <div class="field field-full">
-            <div class="field-label">Name</div>
-            <div class="field-value">{{ customer_name }} {% if customer_code %}— {{ customer_code }}{% endif %}</div>
+    <!-- Customer + Amount side by side -->
+<div class="field-row">
+    <div class="field" style="flex:2;">
+        <div class="field-label">Name</div>
+        <div class="field-value">{{ customer_name }}</div>
+        {% if customer_code %}
+        <div style="font-size:10px; color:#9ca3af; margin-top:2px;">{{ customer_code }}</div>
+        {% endif %}
+    </div>
+    <div class="field" style="flex:1; text-align:right;">
+        <div class="field-label">Amount</div>
+        <div class="field-value" style="font-size:16px; color:#2F4F4F;">&#8358;{{ amount|floatformat:2|intcomma }}</div>
+    </div>
+</div>
+
+<!-- Amount in Words -->
+<div class="field-row">
+    <div class="field field-full" style="background:#eef2f7; border-style:dashed;">
+        <div class="field-label">Amount in Words</div>
+        <div class="field-value" style="font-style:italic; color:#374151;">{{ amount_in_words }}</div>
+    </div>
+</div>
+
+<!-- Payment Method + Payment For side by side -->
+<div class="field-row">
+    <div class="field">
+        <div class="field-label">Payment Method</div>
+        <div class="field-value">
+            <!-- Badge style for payment method -->
+            <span style="
+                display:inline-block;
+                background:#1e3a5f;
+                color:#fff;
+                font-size:10px;
+                font-weight:600;
+                padding:2px 10px;
+                border-radius:9999px;
+                letter-spacing:0.04em;">
+                {{ payment_method }}
+            </span>
         </div>
     </div>
-
-    <!-- Amount -->
-    <div class="field-row">
-        <div class="field field-full">
-            <div class="field-label">Amount</div>
-            <div class="field-value">{{ amount|floatformat:2|intcomma }}</div>
-        </div>
+    <div class="field" style="flex:2;">
+        <div class="field-label">Payment For</div>
+        <div class="field-value">{{ description }}</div>
     </div>
-
-    <!-- Payment Method -->
-    <div class="field-row">
-        <div class="field field-full">
-            <div class="field-label">Payment Method</div>
-            <div class="field-value">{{ payment_method }}</div>
-        </div>
-    </div>
-
-    <!-- Amount in Words -->
-    <div class="field-row">
-        <div class="field field-full">
-            <div class="field-label">Amount in Words</div>
-            <div class="field-value">{{ amount_in_words }}</div>
-        </div>
-    </div>
-
-    <!-- Payment For -->
-    <div class="field-row">
-        <div class="field field-full">
-            <div class="field-label">Payment For</div>
-            <div class="field-value">{{ description }}</div>
-        </div>
-    </div>
-
+</div>
     <!-- Footer -->
     <div class="footer">
         Generated on: {{ date }} &nbsp;|&nbsp; {{ company.CompanyName }}
