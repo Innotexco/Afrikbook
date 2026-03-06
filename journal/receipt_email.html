@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Receipt {{ invoice_no }}</title>
+    {% load humanize %}
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #f3f4f6;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            color: #1e3a5f;
+        }
+        .page {
+            background: #f0f2f5;
+            width: 680px;
+            margin: 24px auto;
+            padding: 32px;
+            border-radius: 4px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 28px;
+        }
+        .logo-block img {
+            height: 72px;
+            width: auto;
+            object-fit: contain;
+        }
+        .logo-block .company-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e3a5f;
+        }
+        .contact-block {
+            text-align: right;
+            font-size: 11px;
+            color: #1e3a5f;
+            line-height: 2;
+        }
+        .contact-block .contact-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 6px;
+        }
+
+        /* Receipt badge */
+        .receipt-badge {
+            display: inline-block;
+            background: #1e3a5f;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 24px;
+            border-radius: 4px 16px 16px 4px;
+            margin-bottom: 20px;
+        }
+
+        /* Fields */
+        .field-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .field {
+            flex: 1;
+            border: 1px solid #c5cfe0;
+            border-radius: 4px;
+            padding: 8px 12px;
+            background: #f8f9fb;
+            font-size: 11px;
+            color: #1e3a5f;
+        }
+        .field .field-label {
+            font-size: 10px;
+            color: #6b7280;
+            margin-bottom: 3px;
+        }
+        .field .field-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e3a5f;
+        }
+        .field-full { flex: 2; }
+
+        /* Signature row */
+        .sig-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .sig-box {
+            flex: 1;
+            border: 1px solid #c5cfe0;
+            border-radius: 4px;
+            padding: 16px 12px 8px;
+            background: #f8f9fb;
+            font-size: 10px;
+            color: #6b7280;
+            min-height: 48px;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 10px;
+            color: #9ca3af;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 12px;
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <!-- Header -->
+    <div class="header">
+        <div class="logo-block">
+            {% if company.logo %}
+                <img src="{{ company.logo.url }}" alt="{{ company.CompanyName }}">
+            {% else %}
+                <div class="company-name">{{ company.CompanyName }}</div>
+            {% endif %}
+        </div>
+        <div class="contact-block">
+            {% if company.address %}
+            <div class="contact-row">
+                <!-- Pin icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="#1e3a5f">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>
+                <span>{{ company.address }}</span>
+            </div>
+            {% endif %}
+            {% if company.phone %}
+            <div class="contact-row">
+                <!-- Phone icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="#1e3a5f">
+                    <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.58a1 1 0 01-.25 1.01l-2.2 2.2z"/>
+                </svg>
+                <span>{{ company.phone }}{% if company.phone2 %}, {{ company.phone2 }}{% endif %}</span>
+            </div>
+            {% endif %}
+            {% if company.email %}
+            <div class="contact-row">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="#1e3a5f">
+                    <path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                </svg>
+                <span>{{ company.email }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Receipt badge + Date -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div class="receipt-badge">Receipt</div>
+        <div class="field" style="width:200px; flex:none;">
+            <div class="field-label">Date</div>
+            <div class="field-value">{{ date }}</div>
+        </div>
+    </div>
+
+    <!-- Name -->
+    <div class="field-row">
+        <div class="field field-full">
+            <div class="field-label">Name</div>
+            <div class="field-value">{{ customer_name }}</div>
+        </div>
+    </div>
+
+    <!-- Amount -->
+    <div class="field-row">
+        <div class="field field-full">
+            <div class="field-label">Amount</div>
+            <div class="field-value">{{ amount|floatformat:2 }}</div>
+        </div>
+    </div>
+
+    <!-- Invoice No + Payment Method -->
+    <div class="field-row">
+        <div class="field">
+            <div class="field-label">Invoice No</div>
+            <div class="field-value">{{ invoice_no }}</div>
+        </div>
+        <div class="field">
+            <div class="field-label">Payment Method</div>
+            <div class="field-value">{{ payment_method }}</div>
+        </div>
+    </div>
+
+    <!-- Amount in Words -->
+    <div class="field-row">
+        <div class="field field-full">
+            <div class="field-label">Amount in Words</div>
+            <div class="field-value">{{ amount_in_words }}</div>
+        </div>
+    </div>
+
+    <!-- Payment For -->
+    <div class="field-row">
+        <div class="field field-full">
+            <div class="field-label">Payment For</div>
+            <div class="field-value">{{ description }}</div>
+        </div>
+    </div>
+
+    
+
+    <!-- Footer -->
+    <div class="footer">
+        Generated on: {{ date }} &nbsp;|&nbsp; {{ company.CompanyName }}
+        {% if company.Rc %} &nbsp;|&nbsp; RC {{ company.Rc }}{% endif %}
+    </div>
+
+</div>
+</body>
+</html>
