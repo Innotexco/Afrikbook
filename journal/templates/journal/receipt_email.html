@@ -89,23 +89,6 @@
         }
         .field-full { flex: 2; }
 
-        /* Signature row */
-        .sig-row {
-            display: flex;
-            gap: 12px;
-            margin-top: 10px;
-        }
-        .sig-box {
-            flex: 1;
-            border: 1px solid #c5cfe0;
-            border-radius: 4px;
-            padding: 16px 12px 8px;
-            background: #f8f9fb;
-            font-size: 10px;
-            color: #6b7280;
-            min-height: 48px;
-        }
-
         /* Footer */
         .footer {
             margin-top: 24px;
@@ -132,7 +115,6 @@
         <div class="contact-block">
             {% if company.address %}
             <div class="contact-row">
-                <!-- Pin icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="#1e3a5f">
                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                 </svg>
@@ -141,7 +123,6 @@
             {% endif %}
             {% if company.phone %}
             <div class="contact-row">
-                <!-- Phone icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="#1e3a5f">
                     <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.58a1 1 0 01-.25 1.01l-2.2 2.2z"/>
                 </svg>
@@ -180,17 +161,13 @@
     <div class="field-row">
         <div class="field field-full">
             <div class="field-label">Amount</div>
-            <div class="field-value">{{ amount|floatformat:2 }}</div>
+            <div class="field-value">{{ amount|floatformat:2|intcomma }}</div>
         </div>
     </div>
 
-    <!-- Invoice No + Payment Method -->
+    <!-- Payment Method -->
     <div class="field-row">
-        <div class="field">
-            <div class="field-label">Invoice No</div>
-            <div class="field-value">{{ invoice_no }}</div>
-        </div>
-        <div class="field">
+        <div class="field field-full">
             <div class="field-label">Payment Method</div>
             <div class="field-value">{{ payment_method }}</div>
         </div>
@@ -211,8 +188,6 @@
             <div class="field-value">{{ description }}</div>
         </div>
     </div>
-
-   
 
     <!-- Footer -->
     <div class="footer">
