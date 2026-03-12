@@ -803,6 +803,17 @@ def NewItem(request):
             item_inst.Userlogin = request.user.username
             item_inst.save(using=db) 
 
+
+            attribute_names = request.POST.getlist("name[]")   
+            attribute_values = request.POST.getlist("value[]")
+            for name, value in zip(attribute_names, attribute_values):
+                if name.strip() and value.strip():  
+                    attr, created = Attribute.objects.using(db).get_or_create(
+                        name=name.strip(),
+                        value=value.strip()
+                    )
+                    item_inst.attribute.add(attr)  
+
             item_id = item_inst.id 
             items = Item.objects.using(db).get(id=item_id) 
             notify = SetItemNotification(item=items, Userlogin=request.user.username)
@@ -848,6 +859,19 @@ def Update_Item(request, item_id):
             f.sub_category_id = choice2
             f.user = request.user.username
             f.save(using=db)
+
+            names = request.POST.getlist("name[]")
+            values = request.POST.getlist("value[]")
+
+            if names and values:
+                f.attribute.clear()  
+                for name, value in zip(names, values):
+                    if name.strip() and value.strip():
+                        attr, created = Attribute.objects.using(db).get_or_create(
+                            name=name.strip(),
+                            value=value.strip()
+                        )
+                        f.attribute.add(attr)
             for i in files:
                 ItemImage.objects.using(db).create(item=f, image=i)
             
@@ -855,7 +879,9 @@ def Update_Item(request, item_id):
             messages.success(request, "Item data has been updated successfully")
             return redirect('Stock:NewItem') 
         else:
-            pass
+            print("Form errors:", form.errors)
+
+            messages.error(request, "There were errors updating the item. Please check the form and try again.")
             
             form = EditItemForm(instance=edit_item)
 
