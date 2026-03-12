@@ -97,15 +97,40 @@
             
             <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
 
-                <label class="block text-sm">
+                 <label class="block text-sm">
                     <span class="text-gray-700">Attribute (Optional)</span>
-                    <input 
+                    {% comment %} <input 
                         type="text"
                         name="attribute"
                         value="{{edit_item.attribute}}"
                         class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
                         placeholder=""
-                    />
+                    />  {% endcomment %}
+
+                    <div id="attributes">
+                        {% for attr in edit_item.attribute.all %}
+                            <div class="attr flex space-x-2 mb-2">
+                                <input class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"
+                                    type="text" name="name[]" value="{{ attr.name }}" placeholder="Name (e.g. Color)">
+                                <input class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"
+                                    type="text" name="value[]" value="{{ attr.value }}" placeholder="Value (e.g. Red)">
+                            </div>
+                        {% empty %}
+                            <!-- show one empty input if no attributes -->
+                            <div class="attr flex space-x-2 mb-2">
+                                <input class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"
+                                    type="text" name="name[]" placeholder="Name (e.g. Color)">
+                                <input class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"
+                                    type="text" name="value[]" placeholder="Value (e.g. Red)">
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="button" onclick="addAttribute()"
+                        class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium text-gray-600 bg-slate-200 rounded-lg hover:bg-slate-300">
+                        + Add Attribute
+                    </button>   
+
 
                 </label>
 
@@ -148,11 +173,23 @@
             <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
 
                 <label class="block text-sm">
-                    <span class="text-gray-700">Selling Price (Retail)</span>
+                    <span class="text-gray-700">Selling Price </span>
                     <input 
                         type="text"
                         name="selling_price"
                         value="{{edit_item.selling_price}}"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Selling Price (Retailer)</span>
+                    <input 
+                        type="text"
+                        name="retailer_price"
+                        value="{{edit_item.retailer_price}}"
                         class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
                         placeholder=""
                     />
@@ -745,6 +782,18 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+
+        function addAttribute() {
+            let container = document.getElementById("attributes");
+            let div = document.createElement("div");
+            div.classList.add("attr", "flex", "space-x-2", "mb-2");
+            div.innerHTML = `
+                <input class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input" type="text" name="name[]" placeholder="Name (e.g. Size)">
+                <input class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input" type="text" name="value[]" placeholder="Value (e.g. Large)">
+            `;
+            container.appendChild(div);
+        }
+
         $(document).ready(function() {
             $('#coupon_id').submit(function(event) {
                 event.preventDefault();
@@ -847,6 +896,8 @@
             });
         });
 
+
+      
 
         // $('#submitBtn').on('click', function () {
         //     $.ajax({
