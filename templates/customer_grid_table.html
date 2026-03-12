@@ -20,18 +20,115 @@
            
     };
 
-    $(document).on('change', '#select-item',function(event){
+    // Store customer category globally
+    let currentCustomerCategory = null;
+
+    // Handle customer selection change
+    $(document).on('change', '#id_customer', function() {
+        const customerId = $(this).val();
+        
+        if (!customerId) {
+            currentCustomerCategory = null;
+            return;
+        }
+        
+        // Get customer category via AJAX
+        $.ajax({
+            url: '/get_customer_category/' + customerId + '/',
+            method: 'GET',
+            success: function(data) {
+                currentCustomerCategory = data.category;
+                
+                // Update all existing item prices in the table
+                updateAllItemPrices();
+            },
+            error: function(error) {
+                console.error('Error fetching customer category:', error);
+                alertify.error('Error loading customer information');
+            }
+        });
+    });
+
+    // Function to update all item prices based on customer category
+    function updateAllItemPrices() {
+        if (!currentCustomerCategory) return;
+        
+        $('#dynamic_row_add tr').each(function() {
+            const row = $(this);
+            const itemSelect = row.find('.item-select');
+            const itemId = itemSelect.val();
+            
+            if (itemId && itemId !== '0') {
+                const unit = row.find('input[name="unit[]"]');
+                const qty = row.find('input[name="qty[]"]');
+                const discount = row.find('input[name="discount[]"]');
+                const amount = row.find('input[name="amount[]"]');
+                
+                // Fetch updated price for this item based on customer category
+                $.ajax({
+                    url: '/get_items/' + itemId + '/',
+                    method: 'GET',
+                    data: {
+                        type: $("#type").val(),
+                        customer_category: currentCustomerCategory
+                    },
+                    success: function(data) {
+                        // Update unit price based on category
+                        let price = data.unit; // default
+                        
+                        if (currentCustomerCategory === 'Whole Sale') {
+                            price = data.wholesale_price || data.unit;
+                        } else if (currentCustomerCategory === 'Retail') {
+                            price = data.retailer_price || data.unit;
+                        } else if (currentCustomerCategory === 'End User') {
+                            price = data.selling_price || data.unit;
+                        }
+                        
+                        unit.val(price);
+                        
+                        // Recalculate amount
+                        const qtyVal = parseFloat(qty.val()) || 0;
+                        const discountVal = parseFloat(discount.val()) || 0;
+                        const amountVal = (qtyVal * parseFloat(price)) - discountVal;
+                        amount.val(amountVal.toFixed(2));
+                        
+                        sun_T();
+                    }
+                });
+            }
+        });
+    }
+
+    // Modified item selection handler
+    $(document).on('change', '#select-item', function(event) {
         const itemId = $(this).val();
         const desc = $(this).closest('tr').find('input[name="desc[]"]');
         const name = $(this).closest('tr').find('input[name=item_name]');
         const purchaseP = $(this).closest('tr').find('input[name=purchaseP]');
-        const qty =  $(this).closest('tr').find('input[name="qty[]"]');
-        const unit =  $(this).closest('tr').find('input[name="unit[]"]');
-        const amount =  $(this).closest('tr').find('input[name="amount[]"]');
+        const qty = $(this).closest('tr').find('input[name="qty[]"]');
+        const unit = $(this).closest('tr').find('input[name="unit[]"]');
+        const amount = $(this).closest('tr').find('input[name="amount[]"]');
+        const id_vendor = $('#id_vendor').val();
         
+        // Check if customer is selected
+        /*if (!currentCustomerCategory && itemId !== '0') {
+            alertify.defaults.glossary.title = "Alert";
+            alertify.alert("Please select a customer first before adding items.");
+            event.target.value = "0";
+            return;
+        }*/
+        
+        if (!currentCustomerCategory && itemId !== '0' && !id_vendor) {
+            alertify.defaults.glossary.title = "Alert";
+            alertify.alert("Please select a customer first before adding items.");
+            event.target.value = "0";
+            return;
+        }
+
         // Find all select elements with the class 'item-select'
         const selectElements = document.querySelectorAll('.item-select');
         let isValueExists = false;
+        
         // Loop through the select elements
         for (let i = 0; i < selectElements.length; i++) {
             const select = selectElements[i];
@@ -40,88 +137,81 @@
                 if (select.value === itemId) {
                     isValueExists = true;
                     alertify.defaults.glossary.title = "Oops";
-                    alertify.confirm("Selected item already exists, add quantity instaed.");
-                    event.target.value = "0"; // Reset the selected value
+                    alertify.confirm("Selected item already exists, add quantity instead.");
+                    event.target.value = "0";
                     break;
-
                 }
             }
         }
-       
         
         if (isValueExists) {
-            //$(this).val("0"); 
-            // Perform actions when the value already exists
-           // console.log("Value already exists in another row.");
+            // Value already exists
         } else {
-            // Perform actions when the value doesn't exist in other rows
-           // console.log("Value is unique in the table.");
-            if(itemId != 0){
-                
+            // Value is unique in the table
+            if (itemId != 0) {
                 $.ajax({
-                    url: '/get_items/'+ itemId + '/',
+                    url: '/get_items/' + itemId + '/',
                     method: 'GET',
-                    data: {type:$("#type").val()},
-                    success: function(data){
-                        
-                            desc.val(data.desc)
-                            name.val(data.name)
-                            purchaseP.val(data.purchase)
-                            qty.val(1)
-                            unit.val(data.unit)
-                            amount.val(data.unit)
-
-                            // const inputElements = document.getElementsByName("amount[]");
-
-                            // // Initialize a variable to store the sum
-                            // let sum = 0;
-
-                            // //alert(sum)
-                            // // Loop through the input elements and add their values to the sum
-                            // for (let i = 0; i < inputElements.length; i++) {
-                            //     const inputValue = parseFloat(inputElements[i].value);
-                            //     if (!isNaN(inputValue)) {
-                            //         sum += inputValue;
-                            //     }
-                            // }
-                            // // Display the sum in a result div
-                            // const subTotal = document.getElementById("sub-total");
-                            // const total = document.getElementById("total");
-                            // subTotal.value = sum;
-                            // total.value = sum;
-                            sun_T();
-                            
-                            addRow()
-
-                            if_shipping_method(itemId, qty.val())
-                            // if ($("#shipping_address").val() != null){
-                            //    shipping_cost(itemId, qty.val())
-
-                            // }
+                    data: {
+                        type: $("#type").val(),
+                        customer_category: currentCustomerCategory
                     },
-                    error: function(error){
-                        // console.log(error.responseJSON.error);
+                    success: function(data) {
+                        // Determine price based on customer category
+                        let price = data.unit; // default
+                        
+                        if (currentCustomerCategory === 'Whole Sale') {
+                            price = data.wholesale_price || data.unit;
+                        } else if (currentCustomerCategory === 'Retail') {
+                            price = data.retailer_price || data.unit;
+                        } else if (currentCustomerCategory === 'End User') {
+                            price = data.selling_price || data.unit;
+                        }
+                        
+                        desc.val(data.desc);
+                        name.val(data.name);
+                        purchaseP.val(data.purchase);
+                        qty.val(1);
+                        unit.val(price);
+                        amount.val(price);
+                        
+                        sun_T();
+                        addRow();
+                        if_shipping_method(itemId, qty.val());
+                    },
+                    error: function(error) {
                         alertify.error(error.responseJSON.error);
-                        desc.val("")
-                        name.val("")
-                        qty.val("")
-                        unit.val("")
-                        amount.val("")
-                        sun_T()
+                        desc.val("");
+                        name.val("");
+                        qty.val("");
+                        unit.val("");
+                        amount.val("");
+                        sun_T();
                     }
-                    });
-
-                    
-            }else{
-                desc.val("")
-                name.val("")
-                qty.val("")
-                unit.val("")
-                amount.val("")
-                sun_T()
+                });
+            } else {
+                desc.val("");
+                name.val("");
+                qty.val("");
+                unit.val("");
+                amount.val("");
+                sun_T();
             }
         }
+    });
 
+    // Handle quantity and discount changes to recalculate amounts
+    $(document).on('input', 'input[name="qty[]"], input[name="discount[]"]', function() {
+        const row = $(this).closest('tr');
+        const qty = parseFloat(row.find('input[name="qty[]"]').val()) || 0;
+        const unit = parseFloat(row.find('input[name="unit[]"]').val()) || 0;
+        const discount = parseFloat(row.find('input[name="discount[]"]').val()) || 0;
+        const amount = row.find('input[name="amount[]"]');
+        
+        const calculatedAmount = (qty * unit) - discount;
+        amount.val(calculatedAmount.toFixed(2));
+        
+        sun_T();
     });
 
     function sun_T(){
