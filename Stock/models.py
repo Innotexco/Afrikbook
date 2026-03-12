@@ -364,6 +364,16 @@ class ItemTags(models.Model):
         db_table = "ItemTags"
 
 
+
+class Attribute(models.Model):
+    name = models.CharField(max_length=100)  
+    value = models.CharField(max_length=100)  
+
+    def __str__(self):
+        return f"{self.name}: {self.value}"
+
+
+
 class Item(models.Model):
     category = models.ForeignKey(
             Category, on_delete=models.CASCADE, null=True, 
