@@ -40,7 +40,7 @@ class ItemForm(forms.ModelForm):
 
     class Meta:
         model = Item
-        fields = ( "item_name", "generated_code", "purchase_price", "selling_price", "description", "wholesale_price", "size", "attribute", "image", "qty_state")
+        fields = ( "item_name", "generated_code", "purchase_price", "selling_price", "retailer_price", "description", "wholesale_price", "size", "attribute", "image", "qty_state")
     
     images = forms.ImageField(widget=forms.ClearableFileInput(attrs={"allow_multiple_selected": True}), required=False)
     attribute = forms.CharField(required=False)
@@ -68,7 +68,7 @@ class EditItemForm(forms.ModelForm):
 
     class Meta:
         model = Item
-        fields = ("item_name", "generated_code", "purchase_price", "selling_price", "description", "wholesale_price", "size", "attribute", "image", "discount_price", "discount_percentage", "state", "availability")
+        fields = ("item_name", "generated_code", "purchase_price", "selling_price", "retailer_price", "description", "wholesale_price", "size", "attribute", "image", "discount_price", "discount_percentage", "state", "availability")
 
 
 
