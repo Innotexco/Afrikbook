@@ -53,7 +53,7 @@ ALLOWED_HOSTS = ['69.10.53.253', 'console.afrikbook.com']
 from decouple import config
 
 API_KEY = config('API_KEY')
-CUSTOMER_API_URL = config('CUSTOMER_API_URL', default='http://localhost:8000/api/create-customer/')
+CUSTOMER_API_URL = config('CUSTOMER_API_URL', default='http://console.afrikbook.com/api/create-customer/')
 
 
 REST_FRAMEWORK = {
@@ -119,7 +119,8 @@ CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
     # "https://your-registration-site.com",
-    "http://ememenergy.com",
+    "https://ememenergy.com",
+    "https://www.ememenergy.com",
 ]
 
 CORS_ALLOW_METHODS = [
@@ -174,8 +175,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
