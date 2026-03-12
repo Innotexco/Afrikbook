@@ -88,7 +88,7 @@
             <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
 
                 <label class="block text-sm">
-                    <span class="text-gray-700">Selling Price (Retail)</span>
+                    <span class="text-gray-700">Selling Price</span>
                     <input 
                         type="text"
                         name="selling_price"
@@ -96,6 +96,17 @@
                         placeholder=""
                     />
                     <span class="py-2 text-red-500 errors">{{form.selling_price.errors}}</span>
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Selling Price (Retailer)</span>
+                    <input 
+                        type="text"
+                        name="retailer_price"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                    />
+                    <span class="py-2 text-red-500 errors">{{form.retailer_price.errors}}</span>
                 </label>
 
                 <label class="block text-sm">
@@ -134,18 +145,7 @@
             </div>
             <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
 
-                <label class="block text-sm">
-                    <span class="text-gray-700">
-                        Quantity Type
-                    </span>
-                    <select name="qty_state" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="qty_state">
-                        <option selected disabled>--Choose An Option--</option>
-                        <option>Quantify</option>
-                        <option>Unquantify</option>
-                        
-                    </select>
-                    <span class="py-2 text-red-500 errors">{{form.category.errors}}</span>
-                </label>
+                
             </div>
             
             {% include 'components/morefields.html' %}
@@ -153,17 +153,42 @@
             <div id="more-fields" class="hidden">
                 <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
                     
+                    
+
                     <label class="block text-sm">
-                        <span class="text-gray-700">Attribute (Optional)</span>
+                        {% comment %} <span class="text-gray-700">Attribute (Optional)</span>
                         <input 
                             type="text"
                             name="attribute"
                             class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
                             placeholder=""
                         />
-                        <span class="py-2 text-red-500 errors">{{form.attribute.errors}}</span>
+                        <span class="py-2 text-red-500 errors">{{form.attribute.errors}}</span> {% endcomment %}
+                        <span class="text-gray-700">Attribute (Optional)</span>
+                        <div id="attributes">
+                            <div class="attr flex space-x-2 mb-2">
+                            <input class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input" type="text" name="name[]" placeholder="Name (e.g. Color)">
+                            <input class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input" type="text" name="value[]" placeholder="Value (e.g. Red)">
+                            </div>
+                            <span class="py-2 text-red-500 errors">{{form.attribute.errors}}</span>
+                        </div>
+
+                        <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" type="button" onclick="addAttribute()">+ Add Attribute</button>
                     </label>
     
+                    <label class="block text-sm">
+                        <span class="text-gray-700">
+                            Quantity Type
+                        </span>
+                        <select name="qty_state" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="qty_state">
+                            <option selected disabled>--Choose An Option--</option>
+                            <option>Quantify</option>
+                            <option>Unquantify</option>
+                            
+                        </select>
+                        <span class="py-2 text-red-500 errors">{{form.category.errors}}</span>
+                    </label>
+
                     <label class="block text-sm">
                         <span class="text-gray-700">Size</span>
                         <input 
@@ -379,6 +404,17 @@
                 })
                }
             });
+
+            function addAttribute() {
+                let container = document.getElementById("attributes");
+                let div = document.createElement("div");
+                div.classList.add("attr", "flex", "space-x-2", "mb-2");
+                div.innerHTML = `
+                    <input class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input" type="text" name="name[]" placeholder="Name (e.g. Size)">
+                    <input class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input" type="text" name="value[]" placeholder="Value (e.g. Large)">
+                `;
+                container.appendChild(div);
+            }
     </script>
     
     
