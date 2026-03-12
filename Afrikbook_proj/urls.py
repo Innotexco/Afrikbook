@@ -35,7 +35,7 @@ urlpatterns = [
     path('', include('Stockin.urls', namespace='Stockin')),
     path('', include('basic_sales_app.urls', namespace='basic_sales_point')),
     path('', include('client.urls', namespace='afrikbook_client')),
-    # path('', include('api.urls', namespace='api')),
+    path('', include('api.urls', namespace='api')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
