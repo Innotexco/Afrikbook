@@ -5,7 +5,8 @@ from main.models import User
 # Create your models here.
 CATEGORY_CHOICES = (
     ('Whole Sale', 'Whole Sale'),
-    ('Retail', 'Retail')
+    ('Retail', 'Retail'),
+    ('End User', 'End User'),
 )
 
 TRANSACTION_TYPE = (
