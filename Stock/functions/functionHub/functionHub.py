@@ -587,7 +587,7 @@ def add_stockin_invoice(request, db):
     valid_items = [code for code in itemcode if str(code) != "0"]
     if not valid_items:
        messages.error(request, "Please select at least one item")
-    return  # Exit early
+       return  # Exit early
 
 
     # total = float(request.POST['total'])
