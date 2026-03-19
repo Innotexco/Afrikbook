@@ -43,7 +43,7 @@ urlpatterns = [
     path('VerifyPayment', views.VerifyPayment, name='VerifyPayment'),
     path('Verify', views.Verify, name='Verify'),#ajax
 
-
+    path('get_customer_category/<int:customer_id>/', views.get_customer_category, name='get_customer_category'), #ajax
     path('get_customer/<int:id>/', views.GetCustomerDetails, name='customer-details'), #ajax
     path('get_vendor/<str:id>/', views.GetVendorDetails, name='vendor-details'), #ajax
     path('customer/<int:id>/', views.ViewCustomerDetails, name='customer-details'), #ajax
