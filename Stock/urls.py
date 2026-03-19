@@ -26,7 +26,7 @@ urlpatterns = [
     path('instant-Transfer', views.instantTransfer, name='instantTransfer'),
     path('Check-Stocklevelby', views.checkstocklevelby, name='checkstocklevelby'),
     path('Coupon', views.coupon, name='Coupon'),
-    path('NewStockin', views.NewStockin, name='NewStockin'),
+    # path('NewStockin', views.NewStockin, name='NewStockin'),
 
 
 
