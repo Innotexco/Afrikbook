@@ -37,7 +37,7 @@ def add_stockin(request, db):
     source = "Stockin"
     
 
-    for i in range(len(itemcode)):
+    # for i in range(len(itemcode)):
 
             # Check if the itemcode (value) is equal to 0
         if str(itemcode[i]) != "0":
@@ -48,7 +48,7 @@ def add_stockin(request, db):
 
             if warehouse != "":
              
-                stock_in_query = CreateStockIn.objects.using(db).filter(warehouse=warehouse, item_code=itemcode[i])
+                # stock_in_query = CreateStockIn.objects.using(db).filter(warehouse=warehouse, item_code=itemcode[i])
                 if stock_in_query.exists():
                     # If the record exists, update the quantity
                     stock_in = stock_in_query.first()
@@ -56,7 +56,7 @@ def add_stockin(request, db):
                     stock_in.save()
                 else:
                     # If the record does not exist, create a new one
-                    stock_in = CreateStockIn(
+                    # stock_in = CreateStockIn(
                         supplier=vendor_name,
                         invoice_no=invoice_id,
                         warehouse=warehouse,
