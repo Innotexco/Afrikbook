@@ -22,7 +22,7 @@ urlpatterns = [
 
 
     path('Stockin', views.Stock, name='Stockin'),
-    path('NewStockin', views.NewStockin, name='NewStockin'),
+    # path('NewStockin', views.NewStockin, name='NewStockin'),
     path('ViewStockin', views.Stockin, name='ViewStockin'),
     path('NewStockout', views.NewStockout, name='NewStockout'),
     path('ViewStockout', views.Stockout, name='ViewStockout'),
