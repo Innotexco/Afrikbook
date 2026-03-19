@@ -386,6 +386,22 @@ def GetReturnItemDetails(request,invoice, item_id):
         return JsonResponse({'error': 'Item not found'}, status=404)
     
 
+def get_customer_category(request, customer_id):
+    """Get customer category for pricing"""
+    try:
+        db = request.user.company_id.db_name
+        customer = customer_table.objects.using(db).get(id=customer_id)
+        return JsonResponse({
+            'category': customer.category,
+            'name': customer.name
+        })
+    except customer_table.DoesNotExist:
+        return JsonResponse({'error': 'Customer not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+
 def GetCustomerDetails(request, id):
     db = request.user.company_id.db_name
     cusID = request.GET.get("cusID")
