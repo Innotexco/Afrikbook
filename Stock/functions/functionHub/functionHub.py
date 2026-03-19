@@ -615,11 +615,11 @@ def add_stockin_invoice(request, db):
     stock_in = CreateStockIn.objects.using(db).all()
     
 
-    for i in range(len(itemcode)):
+    # for i in range(len(itemcode)):
 
             # Check if the itemcode (value) is equal to 0
 
-        if str(itemcode[i]) != "0":
+        # if str(itemcode[i]) != "0":
              # Check if quantity (value) is equal to 0 or empty 
             if not quantities[i] or int(quantities[i]) == 0:
                 #Automatically change the quantity to 1
