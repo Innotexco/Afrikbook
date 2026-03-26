@@ -1128,10 +1128,7 @@ def update_item_category(request):
       
         # Update the Category description
         category = Category.objects.using(db).get(category_name=main_category_name)
-        category.description = sub_category_name
        
-        category.save()
-
         # Insert multiple subcategories
         sub_categories = sub_category_name.split(',')
 
