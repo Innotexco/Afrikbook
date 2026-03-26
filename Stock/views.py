@@ -781,6 +781,10 @@ def GetItemCode(request, code_id):
 #     return render(request, 'stock/StockAdjustment.html')
 
 
+
+def clean_amount(value):
+   return value.replace(',', '') if value else value
+
 @login_required(login_url='/')
 @urls_name(name="Item")
 def NewItem(request):
@@ -793,8 +797,18 @@ def NewItem(request):
     set_current_user(request.user)
   
     if request.method == 'POST':
-        choice = request.POST.get('category')
-        choice2 = request.POST.get('sub_category')
+        data = request.POST.copy()
+
+        data['selling_price'] = clean_amount(data.get('selling_price'))
+        data['retailer_price'] = clean_amount(data.get('retailer_price'))
+        data['wholesale_price'] = clean_amount(data.get('wholesale_price'))
+        data['purchase_price'] = clean_amount(data.get('purchase_price'))
+
+        form = ItemForm(data, request.FILES)
+        choice = data.get('category')
+        choice2 = data.get('sub_category')
+        # choice = request.POST.get('category')
+        # choice2 = request.POST.get('sub_category')
         
         if form.is_valid():
             item_inst = form.save(commit=False) 
