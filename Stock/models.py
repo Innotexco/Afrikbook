@@ -387,7 +387,7 @@ class Item(models.Model):
     purchase_price          = models.CharField(max_length = 255)
     selling_price           = models.CharField(max_length = 255)
     retailer_price          = models.CharField(max_length = 255, blank=True)
-    description             = models.TextField()
+    description             = models.TextField(blank=True)
     wholesale_price         = models.CharField(max_length = 255 )
     size                    = models.CharField(max_length = 255, blank=True)
     # attribute               = models.CharField(max_length = 255, null=True, blank=True)
