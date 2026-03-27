@@ -241,19 +241,20 @@
                                 class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
                                 name="shipping_cost" id="shipping_cost" value="" readonly />
                         </label>
-                        <label class="flex justify-end items-center gap-2 text-[11px] w-full mt-1">
-                            <div class="flex justify-center items-center gap-6">
-                                <span class="text-gray-700">Discount</span>
-                                <label class="flex items-center">
-                                    <input type="checkbox"
-                                        class="text-gray-700 form-checkbox focus:border-slate-200 focus:outline-none focus:shadow-outline-slate"
-                                        id="discountcheck" />
-                                    <span class="ml-2 text-gray-700">Include VAT 7.5%</span>
-                                </label>
-                            </div>
-                            <input type="text"
-                                class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                                id="discount2" value="" name="vat" readonly />
+                        <label class="flex justify-end items-center gap-3 text-[11px] w-full mt-1">
+    
+                            <label class="flex items-center gap-2 text-gray-700">
+                                <input 
+                                    type="checkbox"
+                                    id="discountcheck"
+                                    class="form-checkbox focus:border-slate-200 focus:outline-none focus:shadow-outline-slate"
+                                />
+                                <span>Include VAT 7.5%</span>
+                            </label>
+                        
+                            <input 
+                                type="text" id="discount2" name="vat" readonly
+                                class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input" />
                         </label>
                         <label class="flex justify-end items-center gap-2 text-[11px] w-full mt-1">
                             <span class="text-gray-700">Total</span>
