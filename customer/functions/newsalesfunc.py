@@ -470,11 +470,11 @@ def clean_decimal(value):
 
 
 def add_new_sales(request, db):
-
+ 
     message_displayed = False
     executed = False
     user = False
-
+ 
     # ── 1. Parse POST data ───────────────────────────────────────────────────
     try:
         cusID             = request.POST['cusID']
@@ -506,7 +506,7 @@ def add_new_sales(request, db):
         method            = request.POST.get('shipping_method')
         shipping          = request.POST.get('shipping_address')
         shipping_cost     = request.POST.get('shipping_cost')
-
+ 
         logger.info(
             f"[add_new_sales] START | invoiceID={invoiceID} | db={db} | "
             f"user={request.user.username} | acountType={acountType} | "
@@ -514,30 +514,30 @@ def add_new_sales(request, db):
             f"credit_sales={credit_sales} | invoice_state={invoice_state} | "
             f"payment_method={payment_method} | items={len(itemcode)}"
         )
-
+ 
     except KeyError as e:
         logger.error(f"[add_new_sales] Missing POST field: {e}")
         messages.error(request, f"Missing required field: {e}")
         return None
-
+ 
     # ── 2. Clean & compute monetary values ──────────────────────────────────
     try:
-        total_decimal        = clean_decimal(total)
-        sub_total_decimal    = clean_decimal(sub_total)
-        transfer_decimal     = clean_decimal(transfer) if transfer else decimal.Decimal('0.00')
-        cash_decimal         = clean_decimal(cash)     if cash     else decimal.Decimal('0.00')
-    
+        total_decimal     = clean_decimal(total)
+        sub_total_decimal = clean_decimal(sub_total)
+        transfer_decimal  = clean_decimal(transfer) if transfer else decimal.Decimal('0.00')
+        cash_decimal      = clean_decimal(cash)     if cash     else decimal.Decimal('0.00')
+ 
         # Read part payment fields
-        part_payment        = request.POST.get('part_payment')          # checkbox → 'on' or None
+        part_payment        = request.POST.get('part_payment')           # checkbox → 'on' or None
         part_payment_amount = request.POST.get('part_payment_amount', '').strip()
-    
+ 
         if credit_sales:
-            # Nothing paid yet
+            # Nothing paid yet — full balance outstanding
             amount_paid     = decimal.Decimal('0.00')
             amount_expected = total_decimal
-    
+ 
         elif part_payment and part_payment_amount:
-            # Partial payment: paid < total
+            # Partial payment: amount_paid < total
             part_decimal = clean_decimal(part_payment_amount)
             if part_decimal <= decimal.Decimal('0.00'):
                 messages.error(request, "Part payment amount must be greater than zero.")
@@ -546,56 +546,70 @@ def add_new_sales(request, db):
                 messages.error(request, "Part payment amount must be less than the invoice total.")
                 return None
             amount_paid     = part_decimal
-            amount_expected = total_decimal          # full invoice is still expected
-    
+            amount_expected = total_decimal   # full invoice amount is still owed
+ 
         else:
             # Full payment
             amount_paid     = total_decimal
             amount_expected = total_decimal
-    
+ 
+        # FIX: logger.debug is now INSIDE the try block (after values are assigned)
+        logger.debug(
+            f"[add_new_sales] Cleaned totals | total={total_decimal} | "
+            f"sub_total={sub_total_decimal} | amount_paid={amount_paid} | "
+            f"amount_expected={amount_expected} | transfer={transfer_decimal} | "
+            f"cash={cash_decimal} | part_payment={part_payment} | "
+            f"part_payment_amount={part_payment_amount if part_payment else 'N/A'}"
+        )
+ 
     except Exception as e:
-        logger.error(f"[add_new_sales] Failed to clean monetary values | {e}\n{traceback.format_exc()}")
+        # FIX: use locals().get() to safely reference variables that may not exist yet
+        logger.error(
+            f"[add_new_sales] Failed to clean monetary values | "
+            f"part_payment_amount={locals().get('part_payment_amount', 'N/A')} | "
+            f"{e}\n{traceback.format_exc()}"
+        )
         messages.error(request, "Invalid amount format.")
         return None
-
+ 
     # ── 3. Misc setup ────────────────────────────────────────────────────────
     instant_stockout = request.session.get('IN_STOCKOUT', 'Yes')
     status = 1 if instant_stockout == "Yes" else 0
-
+ 
     if invoice_state:
         invoice_state = "Pending"
     else:
         invoice_state = "Supplied"
-
+ 
     logger.debug(
         f"[add_new_sales] Config | invoice_state={invoice_state} | "
         f"instant_stockout={instant_stockout} | status={status}"
     )
-
+ 
     try:
         int_purchaseP   = [int(num) if num.isdigit() else 0 for num in purchaseP]
         total_purchaseP = sum(int_purchaseP)
     except Exception as e:
         logger.error(f"[add_new_sales] Failed to compute purchaseP totals: {e}")
         total_purchaseP = 0
-
+ 
     # ── 4. Resolve customer / vendor ─────────────────────────────────────────
     try:
         if cusID:
             res           = billing_shipping_address(request, customer_name)
             customer_code = customer_table.objects.using(db).get(id=cusID).customer_code
             logger.debug(f"[add_new_sales] Customer resolved | cusID={cusID} | customer_code={customer_code}")
-
+ 
         elif venID:
             res           = False
             customer_code = vendor_table.objects.using(db).get(id=venID).custID
             logger.debug(f"[add_new_sales] Vendor resolved | venID={venID} | customer_code={customer_code}")
-
+ 
         else:
             res           = False
             customer_code = None
             logger.warning(f"[add_new_sales] No cusID or venID | invoiceID={invoiceID}")
-
+ 
     except customer_table.DoesNotExist:
         logger.error(f"[add_new_sales] Customer not found | cusID={cusID}")
         messages.error(request, f"Customer ID {cusID} not found.")
@@ -608,7 +622,7 @@ def add_new_sales(request, db):
         logger.error(f"[add_new_sales] Error resolving customer/vendor: {e}\n{traceback.format_exc()}")
         messages.error(request, "Failed to resolve customer or vendor.")
         return None
-
+ 
     # ── 5. Parse date ────────────────────────────────────────────────────────
     try:
         date_       = datetime.strptime(invoice_date, "%Y-%m-%d").date()
@@ -617,18 +631,18 @@ def add_new_sales(request, db):
         logger.error(f"[add_new_sales] Invalid invoice_date={invoice_date!r} | {e}")
         messages.error(request, f"Invalid date format: {invoice_date}")
         return None
-
+ 
     # ── 6. Loop over line items ──────────────────────────────────────────────
     logger.debug(f"[add_new_sales] Processing {len(itemcode)} item(s) | invoiceID={invoiceID}")
-
+ 
     for i in range(len(itemcode)):
-
+ 
         logger.debug(
             f"[add_new_sales] Item [{i}] | itemcode={itemcode[i]} | "
             f"qty={quantities[i]} | unit={unit[i]} | "
             f"discount={discount[i]} | amount={amount[i]}"
         )
-
+ 
         # Single zero item → nothing selected
         if len(itemcode) == 1 and itemcode[i] == "0":
             if not executed:
@@ -636,24 +650,24 @@ def add_new_sales(request, db):
                 messages.error(request, "Select at least one item")
                 executed = True
             continue
-
+ 
         # Skip zero-itemcode rows in multi-item lists
         if str(itemcode[i]) == "0":
             logger.debug(f"[add_new_sales] Skipping itemcode=0 at index {i}")
             continue
-
+ 
         # Auto-fix zero/empty quantity
         if not quantities[i] or int(quantities[i]) == 0:
             quantities[i] = 1
             logger.debug(f"[add_new_sales] Auto-set qty=1 | item [{i}] | itemcode={itemcode[i]}")
-
+ 
         # Clean per-line monetary values
         try:
             clean_unit_p    = clean_decimal(unit[i])
             clean_discount  = clean_decimal(discount[i]) if discount[i] else decimal.Decimal('0.00')
             clean_amount    = clean_decimal(amount[i])
             clean_purchaseP = clean_decimal(purchaseP[i])
-
+ 
             logger.debug(
                 f"[add_new_sales] Cleaned line [{i}] | unit_p={clean_unit_p} | "
                 f"discount={clean_discount} | amount={clean_amount} | "
@@ -666,7 +680,7 @@ def add_new_sales(request, db):
             )
             messages.error(request, f"Invalid amount on item {i + 1}.")
             return None
-
+ 
         # Build forms
         form_data = {
             'cusID':               customer_code,
@@ -697,7 +711,7 @@ def add_new_sales(request, db):
             'total_purchaseP':     total_purchaseP,
             'outlet':              request.user.outlet,
         }
-
+ 
         cus_form = CustomerSalesForm(form_data)
         receivable_form = ReceivableForm({
             "date":           invoice_date,
@@ -708,21 +722,21 @@ def add_new_sales(request, db):
             "account_posted": "",
             "invoice_status": "Unused",
         })
-
+ 
         if not cus_form.is_valid():
             logger.error(
                 f"[add_new_sales] CustomerSalesForm invalid | item [{i}] | "
                 f"invoiceID={invoiceID} | errors={cus_form.errors.as_json()}"
             )
-
+ 
         if not receivable_form.is_valid():
             logger.error(
                 f"[add_new_sales] ReceivableForm invalid | item [{i}] | "
                 f"invoiceID={invoiceID} | errors={receivable_form.errors.as_json()}"
             )
-
+ 
         if cus_form.is_valid() and receivable_form.is_valid():
-
+ 
             # ── Save invoice line ────────────────────────────────────────────
             try:
                 form            = cus_form.save(commit=False)
@@ -739,7 +753,7 @@ def add_new_sales(request, db):
                 )
                 messages.error(request, "New Sales Invoice was not added successfully")
                 return cus_form
-
+ 
             # ── Reduce stock ─────────────────────────────────────────────────
             if invoice_state == "Supplied":
                 try:
@@ -754,9 +768,9 @@ def add_new_sales(request, db):
                         f"[add_new_sales] Stock reduction failed | "
                         f"itemcode={itemcode[i]} | {e}\n{traceback.format_exc()}"
                     )
-
+ 
             if not message_displayed:
-
+ 
                 # ── Increment invoice counter ────────────────────────────────
                 try:
                     if acountType == "Customer":
@@ -764,19 +778,19 @@ def add_new_sales(request, db):
                         cus.invoice += 1
                         cus.save()
                         logger.debug(f"[add_new_sales] Customer invoice count incremented | cusID={cusID}")
-
+ 
                     elif acountType == "Vendor":
                         ven          = vendor_table.objects.using(db).get(id=venID)
                         ven.invoices = int(ven.invoices) + 1
                         ven.save()
                         logger.debug(f"[add_new_sales] Vendor invoice count incremented | venID={venID}")
-
+ 
                 except Exception as e:
                     logger.error(
                         f"[add_new_sales] Failed to increment invoice count | "
                         f"invoiceID={invoiceID} | {e}\n{traceback.format_exc()}"
                     )
-
+ 
                 # ── Accounting entries ───────────────────────────────────────
                 try:
                     if credit_sales is None:
@@ -786,12 +800,12 @@ def add_new_sales(request, db):
                                 f"[add_new_sales] Account resolved | "
                                 f"account_ID={account_ID} | payment_method={payment_method}"
                             )
-
+ 
                             if acountType == "Customer":
                                 DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account_ID, total_decimal)
                             elif acountType == "Vendor":
                                 DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account_ID, total_decimal)
-
+ 
                             if payment_method == "Transfer":
                                 if acountType == "Customer":
                                     CreditReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account_ID, total_decimal)
@@ -799,14 +813,14 @@ def add_new_sales(request, db):
                                     CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account_ID, total_decimal)
                                 CreateLog(db, account, total_decimal)
                                 logger.debug(f"[add_new_sales] Transfer posted | total={total_decimal}")
-
+ 
                             elif payment_method == "Transfer and Cash":
                                 if acountType == "Customer":
                                     CreditReceivable(request, db, cus, invoice_date, Gdescription, "Transfer", account_ID, transfer_decimal)
                                 elif acountType == "Vendor":
                                     CreditPayable(request, db, cus, invoice_date, Gdescription, "Transfer", account_ID, transfer_decimal)
                                 CreateLog(db, account, transfer_decimal)
-
+ 
                                 cash_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
                                 if acountType == "Customer":
                                     CreditReceivable(request, db, cus, invoice_date, Gdescription, "Cash", cash_account.account_id, cash_decimal)
@@ -817,12 +831,12 @@ def add_new_sales(request, db):
                                     f"[add_new_sales] Transfer+Cash split posted | "
                                     f"transfer={transfer_decimal} | cash={cash_decimal}"
                                 )
-
+ 
                             elif payment_method == "Cheque":
                                 account = chart_of_account.objects.using(db).get(account_bankname="Account Receivable")
                                 CreateLog(db, account, total_decimal)
                                 logger.debug(f"[add_new_sales] Cheque posted | total={total_decimal}")
-
+ 
                             else:
                                 account = chart_of_account.objects.using(db).get(account_bankname="Sales account")
                                 if acountType == "Customer":
@@ -831,7 +845,7 @@ def add_new_sales(request, db):
                                     CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total_decimal)
                                 CreateLog(db, account, total_decimal)
                                 logger.debug(f"[add_new_sales] Other payment posted | method={payment_method}")
-
+ 
                         else:
                             # No account_ID — fall back to default Sales Account
                             logger.warning(
@@ -846,7 +860,7 @@ def add_new_sales(request, db):
                                 DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total_decimal)
                                 CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total_decimal)
                             CreateLog(db, account, total_decimal)
-
+ 
                     else:
                         # Credit sales path
                         logger.debug(
@@ -858,13 +872,13 @@ def add_new_sales(request, db):
                             account.actual_balance += total_decimal
                             DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total_decimal)
                             CreateLog(db, account, total_decimal)
-
+ 
                         elif acountType == "Vendor":
                             account = chart_of_account.objects.using(db).get(account_bankname="Purchase Account")
                             account.actual_balance += total_decimal
                             DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total_decimal)
                             CreateLog(db, account, total_decimal)
-
+ 
                         acc_log = account_log(
                             transaction_source = "Sales",
                             amount             = total_decimal,
@@ -874,7 +888,7 @@ def add_new_sales(request, db):
                             Userlogin          = request.user.username,
                         )
                         logger.debug(f"[add_new_sales] account_log built (not saved) | invoiceID={invoiceID}")
-
+ 
                 except chart_of_account.DoesNotExist as e:
                     logger.error(
                         f"[add_new_sales] Chart of account not found | "
@@ -889,7 +903,7 @@ def add_new_sales(request, db):
                     )
                     messages.error(request, "Accounting entry failed.")
                     return None
-
+ 
                 # ── Shipping reference ───────────────────────────────────────
                 try:
                     if res:
@@ -900,7 +914,7 @@ def add_new_sales(request, db):
                         f"[add_new_sales] Shipping reference failed | "
                         f"invoiceID={invoiceID} | {e}\n{traceback.format_exc()}"
                     )
-
+ 
                 # ── VAT ──────────────────────────────────────────────────────
                 try:
                     create_add_vat(db, invoiceID, vat)
@@ -910,11 +924,11 @@ def add_new_sales(request, db):
                         f"[add_new_sales] VAT creation failed | "
                         f"invoiceID={invoiceID} | {e}\n{traceback.format_exc()}"
                     )
-
+ 
                 messages.success(request, "New Sales Invoice was added successfully")
                 message_displayed = True
                 logger.info(f"[add_new_sales] Invoice saved successfully | invoiceID={invoiceID}")
-
+ 
         else:
             logger.error(
                 f"[add_new_sales] Form validation failed | item [{i}] | "
@@ -924,30 +938,30 @@ def add_new_sales(request, db):
             )
             messages.error(request, "New Sales Invoice was not added successfully")
             return cus_form
-
-   
+ 
+ 
     # ── 7. Email & WhatsApp invoice ──────────────────────────────────────────
     if message_displayed:
         try:
-            # ── Calculate grand_total for WhatsApp message ──────────────
+            # ── Calculate grand_total for WhatsApp message ───────────────
             from decimal import Decimal
             try:
-                vat_items  = Vat.objects.using(db).filter(source=invoiceID)
-                vat_total  = sum(v.amount for v in vat_items)
-                subtotal   = Decimal(str(total_decimal))   # total_decimal already calculated above
+                vat_items   = Vat.objects.using(db).filter(source=invoiceID)
+                vat_total   = sum(v.amount for v in vat_items)
+                subtotal    = Decimal(str(total_decimal))
                 grand_total = subtotal + vat_total
             except Exception as e:
                 logger.warning(f"[add_new_sales] Could not compute grand_total | {e}")
                 grand_total = total_decimal  # fallback to subtotal if VAT lookup fails
-            # ────────────────────────────────────────────────────────────
-    
+            # ─────────────────────────────────────────────────────────────
+ 
             company       = CreateProfile.objects.using(db).get(CompanyName=request.user.company_id.company_name)
             send_email    = company.send_email_invoice
             send_whatsapp = company.send_whatsapp_invoice
-    
+ 
             if acountType == "Customer":
                 customer = customer_table.objects.using(db).get(id=cusID)
-    
+ 
                 # Email
                 if send_email and customer.email:
                     success, msg = email_invoice_to_customer(request, db, invoiceID, customer.email, customer_name)
@@ -955,7 +969,7 @@ def add_new_sales(request, db):
                         messages.success(request, f"Invoice emailed to {customer.email}")
                     else:
                         messages.warning(request, f"Invoice saved but email failed: {msg}")
-    
+ 
                 # WhatsApp
                 if send_whatsapp and customer.phone:
                     success, whatsapp_url = send_whatsapp_invoice(
@@ -967,10 +981,10 @@ def add_new_sales(request, db):
                         logger.info(f"[add_new_sales] WhatsApp URL stored | invoiceID={invoiceID} | to={customer.phone}")
                     else:
                         messages.warning(request, f"Could not generate WhatsApp link: {whatsapp_url}")
-    
+ 
             elif acountType == "Vendor":
                 vendor = vendor_table.objects.using(db).get(id=venID)
-    
+ 
                 # Email
                 if send_email and vendor.email:
                     success, msg = email_invoice_to_customer(request, db, invoiceID, vendor.email, customer_name)
@@ -978,7 +992,7 @@ def add_new_sales(request, db):
                         messages.success(request, f"Invoice emailed to {vendor.email}")
                     else:
                         messages.warning(request, f"Invoice saved but email failed: {msg}")
-    
+ 
                 # WhatsApp
                 if send_whatsapp and vendor.phone:
                     success, whatsapp_url = send_whatsapp_invoice(
@@ -990,11 +1004,12 @@ def add_new_sales(request, db):
                         logger.info(f"[add_new_sales] WhatsApp URL stored | invoiceID={invoiceID} | to={vendor.phone}")
                     else:
                         messages.warning(request, f"Could not generate WhatsApp link: {whatsapp_url}")
-    
+ 
         except Exception as e:
             logger.error(
                 f"[add_new_sales] Notification step failed | invoiceID={invoiceID} | {e}\n{traceback.format_exc()}"
             )
+
 
 def create_add_vat(db, invoiceID, vat):
    
