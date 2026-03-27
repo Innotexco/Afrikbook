@@ -542,4 +542,36 @@
         $("#total").on("change input", updatePartPaymentHint);
     </script>
 
+
+    <script>
+        function formatNumber(value) {
+            // Remove all non-digits
+            value = value.replace(/,/g, '').replace(/\D/g, '');
+        
+            // Add commas
+            return value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+        
+        function handleAmountInput(e) {
+            let cursorPosition = e.target.selectionStart;
+        
+            let rawValue = e.target.value.replace(/,/g, '');
+            let formattedValue = formatNumber(rawValue);
+        
+            e.target.value = formattedValue;
+        
+            // Fix cursor jump issue
+            e.target.setSelectionRange(cursorPosition, cursorPosition);
+        }
+        
+        // Apply to all price fields
+        document.querySelectorAll(
+            'input[name="part_payment_amount"], input[name="unit[]"], input[name="discount[]"], input[name="amount[]", input[name="sub-total", input[name="shipping_cost", input[name="vat", input[name="total"]'
+        ).forEach(input => {
+            input.addEventListener('input', handleAmountInput);
+        });
+    </script>
+
+
+
 {% endblock content %}
