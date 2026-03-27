@@ -522,25 +522,37 @@ def add_new_sales(request, db):
 
     # ── 2. Clean & compute monetary values ──────────────────────────────────
     try:
-        total_decimal     = clean_decimal(total)
-        sub_total_decimal = clean_decimal(sub_total)
-        transfer_decimal  = clean_decimal(transfer) if transfer else decimal.Decimal('0.00')
-        cash_decimal      = clean_decimal(cash) if cash else decimal.Decimal('0.00')
-
+        total_decimal        = clean_decimal(total)
+        sub_total_decimal    = clean_decimal(sub_total)
+        transfer_decimal     = clean_decimal(transfer) if transfer else decimal.Decimal('0.00')
+        cash_decimal         = clean_decimal(cash)     if cash     else decimal.Decimal('0.00')
+    
+        # Read part payment fields
+        part_payment        = request.POST.get('part_payment')          # checkbox → 'on' or None
+        part_payment_amount = request.POST.get('part_payment_amount', '').strip()
+    
         if credit_sales:
+            # Nothing paid yet
             amount_paid     = decimal.Decimal('0.00')
             amount_expected = total_decimal
+    
+        elif part_payment and part_payment_amount:
+            # Partial payment: paid < total
+            part_decimal = clean_decimal(part_payment_amount)
+            if part_decimal <= decimal.Decimal('0.00'):
+                messages.error(request, "Part payment amount must be greater than zero.")
+                return None
+            if part_decimal >= total_decimal:
+                messages.error(request, "Part payment amount must be less than the invoice total.")
+                return None
+            amount_paid     = part_decimal
+            amount_expected = total_decimal          # full invoice is still expected
+    
         else:
+            # Full payment
             amount_paid     = total_decimal
             amount_expected = total_decimal
-
-        logger.debug(
-            f"[add_new_sales] Cleaned totals | total={total_decimal} | "
-            f"sub_total={sub_total_decimal} | amount_paid={amount_paid} | "
-            f"amount_expected={amount_expected} | transfer={transfer_decimal} | "
-            f"cash={cash_decimal}"
-        )
-
+    
     except Exception as e:
         logger.error(f"[add_new_sales] Failed to clean monetary values | {e}\n{traceback.format_exc()}")
         messages.error(request, "Invalid amount format.")
