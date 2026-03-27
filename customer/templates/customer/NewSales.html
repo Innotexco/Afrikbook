@@ -330,13 +330,18 @@
             var cash            = $("#cash").val()
             const amount        = $("#total").val()
             const account       = $("#account_id").val()
+            const credit_sales   = $("input[name='credit_sales']").is(':checked')
 
             if(customer == "Casual Customer"){
                 runcheck();
             } else {
                 if(payment_method == "Customer Balance"){
-                    if(customer_bal < amount){
-                        alert("Insufficient balance")
+                    if(parseFloat(customer_bal) < parseFloat(amount)){
+                        if (credit_sales){
+                            runcheck();
+                        } else{
+                            alert("Insufficient balance")
+                            }
                     } else {
                         runcheck();
                     }
