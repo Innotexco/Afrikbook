@@ -215,7 +215,8 @@
     });
 
     function sun_T(){
-        const inputElements = document.getElementsByName("amount[]");
+        // const inputElements = document.getElementsByName("amount[]");
+        const inputValue = cleanNumber(inputElements[i].value);
 
         // Initialize a variable to store the sum
         let sum = 0;
@@ -231,8 +232,10 @@
         // Display the sum in a result div
         const subTotal = document.getElementById("sub-total");
         const total = document.getElementById("total");
-        subTotal.value = sum;
-        total.value = sum;
+        // subTotal.value = sum;
+        // total.value = sum;
+        subTotal.value = sum.toLocaleString();
+        total.value = sum.toLocaleString();
     }
 
     function if_shipping_method(itemId, qty){
@@ -290,9 +293,12 @@ $(document).on("input", "#qty", function (e) {
     const allAmount = document.getElementsByName("amount[]");
 
     if(value > 0){
-        const unit_p = parseInt(unit.val());
-        const qty_p = parseInt(qty.val());
-        const discount_p = parseInt(discount.val());
+        const unit_p = cleanNumber(unit.val());
+        const qty_p = cleanNumber(qty.val());
+        const discount_p = cleanNumber(discount.val());
+        // const unit_p = parseInt(unit.val());
+        // const qty_p = parseInt(qty.val());
+        // const discount_p = parseInt(discount.val());
    
         //if_shipping_method(itemcode, qty_p)
 
@@ -349,15 +355,18 @@ $(document).on("input", "#qty", function (e) {
             //alert(sum)
             // Loop through allAmount input elements and add their values to the sum
             for (let i = 0; i < allAmount.length; i++) {
-                const inputValue = parseFloat(allAmount[i].value);
+                const inputValue = cleanNumber(allAmount[i].value);
+                // const inputValue = parseFloat(allAmount[i].value);
                 if (!isNaN(inputValue)) {
                     sum += inputValue;
                 }
             }
             // Display the sum in a result div
             
-            subTotal.value = sum;
-            total.value = sum;
+            // subTotal.value = sum;
+            // total.value = sum;
+            subTotal.value = sum.toLocaleString();
+            total.value = sum.toLocaleString();
             }else{
                 amount.val("")
             }
@@ -380,15 +389,18 @@ function DoCalculation(unit_p, discount_p, value, amount, subTotal, total, allAm
         //alert(sum)
         // Loop through allAmount input elements and add their values to the sum
         for (let i = 0; i < allAmount.length; i++) {
-            const inputValue = parseFloat(allAmount[i].value);
+            const inputValue = cleanNumber(allAmount[i].value);
+            // const inputValue = parseFloat(allAmount[i].value);
             if (!isNaN(inputValue)) {
                 sum += inputValue;
             }
         }
         // Display the sum in a result 
         
-        subTotal.value = sum;
-        total.value = sum;
+        // subTotal.value = sum;
+        // total.value = sum;
+        subTotal.value = sum.toLocaleString();
+        total.value = sum.toLocaleString();
     }else if(isNaN(discount_p)){
         amount.val(unit_p * value)
             // Initialize a variable to store the sum
@@ -404,8 +416,10 @@ function DoCalculation(unit_p, discount_p, value, amount, subTotal, total, allAm
             }
             // Display the sum in a result 
             
-            subTotal.value = sum;
-            total.value = sum;
+            // subTotal.value = sum;
+            // total.value = sum;
+            subTotal.value = sum.toLocaleString();
+            total.value = sum.toLocaleString();
     }
     
 }
@@ -427,8 +441,10 @@ $(document).on("input", "#discount", function (e) {
 
        
         if(value > 0){
-            const unit_p = parseInt(unit.val());
-            const qty_p = parseInt(qty.val());
+            const unit_p = cleanNumber(unit.val());
+            const qty_p = cleanNumber(qty.val());
+            // const unit_p = parseInt(unit.val());
+            // const qty_p = parseInt(qty.val());
             if(!isNaN(unit_p)){
 
                 amount.val((unit_p - value) * qty_p)
@@ -448,8 +464,10 @@ $(document).on("input", "#discount", function (e) {
                 }
                 // Display the sum in a result div
                 
-                subTotal.value = sum;
-                total.value = sum;
+                // subTotal.value = sum;
+                // total.value = sum;
+                subTotal.value = sum.toLocaleString();
+                total.value = sum.toLocaleString();
             }
         }else{
              unit_p = parseInt(unit.val())
@@ -470,8 +488,10 @@ $(document).on("input", "#discount", function (e) {
                 }
                 // Display the sum in a result div
                 
-                subTotal.value = sum;
-                total.value = sum;
+                // subTotal.value = sum;
+                // total.value = sum;
+                subTotal.value = sum.toLocaleString();
+                total.value = sum.toLocaleString();
                 }else{
                     amount.val("")
                 }
@@ -489,7 +509,8 @@ $(document).on("input", "#total-discount", function (e) {
         const subTotal = document.getElementById("sub-total");
         const total = document.getElementById("total");
 
-        const subTotal_v = parseInt(subTotal.val());
+        // const subTotal_v = parseInt(subTotal.val());
+        const subTotal_v = cleanNumber(subTotal.value);
        
         if(value > 0){
             if(!isNaN(subTotal_v)){
@@ -520,9 +541,11 @@ $(document).on('click', '.remove_row',function(e){
         const totalv = document.getElementById("total").value;
 
         if(amount != ""){
+            subTotal.value = cleanNumber(subTotal.value) - cleanNumber(amount)
+            total.value = cleanNumber(total.value) - cleanNumber(amount)
 
-            subTotal.value = parseInt(subTotal.value) - parseInt(amount)
-            total.value = parseInt(total.value) - parseInt(amount)
+            // subTotal.value = parseInt(subTotal.value) - parseInt(amount)
+            // total.value = parseInt(total.value) - parseInt(amount)
         }
         if(amount != "" && row_id == "'+i+'"){
 
@@ -538,7 +561,8 @@ const checkbox = document.getElementById("discountcheck")
 checkbox.addEventListener("change", function () {
         const subTotal = document.getElementById("sub-total"); 
         const discount = document.getElementById("discount2"); 
-        const sub_Total = parseInt(subTotal.value); 
+        // const sub_Total = parseInt(subTotal.value); 
+        const sub_Total = cleanNumber(subTotal.value);
         const total = document.getElementById("total");
         if (checkbox.checked) {
             //alert('checked');
@@ -568,6 +592,10 @@ checkbox.addEventListener("change", function () {
         }
 })
 
+
+    function cleanNumber(value) {
+        return parseFloat(String(value).replace(/,/g, '')) || 0;
+    }
 </script>
 <script>
 // Get all input elements with type "date"
@@ -581,4 +609,8 @@ checkbox.addEventListener("change", function () {
     input.value = currentDate;
     });
 
+    
+
 </script>
+
+
