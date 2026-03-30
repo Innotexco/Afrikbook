@@ -236,10 +236,9 @@
         // Display the sum in a result div
         const subTotal = document.getElementById("sub-total");
         const total = document.getElementById("total");
-        // subTotal.value = sum;
-        // total.value = sum;
-        subTotal.value = sum.toLocaleString();
-        total.value = sum.toLocaleString();
+        subTotal.value = sum;
+        total.value = sum;
+       
     }
 
     function if_shipping_method(itemId, qty){
@@ -367,10 +366,9 @@ $(document).on("input", "#qty", function (e) {
             }
             // Display the sum in a result div
             
-            // subTotal.value = sum;
-            // total.value = sum;
-            subTotal.value = sum.toLocaleString();
-            total.value = sum.toLocaleString();
+            subTotal.value = sum;
+            total.value = sum;
+            
             }else{
                 amount.val("")
             }
@@ -420,10 +418,9 @@ function DoCalculation(unit_p, discount_p, value, amount, subTotal, total, allAm
             }
             // Display the sum in a result 
             
-            // subTotal.value = sum;
-            // total.value = sum;
-            subTotal.value = sum.toLocaleString();
-            total.value = sum.toLocaleString();
+            subTotal.value = sum;
+            total.value = sum;
+           
     }
     
 }
@@ -468,10 +465,9 @@ $(document).on("input", "#discount", function (e) {
                 }
                 // Display the sum in a result div
                 
-                // subTotal.value = sum;
-                // total.value = sum;
-                subTotal.value = sum.toLocaleString();
-                total.value = sum.toLocaleString();
+                subTotal.value = sum;
+                total.value = sum;
+                
             }
         }else{
              unit_p = parseInt(unit.val())
@@ -492,10 +488,9 @@ $(document).on("input", "#discount", function (e) {
                 }
                 // Display the sum in a result div
                 
-                // subTotal.value = sum;
-                // total.value = sum;
-                subTotal.value = sum.toLocaleString();
-                total.value = sum.toLocaleString();
+                subTotal.value = sum;
+                total.value = sum;
+               
                 }else{
                     amount.val("")
                 }
