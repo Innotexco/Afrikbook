@@ -27,6 +27,9 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 
 from itertools import zip_longest
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 
