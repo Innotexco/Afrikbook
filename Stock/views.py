@@ -302,32 +302,43 @@ def OutletToOutlet(request):
 @login_required(login_url='/')
 @urls_name(name = "Stock Adjustment")
 def StockAdjustment(request):
-   db = request.user.company_id.db_name
-   # allinvoice = customer_invoice.objects.filter(invoiceID='11971')
-   stockinlog = CreateStockInLog.objects.using(db).filter(~Q(status='Cancelled'))
-   warehouse = Warehouse.objects.using(db).all()
-   getitem = Item.objects.using(db).all();
+    db = request.user.company_id.db_name
+    stockinlog = CreateStockInLog.objects.using(db).filter(~Q(status='Cancelled'))
+    warehouse  = Warehouse.objects.using(db).all()
+    getitem    = Item.objects.using(db).all()
+    context = {
+        'allinvoice': stockinlog,
+        'items':      getitem,
+        'store':      warehouse,
+    }
 
-   context = {
-      'allinvoice': stockinlog,
-      'items': getitem,
-      'store': warehouse,
-   }
-   # function to fetch data for update(when edit btn is clicked)
-   data = getStockAdjustmentData(request, CreateStockInLog, db)
-   if data:
-      return JsonResponse({'data': data})
-   
-   # update function
-   updateStockAdjustmentData(request, CreateStockInLog, CreateStockIn, 'warehouse', context, db)
+    # ── Edit button clicked: fetch single record for modal 
+    data = getStockAdjustmentData(request, CreateStockInLog, db)
+    if data:
+        return JsonResponse({'data': data})
 
-   # get function
-   stockadjustmentdata =getStockAdjustmentDate(request, CreateStockInLog, context, db)
-   if stockadjustmentdata:
-     return JsonResponse({'data':stockadjustmentdata})
+    # ── Update submitted
+    updateStockAdjustmentData(request, CreateStockInLog, CreateStockIn, 'warehouse', context, db)
 
-   return render(request, 'StockAdjustment_warehouse.html', context)
+    # ── Date/filter search 
+    stockadjustmentdata = getStockAdjustmentDate(request, CreateStockInLog, context, db)
+    if stockadjustmentdata:
+        return JsonResponse({'data': stockadjustmentdata})
 
+    #    return empty JSON instead of falling through to render HTML 
+    is_ajax = (
+        request.GET.get('fromdate') or
+        request.GET.get('todate') or
+        request.GET.get('sortbyWareHh') or
+        request.GET.get('sortbyItem') or
+        request.GET.get('invoiceID') or
+        request.GET.get('idcode')
+    )
+    if is_ajax:
+        return JsonResponse({'data': []})
+
+    #  Normal page load: render the template 
+    return render(request, 'StockAdjustment_warehouse.html', context)
 # ********************************************************************************************************
 
 # ********************************************************************************************************
