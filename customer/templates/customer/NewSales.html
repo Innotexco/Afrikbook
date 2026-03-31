@@ -160,6 +160,27 @@
                         <span class="ml-2">Credit Sales</span>
                     </label>
                 </div>
+
+                <!-- Part Payment -->
+                <div class="flex mt-6 text-sm">
+                    <label class="flex items-center dark:text-gray-400">
+                        <input type="checkbox"
+                            class="text-slate-600 form-checkbox focus:border-[#2F4F4F] focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray"
+                            name="part_payment" id="part_payment_check" />
+                        <span class="ml-2">Part Payment</span>
+                    </label>
+                </div>
+
+                <div id="part_payment_div" class="hidden text-sm mt-4">
+                    <label class="block">
+                        <span class="text-gray-700 dark:text-gray-400">Amount Paid Now</span>
+                        <input type="number" step="0.01" min="0"
+                            name="part_payment_amount" id="part_payment_amount"
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder="0.00" />
+                    </label>
+                    <span class="text-xs text-orange-500 mt-1 block" id="part_payment_hint"></span>
+                </div>
             </div>
 
             <div class="w-full my-5 overflow-hidden shadow-xs">
@@ -241,19 +262,20 @@
                                 class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
                                 name="shipping_cost" id="shipping_cost" value="" readonly />
                         </label>
-                        <label class="flex justify-end items-center gap-2 text-[11px] w-full mt-1">
-                            <div class="flex justify-center items-center gap-6">
-                                <span class="text-gray-700">Discount</span>
-                                <label class="flex items-center">
-                                    <input type="checkbox"
-                                        class="text-gray-700 form-checkbox focus:border-slate-200 focus:outline-none focus:shadow-outline-slate"
-                                        id="discountcheck" />
-                                    <span class="ml-2 text-gray-700">Include VAT 7.5%</span>
-                                </label>
-                            </div>
-                            <input type="text"
-                                class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                                id="discount2" value="" name="vat" readonly />
+                        <label class="flex justify-end items-center gap-3 text-[11px] w-full mt-1">
+    
+                            <label class="flex items-center gap-2 text-gray-700">
+                                <input 
+                                    type="checkbox"
+                                    id="discountcheck"
+                                    class="form-checkbox focus:border-slate-200 focus:outline-none focus:shadow-outline-slate"
+                                />
+                                <span>Include VAT 7.5%</span>
+                            </label>
+                        
+                            <input 
+                                type="text" id="discount2" name="vat" readonly
+                                class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input" />
                         </label>
                         <label class="flex justify-end items-center gap-2 text-[11px] w-full mt-1">
                             <span class="text-gray-700">Total</span>
@@ -323,25 +345,28 @@
         }
 
         function checkout(div) {
-            const customer      = $("#id_customer option:selected").text()
-            const customer_bal  = $("#balance").val()
-            const payment_method = $("#payment_method").val()
-            var transfer        = $("#transfer").val()
-            var cash            = $("#cash").val()
-            const amount        = $("#total").val()
-            const account       = $("#account_id").val()
-            const credit_sales   = $("input[name='credit_sales']").is(':checked')
+            const customer        = $("#id_customer option:selected").text()
+            const customer_bal    = $("#balance").val()
+            const payment_method  = $("#payment_method").val()
+            var transfer          = $("#transfer").val()
+            var cash              = $("#cash").val()
+            // FIX: single declaration of amount as a float (removed duplicate const amount)
+            const amount          = parseFloat($("#total").val()) || 0
+            const account         = $("#account_id").val()
+            const credit_sales    = $("input[name='credit_sales']").is(':checked')
+            const is_part_payment = $("#part_payment_check").is(":checked")
+            const part_amount     = parseFloat($("#part_payment_amount").val()) || 0
 
             if(customer == "Casual Customer"){
                 runcheck();
             } else {
                 if(payment_method == "Customer Balance"){
-                    if(parseFloat(customer_bal) < parseFloat(amount)){
+                    if(parseFloat(customer_bal) < amount){
                         if (credit_sales){
                             runcheck();
                         } else{
                             alert("Insufficient balance")
-                            }
+                        }
                     } else {
                         runcheck();
                     }
@@ -351,6 +376,18 @@
             }
 
             function runcheck(){
+                // Part payment validation
+                if (is_part_payment) {
+                    if (part_amount <= 0) {
+                        alert("Enter the amount paid now for part payment");
+                        return;
+                    }
+                    if (part_amount >= amount) {
+                        alert("Part payment must be less than the total. Use full payment instead.");
+                        return;
+                    }
+                }
+
                 if(payment_method == "Transfer and Cash"){
                     if(transfer == "") transfer = 0;
                     if(cash == "") cash = 0;
@@ -463,6 +500,46 @@
                 }
             }
         }
+
+        // ── Part Payment toggle ──────────────────────────────────────────────
+        $("#part_payment_check").on("change", function () {
+            if ($(this).is(":checked")) {
+                // Mutually exclusive with credit sales
+                $("input[name='credit_sales']").prop("checked", false);
+                $("#part_payment_div").removeClass("hidden");
+                updatePartPaymentHint();
+            } else {
+                $("#part_payment_div").addClass("hidden");
+                $("#part_payment_amount").val("");
+                $("#part_payment_hint").text("");
+            }
+        });
+
+        // Uncheck part payment when credit sales is checked
+        $("input[name='credit_sales']").on("change", function () {
+            if ($(this).is(":checked")) {
+                $("#part_payment_check").prop("checked", false);
+                $("#part_payment_div").addClass("hidden");
+                $("#part_payment_amount").val("");
+                $("#part_payment_hint").text("");
+            }
+        });
+
+        function updatePartPaymentHint() {
+            const total = parseFloat($("#total").val()) || 0;
+            const paid  = parseFloat($("#part_payment_amount").val()) || 0;
+            if (total > 0) {
+                const balance = total - paid;
+                $("#part_payment_hint").text(
+                    "Balance remaining: " + balance.toLocaleString('en', {minimumFractionDigits: 2})
+                );
+            }
+        }
+
+        $("#part_payment_amount").on("input", updatePartPaymentHint);
+
+        // Re-run hint whenever the total field value changes (e.g. after items are added)
+        $("#total").on("change input", updatePartPaymentHint);
     </script>
 
 {% endblock content %}
