@@ -9,53 +9,35 @@
     <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
       href="#">
         <div class="flex items-center">
-            <svg
-                class="w-5 h-5 mr-2"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-            >
-            <path
-                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-            ></path>
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
             </svg>
             <span>Adjust Stock</span>
         </div>
         <span>Home &RightArrow;</span>
     </a>
+
     <div class="px-4 py-2 my-5 bg-white rounded-lg shadow-md">
         <div class="grid grid-cols-2 gap-4">
             <div class="col-span-1 p-2 border-r">
-                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3 ">
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                     <label class="block text-sm">
-                        <span class="text-gray-700">
-                            From
-                        </span>
-                        <input 
-                            type="date"
+                        <span class="text-gray-700">From</span>
+                        <input type="date"
                             class="block w-full py-2 px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                            placeholder=""
-                            name="fromdate"
-                            id="fromdate"
-                        />
+                            name="fromdate" id="fromdate" />
                     </label>
-        
+
                     <label class="block text-sm">
-                        <span class="text-gray-700">
-                            To
-                        </span>
-                        <input 
-                            type="date"
+                        <span class="text-gray-700">To</span>
+                        <input type="date"
                             class="block w-full py-2 px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                            placeholder=""
-                            name="todate"
-                            id="todate"
-                        />
+                            name="todate" id="todate" />
                     </label>
-                    <div class="block text-sm mt-5"> 
-                        <button type="button"
-                            class="w-full py-2 px-2 mt-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate flex items-center justify-center gap-2"
-                            id="getDate">
-                            <!-- Spinner — hidden by default, shown during loading -->
+
+                    <div class="block text-sm mt-5">
+                        <button type="button" id="getDate"
+                            class="w-full py-2 px-2 mt-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate flex items-center justify-center gap-2">
                             <svg id="searchSpinner"
                                 class="hidden animate-spin h-4 w-4 text-slate-600"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -68,10 +50,11 @@
                             <span id="searchBtnText">Search</span>
                         </button>
                     </div>
-                </div>  
+                </div>
             </div>
+
             <div class="col-span-1">
-                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-2 ">
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-2">
                     <label class="block text-sm">
                         {% if type == 'outlet' %}
                             <span class="text-gray-700">Search Outlet</span>
@@ -88,31 +71,27 @@
                                 {% endif %}
                             {% endfor %}
                         </select>
-                        
                     </label>
-    
+
                     <label class="block text-sm">
-                        <span class="text-gray-700">
-                            Select by item
-                        </span>
-                        <select class="commonClass block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="sortbyItem"  name="">
+                        <span class="text-gray-700">Select by item</span>
+                        <select class="commonClass block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="sortbyItem" name="">
                             <option>_ _Choose Item_ _</option>
                             {% for item in items %}
-                                <option value="{{item.generated_code}}">{{item.item_name}} ({{item.generated_code}}) </option>
+                                <option value="{{item.generated_code}}">{{item.item_name}} ({{item.generated_code}})</option>
                             {% endfor %}
-                        
                         </select>
                     </label>
-                </div>  
+                </div>
             </div>
         </div>
     </div>
 
     <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
         <div class="w-full overflow-x-auto table-responsive">
-          <table id="adjuststore" class="display" style="width:100%">
+            <table id="adjuststore" class="display" style="width:100%">
                 <thead>
-                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 bg-gray-50">
                         <th class="py-3">SN</th>
                         <th class="py-3">Stockin Date</th>
                         <th class="py-3">Invoice No.</th>
@@ -126,34 +105,20 @@
                 <tbody class="bg-white divide-y default">
                     {% for allinvoice in allinvoice %}
                         <tr class="text-gray-700">
-                            <td class="text-[10px]">
-                                {{forloop.counter}}
-                            </td>
-                            <td class="text-[10px]">
-                                {{allinvoice.datetx}}
-                            </td>
+                            <td class="text-[10px]">{{forloop.counter}}</td>
+                            <td class="text-[10px]">{{allinvoice.datetx}}</td>
                             <td class="text-[10px]">
                                 {{allinvoice.invoice_no}}
-                                <input type="hidden" value="{{allinvoice.invoice_no}}"  name="invoiceID" id="invoiceID{{allinvoice.id}}">
+                                <input type="hidden" value="{{allinvoice.invoice_no}}" name="invoiceID" id="invoiceID{{allinvoice.id}}">
                                 <input type="hidden" value="{{allinvoice.id}}" name="id" id="idcode{{allinvoice.id}}">
                             </td>
+                            <td class="text-[10px]">{{allinvoice.item}}</td>
+                            <td class="text-[10px]">{{allinvoice.quantity}}</td>
+                            <td class="text-[10px]">{{allinvoice.item_decription}}</td>
+                            <td class="text-[10px]">{{allinvoice.token_id}}</td>
                             <td class="text-[10px]">
-                                {{allinvoice.item}}
-                            </td>
-                            <td class="text-[10px]">
-                                {{allinvoice.quantity}}
-                            </td>
-                            <td class="text-[10px]">
-                                {{allinvoice.item_decription}}
-                            </td>
-                            <td class="text-[10px]">
-                                {{allinvoice.token_id}}
-                            </td>
-                            <td class="text-[10px]">
-                                <button onclick="my_modal_edit_stock_details.showModal(), onclickme('{{allinvoice.id}}')" 
-                                    class="flex items-center justify-center text-blue-500"
-                                    aria-label="Edit"
-                                    id="modaledit">
+                                <button onclick="my_modal_edit_stock_details.showModal(), onclickme('{{allinvoice.id}}')"
+                                    class="flex items-center justify-center text-blue-500" aria-label="Edit">
                                     <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
                                     </svg>
@@ -169,17 +134,16 @@
 
     <script>
         {% if type == 'outlet' %}
-            url = "{% url 'Stock:StockAdjustmentOutlet' %}"
+            var url = "{% url 'Stock:StockAdjustmentOutlet' %}";
         {% else %}
-            url = "{% url 'Stock:StockAdjustment' %}"
+            var url = "{% url 'Stock:StockAdjustment' %}";
         {% endif %}
 
         // ── Loading helpers ──────────────────────────────────────────────────
         function setSearchLoading(isLoading) {
-            const btn    = $('#getDate');
-            const spinner = $('#searchSpinner');
-            const label  = $('#searchBtnText');
-
+            var btn     = $('#getDate');
+            var spinner = $('#searchSpinner');
+            var label   = $('#searchBtnText');
             if (isLoading) {
                 btn.prop('disabled', true).addClass('opacity-60 cursor-not-allowed');
                 spinner.removeClass('hidden');
@@ -193,38 +157,66 @@
         // ────────────────────────────────────────────────────────────────────
 
         function resultFunction(res) {
-            if (res.data.failed) {
-                alert(res.data.failed)
-            } else {
-                $('#adjuststore .default').remove();
-                $('#adjuststore .result').empty();
-                res.data.forEach(function(item, index) {
-                    let newRow = $('<tr class="text-gray-700">');
-                    newRow.append('<td class="text-[10px]">' + (index + 1) + '</td>');
-                    newRow.append('<td class="text-[10px]">' + item.datetx + '</td>');
-                    newRow.append('<td class="text-[10px]">' + item.invoice_no +
-                        '<input type="hidden" value="' + item.invoice_no + '" name="invoiceID" id="invoiceID' + item.id + '">' +
-                        '<input type="hidden" value="' + item.id + '" name="id" id="idcode' + item.id + '"></td>');
-                    newRow.append('<td class="text-[10px]">' + item.item + '</td>');
-                    newRow.append('<td class="text-[10px]">' + item.quantity + '</td>');
-                    newRow.append('<td class="text-[10px]">' + item.item_decription + '</td>');
-                    newRow.append('<td class="text-[10px]">' + item.token_id + '</td>');
-
-                    let svgElement = '<svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">' +
-                        '<path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path></svg>';
-                    newRow.append('<td class="text-[10px]"><button onclick="my_modal_edit_stock_details.showModal(), onclickme(' + item.id + ')" class="flex items-center justify-center text-blue-500" aria-label="Edit" id="modaledit">' + svgElement + '</button></td>');
-
-                    $('#adjuststore .result').append(newRow);
-                });
+            // Guard: completely unexpected response shape
+            if (!res || typeof res !== 'object' || !res.data) {
+                alert('Unexpected response from server. Please try again.');
+                return;
             }
+
+            // Guard: server returned a failure message
+            if (res.data.failed) {
+                alert(res.data.failed);
+                return;
+            }
+
+            // Guard: data must be an array to iterate
+            if (!Array.isArray(res.data)) {
+                alert('No results found.');
+                return;
+            }
+
+            $('#adjuststore .default').remove();
+            $('#adjuststore .result').empty();
+
+            // Empty state
+            if (res.data.length === 0) {
+                $('#adjuststore .result').append(
+                    '<tr><td colspan="8" class="text-center text-sm text-gray-400 py-4">No records found for the selected range.</td></tr>'
+                );
+                return;
+            }
+
+            res.data.forEach(function(item, index) {
+                var newRow = $('<tr class="text-gray-700">');
+                newRow.append('<td class="text-[10px]">' + (index + 1) + '</td>');
+                newRow.append('<td class="text-[10px]">' + (item.datetx || '') + '</td>');
+                newRow.append(
+                    '<td class="text-[10px]">' + (item.invoice_no || '') +
+                    '<input type="hidden" value="' + (item.invoice_no || '') + '" name="invoiceID" id="invoiceID' + item.id + '">' +
+                    '<input type="hidden" value="' + item.id + '" name="id" id="idcode' + item.id + '"></td>'
+                );
+                newRow.append('<td class="text-[10px]">' + (item.item || '') + '</td>');
+                newRow.append('<td class="text-[10px]">' + (item.quantity || '') + '</td>');
+                newRow.append('<td class="text-[10px]">' + (item.item_decription || '') + '</td>');
+                newRow.append('<td class="text-[10px]">' + (item.token_id || '') + '</td>');
+
+                var svg = '<svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">' +
+                    '<path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path></svg>';
+                newRow.append(
+                    '<td class="text-[10px]"><button onclick="my_modal_edit_stock_details.showModal(), onclickme(' + item.id + ')" ' +
+                    'class="flex items-center justify-center text-blue-500" aria-label="Edit">' + svg + '</button></td>'
+                );
+
+                $('#adjuststore .result').append(newRow);
+            });
         }
 
         $(document).ready(function() {
 
-            // ── Date search with loading state ───────────────────────────────
+            // ── Date search ──────────────────────────────────────────────────
             $(document).on('click', '#getDate', function() {
-                let fromdate = $('#fromdate').val();
-                let todate   = $('#todate').val();
+                var fromdate = $('#fromdate').val();
+                var todate   = $('#todate').val();
 
                 if (!fromdate || !todate) {
                     alert('Please select both From and To dates.');
@@ -236,70 +228,61 @@
                 $.ajax({
                     type: 'GET',
                     url: url,
-                    data: {
-                        fromdate: fromdate,
-                        todate: todate,
-                    },
+                    data: { fromdate: fromdate, todate: todate },
                     success: function(res) {
                         resultFunction(res);
                     },
-                    error: function() {
-                        alert('An error occurred while fetching data. Please try again.');
+                    error: function(xhr, status, error) {
+                        console.error('Search error:', xhr.status, status, error);
+                        console.error('Response:', xhr.responseText);
+                        alert('Request failed (' + xhr.status + '). Check the console for details.');
                     },
                     complete: function() {
-                        // Always restore the button — whether success or error
+                        // Guaranteed to run after success OR error — always restores button
                         setSearchLoading(false);
                     }
                 });
             });
 
-            // ── Dropdown filters (no loading state needed — instant) ──────────
+            // ── Dropdown filters ─────────────────────────────────────────────
             $(document).on('change', '.commonClass', function() {
-                let sortbyWareHh = $('#sortbywarehouse').val();
-                let sortbyItem   = $('#sortbyItem').val();
+                var sortbyWareHh = $('#sortbywarehouse').val();
+                var sortbyItem   = $('#sortbyItem').val();
                 $.ajax({
                     type: 'GET',
                     url: url,
-                    data: {
-                        sortbyWareHh: sortbyWareHh,
-                        sortbyItem: sortbyItem,
-                    },
+                    data: { sortbyWareHh: sortbyWareHh, sortbyItem: sortbyItem },
                     success: function(res) {
                         resultFunction(res);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Filter error:', xhr.status, status, error);
                     }
                 });
             });
         });
 
         function onclickme(id) {
-            invoiceID = $('#invoiceID' + id).val()
-            idcode    = $('#idcode' + id).val()
-
-            modalItem        = $('#modalItem')
-            modalInvoiceID   = $('#modalInvoiceID')
-            modalDate        = $('#modalDate')
-            modalDescription = $('#modalDescription')
-            modalqty         = $('#modalqty')
-            modalID          = $('#modalID')
+            var invoiceID = $('#invoiceID' + id).val();
+            var idcode    = $('#idcode' + id).val();
 
             $.ajax({
                 type: 'GET',
                 url: url,
-                data: {
-                    invoiceID: invoiceID,
-                    idcode: idcode,
-                },
+                data: { invoiceID: invoiceID, idcode: idcode },
                 success: function(res) {
-                    modalItem.val(res.data.item)
-                    modalInvoiceID.val(res.data.invoice_no)
-                    modalDate.val(res.data.date)
-                    modalDescription.val(res.data.description)
-                    modalqty.val(res.data.qty)
-                    modalID.val(res.data.id)
+                    $('#modalItem').val(res.data.item);
+                    $('#modalInvoiceID').val(res.data.invoice_no);
+                    $('#modalDate').val(res.data.date);
+                    $('#modalDescription').val(res.data.description);
+                    $('#modalqty').val(res.data.qty);
+                    $('#modalID').val(res.data.id);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Modal fetch error:', xhr.status, status, error);
                 }
             });
         }
     </script>
-
 
 {% endblock content %}
