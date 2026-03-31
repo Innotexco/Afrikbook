@@ -14,7 +14,7 @@ class new_journal_entry(models.Model):
     description        = models.CharField(max_length=255)	
     debit              = models.CharField(max_length=200, blank=True)	
     credit             = models.CharField(max_length=200, blank=True)	
-    total              = models.CharField(max_length=200)	
+    total              = models.DecimalField(max_digits=12, decimal_places=2)	
     transaction_type   = models.CharField(max_length=200)	
     token_ID           = models.CharField(max_length=200, blank=True)	
     Userlogin          = models.CharField(max_length=60, blank=True)
