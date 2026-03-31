@@ -113,7 +113,7 @@ class loan_account(models.Model):
     debtor_id	= models.CharField(max_length=60)
     description	= models.CharField(max_length=223)
     amount_borrowed	= models.CharField(max_length=200)
-    amount_paid	= models.CharField(max_length=200)
+    # amount_paid	= models.CharField(max_length=200)
     balance_left	= models.CharField(max_length=200)
     account_debited	= models.CharField(max_length=200)
     status	= models.CharField(max_length=200, blank=True, default="unpaid")
