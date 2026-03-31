@@ -419,36 +419,128 @@ def PurchaseAdjustment(request):
 
 
 # ********************************************************************************************************
-         
+
+
 @login_required(login_url="/")
 @urls_name(name="Purchase Invoices")
 def CanclePurchaseInvoice(request):
-    db = request.user.company_id.db_name
-    # allinvoice = customer_invoice.objects.filter(invoiceID='11971')
+    db            = request.user.company_id.db_name
     vendorInvoice = Vendor_invoice.objects.using(db).filter(~Q(cancellation=1))
-    # outlet_stockin_log = CreateStockInLog.objects.using(db).all()
-    # outlet_stockin_log = CreateOutletStockInLog.objects.using(db).all()
-    warehouse = Warehouse.objects.using(db).all()
-    outlet = sales_outlet.objects.using(db).all()
-    getitem = Item.objects.using(db).all();
+    warehouse     = Warehouse.objects.using(db).all()
+    outlet        = sales_outlet.objects.using(db).all()
+    getitem       = Item.objects.using(db).all()
+
     context = {
-      'allinvoice': vendorInvoice,
-      'items': getitem,
-      'warehouse': warehouse,
-      'outlet': outlet,
+        'allinvoice': vendorInvoice,
+        'items':      getitem,
+        'warehouse':  warehouse,
+        'outlet':     outlet,
+        'type':       'cancle',   # tells template to render Cancel button
     }
 
-   
-#     # update function
-#     updateStockAdjustmentData(request, context, db)
+    # ── Handle cancel POST ───────────────────────────────────────────────────
+    if request.method == 'POST' and 'cancle_invoice' in request.POST:
+        modal_id         = request.POST.get('modalID')
+        modal_invoice_id = request.POST.get('modalinvoiceID')
 
-#    # get function
-#     stockinlog=getStockAdjustmentDate2(request, context, db, ~Q(cancellation=1))
-#     if stockinlog:
-#         return JsonResponse({'stockin':stockinlog})
+        if not modal_id or not modal_invoice_id:
+            messages.error(request, "Invalid cancellation request — missing invoice reference.")
+            return render(request, 'vendor/CanclePurchaseInvoice.html', context)
 
+        try:
+            # ── 1. Mark every line on this invoice as cancelled ──────────────
+            rows_updated = (
+                Vendor_invoice.objects
+                .using(db)
+                .filter(invoiceID=modal_invoice_id)
+                .update(cancellation=1)
+            )
 
+            if rows_updated == 0:
+                messages.warning(request, f"No invoice lines found for Invoice {modal_invoice_id}.")
+                return render(request, 'vendor/CanclePurchaseInvoice.html', context)
+
+            # ── 2. Reverse stock — add quantities back ───────────────────────
+            cancelled_lines = (
+                Vendor_invoice.objects
+                .using(db)
+                .filter(invoiceID=modal_invoice_id)
+            )
+            for line in cancelled_lines:
+                try:
+                    # Reverse the stock reduction that happened when the
+                    # purchase was originally received into the warehouse
+                    stock_item = (
+                        CreateStockIn.objects
+                        .using(db)
+                        .filter(itemcode=line.itemcode)
+                        .first()
+                    )
+                    if stock_item:
+                        stock_item.quantity = (
+                            float(stock_item.quantity or 0) + float(line.qty or 0)
+                        )
+                        stock_item.save(using=db)
+                except Exception as stock_err:
+                    logger.warning(
+                        f"[CanclePurchaseInvoice] Stock reversal failed | "
+                        f"invoiceID={modal_invoice_id} | itemcode={line.itemcode} | {stock_err}"
+                    )
+
+            messages.success(
+                request,
+                f"Invoice {modal_invoice_id} has been cancelled successfully."
+            )
+            logger.info(
+                f"[CanclePurchaseInvoice] Cancelled | invoiceID={modal_invoice_id} | "
+                f"id={modal_id} | user={request.user.username} | rows={rows_updated}"
+            )
+
+        except Exception as e:
+            logger.error(
+                f"[CanclePurchaseInvoice] Cancellation failed | "
+                f"invoiceID={modal_invoice_id} | {e}\n{traceback.format_exc()}"
+            )
+            messages.error(request, f"Cancellation failed: {e}")
+
+        # Refresh queryset so the cancelled invoice no longer appears
+        context['allinvoice'] = Vendor_invoice.objects.using(db).filter(~Q(cancellation=1))
+        return render(request, 'vendor/CanclePurchaseInvoice.html', context)
+
+    # ── GET: just render the page ────────────────────────────────────────────
     return render(request, 'vendor/CanclePurchaseInvoice.html', context)
+
+
+
+# @login_required(login_url="/")
+# @urls_name(name="Purchase Invoices")
+# def CanclePurchaseInvoice(request):
+#     db = request.user.company_id.db_name
+#     # allinvoice = customer_invoice.objects.filter(invoiceID='11971')
+#     vendorInvoice = Vendor_invoice.objects.using(db).filter(~Q(cancellation=1))
+#     # outlet_stockin_log = CreateStockInLog.objects.using(db).all()
+#     # outlet_stockin_log = CreateOutletStockInLog.objects.using(db).all()
+#     warehouse = Warehouse.objects.using(db).all()
+#     outlet = sales_outlet.objects.using(db).all()
+#     getitem = Item.objects.using(db).all();
+#     context = {
+#       'allinvoice': vendorInvoice,
+#       'items': getitem,
+#       'warehouse': warehouse,
+#       'outlet': outlet,
+#     }
+
+   
+# #     # update function
+# #     updateStockAdjustmentData(request, context, db)
+
+# #    # get function
+# #     stockinlog=getStockAdjustmentDate2(request, context, db, ~Q(cancellation=1))
+# #     if stockinlog:
+# #         return JsonResponse({'stockin':stockinlog})
+
+
+#     return render(request, 'vendor/CanclePurchaseInvoice.html', context)
 
 # ********************************************************************************************************
 
