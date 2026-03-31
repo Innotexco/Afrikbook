@@ -21,7 +21,7 @@ def create_new_loan(request, db):
     account = request.POST.get('account_debited')
     description = request.POST['description']
     amount_borrowed = request.POST['amount_borrowed']
-    amount_paid = request.POST['amount_paid']
+    # amount_paid = request.POST['amount_paid']
 
 
     debtor_id = None
@@ -43,17 +43,22 @@ def create_new_loan(request, db):
         else:
             messages.error(request, "Select Employee, Customer or Vendor")
             
-        if amount_borrowed and amount_paid:
-            balance_left = int(amount_borrowed) - int(amount_paid)
+        if amount_borrowed:
+            balance_left = int(amount_borrowed)
         else:
             balance_left = ""
+        # if amount_borrowed and amount_paid:
+        #     balance_left = int(amount_borrowed) - int(amount_paid)
+        # else:
+        #     balance_left = ""
        
 
 
         # Generate a new transaction ID
         transaction_id = uuid.uuid4()
 
-        form_data = {"date":date,"debtor_name":debtor_name, "debtor_id": debtor_id, "description": description, "amount_borrowed": amount_borrowed, "amount_paid": amount_paid, "balance_left": balance_left, "account_debited":account_debited.account_id}
+        form_data = {"date":date,"debtor_name":debtor_name, "debtor_id": debtor_id, "description": description, "amount_borrowed": amount_borrowed, "balance_left": balance_left, "account_debited":account_debited.account_id}
+        # form_data = {"date":date,"debtor_name":debtor_name, "debtor_id": debtor_id, "description": description, "amount_borrowed": amount_borrowed, "amount_paid": amount_paid, "balance_left": balance_left, "account_debited":account_debited.account_id}
         
         loan_form = LoanAccountForm(form_data)
         loan_log_form = LoanAccountLogForm(form_data)
