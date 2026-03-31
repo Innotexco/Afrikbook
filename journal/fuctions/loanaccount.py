@@ -87,8 +87,14 @@ def create_new_loan(request, db):
         loan_form = LoanAccountForm(form_data)
         loan_log_form = LoanAccountLogForm(form_data)
 
+        # if not (loan_form.is_valid() and loan_log_form.is_valid()):
+        #     messages.error(request, "Invalid form data")
+        #     return loan_form
         if not (loan_form.is_valid() and loan_log_form.is_valid()):
-            messages.error(request, "Invalid form data")
+            print("Loan Form Errors:", loan_form.errors)
+            print("Loan Log Form Errors:", loan_log_form.errors)
+        
+            messages.error(request, f"{loan_form.errors} {loan_log_form.errors}")
             return loan_form
 
         #ATOMIC TRANSACTION (VERY IMPORTANT)
