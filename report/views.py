@@ -858,7 +858,8 @@ def ExpiredItems(request):
 @urls_name(name="Customer Ledger")
 def CustomerLedger(request):
     company = company_table.objects.get(id=request.user.company_id_id)
-    return render(request, 'report/CustomerLedger.html',{'company':company})
+    profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
+    return render(request, 'report/CustomerLedger.html',{'company':company, 'profile':'profile'})
 
 @login_required(login_url='/')
 @urls_name(name="Customer Ledger")
