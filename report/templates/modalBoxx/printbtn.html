@@ -94,8 +94,11 @@
 
 <script>
     // Update the template display based on user's preference
+    // $(document).ready(function() {
+    //     loadTemplateInfo();
+    // });
     $(document).ready(function() {
-        loadTemplateInfo();
+        setTimeout(loadTemplateInfo, 100); // give parent page time to fully render
     });
     
     function loadTemplateInfo() {
