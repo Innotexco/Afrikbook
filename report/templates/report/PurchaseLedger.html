@@ -237,7 +237,7 @@
 
     <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
 
-        <div class="flex justify-between items-center gap-6">
+        <!-- <div class="flex justify-between items-center gap-6">
 
             <button class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
             type="button" onclick="generatePDF('pl')">
@@ -251,8 +251,8 @@
             type="button" onclick="generatePDF('pl')">
             Export to PDF
             </button>
-        </div>
-
+        </div> -->
+        {% include 'modalBoxx/printbtn.html' with container="sl" table="example" table_no="" %}
     </div>
 
     
