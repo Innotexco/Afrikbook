@@ -948,6 +948,7 @@ def PurchaseLedger(request):
     amount_total = Vendor_invoice.objects.using(db).values("invoiceID").distinct().aggregate(total_amount=Sum("amount"))['total_amount']
     amount_paid_total = Vendor_invoice.objects.using(db).values("invoiceID").distinct().aggregate(total_amount_paid=Sum("amount_paid"))['total_amount_paid'] or 0
     amount_expected_total = Vendor_invoice.objects.using(db).values("invoiceID").distinct().aggregate(total_amount_expected=Sum("amount_expected"))['total_amount_expected'] or 0
+    profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
     
     balance= amount_expected_total - amount_paid_total
     context = {
@@ -957,7 +958,8 @@ def PurchaseLedger(request):
         'amount_paid_total':amount_paid_total,
         'amount_expected_total':amount_expected_total,
         'balance':balance,
-        'company': company
+        'company': company,
+        'profile':profile
     }
    
     return render(request, 'report/PurchaseLedger.html', context)
