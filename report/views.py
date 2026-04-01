@@ -1738,7 +1738,8 @@ def HourlySalesReport(request):
         'total_sales': total_sales,
         'total_qty': total_qty,
         'day': day,
-        'company': company
+        'company': company,
+        'profile':profile
     }
   
     return render(request, 'report/Hourly.html', context)
@@ -1783,7 +1784,8 @@ def DailySalesReport(request):
         'total': total,
         'company': company,
         'start': start,
-        'end': end
+        'end': end,
+        'profile':profile
         
         }
     
@@ -1827,7 +1829,8 @@ def MonthlySalesReport(request):
         'total': total,
         'company': company,
         'start': start,
-        'end': end
+        'end': end,
+        'profile':profile
         }
     
     return render(request, 'report/Monthly.html', context)
@@ -1867,6 +1870,7 @@ def QuaterlySalesReport(request):
         'total': total,
         'company': company,
         'start': start.year,
+        'profile':profile,
         }
     
     return render(request, 'report/Quaterly.html', context)
@@ -1909,7 +1913,8 @@ def YearlySalesReport(request):
         'total': total,
         'company': company, 
         'start': start,
-        'end': end  
+        'end': end,
+        'profile':profile
         }
     
     return render(request, 'report/Yearly.html', context)
