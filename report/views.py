@@ -1718,7 +1718,9 @@ from .functions.sales.sales import *
 from .functions.sales.customer import *
 
 def HourlySalesReport(request):
+    db = AfrikBookDB(request)
     company = company_table.objects.get(id=request.user.company_id_id)
+    profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
     if request.method == "POST":
         day = request.POST.get("day")
         start_date = datetime.strptime(day, '%Y-%m-%d').date()
@@ -1745,8 +1747,9 @@ def HourlySalesReport(request):
 @login_required(login_url='/')
 @urls_name(name="Sales Report")
 def DailySalesReport(request):
+    db = AfrikBookDB(request)
     company = company_table.objects.get(id=request.user.company_id_id)
-    
+    profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
     if request.method == "POST":
         start = request.POST.get("start_date")
         end = request.POST.get("end_date")
@@ -1789,7 +1792,9 @@ def DailySalesReport(request):
 @login_required(login_url='/')
 @urls_name(name="Sales Report")
 def MonthlySalesReport(request):
+    db = AfrikBookDB(request)
     company = company_table.objects.get(id=request.user.company_id_id)
+     profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
     if request.method == "POST":
         start = request.POST.get("start_date")
         end = request.POST.get("end_date")
@@ -1830,7 +1835,9 @@ def MonthlySalesReport(request):
 @login_required(login_url='/')
 @urls_name(name="Sales Report")
 def QuaterlySalesReport(request):
+    db = AfrikBookDB(request)
     company = company_table.objects.get(id=request.user.company_id_id)
+    profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
     if request.method == "POST":
         start = request.POST.get("start_date")
         if start:
@@ -1867,6 +1874,8 @@ def QuaterlySalesReport(request):
 @login_required(login_url='/')
 @urls_name(name="Sales Report")
 def YearlySalesReport(request):
+    db = AfrikBookDB(request)
+    profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
     company = company_table.objects.get(id=request.user.company_id_id)
     if request.method == "POST":
         start = request.POST.get("start_date")
