@@ -1794,7 +1794,7 @@ def DailySalesReport(request):
 def MonthlySalesReport(request):
     db = AfrikBookDB(request)
     company = company_table.objects.get(id=request.user.company_id_id)
-     profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
+    profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
     if request.method == "POST":
         start = request.POST.get("start_date")
         end = request.POST.get("end_date")
