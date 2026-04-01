@@ -257,7 +257,7 @@ def ProfitLossStatement(request):
         get_salesReturn                 = ammountSummer(request, Liability_account, (Q(account_type='Cash') & Q(account_bankname__icontains='Return Inward') & Q(date__range=(from_date, to_date))))
         get_discountallowed_Sum         = ammountSummer(request, Expenses_account, (Q(account_type='Cash') & Q(account_bankname__icontains='Discount Allowed') & Q(date__range=(from_date, to_date))))
         get_cost_of_goods               = getCOGSSum(request, customer_invoice, 'itemcode')
-        get_expenses                    = ammountSummer(request, Expenses_account,  (~Q(account_bankname__icontains='Vat Account')  & ~Q(account_bankname__icontains='Discount Allowed') &  Q(date__range=(from_date, to_date))))
+        get_expenses                    = ammountSummer(request, Expenses_account,  (~Q(account_bankname__icontains='Tax')  & ~Q(account_bankname__icontains='Discount Allowed') &  Q(date__range=(from_date, to_date))))
 
         getOperatingExpensesSum         = ammountSummer(request, Expenses_account, Q(date__range=(from_date, to_date)))
         get_other_income                = ammountSummer(request, Income_account,  (Q(account_type='Cash') & Q(date__range=(from_date, to_date))))
@@ -274,7 +274,7 @@ def ProfitLossStatement(request):
         get_totalNetProfit              = getNetProfit - getOperatingExpensesSum
 
 
-        getTax                          = Expenses_account.objects.using(db).filter(Q(account_bankname__icontains='Vat Account') & Q(date__range=(from_date, to_date)))
+        getTax                          = Expenses_account.objects.using(db).filter(Q(account_bankname__icontains='Tax') & Q(date__range=(from_date, to_date)))
         getTaxSum                       = sum(amt.amount for amt in getTax)
 
         context={
