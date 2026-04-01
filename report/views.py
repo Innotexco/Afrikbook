@@ -860,7 +860,7 @@ def CustomerLedger(request):
     db = AfrikBookDB(request)
     company = company_table.objects.get(id=request.user.company_id_id)
     profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
-    return render(request, 'report/CustomerLedger.html',{'company':company, 'profile':'profile'})
+    return render(request, 'report/CustomerLedger.html',{'company':company, 'profile':profile})
 
 @login_required(login_url='/')
 @urls_name(name="Customer Ledger")
