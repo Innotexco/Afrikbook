@@ -652,6 +652,7 @@ def AgedPayable(request):
     aged = payable.objects.using(db).filter(amount__lt=F('initial_amount')).distinct()
     amount_total = payable.objects.using(db).aggregate(total_amount=Sum("amount"))['total_amount']
     company = company_table.objects.get(id=request.user.company_id_id)
+    profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
     
     if request.method == "POST":
        
@@ -686,7 +687,8 @@ def AgedPayable(request):
         'vendors': vendors,
         'aged_recievable':aged, 
         'amount_total':amount_total,
-        'company': company
+        'company': company,
+        'profile':profile
     }
    
     return render(request, 'report/AgedPayable.html', context)
