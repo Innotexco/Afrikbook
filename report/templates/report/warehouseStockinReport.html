@@ -472,7 +472,7 @@
     (function populateYears() {
     var currentYear = new Date().getFullYear();
     var startYear   = 2020;          // change this to your earliest data year
-    var select      = $('#Yearly');
+   var startYear = {{ start_year }};
 
     for (var year = currentYear; year >= startYear; year--) {
         select.append('<option value="' + year + '">' + year + '</option>');
