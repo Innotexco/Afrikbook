@@ -1563,8 +1563,12 @@ def WarehouseStockinReport(request):
         Quaterly    = request.GET.get('Quaterly')
         if fromdate and todate is not None or Yearly is not None or monthly or Quaterly:
            return WarehouseReport(request, db, fromdate, todate, daily, Yearly, monthly, Quaterly)
+
+    context = {
+        'start_year': request.user.date_joined.year,
+    }
    
-    return render(request, 'report/warehouseStockinReport.html')
+    return render(request, 'report/warehouseStockinReport.html', context)
 
 def WarehouseReport(request, db, fromdate, todate, daily, year, month, quater):
     data = []
