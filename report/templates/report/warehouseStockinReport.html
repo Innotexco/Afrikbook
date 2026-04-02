@@ -93,8 +93,7 @@
                         </span>
                         <select class="onchangeM_Y block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="Yearly">
                             <option>_ _Choose Year_ _</option>
-                            <option value="2024">2024</option>
-                            <option value="2024">2024</option>
+                            <!-- populated dynamically -->
                         </select>
                     </label>
                     <div class="block text-sm mt-5"> 
@@ -469,6 +468,16 @@
 
 
     // });
+
+    (function populateYears() {
+    var currentYear = new Date().getFullYear();
+    var startYear   = 2020;          // change this to your earliest data year
+    var select      = $('#Yearly');
+
+    for (var year = currentYear; year >= startYear; year--) {
+        select.append('<option value="' + year + '">' + year + '</option>');
+    }
+})();
 </script>
 
 
