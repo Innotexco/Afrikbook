@@ -90,10 +90,9 @@
                             Select Year
                         </span>
                         <select class="onchangeM_Y block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="Yearly">
-                            <option>_ _Choose Year_ _</option>
-                            <option value="2024">2024</option>
-                            <option value="2024">2024</option>
-                        </select>
+                        <option>_ _Choose Year_ _</option>
+                        <!-- populated dynamically -->
+                    </select>
                     </label>
                     <div class="block text-sm mt-5"> 
                         <button  type='button' id="search_btn"  class="hidden Search w-full py-2 px-2 mt-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
@@ -452,8 +451,19 @@
         })
     })
 
-
+    
     // });
+
+    // Populate year dropdown dynamically
+    (function populateYears() {
+        var currentYear = new Date().getFullYear();
+        var startYear = {{ start_year }};        
+        var select      = $('#Yearly');
+    
+        for (var year = currentYear; year >= startYear; year--) {
+            select.append('<option value="' + year + '">' + year + '</option>');
+        }
+    })();
 </script>
 
 
