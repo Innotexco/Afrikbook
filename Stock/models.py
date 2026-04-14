@@ -142,7 +142,7 @@ class CreateStockIn(models.Model):
 
 
 class CreateOutletStockInLog(models.Model):
-    datetx               = models.DateField()
+    datetx               = models.DateField(auto_now_add=True)
     invoice_no           = models.CharField(max_length=250)
     order_no             = models.CharField(max_length=250)
     supplier             = models.CharField(max_length=250)
