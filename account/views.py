@@ -16,6 +16,10 @@ from django.views.decorators.csrf import csrf_exempt
 from .acct_functions.account import *
 from .utils import unique_accountId_generator
 from main.utils import pagenation
+from django.db import DatabaseError, IntegrityError, transaction
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @login_required(login_url='/')
@@ -74,26 +78,38 @@ def Encountered(any,item):
 @urls_name(name ="Accounts")
 def AccountSetup(request):
     db = request.user.company_id.db_name
+
     if request.method == "POST":
         form = AccountForm(request.POST)
 
         if form.is_valid():
             try:
-                form_i = form.save(commit=False)
-                form_i.Userlogin = request.user.username
-                form_i.save(using=db)
-                messages.success(request, "Account Added Successful")
-           
+                with transaction.atomic(using=db):
+                    form_i = form.save(commit=False)
+                    form_i.Userlogin = request.user.username
+                    form_i.save(using=db)
+
+                messages.success(request, "Account Added Successfully")
                 return redirect('account:AccountSetup')
-            except: 
-                # print(form.errors)
-                pass
+
+            except IntegrityError as e:
+                logger.error(f"Integrity error: {e}")
+                messages.error(request, "Duplicate or invalid data detected.")
+
+            except DatabaseError as e:
+                logger.error(f"Database error: {e}")
+                messages.error(request, "Database error occurred.")
+
+            except Exception as e:
+                logger.exception(f"Unexpected error: {e}")
+                messages.error(request, "Something went wrong.")
+
         else:
-            # print(form.errors)
-            pass
+            messages.error(request, "Please correct the form errors.")
+
     else:
         form = AccountForm()
-   
+
     return render(request, 'account/AccountSetup.html', {'form': form})
 
 
