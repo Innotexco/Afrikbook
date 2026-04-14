@@ -288,20 +288,45 @@ def outlet_outlet(request, context, db):
 
 
 
-def DoSomething(checkexist, quantity, item, i, context, INT, db):
-    oldQty = checkexist.quantity
+# def DoSomething(checkexist, quantity, item, i, context, INT, db):
+#     oldQty = checkexist.quantity
    
-    if oldQty < int(quantity[i]):
-        context["error_message"] = f"We only have {oldQty} {item[i]} left"
+#     if oldQty < int(quantity[i]):
+#         context["error_message"] = f"We only have {oldQty} {item[i]} left"
         
-    # ELSE USE A JS ALERT TO TRANSFER ANYWAY
-    else:
-      if INT == 'Yes':
-         newQty = float(oldQty) - float(quantity[i])
-         checkexist.quantity = newQty
-         checkexist.save(using=db)
-      return True
+#     # ELSE USE A JS ALERT TO TRANSFER ANYWAY
+#     else:
+#       if INT == 'Yes':
+#          newQty = float(oldQty) - float(quantity[i])
+#          checkexist.quantity = newQty
+#          checkexist.save(using=db)
+#       return True
 
+from decimal import Decimal
+
+def DoSomething(checkexist, quantity, item, i, context, INT, db):
+
+    if not quantity[i] or str(quantity[i]).strip() == "":
+        context["error_message"] = f"Quantity missing for {item[i]}"
+        return False
+
+    try:
+        req_qty = Decimal(quantity[i])
+    except:
+        context["error_message"] = f"Invalid quantity for {item[i]}"
+        return False
+
+    oldQty = Decimal(checkexist.quantity)
+
+    if oldQty < req_qty:
+        context["error_message"] = f"We only have {oldQty} {item[i]} left"
+        return False
+
+    if INT == 'Yes':
+        checkexist.quantity = oldQty - req_qty
+        checkexist.save(using=db)
+
+    return True
 
 def DoSomethingElse(context,item, i, store):
     context["error_message"] =  item[i] +' Item not found in '+ store 

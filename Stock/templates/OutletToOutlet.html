@@ -94,6 +94,20 @@
         </form>
     </div>
 
+<script>
+    document.querySelector("form").addEventListener("submit", function (e) {
+    let qtyInputs = document.querySelectorAll("input[name='quantity[]']");
+
+    for (let input of qtyInputs) {
+        if (!input.value || input.value.trim() === "") {
+            e.preventDefault();
+            alert("Quantity cannot be empty");
+            input.focus();
+            return;
+        }
+    }
+});
+</script>
     
     
 {% endblock content %}
