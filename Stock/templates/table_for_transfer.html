@@ -51,7 +51,7 @@
                         <input 
                             type="number"
                             name="{{form.quantity.name}}[]"
-                            id="qty"
+                            id="qty_{{ forloop.counter }}"
                             class="qtty block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input any"
                             placeholder=""
                             data-button-outlet= {{store}}
