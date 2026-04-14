@@ -306,9 +306,9 @@ from decimal import Decimal
 
 def DoSomething(checkexist, quantity, item, i, context, INT, db):
 
-    if not quantity[i] or str(quantity[i]).strip() == "":
-        context["error_message"] = f"Quantity missing for {item[i]}"
-        return False
+    # if not quantity[i] or str(quantity[i]).strip() == "":
+    #     context["error_message"] = f"Quantity missing for {item[i]}"
+    #     return False
 
     try:
         req_qty = Decimal(quantity[i])
