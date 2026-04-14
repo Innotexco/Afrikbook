@@ -388,7 +388,7 @@ class Item(models.Model):
     selling_price           = models.CharField(max_length = 255)
     retailer_price          = models.CharField(max_length = 255, blank=True)
     description             = models.TextField(blank=True)
-    wholesale_price         = models.CharField(max_length = 255 )
+    wholesale_price         = models.CharField(max_length = 255, blank=True)
     size                    = models.CharField(max_length = 255, blank=True)
     # attribute               = models.CharField(max_length = 255, null=True, blank=True)
     attribute               = models.ManyToManyField(Attribute, related_name="items", blank=True)
