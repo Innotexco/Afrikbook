@@ -9,7 +9,7 @@ def add_employee(request, db):
     account_form = EmployeeAccountForm(request.POST or None)
     eg_form = EmployeeGurantorForm(request.POST or None)
     
-    if form.is_valid() and eg_form.is_valid() and account_form.is_valid():
+    if form.is_valid() and account_form.is_valid():
         form_i = form.save(commit=False)
         form_i.Userlogin = request.user.username
         form_i.save(using=db)
@@ -18,12 +18,16 @@ def add_employee(request, db):
         account.employee_id = form_i.staff_ID
         account.save(using=db)
         
-        employee_g = eg_form.save(commit=False)
-        employee_g.employee_id = form_i.id
-        employee_g.save(using=db)
+        # Only save guarantor if form has data and is valid
+        if eg_form.is_valid():
+            employee_g = eg_form.save(commit=False)
+            employee_g.employee_id = form_i.id
+            employee_g.save(using=db)
 
         messages.success(request, "Employee was added successfully")
-    # else:
+        return True  
+    return False
+
        
         
 def update_employee(request, id, db):
