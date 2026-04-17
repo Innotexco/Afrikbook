@@ -37,7 +37,7 @@ def AddEmployee(request):
     if request.method == "POST":
         email = request.POST['email']
         if employee.objects.using(db).filter(email=email).exists():
-            messages.success(request, "Email already exists")
+            messages.error(request, "Email already exists")
         else:
             add_employee(request, db)
    
