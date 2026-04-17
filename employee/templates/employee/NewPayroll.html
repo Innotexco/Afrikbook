@@ -34,6 +34,25 @@
         </div>
     </div> {% endcomment %}
 
+    {% if missing_salary %}
+    <div class="my-3 px-4 py-3 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded-lg text-sm">
+        <strong>⚠️ Warning:</strong> The following employees have no basic salary set. 
+        Please update their profiles before saving payroll:
+        <ul class="mt-1 list-disc list-inside">
+            {% for emp in missing_salary %}
+                <li>
+                    {{ emp.fullname }} ({{ emp.staff_ID }}) — 
+                    <a href="{% url 'employee:EditEmployee' emp.id %}" 
+                    class="underline text-yellow-900 font-semibold">
+                    Update Profile
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+
     <form  method="post">
         {% csrf_token %}
         
@@ -114,7 +133,7 @@
                         
                         {% for employee in employee %}
                         
-                        <tr class="text-gray-700 py-0 mx-0">
+                        <tr class="text-gray-700 py-0 mx-0 {% if not employee.basic_salary or employee.basic_salary == 0 %}bg-red-50{% endif %}">
 
                             <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">
                                 {{forloop.counter}}
@@ -307,8 +326,11 @@
 
             <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-2">
 
-                <button class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
-                    type="submit">
+                <button class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 
+                    {% if missing_salary %}bg-gray-300 cursor-not-allowed opacity-50{% else %}bg-slate-200 hover:bg-slate-300{% endif %} 
+                    border border-transparent rounded-lg focus:outline-none focus:shadow-outline-slate"
+                    type="submit"
+                    {% if missing_salary %}disabled title="Update all employee salaries first"{% endif %}>
                     Save
                 </button>
 
