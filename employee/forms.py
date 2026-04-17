@@ -35,6 +35,17 @@ class EmployeeForm(forms.ModelForm):
     gender = forms.ChoiceField(choices=GENDER, widget=forms.Select())
     marital_status = forms.ChoiceField(choices=MARITAL_STATUS, widget=forms.Select())
     category = forms.ChoiceField(choices=CATEGORY, widget=forms.Select())
+
+    def clean_basic_salary(self):
+        salary = self.cleaned_data.get('basic_salary')
+        if salary:
+            # Remove commas and convert to decimal/float
+            cleaned = str(salary).replace(',', '')
+            try:
+                return float(cleaned)  # or Decimal(cleaned) if using DecimalField
+            except ValueError:
+                raise forms.ValidationError("Enter a valid salary amount.")
+        return salary
     
 
 class EmployeeAccountForm(forms.ModelForm):

@@ -12,13 +12,17 @@ def add_employee(request, db):
     if form.is_valid() and account_form.is_valid():
         form_i = form.save(commit=False)
         form_i.Userlogin = request.user.username
+
+        # Strip commas from basic_salary before saving
+        if form_i.basic_salary:
+            form_i.basic_salary = str(form_i.basic_salary).replace(',', '')
+        
         form_i.save(using=db)
         
         account = account_form.save(commit=False)
         account.employee_id = form_i.staff_ID
         account.save(using=db)
         
-        # Only save guarantor if form has data and is valid
         if eg_form.is_valid():
             employee_g = eg_form.save(commit=False)
             employee_g.employee_id = form_i.id
@@ -27,7 +31,6 @@ def add_employee(request, db):
         messages.success(request, "Employee was added successfully")
         return True  
     return False
-
        
         
 def update_employee(request, id, db):

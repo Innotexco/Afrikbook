@@ -101,13 +101,35 @@ def AddPayroll(request):
     employe = employee.objects.using(db).all()
     year = datetime.today().year
     years = range(year, year - 10, -1)
+
+    # Check for employees with no basic salary set
+    missing_salary = employe.filter(
+        models.Q(basic_salary__isnull=True) | 
+        models.Q(basic_salary=0) | 
+        models.Q(basic_salary='')
+    )
+
+    if missing_salary.exists():
+        missing_names = ", ".join([emp.fullname for emp in missing_salary])
+        messages.warning(
+            request, 
+            f"The following employees have no basic salary set: {missing_names}. "
+            f"Please update their profiles before creating a payroll."
+        )
+
     if request.method == "POST":
-        add_payroll(request, db)
+        if missing_salary.exists():
+            messages.error(request, "Cannot create payroll. Some employees have no basic salary set.")
+        else:
+            add_payroll(request, db)
+
     context = {
-        'employee':employe,
-        'years':years
+        'employee': employe,
+        'years': years,
+        'missing_salary': missing_salary,  # pass to template to highlight rows
     }
     return render(request, "employee/NewPayroll.html", context)
+
 
 def payroll_filter_by_date(request):
     db = request.user.company_id.db_name
