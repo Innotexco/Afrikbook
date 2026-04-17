@@ -34,7 +34,11 @@ class EmployeeForm(forms.ModelForm):
         
     gender = forms.ChoiceField(choices=GENDER, widget=forms.Select())
     marital_status = forms.ChoiceField(choices=MARITAL_STATUS, widget=forms.Select())
-    category = forms.ChoiceField(choices=CATEGORY, widget=forms.Select())
+    category = forms.ChoiceField(
+    choices=[('', '---------')] + CATEGORY,
+    required=False,
+    widget=forms.Select()
+)
     
 
 class EmployeeAccountForm(forms.ModelForm):
@@ -49,7 +53,11 @@ class EmployeeGurantorForm(forms.ModelForm):
         fields = ('__all__')
         exclude = ('employee_id',)
 
-    relationship = forms.ChoiceField(choices=RELATIONSHIP, widget=forms.Select())
+    relationship = forms.ChoiceField(
+    choices=[('', '---------')] + RELATIONSHIP,
+    required=False,
+    widget=forms.Select()
+)
 
 class PayRollForm(forms.ModelForm):
     class Meta:

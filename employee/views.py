@@ -33,59 +33,17 @@ def ViewEmployee(request):
 @login_required(login_url='/')
 @urls_name(name="Employee")
 def AddEmployee(request):
-
     db = request.user.company_id.db_name
-
-    form = EmployeeForm(request.POST or None)
-    account_form = EmployeeAccountForm(request.POST or None)
-    eg_form = EmployeeGurantorForm(request.POST or None)
-
     if request.method == "POST":
-
-        email = request.POST.get('email')
-
+        email = request.POST['email']
         if employee.objects.using(db).filter(email=email).exists():
-
-            messages.error(request, "Email already exists")
-
+            messages.success(request, "Email already exists")
         else:
+            add_employee(request, db)
+   
+    return render(request, "employee/NewEmployee.html")
 
-            if form.is_valid() and account_form.is_valid() and eg_form.is_valid():
 
-                # Save employee
-                form_i = form.save(commit=False)
-                form_i.Userlogin = request.user.username
-                form_i.save(using=db)
-
-                # Save account
-                account = account_form.save(commit=False)
-                account.employee_id = form_i.staff_ID
-                account.save(using=db)
-
-                # Save guarantor
-                employee_g = eg_form.save(commit=False)
-                employee_g.employee_id = form_i.id
-                employee_g.save(using=db)
-
-                messages.success(request, "Employee was added successfully")
-
-                return redirect("AddEmployee")
-
-            else:
-
-                print("Employee Errors:", form.errors)
-                print("Account Errors:", account_form.errors)
-                print("Guarantor Errors:", eg_form.errors)
-
-                messages.error(request, "Please correct the errors below")
-
-    context = {
-        "form": form,
-        "account_form": account_form,
-        "eg_form": eg_form,
-    }
-
-    return render(request, "employee/NewEmployee.html", context)
 @login_required(login_url='/')
 @urls_name(name="Employee")
 def UpdateEmployee(request, id):
