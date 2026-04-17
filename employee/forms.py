@@ -35,7 +35,7 @@ class EmployeeForm(forms.ModelForm):
     gender = forms.ChoiceField(choices=GENDER, widget=forms.Select())
     marital_status = forms.ChoiceField(choices=MARITAL_STATUS, widget=forms.Select())
     category = forms.ChoiceField(
-    choices=[('', '---------')] + CATEGORY,
+    choices=[('', '---------')] + list(RELATIONSHIP),
     required=False,
     widget=forms.Select()
 )
