@@ -38,13 +38,13 @@ class employee(models.Model):
     marital_status	     = models.CharField(max_length=255, choices=MARITAL_STATUS)
     address              = models.CharField(max_length=222)
     staff_ID             = models.CharField(max_length=255, blank=True, unique=True)	
-    basic_salary         = models.CharField(max_length=223)	
-    job_title            = models.CharField(max_length=255)
-    department           = models.CharField(max_length=255)
-    category	         = models.CharField(max_length=255, choices=CATEGORY)
-    supervisor           = models.CharField(max_length=222)	
-    start_date           = models.DateField()	
-    work_location        = models.CharField(max_length=222)	
+    basic_salary         = models.CharField(max_length=223, blank=True)	
+    job_title            = models.CharField(max_length=255, blank=True)
+    department           = models.CharField(max_length=255, blank=True)
+    category	         = models.CharField(max_length=255, choices=CATEGORY, blank=True)
+    supervisor           = models.CharField(max_length=222, blank=True)	
+    start_date           = models.DateField(null=True, blank=True)	
+    work_location        = models.CharField(max_length=222, blank=True)	
     token_id             = models.CharField(max_length=222, blank=True, null=True)	
     Userlogin            = models.CharField(max_length=60, blank=True, null=True)
 
@@ -69,9 +69,9 @@ class employee(models.Model):
 
 class employee_account_details(models.Model):
     employee_id    = models.CharField(max_length=255)
-    account_no     = models.CharField(max_length=222)	
-    account_name   = models.CharField(max_length=222)	
-    bank_name      = models.CharField(max_length=222)
+    account_no     = models.CharField(max_length=222, blank=True)	
+    account_name   = models.CharField(max_length=222, blank=True)	
+    bank_name      = models.CharField(max_length=222, blank=True)
     
     class Meta:
         db_table = "employee_account_details"
@@ -79,12 +79,12 @@ class employee_account_details(models.Model):
 
 
 class employee_guarantor(models.Model):
-    g_fullname           = models.CharField(max_length=222)	
-    residential_address  = models.CharField(max_length=222)	
-    work_address         = models.CharField(max_length=222)
-    relationship	     = models.CharField(max_length=255, choices=RELATIONSHIP)
-    g_phone              = models.CharField(max_length=225)	
-    g_email              = models.EmailField(max_length=225)
+    g_fullname           = models.CharField(max_length=222, blank=True)	
+    residential_address  = models.CharField(max_length=222, blank=True)	
+    work_address         = models.CharField(max_length=222, blank=True)
+    relationship	     = models.CharField(max_length=255, choices=RELATIONSHIP, blank=True)
+    g_phone              = models.CharField(max_length=225, blank=True)	
+    g_email              = models.EmailField(max_length=225, blank=True)
     employee_id          = models.CharField(max_length=255)
     
     class Meta:
