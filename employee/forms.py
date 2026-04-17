@@ -35,7 +35,7 @@ class EmployeeForm(forms.ModelForm):
     gender = forms.ChoiceField(choices=GENDER, widget=forms.Select())
     marital_status = forms.ChoiceField(choices=MARITAL_STATUS, widget=forms.Select())
     category = forms.ChoiceField(
-    choices=[('', '---------')] + list(RELATIONSHIP),
+    choices=[('', '---------')] + list(CATEGORY),
     required=False,
     widget=forms.Select()
 )
@@ -54,7 +54,7 @@ class EmployeeGurantorForm(forms.ModelForm):
         exclude = ('employee_id',)
 
     relationship = forms.ChoiceField(
-    choices=[('', '---------')] + RELATIONSHIP,
+    choices=[('', '---------')] + list(RELATIONSHIP),
     required=False,
     widget=forms.Select()
 )
