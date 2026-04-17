@@ -42,7 +42,7 @@
             {% for emp in missing_salary %}
                 <li>
                     {{ emp.fullname }} ({{ emp.staff_ID }}) — 
-                    <a href="{% url 'employee:EditEmployee' emp.id %}" 
+                    <a href="{% url 'employee:UpdateEmployee' emp.id %}" 
                     class="underline text-yellow-900 font-semibold">
                     Update Profile
                     </a>
