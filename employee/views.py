@@ -48,18 +48,29 @@ def AddEmployee(request):
 def UpdateEmployee(request, id):
     db = request.user.company_id.db_name
     Employee = employee.objects.using(db).get(id=id)
-    Employee_account = employee_account_details.objects.using(db).get(employee_id=Employee.staff_ID)
-    Employeeg = employee_guarantor.objects.using(db).get(employee_id=id)
+    
+    # Use get_or_none pattern for optional related records
+    try:
+        Employee_account = employee_account_details.objects.using(db).get(employee_id=Employee.staff_ID)
+    except employee_account_details.DoesNotExist:
+        Employee_account = None
+
+    try:
+        Employeeg = employee_guarantor.objects.using(db).get(employee_id=id)
+    except employee_guarantor.DoesNotExist:
+        Employeeg = None
+
     if request.method == "POST":
-        update_employee(request, id, db)
-        return redirect("employee:Employee")
-        # update_employee_guarantor(request, id)
+        if update_employee(request, id, db):
+            return redirect("employee:Employee")
+
     context = {
         "employee": Employee,
         "account": Employee_account,
         "employeeg": Employeeg      
     }
     return render(request, "employee/UpdateEmployee.html", context)
+
 
 @login_required(login_url='/')
 @urls_name(name="Employee")
