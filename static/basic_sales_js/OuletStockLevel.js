@@ -4,7 +4,8 @@ function getStocklevel(url){
     let fromdate    =  $('#fromdate').val();
     let todate    =  $('#todate').val();
     let Itemcode    =  $('#Itemcode').val();
-    let searchItem    =  $('#searchItem').val();     
+    let searchItem    =  $('#searchItem').val();  
+    let searchCategory    =  $('#searchCategory').val();  
     let store  =  $('#store').val();       
     $.ajax({
         type: 'GET',
@@ -12,6 +13,7 @@ function getStocklevel(url){
         data: {
             Itemcode: Itemcode,
             searchItem: searchItem,   
+            searchCategory: searchCategory,
             fromdate: fromdate,   
             todate: todate, 
             // onchange
