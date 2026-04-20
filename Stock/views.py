@@ -1224,78 +1224,78 @@ def fetch_subcategories(request, category_id):
 
 
 class WarehouseStock:
-    def __init__(self, Itemcode, searchCategory, searchItem, fromdate, todate, warehouse, db) -> None:
-        self.item_code = Itemcode
-        self.item_name = searchItem
-        self.searchCategory = searchCategory
+    def __init__(self, Itemcode, searchCategory, searchItem, fromdate, todate, warehouse, db):
+        self.item_code = Itemcode.strip() if Itemcode else ''
+        self.search_item = searchItem.strip() if searchItem else ''
+        self.search_category = searchCategory.strip() if searchCategory else ''
         self.fromdate = fromdate
         self.todate = todate
-        self.warehouse = warehouse
+        self.warehouse = warehouse.strip() if warehouse else ''
         self.db = db
-        # self.run()
-        
+
     def run(self):
-        
-        filter_conditions = Q()
+        # Step 1: Filter Items (this supports category filtering)
+        item_q = Q()
+        if self.item_code:
+            item_q &= Q(generated_code=self.item_code)
+        if self.search_item:
+            item_q &= Q(item_name__icontains=self.search_item)
+        if self.search_category:
+            item_q &= Q(category__category_name__icontains=self.search_category)
+
+        if item_q:
+            itemList = Item.objects.using(self.db).filter(item_q).distinct()
+        else:
+            itemList = Item.objects.using(self.db).all()
+
+        # Get list of item codes for safe filtering on log tables
+        filtered_item_codes = list(itemList.values_list('generated_code', flat=True))
+
+        # Step 2: Build safe filter for log tables (only fields that exist on logs)
+        log_filter = Q()
         if self.fromdate and self.todate:
-                from_date, to_date = getdate(self.fromdate, self.todate)
-                filter_conditions &= Q(datetx__range=(from_date, to_date))
+            from_date, to_date = getdate(self.fromdate, self.todate)
+            log_filter &= Q(datetx__range=(from_date, to_date))
 
         if self.warehouse:
-            filter_conditions &= Q(warehouse=self.warehouse)
+            log_filter &= Q(warehouse=self.warehouse)
 
+        # If we have category or item name filter, restrict to only matching item codes
+        if self.search_category or self.search_item:
+            log_filter &= Q(item_code__in=filtered_item_codes)
 
-        if self.item_name:
-            filter_conditions &= Q(item=self.item_name)
-
-        if self.item_code:
-            filter_conditions &= Q(item_code=self.item_code)
-            
-        if self.searchCategory:
-            filter_conditions &= Q(item__category__category_name__icontains=self.searchCategory)
+        # Determine stock level mode
         try:
-            # stock_level = Check_StockLevel_By.objects.using(self.db).first().level
-            stock_ = Check_StockLevel_By.objects.using(self.db).first() #.level or "NO"
-      
-            if stock_ is not None:
-                stock_level = stock_.level
-            else:
-                stock_level = "NO"
+            stock_ = Check_StockLevel_By.objects.using(self.db).first()
+            stock_level = stock_.level if stock_ else "NO"
         except Check_StockLevel_By.DoesNotExist:
             stock_level = "NO"
-        
-      
-       
-        if filter_conditions is not None: 
-            shop = self.warehouse
-            if  self.item_code or self.item_name: 
-                itemList = Item.objects.using(self.db).filter(Q(generated_code=self.item_code) | Q(item_name=self.item_name))
-            else:
-                itemList = Item.objects.using(self.db).all()
-               
-        else:
-            itemList = Item.objects.using(self.db).all()  
 
-       
         data = []
+
         if stock_level == "YES":
             for x in itemList:
-                qty,  low_stock_level = self.get_grand_total_from_warehouse_stockin(x.generated_code, CreateStockIn, filter_conditions,  self.db)
-                #    itemList.update("'qty':" + str(qty))
+                qty, low_stock_level = self.get_grand_total_from_warehouse_stockin(
+                    x.generated_code, CreateStockIn, log_filter, self.db
+                )
                 x.qty = qty
                 x.outlet = self.warehouse
-                x.low_stock_level =  low_stock_level
+                x.low_stock_level = low_stock_level
                 entry(x, qty, self.warehouse, data)
-                
-        else:  
+        else:
             for x in itemList:
-                qty = self.warehouse_stock_log_level(x.generated_code, CreateStockInLog, CreateOutletStockInLog, filter_conditions, self.db)
-                #    itemList.update("'qty':" + str(qty))
+                qty = self.warehouse_stock_log_level(
+                    x.generated_code, 
+                    CreateStockInLog, 
+                    CreateOutletStockInLog, 
+                    log_filter, 
+                    self.db
+                )
                 x.qty = qty
                 x.outlet = self.warehouse
                 x.warehouse = self.warehouse
                 entry(x, qty, self.warehouse, data)
-               
+
         return itemList, data
 
     def get_grand_total_from_warehouse_stockin(self, item, table, filter_conditions, db):
