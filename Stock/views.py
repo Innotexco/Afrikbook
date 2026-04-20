@@ -611,7 +611,7 @@ def WarehouseStockLevel(request):
         if warehous:
             outlet= warehous 
         
-        stock = WarehouseStock(Itemcode, searchItem, fromdate, todate, outlet, db)
+        stock = WarehouseStock(Itemcode, searchCategory, searchItem, fromdate, todate, outlet, db)
         stock, data = stock.run()
     
     context = {
