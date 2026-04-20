@@ -396,128 +396,143 @@ def StockAdjustmentOutlet(request):
 # ********************************************************************************************************
 
 # ********************************************************************************************************
-
 def stockLevel(request, outlet, filter1, filter2):
     db = request.user.company_id.db_name
 
-    if filter1 is not None: 
-        shop = request.GET.get('store')
-        Itemcode = request.GET.get('Itemcode') 
-        searchItem = request.GET.get('searchItem')
-        searchCategory = request.GET.get('searchCategory')
-        if  Itemcode or searchItem or searchCategory: 
-        # if  shop is not None: 
-            itemList = Item.objects.using(db).filter(Q(generated_code=Itemcode) | Q(item_name=searchItem) | Q(category__category_name=searchCategory))
+    Itemcode       = request.GET.get('Itemcode',       '').strip()
+    searchItem     = request.GET.get('searchItem',     '').strip()
+    searchCategory = request.GET.get('searchCategory', '').strip()
+
+    if filter1 is not None:
+        if Itemcode or searchItem or searchCategory:
+            item_q = Q()
+            if Itemcode:
+                item_q |= Q(generated_code=Itemcode)
+            if searchItem:
+                item_q |= Q(item_name__icontains=searchItem)
+            if searchCategory:
+                item_q |= Q(category__category_name__icontains=searchCategory)
+            itemList = Item.objects.using(db).filter(item_q)
         else:
             itemList = Item.objects.using(db).all()
     else:
-            itemList = Item.objects.using(db).all()
-            
-    try:
-       stock_ = Check_StockLevel_By.objects.using(db).first() #.level or "NO"
-      
-       if stock_ is not None:
-           stock_level = stock_.level
-       else:
-           stock_level = "NO"
+        itemList = Item.objects.using(db).all()
 
+    # Get item codes from the filtered itemList so we can filter log tables
+    # (log models have no category field — only item_code)
+    filtered_item_codes = list(itemList.values_list('generated_code', flat=True))
+
+    # Narrow filter1/filter2 down to only those item codes
+    # This makes category filtering work on the stock log tables
+    if searchCategory or searchItem:
+        filter1 = filter1 & Q(item_code__in=filtered_item_codes)
+        filter2 = filter2 & Q(item_code__in=filtered_item_codes)
+
+    try:
+        stock_ = Check_StockLevel_By.objects.using(db).first()
+        stock_level = stock_.level if stock_ is not None else "NO"
     except Check_StockLevel_By.DoesNotExist:
         stock_level = "NO"
-
 
     data = []
     if stock_level == "YES":
         for x in itemList:
-                qty = get_grand_total_from_outlet_stockin(x.generated_code, CreateOutletStockIn,  outlet, db, filter1)
-                #    itemList.update("'qty':" + str(qty))
-                x.qty = qty
-                x.outlet = outlet
-                entry(x, qty, outlet, data)
-               
-    else:  
-        for x in itemList:
-            qty = get_grand_total_from_stock_log(x.generated_code, CreateOutletStockInLog, CreateStockInLog,  outlet, db, filter1, filter2)
-            #    itemList.update("'qty':" + str(qty))
-            x.qty = qty
+            qty = get_grand_total_from_outlet_stockin(
+                x.generated_code, CreateOutletStockIn, outlet, db, filter1
+            )
+            x.qty    = qty
             x.outlet = outlet
             entry(x, qty, outlet, data)
-  
+    else:
+        for x in itemList:
+            qty = get_grand_total_from_stock_log(
+                x.generated_code, CreateOutletStockInLog, CreateStockInLog,
+                outlet, db, filter1, filter2
+            )
+            x.qty    = qty
+            x.outlet = outlet
+            entry(x, qty, outlet, data)
+
     return itemList, data
 
 
 def entry(x, qty, outlet, data):
+    wholesale = x.wholesale_price or 0
+    selling   = x.selling_price   or 0
+    safe_qty  = qty or 0
 
-    qty2 = {
-        'category':x.category.category_name,
-        'item_name':x.item_name,
-        'qty':qty,
-        'itemcode': x.generated_code,
-        'store':outlet,
-        'low_stock_level': "x.low_stock_level",
-        'wholesale_price': x.selling_price,
-        'wholesale_price': x.wholesale_price,
-        'selling_price': x.selling_price,
-        'selling_price': x.selling_price
-        }
-    data.append(qty2)
+    data.append({
+        'category':            x.category.category_name,
+        'item_name':           x.item_name,
+        'qty':                 safe_qty,
+        'itemcode':            x.generated_code,
+        'store':               outlet,
+        'low_stock_level':     getattr(x, 'low_stock_level', ''),
+        'wholesale_price':     wholesale,
+        'total_cost':          wholesale * safe_qty,
+        'selling_price':       selling,
+        'total_selling_price': selling * safe_qty,
+    })
 
 
 def OutletStockLevel(request):
-    db = request.user.company_id.db_name
+    db   = request.user.company_id.db_name
     shop = sales_outlet.objects.using(db).all()
 
-    Itemcode = request.GET.get('Itemcode') 
-    searchItem = request.GET.get('searchItem')  
-    searchCategory = request.GET.get('searchCategory')  
-    fromdate = request.GET.get('fromdate') 
-    todate = request.GET.get('todate') 
-    outlet = request.GET.get('store') 
+    Itemcode       = request.GET.get('Itemcode',       '').strip()
+    searchItem     = request.GET.get('searchItem',     '').strip()
+    searchCategory = request.GET.get('searchCategory', '').strip()
+    fromdate       = request.GET.get('fromdate',       '').strip()
+    todate         = request.GET.get('todate',         '').strip()
+    outlet         = request.GET.get('store',          '').strip()
 
     if Itemcode or searchItem or searchCategory or fromdate or outlet:
-        
-        filter_conditions = Q()
+
+        filter_conditions       = Q()
         filter_sales_conditions = Q()
+
         if fromdate and todate:
-                from_date, to_date = getdate(fromdate, todate)
-                filter_conditions &= Q(datetx__range=(from_date, to_date))
-                filter_sales_conditions &= Q(invoice_date__range=(from_date, to_date))
+            from_date, to_date = getdate(fromdate, todate)
+            filter_conditions       &= Q(datetx__range=(from_date, to_date))
+            filter_sales_conditions &= Q(invoice_date__range=(from_date, to_date))
 
         if outlet:
-            filter_conditions &= Q(outlet=outlet)
+            filter_conditions       &= Q(outlet=outlet)
             filter_sales_conditions &= Q(outlet=outlet)
 
-
         if searchItem:
-            filter_conditions &= Q(item=searchItem)
-            filter_sales_conditions &= Q(item_name=searchItem)
+            # Also filter log tables by item name where available
+            filter_conditions       &= Q(item__icontains=searchItem)
+            filter_sales_conditions &= Q(item__icontains=searchItem)
 
         if Itemcode:
-            filter_conditions &= Q(item_code=Itemcode)
-            filter_sales_conditions &= Q(itemcode=Itemcode)
-            
-        if searchCategory:
-            filter_conditions &= Q(category__category_name=searchCategory)
-            filter_sales_conditions &= Q(category=searchCategory)
+            filter_conditions       &= Q(item_code=Itemcode)
+            filter_sales_conditions &= Q(item_code=Itemcode)
 
-        
-        stock, data = stockLevel(request, outlet, filter_conditions, filter_sales_conditions)
-      
+        stock, data = stockLevel(
+            request, outlet, filter_conditions, filter_sales_conditions
+        )
+
         if data is not None:
-            stockLeve = list(data)
-            return JsonResponse({'data': stockLeve, 'totalqty': "ooooo"})
+            return JsonResponse({
+                'data':     list(data),
+                'totalqty': sum(d['qty'] for d in data),
+            })
+
     else:
-    
-        filter_conditions = Q(outlet=request.user.outlet)
+        filter_conditions       = Q(outlet=request.user.outlet)
         filter_sales_conditions = Q()
 
-        stock, data = stockLevel(request, request.user.outlet, filter_conditions, filter_sales_conditions)
+        stock, data = stockLevel(
+            request, request.user.outlet, filter_conditions, filter_sales_conditions
+        )
 
     context = {
-        'shop' : shop,
-        'outlet': stock
+        'shop':   shop,
+        'outlet': stock,
     }
- 
     return render(request, 'OutletStockLevel.html', context)
+
 
 # def OutletStockLevel(request):
 #    db = request.user.company_id.db_name
