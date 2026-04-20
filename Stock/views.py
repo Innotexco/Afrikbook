@@ -456,10 +456,18 @@ def stockLevel(request, outlet, filter1, filter2):
     return itemList, data
 
 
+from decimal import Decimal, InvalidOperation
+
 def entry(x, qty, outlet, data):
-    wholesale = x.wholesale_price or 0
-    selling   = x.selling_price   or 0
-    safe_qty  = qty or 0
+    def to_decimal(val):
+        try:
+            return Decimal(str(val)) if val not in (None, '', 'None') else Decimal('0')
+        except InvalidOperation:
+            return Decimal('0')
+
+    wholesale = to_decimal(x.wholesale_price)
+    selling   = to_decimal(x.selling_price)
+    safe_qty  = to_decimal(qty)
 
     data.append({
         'category':            x.category.category_name,
