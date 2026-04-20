@@ -404,9 +404,10 @@ def stockLevel(request, outlet, filter1, filter2):
         shop = request.GET.get('store')
         Itemcode = request.GET.get('Itemcode') 
         searchItem = request.GET.get('searchItem')
-        if  Itemcode or searchItem: 
+        searchCategory = request.GET.get('searchCategory')
+        if  Itemcode or searchItem or searchCategory: 
         # if  shop is not None: 
-            itemList = Item.objects.using(db).filter(Q(generated_code=Itemcode) | Q(item_name=searchItem))
+            itemList = Item.objects.using(db).filter(Q(generated_code=Itemcode) | Q(item_name=searchItem) | Q(category__category_name=searchCategory))
         else:
             itemList = Item.objects.using(db).all()
     else:
@@ -467,11 +468,12 @@ def OutletStockLevel(request):
 
     Itemcode = request.GET.get('Itemcode') 
     searchItem = request.GET.get('searchItem')  
+    searchCategory = request.GET.get('searchCategory')  
     fromdate = request.GET.get('fromdate') 
     todate = request.GET.get('todate') 
     outlet = request.GET.get('store') 
 
-    if Itemcode or searchItem or fromdate or outlet:
+    if Itemcode or searchItem or searchCategory or fromdate or outlet:
         
         filter_conditions = Q()
         filter_sales_conditions = Q()
@@ -492,6 +494,11 @@ def OutletStockLevel(request):
         if Itemcode:
             filter_conditions &= Q(item_code=Itemcode)
             filter_sales_conditions &= Q(itemcode=Itemcode)
+            
+        if searchCategory:
+            filter_conditions &= Q(category__category_name=searchCategory)
+            filter_sales_conditions &= Q(category=searchCategory)
+
         
         stock, data = stockLevel(request, outlet, filter_conditions, filter_sales_conditions)
       
