@@ -425,8 +425,8 @@ def stockLevel(request, outlet, filter1, filter2):
     # Narrow filter1/filter2 down to only those item codes
     # This makes category filtering work on the stock log tables
     if searchCategory or searchItem:
-        filter1 = filter1 & Q(item_code__in=filtered_item_codes)
-        filter2 = filter2 & Q(item_code__in=filtered_item_codes)
+        filter1 = filter1 & Q(item_code__in=filtered_item_codes)   
+        filter2 = filter2 & Q(itemcode__in=filtered_item_codes)
 
     try:
         stock_ = Check_StockLevel_By.objects.using(db).first()
