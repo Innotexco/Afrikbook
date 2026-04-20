@@ -591,14 +591,15 @@ def WarehouseStockLevel(request):
     warehouse = Warehouse.objects.using(db).all()
    
     Itemcode = request.GET.get('Itemcode') 
-    searchItem = request.GET.get('searchItem')  
+    searchItem = request.GET.get('searchItem') 
+    searchCategory = request.GET.get('searchCategory')
     fromdate = request.GET.get('fromdate') 
     todate = request.GET.get('todate') 
     outlet = request.GET.get('store') 
    
-    if Itemcode or searchItem or fromdate or outlet:
+    if Itemcode or searchItem or searchCategory or fromdate or outlet:
             
-        stock = WarehouseStock(Itemcode, searchItem, fromdate, todate, outlet, db)
+        stock = WarehouseStock(Itemcode, searchCategory, searchItem, fromdate, todate, outlet, db)
         
         stock, data = stock.run()
       
@@ -1223,9 +1224,10 @@ def fetch_subcategories(request, category_id):
 
 
 class WarehouseStock:
-    def __init__(self, Itemcode, searchItem, fromdate, todate, warehouse, db) -> None:
+    def __init__(self, Itemcode, searchCategory, searchItem, fromdate, todate, warehouse, db) -> None:
         self.item_code = Itemcode
         self.item_name = searchItem
+        self.searchCategory = searchCategory
         self.fromdate = fromdate
         self.todate = todate
         self.warehouse = warehouse
@@ -1248,6 +1250,9 @@ class WarehouseStock:
 
         if self.item_code:
             filter_conditions &= Q(item_code=self.item_code)
+            
+        if self.searchCategory:
+            filter_conditions &= Q(category__category_name__icontains=self.searchCategory)
         try:
             # stock_level = Check_StockLevel_By.objects.using(self.db).first().level
             stock_ = Check_StockLevel_By.objects.using(self.db).first() #.level or "NO"
