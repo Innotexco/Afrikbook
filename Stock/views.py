@@ -1252,7 +1252,7 @@ class WarehouseStock:
             filter_conditions &= Q(item_code=self.item_code)
             
         if self.searchCategory:
-            filter_conditions &= Q(category__category_name__icontains=self.searchCategory)
+            filter_conditions &= Q(item__category__category_name__icontains=self.searchCategory)
         try:
             # stock_level = Check_StockLevel_By.objects.using(self.db).first().level
             stock_ = Check_StockLevel_By.objects.using(self.db).first() #.level or "NO"
