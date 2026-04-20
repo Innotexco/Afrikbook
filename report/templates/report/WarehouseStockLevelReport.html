@@ -457,9 +457,10 @@
     // Populate year dropdown dynamically
     (function populateYears() {
         var currentYear = new Date().getFullYear();
-        var startYear = {{ start_year }};        
-        var select      = $('#Yearly');
-    
+        var startYear = 2020;   // Change this to your desired starting year
+        
+        var select = $('#Yearly');
+
         for (var year = currentYear; year >= startYear; year--) {
             select.append('<option value="' + year + '">' + year + '</option>');
         }
