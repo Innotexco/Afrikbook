@@ -367,7 +367,7 @@ def WarehouseToOutlet(request):
 
 
 @login_required(login_url='/')
-@urls_name(name="Outlet to Oulet")
+@urls_name(name="Outlet to Warehouse")
 def OutletToWarehouse(request):
    db = request.user.company_id.db_name
    getware_H = Warehouse.objects.using(db).all()
