@@ -1,7 +1,7 @@
 from Stock.models import  CreateStockInLog, CreateStockIn, CreateOutletStockIn, CreateOutletStockInLog;
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse,Http404;
-# from Stock.views import reverse_transfer
+from Stock.functions.verifyFunctions.reverse import reverse_transfer
 
 def VerifyStockTransfer(request, context, db):
     itemID     = request.POST.get('itemID')
