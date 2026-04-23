@@ -924,13 +924,10 @@ from datetime import datetime
 
 def EditSalesLedgerDate(request):
     db = AfrikBookDB(request)
-
     if request.method == "POST":
         invoice_id = request.POST.get('invoice_id')
         new_date = request.POST.get('new_date')
-
         if new_date:
-            # Convert to datetime
             new_datetime = datetime.strptime(new_date, "%Y-%m-%d")
 
             updated = customer_invoice.objects.using(db).filter(
@@ -940,15 +937,20 @@ def EditSalesLedgerDate(request):
             )
 
             if updated > 0:
+                # Sync the date to receivables linked to this invoice
+                receivable.objects.using(db).filter(
+                    transaction_id=invoice_id
+                ).update(
+                    date=new_datetime.date()
+                )
+
                 messages.success(request, "Invoice date updated successfully")
                 return JsonResponse({"success": True})
-
             else:
                 return JsonResponse({
                     "success": False,
                     "error": "Invoice not found"
                 })
-
         return JsonResponse({
             "success": False,
             "error": "No date selected"
