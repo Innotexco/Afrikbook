@@ -920,6 +920,8 @@ def SalesLedger(request):
    
     return render(request, 'report/SalesLedger.html', context)
 
+from datetime import datetime
+
 def EditSalesLedgerDate(request):
     db = AfrikBookDB(request)
 
@@ -928,21 +930,20 @@ def EditSalesLedgerDate(request):
         new_date = request.POST.get('new_date')
 
         if new_date:
-            try:
-                invoice = customer_invoice.objects.using(db).get(
-                    invoiceID=invoice_id
-                )
+            # Convert to datetime
+            new_datetime = datetime.strptime(new_date, "%Y-%m-%d")
 
-                invoice.invoice_date = datetime.strptime(
-                    new_date,
-                    "%Y-%m-%d"
-                )
+            updated = customer_invoice.objects.using(db).filter(
+                invoiceID=invoice_id
+            ).update(
+                invoice_date=new_datetime
+            )
 
-                invoice.save()
-
+            if updated > 0:
+                messages.success(request, "Invoice date updated successfully")
                 return JsonResponse({"success": True})
 
-            except customer_invoice.DoesNotExist:
+            else:
                 return JsonResponse({
                     "success": False,
                     "error": "Invoice not found"
