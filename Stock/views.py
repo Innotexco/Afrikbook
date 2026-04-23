@@ -80,7 +80,7 @@ def VerifyTransfer(request):
     deleteID   = request.POST.get('deleteID')
 
     context = {
-        'Unverified': getUnverified,   # may be empty queryset — template handles it
+        'Unverified': getUnverified,   
         'whichtrans': 'W_W',
     }
 
@@ -89,7 +89,6 @@ def VerifyTransfer(request):
         unverifiedD = getStockInLog(request, db)
         if unverifiedD is not None:
             return JsonResponse({'data': unverifiedD})
-        # normal page load (no transferType param) — fall through to render
         return render(request, 'VerifyTransfer.html', context)
 
     # POST — verify or delete
