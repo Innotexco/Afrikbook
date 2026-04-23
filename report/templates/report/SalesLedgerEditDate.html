@@ -86,27 +86,35 @@
     
 </dialog>
 <script>
-    $(document).ready(
-     $("#post-form").submit(function(e){
-         e.preventDefault();
-         var serialiderData = $(this).serialize();
-         
-         $.ajax({
-             type:"POST",
-             url:"{% url 'report:EditSalesLedgerDate' %}",
-             data: serialiderData,
-             success: function(data){
-                 if(data.length > 0){
-                     $("#close-dialog").click();
-                     const invoiceId = $("#invoice_id").val();
-                     showModal(invoiceId);
-                     alertify.success('Date updated successfully');
-                 }else{
-                     alertify.error('No date selected')
-                 }
-             }
-         })
-         
-     })
-    )
+    $("#post-form").submit(function(e){
+    e.preventDefault();
+
+    var serialiderData = $(this).serialize();
+
+    $.ajax({
+        type: "POST",
+        url: "{% url 'report:EditSalesLedgerDate' %}",
+        data: serialiderData,
+
+        success: function(data){
+
+            if(data.success){
+
+                $("#close-dialog").click();
+
+                const invoiceId = $("#invoice_id").val();
+
+                showModal(invoiceId);
+
+                alertify.success('Date updated successfully');
+
+            } else {
+
+                alertify.error(data.error || 'Update failed');
+
+            }
+        }
+    });
+
+});
  </script>
