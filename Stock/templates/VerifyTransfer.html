@@ -59,73 +59,56 @@
                     </tr>
                 </thead>
                 <tbody id="stock_row_add" class="default">
-                    {% for Unverified in Unverified %}
-                        <form action="" method="post">{% csrf_token %}
-                            <tr id="repeat" >
-                                <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">
-                                    {{forloop.counter}}
-                                </td>
-                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
-                                    {{Unverified.datetx}}
-                                </td>
-                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
-                                    {{Unverified.item_code}}
-                                    <input type="hidden" name="itemID" value="{{Unverified.id}}">
-                                    <input type="hidden" name="outlet" value="{{Unverified.outlet}}">
-                                    <input type="hidden" name="warehouse" value="{{Unverified.warehouse}}">
-                                    <input type="hidden" name="whichtrans" value="{{Unverified.transfer}}">
-                                    <input type="hidden" name="quantity" value="{{Unverified.quantity}}">
-                                    <input type="hidden" name="item_code" value="{{Unverified.item_code}}">
-                                </td>
-                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
-                                    {{Unverified.item}}
-                                </td>
-                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
-                                    {{Unverified.quantity}}
-                                </td>
-                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
-                                    {{Unverified.warehouse}}
-                                </td>
-                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
-                                    {{Unverified.outlet}}
-                                </td>
-                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
-                                    {{Unverified.token_id}}
-                                </td>
-                                <td class="border border-slate-300 py-0 my-0 text-[10px]">
-                                    <button type="submit" class=" px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:shadow-outline-green active:bg-green-700" name="Verify">
-                                        Verify
-                                    </button>
-                                </td>
-                                <td class="border border-slate-300 py-0 my-0 text-[10px]">
-                                    <input 
-                                        class="block w-full px-2 text-sm bg-slate-200 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                                        type="date"
-                                        name="date"
-                                    />
-                                </td>
-                                <td class="border border-slate-300 py-0 my-0 text-[10px]">
-                                    <button type="submit" name="delete_btn"
-                                        class="ml-5 flex items-center justify-center text-red-600"
-                                        aria-label="Delete"
-                                        >
-                                        <svg
-                                            class="w-5 h-5"
-                                            aria-hidden="true"
-                                            fill="currentColor"
-                                            viewBox="0 0 20 20"
-                                        >
-                                            <path
-                                            fill-rule="evenodd"
-                                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                            clip-rule="evenodd"
-                                            ></path>
-                                        </svg>
-                                    </button>
-                                </td>
-                            </tr>
-                        </form>
-                    {% endfor %}
+                    <tbody id="stock_row_add" class="default">
+        {% if Unverified %}
+            {% for item in Unverified %}
+            <form action="" method="post">{% csrf_token %}
+                <tr>
+                    <td class="border border-slate-300 py-0 px-2 text-[10px]">{{forloop.counter}}</td>
+                    <td class="border border-slate-300 py-0 text-[11px]">{{item.datetx}}</td>
+                    <td class="border border-slate-300 py-0 text-[11px]">
+                        {{item.item_code}}
+                        <input type="hidden" name="itemID"     value="{{item.id}}">
+                        <input type="hidden" name="outlet"     value="{{item.outlet}}">
+                        <input type="hidden" name="warehouse"  value="{{item.warehouse}}">
+                        <input type="hidden" name="whichtrans" value="{{item.transfer}}">
+                        <input type="hidden" name="quantity"   value="{{item.quantity}}">
+                        <input type="hidden" name="item_code"  value="{{item.item_code}}">
+                    </td>
+                    <td class="border border-slate-300 py-0 text-[11px]">{{item.item}}</td>
+                    <td class="border border-slate-300 py-0 text-[11px]">{{item.quantity}}</td>
+                    <td class="border border-slate-300 py-0 text-[11px]">{{item.warehouse}}</td>
+                    <td class="border border-slate-300 py-0 text-[11px]">{{item.outlet}}</td>
+                    <td class="border border-slate-300 py-0 text-[11px]">{{item.token_id}}</td>
+                    <td class="border border-slate-300 py-0 text-[10px]">
+                        <button type="submit" name="Verify"
+                            class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                            Verify
+                        </button>
+                    </td>
+                    <td class="border border-slate-300 py-0 text-[10px]">
+                        <input class="block w-full px-2 text-sm bg-slate-200 form-input"
+                            type="date" name="date"/>
+                    </td>
+                    <td class="border border-slate-300 py-0 text-[10px]">
+                        <button type="submit" name="delete_btn"
+                            class="ml-5 flex items-center justify-center text-red-600">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                        </button>
+                    </td>
+                </tr>
+            </form>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="11" class="text-center py-6 text-sm text-gray-400 italic">
+                    No unverified W_W transfers found. Use the search above to filter by transfer type.
+                </td>
+            </tr>
+        {% endif %}
+</tbody>
                 </tbody>
                 <tbody class="bg-white divide-y result">
                 </tbody>
@@ -153,13 +136,19 @@
     </div>
 
     <script> 
-        function resultFunction(res){
+       function resultFunction(res) {
             $('#verifyTrans .default').remove();
             $('#verifyTrans .result').empty();
-            if(res.data.failed){
-                alert(res.data.failed)
-            }else{
-           
+
+            if (!res.data || res.data.length === 0 || res.data[0].failed) {
+                $('#verifyTrans .result').append(
+                    '<tr><td colspan="11" class="text-center py-6 text-sm text-gray-400 italic">' +
+                    (res.data && res.data[0] ? res.data[0].failed : 'No data found') +
+                    '</td></tr>'
+                );
+                return;
+            }
+
             res.data.forEach(function(item, index) {
                 let newRow = $('<tr id="deleteitemID'+ item.id + '">');
                 // Add data to the row
