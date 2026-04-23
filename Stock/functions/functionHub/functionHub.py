@@ -152,77 +152,48 @@ def getStockInLog(request, db):
       # return JsonResponse({'data': stockLevel, 'totalqty': total_quantity})
       # context['Unverified'] = getUnverified
 
+
 def getTransferHistory(request, db):
-    selectItem     = request.GET.get('selectItem', '').strip()
-    selectFrom     = request.GET.get('selectFrom', '').strip()
-    selectTo       = request.GET.get('selectTo', '').strip()
-    searchcode     = request.GET.get('searchItem', '').strip()
-    fromdate       = request.GET.get('fromdate', '').strip()
-    todate         = request.GET.get('todate', '').strip()
-    selectTransfer = request.GET.get('selectTransfer', '').strip()
+   selectItem     = request.GET.get('selectItem')
+   selectFrom     = request.GET.get('selectFrom')
+   selectTo       = request.GET.get('selectTo')
+   searchcode     = request.GET.get('searchItem')
+   fromdate       = request.GET.get('fromdate')
+   todate         = request.GET.get('todate')
+   selectTransfer = request.GET.get('selectTransfer')
+   from_date = None
+   to_date = None
+   filterdata = None;
+   if request.method == 'GET':
+      # ifFailed = {'failed': "No Data Found"}
+      # if searchcode or fromdate or todate:
+      if fromdate and todate is not None:
+         from_date, to_date =getdate(fromdate, todate)
+      if selectItem or selectFrom and selectTo or searchcode or fromdate and todate is not None:
+         filterdata1 =  CreateStockInLog.objects.using(db).filter(Q(status='Verified'), Q(item=selectItem)  | Q(warehouse=selectFrom) & Q(outlet=selectTo) | Q(transfer=selectTransfer) | Q(datetx__range=(from_date, to_date)) | Q(item_code=searchcode))
+         filterdata2 =  CreateOutletStockInLog.objects.using(db).filter(Q(status='Verified'), Q(item=selectItem)  | Q(warehouse=selectFrom) & Q(outlet=selectTo) | Q(transfer=selectTransfer) | Q(datetx__range=(from_date, to_date)) | Q(item_code=searchcode))
+         filterdata = list(zip_longest(filterdata1, filterdata2))
 
-    # Only run if at least one filter was actually provided
-    has_filter = any([selectItem, selectFrom, selectTo,
-                      searchcode, fromdate, selectTransfer])
-    if not has_filter:
-        return None
+         if filterdata:
+            result = [({
+                  'datetx': data.datetx if data and data.datetx is not None else data2.datetx,
+                  'item_code': data.item_code if data and data.item_code is not None else data2.item_code,
+                  'item': data.item if data and data.item is not None else data2.item,
+                  'selling_price': data.selling_price if data and data.selling_price is not None else data2.selling_price,
+                  'quantity': data.quantity if data and data.quantity is not None else data2.quantity,
+                  'warehouse': data.warehouse if data and data.warehouse is not None else data2.warehouse,
+                  'outlet': data.outlet if data and data.outlet is not None else data2.outlet,
+                  'token_id': data.token_id if data and data.token_id is not None else data2.token_id,
+                  'Userlogin': data.Userlogin if data and data.Userlogin is not None else data2.Userlogin,
+                  'ref_no': data.ref_no if data and data.ref_no is not None else data2.ref_no,
+                  'id': data.id if data and data.id is not None else data2.id,
+                  })
+                  for data, data2 in filterdata
+               ]
+            return result
+      # else:
+      #    return ifFailed
 
-    # Build Q filters only for values that were actually provided
-    q = Q()
-    if selectItem:
-        q &= Q(item=selectItem)
-    if selectFrom:
-        q &= Q(warehouse=selectFrom)
-    if selectTo:
-        q &= Q(outlet=selectTo)
-    if searchcode:
-        q &= Q(item_code=searchcode)
-    if selectTransfer:
-        q &= Q(transfer=selectTransfer)
-    if fromdate and todate:
-        from_date, to_date = getdate(fromdate, todate)
-        q &= Q(datetx__range=(from_date, to_date))
-
-    def serialize(item):
-        return {
-            'id':           item.id,
-            'datetx':       str(item.datetx) if item.datetx else '',
-            'item_code':    item.item_code,
-            'item':         item.item,
-            'selling_price': str(item.selling_price) if item.selling_price else '',
-            'quantity':     str(item.quantity) if item.quantity else '',
-            'warehouse':    item.warehouse,
-            'outlet':       item.outlet,
-            'token_id':     item.token_id,
-            'Userlogin':    item.Userlogin,
-            'ref_no':       item.ref_no,
-            'transfer':     item.transfer,
-        }
-
-    # Query both log tables and combine
-    # If filtering by transfer type, only query the relevant table
-    results = []
-
-    if selectTransfer in ('W_W', 'O_W'):
-        # Only in CreateStockInLog
-        qs = CreateStockInLog.objects.using(db).filter(q)
-        results = [serialize(item) for item in qs]
-
-    elif selectTransfer in ('W_O', 'O_O'):
-        # Only in CreateOutletStockInLog
-        qs = CreateOutletStockInLog.objects.using(db).filter(q)
-        results = [serialize(item) for item in qs]
-
-    else:
-        # No transfer type selected — search both tables
-        qs1 = CreateStockInLog.objects.using(db).filter(q)
-        qs2 = CreateOutletStockInLog.objects.using(db).filter(q)
-        results = [serialize(item) for item in qs1] + \
-                  [serialize(item) for item in qs2]
-
-    if results:
-        return results
-    return [{'failed': 'No Data Found'}]
    
 
 
