@@ -80,8 +80,8 @@ def VerifyTransfer(request):
    }
    # GET OTHER UNVERIFIED DATA "ONCHANGE"
    unverifiedD = getStockInLog(request, db)
-   if unverifiedD:
-      return JsonResponse({'data': unverifiedD})
+   if unverifiedD is not None:          # ← was: if unverifiedD
+    return JsonResponse({'data': unverifiedD})
 
    # POST TO VERIFY
    if request.method == 'POST':
@@ -103,39 +103,178 @@ def VerifyTransfer(request):
 
 
 
-def deleteDate(deletedata):
-   deletedata.delete()
-   response_data = {'message': 'Transfer successfully deleted'}
-   return JsonResponse(response_data)
+# def deleteDate(deletedata):
+#    deletedata.delete()
+#    response_data = {'message': 'Transfer successfully deleted'}
+#    return JsonResponse(response_data)
+
+# @login_required(login_url='/')
+# @urls_name(name="Item")
+# def DeleteStockItem(request):
+#    db = request.user.company_id.db_name
+#    # PENDING ......
+#    deleterow = request.POST.get('deleterow')
+#    if deleterow:
+#       try:
+#          deletedata = CreateStockInLog.objects.using(db).get(id=deleterow)
+#          deletedata.delete()
+      
+#          response_data = {'message': 'Transfer successfully deleted'}
+#          return JsonResponse(response_data)
+
+#       except CreateStockInLog.DoesNotExist:
+#          response_data = {'error': 'Item not found'}
+#          return JsonResponse(response_data, status=404)
+#    # PENDING END ......
+      
+#    deleteID = request.POST.get('deleteID')
+#    if deleteID:
+#       try:
+#          deletedata = CreateStockInLog.objects.using(db).get(id=deleteID)
+#          return deleteDate(deletedata)
+#       except CreateStockInLog.DoesNotExist:
+#          deletedata = CreateOutletStockInLog.objects.using(db).get(id=deleteID)
+#          if deletedata:
+#             return deleteDate(deletedata)
+
+
+
+
+from decimal import Decimal
+
+def reverse_transfer(log_entry, db):
+    """
+    Reverses a stock transfer by reading the log entry's transfer type
+    and undoing exactly what the original transfer did.
+    """
+    transfer_type = log_entry.transfer
+    item_code     = log_entry.item_code
+    quantity      = Decimal(log_entry.quantity)
+    warehouse     = log_entry.warehouse
+    outlet        = log_entry.outlet
+
+    try:
+        if transfer_type == "W_W":
+            # Original: deducted from CreateStockIn(warehouse), added to CreateStockIn(outlet)
+            # Reverse:  add back to CreateStockIn(warehouse), deduct from CreateStockIn(outlet)
+
+            source = CreateStockIn.objects.using(db).get(
+                Q(warehouse=warehouse) & Q(item_code=item_code)
+            )
+            source.quantity = Decimal(source.quantity) + quantity
+            source.save(using=db)
+
+            destination = CreateStockIn.objects.using(db).get(
+                Q(warehouse=outlet) & Q(item_code=item_code)
+            )
+            destination.quantity = Decimal(destination.quantity) - quantity
+            destination.save(using=db)
+
+        elif transfer_type == "W_O":
+            # Original: deducted from CreateStockIn(warehouse), added to CreateOutletStockIn(outlet)
+            # Reverse:  add back to CreateStockIn(warehouse), deduct from CreateOutletStockIn(outlet)
+
+            source = CreateStockIn.objects.using(db).get(
+                Q(warehouse=warehouse) & Q(item_code=item_code)
+            )
+            source.quantity = Decimal(source.quantity) + quantity
+            source.save(using=db)
+
+            destination = CreateOutletStockIn.objects.using(db).get(
+                Q(outlet=outlet) & Q(item_code=item_code)
+            )
+            destination.quantity = Decimal(destination.quantity) - quantity
+            destination.save(using=db)
+
+        elif transfer_type == "O_W":
+            # Original: deducted from CreateOutletStockIn(outlet), added to CreateStockIn(warehouse)
+            # Reverse:  add back to CreateOutletStockIn(outlet), deduct from CreateStockIn(warehouse)
+            # NOTE: in outlet_Warehouse(), warehouse field = outlet, outlet field = warehouse
+            # so log.warehouse = the outlet that sent, log.outlet = the warehouse that received
+
+            source = CreateOutletStockIn.objects.using(db).get(
+                Q(outlet=warehouse) & Q(item_code=item_code)   # warehouse col holds the sender outlet
+            )
+            source.quantity = Decimal(source.quantity) + quantity
+            source.save(using=db)
+
+            destination = CreateStockIn.objects.using(db).get(
+                Q(warehouse=outlet) & Q(item_code=item_code)   # outlet col holds the receiving warehouse
+            )
+            destination.quantity = Decimal(destination.quantity) - quantity
+            destination.save(using=db)
+
+        elif transfer_type == "O_O":
+            # Original: deducted from CreateOutletStockIn(warehouse), added to CreateOutletStockIn(outlet)
+            # Reverse:  add back to CreateOutletStockIn(warehouse), deduct from CreateOutletStockIn(outlet)
+
+            source = CreateOutletStockIn.objects.using(db).get(
+                Q(outlet=warehouse) & Q(item_code=item_code)
+            )
+            source.quantity = Decimal(source.quantity) + quantity
+            source.save(using=db)
+
+            destination = CreateOutletStockIn.objects.using(db).get(
+                Q(outlet=outlet) & Q(item_code=item_code)
+            )
+            destination.quantity = Decimal(destination.quantity) - quantity
+            destination.save(using=db)
+
+        else:
+            return False, f"Unknown transfer type: {transfer_type}"
+
+        return True, "Transfer reversed successfully"
+
+    except (CreateStockIn.DoesNotExist, CreateOutletStockIn.DoesNotExist) as e:
+        return False, f"Stock record not found during reversal: {str(e)}"
+    except Exception as e:
+        return False, f"Reversal failed: {str(e)}"
+
+
+def deleteDate(deletedata, db):
+    """Delete a log entry and reverse its stock effect."""
+
+    success, message = reverse_transfer(deletedata, db)
+    if not success:
+        return JsonResponse({'error': message}, status=400)
+
+    deletedata.delete()
+    return JsonResponse({'message': 'Transfer reversed and deleted successfully'})
+
 
 @login_required(login_url='/')
 @urls_name(name="Item")
-def DeleteItem(request):
-   db = request.user.company_id.db_name
-   # PENDING ......
-   deleterow = request.POST.get('deleterow')
-   if deleterow:
-      try:
-         deletedata = CreateStockInLog.objects.using(db).get(id=deleterow)
-         deletedata.delete()
-      
-         response_data = {'message': 'Transfer successfully deleted'}
-         return JsonResponse(response_data)
+def DeleteStockItem(request):
+    db = request.user.company_id.db_name
 
-      except CreateStockInLog.DoesNotExist:
-         response_data = {'error': 'Item not found'}
-         return JsonResponse(response_data, status=404)
-   # PENDING END ......
-      
-   deleteID = request.POST.get('deleteID')
-   if deleteID:
-      try:
-         deletedata = CreateStockInLog.objects.using(db).get(id=deleteID)
-         return deleteDate(deletedata)
-      except CreateStockInLog.DoesNotExist:
-         deletedata = CreateOutletStockInLog.objects.using(db).get(id=deleteID)
-         if deletedata:
-            return deleteDate(deletedata)
+    # Flow 1 — deleterow (from TransferHistory page)
+    deleterow = request.POST.get('deleterow')
+    if deleterow:
+        try:
+            deletedata = CreateStockInLog.objects.using(db).get(id=deleterow)
+            return deleteDate(deletedata, db)
+        except CreateStockInLog.DoesNotExist:
+            return JsonResponse({'error': 'Item not found'}, status=404)
+
+    # Flow 2 — deleteID (from VerifyTransfer page)
+    deleteID = request.POST.get('deleteID')
+    if deleteID:
+        # Try CreateStockInLog first (W_W, O_W transfers)
+        try:
+            deletedata = CreateStockInLog.objects.using(db).get(id=deleteID)
+            return deleteDate(deletedata, db)
+        except CreateStockInLog.DoesNotExist:
+            pass
+
+        # Then try CreateOutletStockInLog (W_O, O_O transfers)
+        try:
+            deletedata = CreateOutletStockInLog.objects.using(db).get(id=deleteID)
+            return deleteDate(deletedata, db)
+        except CreateOutletStockInLog.DoesNotExist:
+            return JsonResponse({'error': 'Item not found'}, status=404)
+
+    return JsonResponse({'error': 'No ID provided'}, status=400)
+
 
 
 @login_required(login_url='/')
