@@ -85,7 +85,7 @@ def VerifyTransfer(request):
 
    # POST TO VERIFY
    if request.method == 'POST':
-      verifyFunction = VerifyStockTransfer(request,context)
+      verifyFunction = VerifyStockTransfer(request, context, db)
 
       if buttonName != None:
          if verifyFunction:
