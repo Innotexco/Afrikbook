@@ -136,19 +136,13 @@
     </div>
 
     <script> 
-       function resultFunction(res) {
+        function resultFunction(res){
             $('#verifyTrans .default').remove();
             $('#verifyTrans .result').empty();
-
-            if (!res.data || res.data.length === 0 || res.data[0].failed) {
-                $('#verifyTrans .result').append(
-                    '<tr><td colspan="11" class="text-center py-6 text-sm text-gray-400 italic">' +
-                    (res.data && res.data[0] ? res.data[0].failed : 'No data found') +
-                    '</td></tr>'
-                );
-                return;
-            }
-
+            if(res.data.failed){
+                alert(res.data.failed)
+            }else{
+           
             res.data.forEach(function(item, index) {
                 let newRow = $('<tr id="deleteitemID'+ item.id + '">');
                 // Add data to the row
