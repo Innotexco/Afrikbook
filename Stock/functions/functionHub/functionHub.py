@@ -116,39 +116,75 @@ def DoSomethingElse(context,item, i, store):
     return False
 
 
+
 def getStockInLog(request, db):
-   StockInLog = None
-   search = request.GET.get('transferType')
+    search = request.GET.get('transferType')
 
-   if search == 'W_W' or search == 'O_W':
-      StockInLog = CreateStockInLog
+    if search in ('W_W', 'O_W'):
+        LogModel = CreateStockInLog
+    elif search in ('W_O', 'O_O'):
+        LogModel = CreateOutletStockInLog
+    else:
+        return None  # no transferType param — not a search request
 
-   if search == 'W_O' or search == 'O_O':
-      StockInLog = CreateOutletStockInLog
+    getUnverified = LogModel.objects.using(db).filter(
+        status='Unverified', transfer=search
+    )
 
-   ifFailed = {'failed': "No Data Found"}
-   if StockInLog is not None:
-      getUnverified = StockInLog.objects.using(db).filter(status='Unverified', transfer=search)
-      if getUnverified :
-         unverified = [
-            (
-               {
-                  'id': item.id if item and item.id is not None else None,
-                  'datetx': item.datetx if item and item.datetx is not None else None,
-                  'items': item.item if item and item.item is not None else None,
-                  'outlet': item.outlet if item and item.outlet is not None else None,
-                  'warehouse': item.warehouse if item and item.warehouse is not None else None,
-                  'token_id': item.token_id if item and item.token_id is not None else None,
-                  'quantity': item.quantity if item and item.quantity is not None else None,
-                  'item_code': item.item_code if item and item.item_code is not None else None,
-                  'transfer': item.transfer if item and item.transfer is not None else None,
-               })
-               for item in getUnverified
-            ]
+    # Use .exists() instead of truthiness check on queryset
+    if getUnverified.exists():
+        return [
+            {
+                'id':        item.id,
+                'datetx':    str(item.datetx) if item.datetx else None,
+                'items':     item.item,
+                'outlet':    item.outlet,
+                'warehouse': item.warehouse,
+                'token_id':  item.token_id,
+                'quantity':  str(item.quantity) if item.quantity else None,
+                'item_code': item.item_code,
+                'transfer':  item.transfer,
+            }
+            for item in getUnverified
+        ]
+    else:
+        return [{'failed': 'No Data Found'}]
+
+
+
+# def getStockInLog(request, db):
+#    StockInLog = None
+#    search = request.GET.get('transferType')
+
+#    if search == 'W_W' or search == 'O_W':
+#       StockInLog = CreateStockInLog
+
+#    if search == 'W_O' or search == 'O_O':
+#       StockInLog = CreateOutletStockInLog
+
+#    ifFailed = {'failed': "No Data Found"}
+#    if StockInLog is not None:
+#       getUnverified = StockInLog.objects.using(db).filter(status='Unverified', transfer=search)
+#       if getUnverified :
+#          unverified = [
+#             (
+#                {
+#                   'id': item.id if item and item.id is not None else None,
+#                   'datetx': item.datetx if item and item.datetx is not None else None,
+#                   'items': item.item if item and item.item is not None else None,
+#                   'outlet': item.outlet if item and item.outlet is not None else None,
+#                   'warehouse': item.warehouse if item and item.warehouse is not None else None,
+#                   'token_id': item.token_id if item and item.token_id is not None else None,
+#                   'quantity': item.quantity if item and item.quantity is not None else None,
+#                   'item_code': item.item_code if item and item.item_code is not None else None,
+#                   'transfer': item.transfer if item and item.transfer is not None else None,
+#                })
+#                for item in getUnverified
+#             ]
          
-         return unverified
-      else:
-         return ifFailed
+#          return unverified
+#       else:
+#          return ifFailed
       # return JsonResponse({'data': stockLevel, 'totalqty': total_quantity})
       # context['Unverified'] = getUnverified
 
