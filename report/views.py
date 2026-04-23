@@ -922,19 +922,36 @@ def SalesLedger(request):
 
 def EditSalesLedgerDate(request):
     db = AfrikBookDB(request)
+
     if request.method == "POST":
-        invoice_id = request.POST['invoice_id']
-        invoice_date = request.POST['invoice_date']
-        new_date = request.POST['new_date']
+        invoice_id = request.POST.get('invoice_id')
+        new_date = request.POST.get('new_date')
+
         if new_date:
+            try:
+                invoice = customer_invoice.objects.using(db).get(
+                    invoiceID=invoice_id
+                )
 
-           invoice = customer_invoice.objects.using(db).filter(invoice_date=invoice_date, invoiceID=invoice_id).update(invoice_date=new_date) 
-       
+                invoice.invoice_date = datetime.strptime(
+                    new_date,
+                    "%Y-%m-%d"
+                )
 
-           messages.success(request, "Invoice date updated successfully")
-           return JsonResponse(new_date, safe=False)
-        else:
-            return JsonResponse(new_date, safe=False) 
+                invoice.save()
+
+                return JsonResponse({"success": True})
+
+            except customer_invoice.DoesNotExist:
+                return JsonResponse({
+                    "success": False,
+                    "error": "Invoice not found"
+                })
+
+        return JsonResponse({
+            "success": False,
+            "error": "No date selected"
+        })
 
 @login_required(login_url='/')
 @urls_name(name="Purchase Ledger")
