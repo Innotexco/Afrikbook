@@ -69,40 +69,35 @@ def ItemIssue(request):
 @login_required(login_url='/')
 @urls_name(name="Verify Transfer")
 def VerifyTransfer(request):
-    db = request.user.company_id.db_name
+   db = request.user.company_id.db_name
+   # DEFAULT DISPLAY
+   getUnverified = CreateStockInLog.objects.using(db).filter(status='Unverified', transfer='W_W')
+   buttonName = request.POST.get('buttonName') 
+   deleteID = request.POST.get('deleteID') 
+   context = {
+      'Unverified' : getUnverified,
+      'whichtrans' : 'W_W',
+   }
+   # GET OTHER UNVERIFIED DATA "ONCHANGE"
+   unverifiedD = getStockInLog(request, db)
+   if unverifiedD is not None:          # ← was: if unverifiedD
+    return JsonResponse({'data': unverifiedD})
 
-    # Default display — only load if unverified records actually exist
-    getUnverified = CreateStockInLog.objects.using(db).filter(
-        status='Unverified', transfer='W_W'
-    )
+   # POST TO VERIFY
+   if request.method == 'POST':
+      verifyFunction = VerifyStockTransfer(request,context)
 
-    buttonName = request.POST.get('buttonName')
-    deleteID   = request.POST.get('deleteID')
+      if buttonName != None:
+         if verifyFunction:
+            return JsonResponse({'data': verifyFunction, 'message': 'Transfer Verified'})
+      elif deleteID != None:
+         if verifyFunction:
+            return JsonResponse(verifyFunction)
+      else:
+         # FOR DEFAULT POST, INCASE JS HAD NO ONCHANGE
+         verifyFunction
 
-    context = {
-        'Unverified': getUnverified,   
-        'whichtrans': 'W_W',
-    }
-
-    # GET — onchange search
-    if request.method == 'GET':
-        unverifiedD = getStockInLog(request, db)
-        if unverifiedD is not None:
-            return JsonResponse({'data': unverifiedD})
-        return render(request, 'VerifyTransfer.html', context)
-
-    # POST — verify or delete
-    if request.method == 'POST':
-        verifyFunction = VerifyStockTransfer(request, context, db)
-
-        if buttonName is not None:
-            if verifyFunction:
-                return JsonResponse({'data': verifyFunction, 'message': 'Transfer Verified'})
-        elif deleteID is not None:
-            if verifyFunction:
-                return JsonResponse(verifyFunction)
-
-    return render(request, 'VerifyTransfer.html', context)
+   return render(request, 'VerifyTransfer.html', context)
 
 
 
