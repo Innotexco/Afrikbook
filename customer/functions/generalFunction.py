@@ -5,36 +5,36 @@ from django.db.models import Q
 
 
 
-def CreditReceivable(request, db, cus, refund_date, Gdescription, p_method, account, total):
+# def CreditReceivable(request, db, cus, refund_date, Gdescription, p_method, account, total):
 
-    # Generate a new transaction ID
-    transaction_id = uuid.uuid4()
+#     # Generate a new transaction ID
+#     transaction_id = uuid.uuid4()
 
-    if receivable.objects.using(db).filter(customer_id=cus.customer_code).exists():
-        initial_bal = receivable.objects.using(db).filter(customer_id=cus.customer_code).last().balance
-    else: 
-        initial_bal = decimal.Decimal(0.00)
+#     if receivable.objects.using(db).filter(customer_id=cus.customer_code).exists():
+#         initial_bal = receivable.objects.using(db).filter(customer_id=cus.customer_code).last().balance
+#     else: 
+#         initial_bal = decimal.Decimal(0.00)
     
-    if initial_bal > 0:
-        balance = decimal.Decimal(initial_bal) - decimal.Decimal(total)
-    else:
-        balance = decimal.Decimal(initial_bal) + decimal.Decimal(total)
+#     if initial_bal > 0:
+#         balance = decimal.Decimal(initial_bal) - decimal.Decimal(total)
+#     else:
+#         balance = decimal.Decimal(initial_bal) + decimal.Decimal(total)
 
-    create_receivable = receivable(
-        date=refund_date,
-        description= Gdescription,
-        type = "Credit",
-        amount = total, 
-        payment_method =p_method,
-        invoice_status ="Unused",
-        customer_id = cus.customer_code,
-        customer_name = cus.name,
-        initial_amount = initial_bal,
-        balance = balance,
-        account_posted = account, # default account
-        transaction_id = transaction_id,
-        Userlogin = request.user.username)
-    create_receivable.save(using=db)
+#     create_receivable = receivable(
+#         date=refund_date,
+#         description= Gdescription,
+#         type = "Credit",
+#         amount = total, 
+#         payment_method =p_method,
+#         invoice_status ="Unused",
+#         customer_id = cus.customer_code,
+#         customer_name = cus.name,
+#         initial_amount = initial_bal,
+#         balance = balance,
+#         account_posted = account, # default account
+#         transaction_id = transaction_id,
+#         Userlogin = request.user.username)
+#     create_receivable.save(using=db)
 
 
 # def DebitReceivable(request, db, cus, refund_date, Gdescription, p_method, account, total):
@@ -70,66 +70,66 @@ def CreditReceivable(request, db, cus, refund_date, Gdescription, p_method, acco
 
 
 
-# def CreditPayable(request, db, ven, refund_date, Gdescription, p_method, account, total):
+def CreditPayable(request, db, ven, refund_date, Gdescription, p_method, account, total):
 
-#     # Generate a new transaction ID
-#     transaction_id = uuid.uuid4()
+    # Generate a new transaction ID
+    transaction_id = uuid.uuid4()
 
-#     if payable.objects.using(db).filter(vendor_id=ven.custID).exists():
-#         initial_bal = payable.objects.using(db).filter(vendor_id=ven.custID).last().balance
-#     else: 
-#         initial_bal = decimal.Decimal(0.00)
+    if payable.objects.using(db).filter(vendor_id=ven.custID).exists():
+        initial_bal = payable.objects.using(db).filter(vendor_id=ven.custID).last().balance
+    else: 
+        initial_bal = decimal.Decimal(0.00)
     
-#     if initial_bal > 0:
-#         balance = decimal.Decimal(initial_bal) - decimal.Decimal(total)
-#     else:
-#         balance = decimal.Decimal(initial_bal) + decimal.Decimal(total)
+    if initial_bal > 0:
+        balance = decimal.Decimal(initial_bal) - decimal.Decimal(total)
+    else:
+        balance = decimal.Decimal(initial_bal) + decimal.Decimal(total)
 
-#     create_payable = payable(
-#         date=refund_date,
-#         description= Gdescription,
-#         type = "Credit",
-#         amount = total, 
-#         payment_method =p_method,
-#         vendor_id = ven.custID,
-#         vendor_name = ven.name,
-#         initial_amount = initial_bal,
-#         balance = balance,
-#         account_posted = account, # default account
-#         transaction_id = transaction_id,
-#         Userlogin = request.user.username)
-#     create_payable.save(using=db)
+    create_payable = payable(
+        date=refund_date,
+        description= Gdescription,
+        type = "Credit",
+        amount = total, 
+        payment_method =p_method,
+        vendor_id = ven.custID,
+        vendor_name = ven.name,
+        initial_amount = initial_bal,
+        balance = balance,
+        account_posted = account, # default account
+        transaction_id = transaction_id,
+        Userlogin = request.user.username)
+    create_payable.save(using=db)
 
 
-# def DebitPayable(request, db, ven, refund_date, Gdescription, p_method, account,  total):
+def DebitPayable(request, db, ven, refund_date, Gdescription, p_method, account,  total):
 
-#     # Generate a new transaction ID
-#     transaction_id = uuid.uuid4()
+    # Generate a new transaction ID
+    transaction_id = uuid.uuid4()
 
-#     if payable.objects.using(db).filter(vendor_id=ven.custID).exists():
-#         initial_bal = payable.objects.using(db).filter(vendor_id=ven.custID).last().balance
-#     else: 
-#         initial_bal = decimal.Decimal(0.00)
+    if payable.objects.using(db).filter(vendor_id=ven.custID).exists():
+        initial_bal = payable.objects.using(db).filter(vendor_id=ven.custID).last().balance
+    else: 
+        initial_bal = decimal.Decimal(0.00)
     
-#     if initial_bal > 0:
-#         balance = decimal.Decimal(initial_bal) + decimal.Decimal(total)
-#     else:
-#         balance = decimal.Decimal(initial_bal) + decimal.Decimal(total)
+    if initial_bal > 0:
+        balance = decimal.Decimal(initial_bal) + decimal.Decimal(total)
+    else:
+        balance = decimal.Decimal(initial_bal) + decimal.Decimal(total)
 
-#     create_payable = payable(
-#         date=refund_date,
-#         description= Gdescription,
-#         type = "Debit",
-#         amount = total, 
-#         payment_method = p_method,
-#         vendor_id = ven.custID,
-#         vendor_name = ven.name,
-#         initial_amount = initial_bal,
-#         balance = balance,
-#         account_posted = account, # default account
-#         transaction_id = transaction_id,
-#         Userlogin = request.user.username)
-#     create_payable.save(using=db)
+    create_payable = payable(
+        date=refund_date,
+        description= Gdescription,
+        type = "Debit",
+        amount = total, 
+        payment_method = p_method,
+        vendor_id = ven.custID,
+        vendor_name = ven.name,
+        initial_amount = initial_bal,
+        balance = balance,
+        account_posted = account, # default account
+        transaction_id = transaction_id,
+        Userlogin = request.user.username)
+    create_payable.save(using=db)
     
     
 
