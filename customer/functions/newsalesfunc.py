@@ -802,30 +802,30 @@ def add_new_sales(request, db):
                             )
  
                             if acountType == "Customer":
-                                DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account_ID, total_decimal)
+                                DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account_ID, total_decimal, invoiceID=invoiceID)
                             elif acountType == "Vendor":
-                                DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account_ID, total_decimal)
+                                DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account_ID, total_decimal, invoiceID=invoiceID)
  
                             if payment_method == "Transfer":
                                 if acountType == "Customer":
-                                    CreditReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account_ID, total_decimal)
+                                    CreditReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account_ID, total_decimal, invoiceID=invoiceID)
                                 elif acountType == "Vendor":
-                                    CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account_ID, total_decimal)
+                                    CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account_ID, total_decimal, invoiceID=invoiceID)
                                 CreateLog(db, account, total_decimal)
                                 logger.debug(f"[add_new_sales] Transfer posted | total={total_decimal}")
  
                             elif payment_method == "Transfer and Cash":
                                 if acountType == "Customer":
-                                    CreditReceivable(request, db, cus, invoice_date, Gdescription, "Transfer", account_ID, transfer_decimal)
+                                    CreditReceivable(request, db, cus, invoice_date, Gdescription, "Transfer", account_ID, transfer_decimal, invoiceID=invoiceID)
                                 elif acountType == "Vendor":
-                                    CreditPayable(request, db, cus, invoice_date, Gdescription, "Transfer", account_ID, transfer_decimal)
+                                    CreditPayable(request, db, ven, invoice_date, Gdescription, "Transfer", account_ID, transfer_decimal, invoiceID=invoiceID)
                                 CreateLog(db, account, transfer_decimal)
  
                                 cash_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
                                 if acountType == "Customer":
-                                    CreditReceivable(request, db, cus, invoice_date, Gdescription, "Cash", cash_account.account_id, cash_decimal)
+                                    CreditReceivable(request, db, cus, invoice_date, Gdescription, "Cash", cash_account.account_id, cash_decimal, invoiceID=invoiceID)
                                 elif acountType == "Vendor":
-                                    CreditPayable(request, db, cus, invoice_date, Gdescription, "Cash", cash_account.account_id, cash_decimal)
+                                    CreditPayable(request, db, ven, invoice_date, Gdescription, "Cash", cash_account.account_id, cash_decimal, invoiceID=invoiceID)
                                 CreateLog(db, cash_account, cash_decimal)
                                 logger.debug(
                                     f"[add_new_sales] Transfer+Cash split posted | "
@@ -840,9 +840,9 @@ def add_new_sales(request, db):
                             else:
                                 account = chart_of_account.objects.using(db).get(account_bankname="Sales account")
                                 if acountType == "Customer":
-                                    CreditReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total_decimal)
+                                    CreditReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total_decimal, invoiceID=invoiceID)
                                 elif acountType == "Vendor":
-                                    CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total_decimal)
+                                    CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total_decimal, invoiceID=invoiceID)
                                 CreateLog(db, account, total_decimal)
                                 logger.debug(f"[add_new_sales] Other payment posted | method={payment_method}")
  
@@ -854,11 +854,11 @@ def add_new_sales(request, db):
                             )
                             account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
                             if acountType == "Customer":
-                                DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total_decimal)
-                                CreditReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total_decimal)
+                                DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total_decimal, invoiceID=invoiceID)
+                                CreditReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total_decimal, invoiceID=invoiceID)
                             elif acountType == "Vendor":
-                                DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total_decimal)
-                                CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total_decimal)
+                                DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total_decimal, invoiceID=invoiceID)
+                                CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total_decimal, invoiceID=invoiceID)
                             CreateLog(db, account, total_decimal)
  
                     else:
@@ -870,13 +870,13 @@ def add_new_sales(request, db):
                         if acountType == "Customer":
                             account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
                             account.actual_balance += total_decimal
-                            DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total_decimal)
+                            DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total_decimal, invoiceID=invoiceID)
                             CreateLog(db, account, total_decimal)
  
                         elif acountType == "Vendor":
                             account = chart_of_account.objects.using(db).get(account_bankname="Purchase Account")
                             account.actual_balance += total_decimal
-                            DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total_decimal)
+                            DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total_decimal, invoiceID=invoiceID)
                             CreateLog(db, account, total_decimal)
  
                         acc_log = account_log(
