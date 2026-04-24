@@ -322,7 +322,8 @@
 
     $(document).on('click', '.remove_row',function(e){
         e.preventDefault()
-        var row_id = $(this).attr("id");
+        //var row_id = $(this).attr("id");
+        var  $row = $(this).closest('tr');
         console.log(row_id, 'row_idrow_idrow_id')
         const amount =  $(this).closest('tr').find('input[name="amount[]"]').val();
 
@@ -341,7 +342,8 @@
             total.value = totalv
         }
         
-        $('#row'+row_id+'').remove();
+        $row.remove(); 
+        //$('#row'+row_id+'').remove();
     });
 
     //If Discount
