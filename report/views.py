@@ -21,7 +21,11 @@ from main.models import company_table
 from django.contrib.auth.decorators import login_required
 from routers.page_permission import  urls_name
 
+import logging
 
+import traceback
+
+logger = logging.getLogger(__name__)
 
 
 def getdateReport(fromDate, toDate):
@@ -926,36 +930,47 @@ def EditSalesLedgerDate(request):
     db = AfrikBookDB(request)
     if request.method == "POST":
         invoice_id = request.POST.get('invoice_id')
-        new_date = request.POST.get('new_date')
-        if new_date:
-            new_datetime = datetime.strptime(new_date, "%Y-%m-%d")
+        new_date   = request.POST.get('new_date')
 
-            updated = customer_invoice.objects.using(db).filter(
+        if not invoice_id:
+            return JsonResponse({"success": False, "error": "No invoice ID provided"})
+        if not new_date:
+            return JsonResponse({"success": False, "error": "No date selected"})
+
+        try:
+            new_datetime  = datetime.strptime(new_date, "%Y-%m-%d")
+            new_date_only = new_datetime.date()
+        except ValueError:
+            return JsonResponse({"success": False, "error": f"Invalid date format: {new_date}"})
+
+        try:
+            invoice = customer_invoice.objects.using(db).filter(
                 invoiceID=invoice_id
-            ).update(
-                invoice_date=new_datetime
+            ).first()
+
+            if not invoice:
+                return JsonResponse({"success": False, "error": "Invoice not found"})
+
+            customer_invoice.objects.using(db).filter(
+                invoiceID=invoice_id
+            ).update(invoice_date=new_datetime)
+
+            receivable.objects.using(db).filter(
+                token_id=invoice_id
+            ).update(date=new_date_only)
+
+            messages.success(request, "Invoice date updated successfully")
+            return JsonResponse({"success": True})
+
+        except Exception as e:
+            logger.error(
+                f"[EditSalesLedgerDate] Failed to update date | "
+                f"invoice_id={invoice_id} | new_date={new_date} | "
+                f"{e}\n{traceback.format_exc()}"
             )
-
-            if updated > 0:
-                # Sync the date to receivables linked to this invoice
-                receivable.objects.using(db).filter(
-                    transaction_id=invoice_id
-                ).update(
-                    date=new_datetime.date()
-                )
-
-                messages.success(request, "Invoice date updated successfully")
-                return JsonResponse({"success": True})
-            else:
-                return JsonResponse({
-                    "success": False,
-                    "error": "Invoice not found"
-                })
-        return JsonResponse({
-            "success": False,
-            "error": "No date selected"
-        })
-
+            messages.error(request, "Failed to update invoice date. Please try again.")
+            return JsonResponse({"success": False, "error": str(e)})
+        
 @login_required(login_url='/')
 @urls_name(name="Purchase Ledger")
 def PurchaseLedger(request):
