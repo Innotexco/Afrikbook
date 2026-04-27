@@ -277,6 +277,7 @@
                     $('#modalDescription').val(res.data.description);
                     $('#modalqty').val(res.data.qty);
                     $('#modalID').val(res.data.id);
+                    $('#modalwarehouse').val(res.data.warehouse);
                 },
                 error: function(xhr, status, error) {
                     console.error('Modal fetch error:', xhr.status, status, error);
