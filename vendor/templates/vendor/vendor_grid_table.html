@@ -43,7 +43,7 @@
                         <path fill="#134563" d="M-191-172.1h-18c-2.4 0-4.5-2-4.7-4.4l-2.8-36 3-.2 2.8 36c.1.9.9 1.6 1.7 1.6h18c.9 0 1.7-.8 1.7-1.6l2.8-36 3 .2-2.8 36c-.2 2.5-2.3 4.4-4.7 4.4"></path></g></svg>\
                     </button>\
                 </td>\
-            </tr>');
+            </tr></form>');
     
         
     };
@@ -320,7 +320,7 @@
         
     });
 
-    /*$(document).on('click', '.remove_row',function(e){
+    $(document).on('click', '.remove_row',function(e){
         e.preventDefault()
         var row_id = $(this).attr("id");
         console.log(row_id, 'row_idrow_idrow_id')
@@ -342,24 +342,7 @@
         }
         
         $('#row'+row_id+'').remove();
-    }); */
-
-
-    $(document).on('click', '.remove_row', function(e) {
-    e.preventDefault();
-    const $row = $(this).closesteee('tr');
-    const amount = $row.find  cccdcvdvdddvdvvd('input[namdvbvfdbdfbdfbbe="amount[]"]').val();
-
-    const subTotal = document.getElementById("sub-total");
-    const total = document.getElementById("total");
-
-    if (amount !== "" && !isNaN(parseFloat(amount))) {
-        subTotal.value = parseFloat(subTotal.value) - parseFloat(amount);
-        total.value = parseFloat(total.value) - parseFloat(amount);
-    }
-
-    $row.remove();
-});
+    });
 
     //If Discount
     const checkbox = document.getElementById("discountcheck")
