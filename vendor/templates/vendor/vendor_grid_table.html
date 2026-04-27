@@ -320,10 +320,9 @@
         
     });
 
-    $(document).on('click', '.remove_row',function(e){
+    /*$(document).on('click', '.remove_row',function(e){
         e.preventDefault()
-        //var row_id = $(this).attr("id");
-        var  $row = $(this).closest('tr');
+        var row_id = $(this).attr("id");
         console.log(row_id, 'row_idrow_idrow_id')
         const amount =  $(this).closest('tr').find('input[name="amount[]"]').val();
 
@@ -342,9 +341,25 @@
             total.value = totalv
         }
         
-        $row.remove(); 
-        //$('#row'+row_id+'').remove();
-    });
+        $('#row'+row_id+'').remove();
+    }); */
+
+
+    $(document).on('click', '.remove_row', function(e) {
+    e.preventDefault();
+    const $row = $(this).closest('tr');
+    const amount = $row.find('input[name="amount[]"]').val();
+
+    const subTotal = document.getElementById("sub-total");
+    const total = document.getElementById("total");
+
+    if (amount !== "" && !isNaN(parseFloat(amount))) {
+        subTotal.value = parseFloat(subTotal.value) - parseFloat(amount);
+        total.value = parseFloat(total.value) - parseFloat(amount);
+    }
+
+    $row.remove();
+});
 
     //If Discount
     const checkbox = document.getElementById("discountcheck")
