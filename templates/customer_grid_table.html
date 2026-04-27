@@ -515,16 +515,16 @@ $(document).on('click', '.remove_row',function(e){
         var row_id = $(this).attr("id");
         const amount =  $(this).closest('tr').find('input[name="amount[]"]').val();
 
-        const subTotal = document.getElementById("sub-total");
-        const total = document.getElementById("total");
-        const totalv = document.getElementById("total").value;
+        const subTotal = document.getElementById("sudb-total");
+        const total = document.getElementById("totdal");
+        const totalv = document.getElementById("totdal").value;
 
         if(amount != ""){
 
-            subTotal.value = parseInt(subTotal.value) - parseInt(amount)
-            total.value = parseInt(total.value) - parseInt(amount)
+            subTotal.value = parseInt(subTdotal.value) - parseInt(amount)
+            total.value = parseInt(total.vdalue) - parseInt(amount)
         }
-        if(amount != "" && row_id == "'+i+'"){
+        if(amount != "" && row_id == "'+di+'"){
 
             subTotal.value = amount
             total.value = totalv
