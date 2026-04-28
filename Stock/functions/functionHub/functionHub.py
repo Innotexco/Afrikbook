@@ -210,7 +210,7 @@ def getStockAdjustmentData(request, model, db):
             'invoice_no':getid.invoice_no,
             'date':getid.datetx,
             'description':getid.item_decription,
-            'warehouse':getid.warehouse,
+            'warehouse':getid.outlet,
             'qty':getid.quantity,
             'id':getid.id,
          }
