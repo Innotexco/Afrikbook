@@ -67,38 +67,110 @@ def ItemIssue(request):
 
 
 
+import json
 @login_required(login_url='/')
 @urls_name(name="Verify Transfer")
+
 def VerifyTransfer(request):
-   db = request.user.company_id.db_name
-   # DEFAULT DISPLAY
-   getUnverified = CreateStockInLog.objects.using(db).filter(status='Unverified', transfer='W_W')
-   buttonName = request.POST.get('buttonName') 
-   deleteID = request.POST.get('deleteID') 
-   context = {
-      'Unverified' : getUnverified,
-      'whichtrans' : 'W_W',
-   }
-   # GET OTHER UNVERIFIED DATA "ONCHANGE"
-   unverifiedD = getStockInLog(request, db)
-   if unverifiedD is not None:          # ← was: if unverifiedD
-    return JsonResponse({'data': unverifiedD})
+    db = request.user.company_id.db_name
+    getUnverified = CreateStockInLog.objects.using(db).filter(status='Unverified', transfer='W_W')
+    buttonName = request.POST.get('buttonName')
+    deleteID   = request.POST.get('deleteID')
+    context    = {'Unverified': getUnverified, 'whichtrans': 'W_W'}
 
-   # POST TO VERIFY
-   if request.method == 'POST':
-      verifyFunction = VerifyStockTransfer(request, context, db)
+    # GET — filter by transfer type
+    unverifiedD = getStockInLog(request, db)
+    if unverifiedD is not None:
+        return JsonResponse({'data': unverifiedD})
 
-      if buttonName != None:
-         if verifyFunction:
-            return JsonResponse({'data': verifyFunction, 'message': 'Transfer Verified'})
-      elif deleteID != None:
-         if verifyFunction:
-            return JsonResponse(verifyFunction)
-      else:
-         # FOR DEFAULT POST, INCASE JS HAD NO ONCHANGE
-         verifyFunction
+    if request.method == 'POST':
+        
+        # ── BULK VERIFY ───────────────────────────────────────
+        content_type = request.content_type or ''
+        if 'application/json' in content_type:
+            try:
+                body = json.loads(request.body)
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
-   return render(request, 'VerifyTransfer.html', context)
+            if 'bulk_verify' in body:
+                items       = body['bulk_verify']
+                verified_ids = []
+                failed       = []
+
+                for item_data in items:
+                    # Reuse existing verify logic per item
+                    result = _verify_single(
+                        db          = db,
+                        item_id     = item_data.get('id'),
+                        outlet      = item_data.get('outlet'),
+                        warehouse   = item_data.get('warehouse'),
+                        whichtrans  = item_data.get('whichtrans'),
+                        quantity    = item_data.get('quantity'),
+                        item_code   = item_data.get('item_code'),
+                    )
+                    if result is True:
+                        verified_ids.append(item_data.get('id'))
+                    else:
+                        failed.append({'id': item_data.get('id'), 'reason': result})
+
+                return JsonResponse({
+                    'message':      f'{len(verified_ids)} transfer(s) verified successfully',
+                    'verified_ids': verified_ids,
+                    'failed':       failed,
+                })
+
+        # ── SINGLE VERIFY / DELETE (existing behaviour) ───────
+        verifyFunction = VerifyStockTransfer(request, context, db)
+
+        if buttonName is not None:
+            if verifyFunction:
+                return JsonResponse({'data': verifyFunction, 'message': 'Transfer Verified'})
+        elif deleteID is not None:
+            if verifyFunction:
+                return JsonResponse(verifyFunction)
+
+    return render(request, 'VerifyTransfer.html', context)
+
+
+def _verify_single(db, item_id, outlet, warehouse, whichtrans, quantity, item_code):
+    """
+    Verify a single transfer. Returns True on success, error string on failure.
+    Extracted so both single and bulk verify share the same logic.
+    """
+    try:
+        if whichtrans == 'W_W':
+            qty_from = CreateStockIn.objects.using(db).get(item_code=item_code, warehouse=warehouse)
+            qty_to   = CreateStockIn.objects.using(db).get(item_code=item_code, warehouse=outlet)
+        elif whichtrans == 'W_O':
+            qty_from = CreateStockIn.objects.using(db).get(item_code=item_code, warehouse=warehouse)
+            qty_to   = CreateOutletStockIn.objects.using(db).get(item_code=item_code, outlet=outlet)
+        elif whichtrans == 'O_W':
+            qty_from = CreateOutletStockIn.objects.using(db).get(item_code=item_code, outlet=warehouse)
+            qty_to   = CreateStockIn.objects.using(db).get(item_code=item_code, warehouse=outlet)
+        elif whichtrans == 'O_O':
+            qty_from = CreateOutletStockIn.objects.using(db).get(item_code=item_code, outlet=warehouse)
+            qty_to   = CreateOutletStockIn.objects.using(db).get(item_code=item_code, outlet=outlet)
+        else:
+            return 'Unknown transfer type'
+
+    except (CreateStockIn.DoesNotExist, CreateOutletStockIn.DoesNotExist) as e:
+        return f'Stock record not found: {str(e)}'
+
+    qty_from.quantity = float(qty_from.quantity) - float(quantity)
+    qty_from.save()
+    qty_to.quantity   = float(qty_to.quantity) + float(quantity)
+    qty_to.save()
+
+    LogModel = CreateStockInLog if whichtrans in ('W_W', 'O_W') else CreateOutletStockInLog
+    try:
+        log = LogModel.objects.using(db).get(id=item_id)
+        log.status = 'Verified'
+        log.save()
+    except LogModel.DoesNotExist:
+        return 'Log entry not found'
+
+    return True
 
 
 
