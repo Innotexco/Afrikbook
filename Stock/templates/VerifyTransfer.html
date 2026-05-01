@@ -1,213 +1,316 @@
-
 {% extends 'base.html' %}
 
 {% block content %}
 
-
     <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
       href="#">
         <div class="flex items-center">
-            <svg
-                class="w-5 h-5 mr-2"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-            >
-            <path
-                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-            ></path>
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
             </svg>
             <span>Approve Stock Quantity</span>
         </div>
         <span>Home &RightArrow;</span>
     </a>
 
-
-    
-
     <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
         <label class="block text-sm">
-            <span class="text-gray-700">
-                Search
-            </span>
+            <span class="text-gray-700">Search</span>
             <select class="commonClass block w-full px-2 py-3 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="transferType" name="search">
                 <option>_ _select transfer type_ _</option>
                 <option value="W_W">Warehouse to Warehouse</option>
                 <option value="W_O">Warehouse to Outlet</option>
                 <option value="O_W">Outlet to Warehouse</option>
                 <option value="O_O">Outlet to Outlet</option>
-                
             </select>
         </label>
     </div>
+
     <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs" id="printContent">
         <h1 class="font-extrabold text-center text-lg m-4">APPROVE STOCK QUANTITY</h1>
-        <div class="w-full overflow-x-auto table-responsive" >
+        <div class="w-full overflow-x-auto table-responsive">
             <table class="py-3 border-collapse border border-slate-400 w-full" id="verifyTrans">
                 <thead>
-                    <tr class="font-medium tracking-wide text-left  px-4 text-gray-500 border-b bg-gray-200">
-                        <th class="border border-slate-300 px-4 py-3 text-[10px] ...">SN</th>
-                        <th class="border border-slate-300 px-4 py-3 text-[10px] ...">Stockin Date</th>
-                        <th class="border border-slate-300 px-4 py-3 text-[10px] ...">Item Code</th>
-                        <th class="border border-slate-300 px-4 py-3 text-[10px] ...">Item Name</th>
-                        <th class="border border-slate-300 px-4 py-3 text-[10px] ...">Qty In Stock</th>
-                        <th class="border border-slate-300 px-4 py-3 text-[10px] ...">From</th>
-                        <th class="border border-slate-300 px-4 py-3 text-[10px] ...">To</th>
-                        <th class="border border-slate-300 px-4 py-3 text-[10px] ...">Token ID</th>
-                        <th class="border border-slate-300 px-4 py-3 text-[10px] ...">Verify</th>
-                        <th class="border border-slate-300 px-4 py-3 text-[10px] ...">Change Date</th>
-                        <th class="border border-slate-300 px-4 py-3 text-[10px] ...">Delete</th>
+                    <tr class="font-medium tracking-wide text-left px-4 text-gray-500 border-b bg-gray-200">
+                        <th class="border border-slate-300 px-1 py-3" colspan="2"></th>
+                        <th class="border border-slate-300 px-4 py-3 text-[10px]" colspan="9">
+                            <div class="relative py-2 flex items-center justify-center bg-slate-200">
+                                <span class="text-sm text-slate-600 uppercase">Stock Transfer Records</span>
+                            </div>
+                        </th>
+                    </tr>
+                    <tr class="font-medium tracking-wide text-left text-gray-500 border-b bg-gray-200 px-4">
+                        <th class="border border-slate-300 px-2 py-1 text-center">
+                            <input type="checkbox" id="selectAll" class="w-4 h-4 cursor-pointer" title="Select All"/>
+                        </th>
+                        <th class="border border-slate-300 px-1 py-1 text-[10px]">SN</th>
+                        <th class="border border-slate-300 px-1 py-1 text-[10px]">Stockin Date</th>
+                        <th class="border border-slate-300 px-1 py-1 text-[10px]">Item Code</th>
+                        <th class="border border-slate-300 px-1 py-1 text-[10px]">Item Name</th>
+                        <th class="border border-slate-300 px-1 py-1 text-[10px]">Qty In Stock</th>
+                        <th class="border border-slate-300 px-1 py-1 text-[10px]">From</th>
+                        <th class="border border-slate-300 px-1 py-1 text-[10px]">To</th>
+                        <th class="border border-slate-300 px-1 py-1 text-[10px]">Token ID</th>
+                        <th class="border border-slate-300 px-1 py-1 text-[10px]">Verify</th>
+                        <th class="border border-slate-300 px-1 py-1 text-[10px]">Change Date</th>
+                        <th class="border border-slate-300 px-1 py-1 text-[10px]">Delete</th>
                     </tr>
                 </thead>
-                <tbody id="stock_row_add" class="default">
-                    <tbody id="stock_row_add" class="default">
-        {% if Unverified %}
-            {% for item in Unverified %}
-            <form action="" method="post">{% csrf_token %}
-                <tr>
-                    <td class="border border-slate-300 py-0 px-2 text-[10px]">{{forloop.counter}}</td>
-                    <td class="border border-slate-300 py-0 text-[11px]">{{item.datetx}}</td>
-                    <td class="border border-slate-300 py-0 text-[11px]">
-                        {{item.item_code}}
-                        <input type="hidden" name="itemID"     value="{{item.id}}">
-                        <input type="hidden" name="outlet"     value="{{item.outlet}}">
-                        <input type="hidden" name="warehouse"  value="{{item.warehouse}}">
-                        <input type="hidden" name="whichtrans" value="{{item.transfer}}">
-                        <input type="hidden" name="quantity"   value="{{item.quantity}}">
-                        <input type="hidden" name="item_code"  value="{{item.item_code}}">
-                    </td>
-                    <td class="border border-slate-300 py-0 text-[11px]">{{item.item}}</td>
-                    <td class="border border-slate-300 py-0 text-[11px]">{{item.quantity}}</td>
-                    <td class="border border-slate-300 py-0 text-[11px]">{{item.warehouse}}</td>
-                    <td class="border border-slate-300 py-0 text-[11px]">{{item.outlet}}</td>
-                    <td class="border border-slate-300 py-0 text-[11px]">{{item.token_id}}</td>
-                    <td class="border border-slate-300 py-0 text-[10px]">
-                        <button type="submit" name="Verify"
-                            class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-                            Verify
-                        </button>
-                    </td>
-                    <td class="border border-slate-300 py-0 text-[10px]">
-                        <input class="block w-full px-2 text-sm bg-slate-200 form-input"
-                            type="date" name="date"/>
-                    </td>
-                    <td class="border border-slate-300 py-0 text-[10px]">
-                        <button type="submit" name="delete_btn"
-                            class="ml-5 flex items-center justify-center text-red-600">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                            </svg>
-                        </button>
-                    </td>
-                </tr>
-            </form>
-            {% endfor %}
-        {% else %}
-            <tr>
-                <td colspan="11" class="text-center py-6 text-sm text-gray-400 italic">
-                    No unverified W_W transfers found. Use the search above to filter by transfer type.
-                </td>
-            </tr>
-        {% endif %}
-</tbody>
-                </tbody>
-                <tbody class="bg-white divide-y result">
-                </tbody>
-            </table>
 
+                <tbody id="stock_row_add" class="default">
+                    {% if Unverified %}
+                        {% for item in Unverified %}
+                        <form action="" method="post">{% csrf_token %}
+                            <tr id="row_{{ item.id }}">
+                                <td class="border border-slate-300 py-0 px-2 text-center">
+                                    <input type="checkbox" class="rowCheckbox w-4 h-4 cursor-pointer"
+                                           value="{{ item.id }}"
+                                           data-outlet="{{ item.outlet }}"
+                                           data-warehouse="{{ item.warehouse }}"
+                                           data-whichtrans="{{ item.transfer }}"
+                                           data-quantity="{{ item.quantity }}"
+                                           data-item-code="{{ item.item_code }}"/>
+                                </td>
+                                <td class="border border-slate-300 py-0 px-2 h-4 text-[10px]">
+                                    {{ forloop.counter }}
+                                </td>
+                                <td class="border border-slate-300 py-0 text-[11px]">{{ item.datetx }}</td>
+                                <td class="border border-slate-300 py-0 text-[11px]">
+                                    {{ item.item_code }}
+                                    <input type="hidden" name="itemID"     value="{{ item.id }}">
+                                    <input type="hidden" name="outlet"     value="{{ item.outlet }}">
+                                    <input type="hidden" name="warehouse"  value="{{ item.warehouse }}">
+                                    <input type="hidden" name="whichtrans" value="{{ item.transfer }}">
+                                    <input type="hidden" name="quantity"   value="{{ item.quantity }}">
+                                    <input type="hidden" name="item_code"  value="{{ item.item_code }}">
+                                </td>
+                                <td class="border border-slate-300 py-0 text-[11px]">{{ item.item }}</td>
+                                <td class="border border-slate-300 py-0 text-[11px]">{{ item.quantity }}</td>
+                                <td class="border border-slate-300 py-0 text-[11px]">{{ item.warehouse }}</td>
+                                <td class="border border-slate-300 py-0 text-[11px]">{{ item.outlet }}</td>
+                                <td class="border border-slate-300 py-0 text-[11px]">{{ item.token_id }}</td>
+                                <td class="border border-slate-300 py-0 text-[10px]">
+                                    <button type="submit" name="Verify"
+                                        class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                                        Verify
+                                    </button>
+                                </td>
+                                <td class="border border-slate-300 py-0 text-[10px]">
+                                    <input class="block w-full px-2 text-sm bg-slate-200 form-input"
+                                           type="date" name="date"/>
+                                </td>
+                                <td class="border border-slate-300 py-0 text-[10px]">
+                                    <button type="submit" name="delete_btn"
+                                        class="ml-5 flex items-center justify-center text-red-600">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        </form>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="12" class="text-center py-6 text-sm text-gray-400 italic">
+                                No unverified W_W transfers found. Use the search above to filter by transfer type.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+
+                <tbody class="bg-white divide-y result"></tbody>
+            </table>
         </div>
     </div>
 
-
     <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
-        
-        <div class="grid grid-cols-2  gap-6">
+        <div class="grid grid-cols-3 gap-6">
 
-            <button  type='button' onclick="printModal.showModal()" class=" h-8  px-4  mt-5 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="openModalButton">
+            <button type="button" id="verifySelectedBtn" disabled
+                class="h-8 px-4 mt-5 text-sm font-medium text-center text-white
+                       bg-green-500 border border-transparent rounded-lg
+                       hover:bg-green-600 focus:outline-none
+                       disabled:opacity-40 disabled:cursor-not-allowed">
+                Verify Selected (<span id="selectedCount">0</span>)
+            </button>
+
+            <button type="button" onclick="printModal.showModal()"
+                class="h-8 px-4 mt-5 text-sm font-medium text-center text-gray-600
+                       bg-slate-200 border border-transparent rounded-lg
+                       hover:bg-slate-300 focus:outline-none"
+                id="openModalButton">
                 Print
             </button>
 
-            <a class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
-                href="#">
+            <a class="block w-full px-4 py-1 mt-4 text-sm font-medium text-center text-gray-600
+                      bg-slate-200 border border-transparent rounded-lg hover:bg-slate-300" href="#">
                 Export to Excel
             </a>
-                  
         </div>
-
     </div>
 
-    <script> 
-        function resultFunction(res){
-            $('#verifyTrans .default').remove();
-            $('#verifyTrans .result').empty();
-            if(res.data.failed){
-                alert(res.data.failed)
-            }else{
-           
-            res.data.forEach(function(item, index) {
-                let newRow = $('<tr id="deleteitemID'+ item.id + '">');
-                // Add data to the row
-                newRow.append('<td class="text-[10px]">' + (index + 1) + '</td>');
-                newRow.append('<td class="text-[10px]">' + item.datetx + '</td>');
-                newRow.append('<td class="text-[10px]">' + item.item_code + '</td>');
-                newRow.append('<td class="text-[10px]">' + item.items + '</td>');
-                newRow.append('<td class="text-[10px]">' + item.quantity + '</td>');
-                newRow.append('<td class="text-[10px]"> ' + item.warehouse + ' </td>');
-                newRow.append('<td class="text-[10px]"> ' + item.outlet + ' </td>');
-                newRow.append('<td class="text-[10px]"> ' + item.token_id + ' </td>');
-                newRow.append(' <input type="hidden" id="itemID'+ item.id +'"  value="'+ item.id +'">\
-                    <input type="hidden" id="outlet'+ item.id +'"  value="'+ item.outlet +'">\
-                    <input type="hidden" id="warehouse'+ item.id +'"  value="'+ item.warehouse +'">\
-                    <input type="hidden" id="whichtrans'+ item.id +'"  value="'+ item.transfer +'">\
-                    <input type="hidden" id="quantity'+ item.id +'"  value="'+ item.quantity +'">\
-                    <input type="hidden" id="item_code'+ item.id +'"  value="'+ item.item_code +'">');
+    <script>
+        // ── SELECT ALL ────────────────────────────────────────────
+        $('#selectAll').on('change', function () {
+            $('.rowCheckbox').prop('checked', this.checked);
+            updateVerifyButton();
+        });
 
-                newRow.append('<td class="text-[10px]">\
-                    <button type="submit" id="verify2" data-button-name="verify2"  onclick="verifyFunction(\'' + item.id + '\')"  class=" px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:shadow-outline-green active:bg-green-700" name="Verify">\
-                        Verify\
-                    </button></td>');
+        $(document).on('change', '.rowCheckbox', function () {
+            const total   = $('.rowCheckbox').length;
+            const checked = $('.rowCheckbox:checked').length;
+            $('#selectAll').prop('indeterminate', checked > 0 && checked < total);
+            $('#selectAll').prop('checked', checked === total);
+            updateVerifyButton();
+        });
 
-                newRow.append('<td class="text-[10px]">\
-                        <input Class="block w-full px-2 text-sm bg-slate-200 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"\
-                        type="date" name="date" </td>');
-
-                // Add more columns as needed
-                let svgElement = $('<svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">\
-                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>\
-                </svg>');
-                newRow.append('<td class="text-[10px]"> <button type="submit" name="delete_btn" onclick="deleteFunction(\'' + item.id + '\')"  class="ml-5 flex items-center justify-center text-red-600" aria-label="Delete">' + svgElement[0].outerHTML  +'</button></td>');
-                
-                // Add more columns as needed
-                $('#verifyTrans .result').append(newRow);
-                
-            });
-            }
+        function updateVerifyButton() {
+            const count = $('.rowCheckbox:checked').length;
+            $('#selectedCount').text(count);
+            $('#verifySelectedBtn').prop('disabled', count === 0);
         }
 
-        $(document).ready(function() {
-    
-            $(document).on('change', '.commonClass', function(){
-                let transferType  =  $('#transferType').val();
+        // ── VERIFY SELECTED ───────────────────────────────────────
+        $('#verifySelectedBtn').on('click', function () {
+            const selected = $('.rowCheckbox:checked');
+            if (!selected.length) return;
+
+            const items = [];
+            selected.each(function () {
+                items.push({
+                    id:         $(this).val(),
+                    outlet:     $(this).data('outlet'),
+                    warehouse:  $(this).data('warehouse'),
+                    whichtrans: $(this).data('whichtrans'),
+                    quantity:   $(this).data('quantity'),
+                    item_code:  $(this).data('item-code'),
+                });
+            });
+
+            var csrftoken = getCookie('csrftoken');
+
+            $.ajax({
+                type: 'POST',
+                url:  "{% url 'Stock:VerifyTransfer' %}",
+                headers: { 'X-CSRFToken': csrftoken },
+                contentType: 'application/json',
+                data: JSON.stringify({ bulk_verify: items }),
+                success: function (res) {
+                    toastr.options = { closeButton: true, positionClass: 'toast-top-right', progressBar: true };
+                    toastr.success(res.message, 'Success');
+
+                    res.verified_ids.forEach(function (id) {
+                        $('#row_' + id).remove();
+                    });
+
+                    if (res.failed && res.failed.length) {
+                        res.failed.forEach(function (f) {
+                            toastr.warning('ID ' + f.id + ': ' + f.reason, 'Partial Failure');
+                        });
+                    }
+
+                    $('#selectAll').prop('checked', false).prop('indeterminate', false);
+                    updateVerifyButton();
+                },
+                error: function () {
+                    toastr.error('Bulk verify failed. Please try again.', 'Error');
+                }
+            });
+        });
+
+        // ── RESULT FUNCTION (with checkboxes) ────────────────────
+        function resultFunction(res) {
+            $('#verifyTrans .default').remove();
+            $('#verifyTrans .result').empty();
+            $('#selectAll').prop('checked', false).prop('indeterminate', false);
+            updateVerifyButton();
+
+            if (res.data.failed) {
+                alert(res.data.failed);
+                return;
+            }
+
+            res.data.forEach(function (item, index) {
+                let newRow = $('<tr id="row_' + item.id + '">');
+
+                // Checkbox
+                newRow.append(
+                    '<td class="border border-slate-300 py-0 px-2 text-center">' +
+                    '<input type="checkbox" class="rowCheckbox w-4 h-4 cursor-pointer"' +
+                    ' value="'         + item.id        + '"' +
+                    ' data-outlet="'   + item.outlet    + '"' +
+                    ' data-warehouse="'+ item.warehouse + '"' +
+                    ' data-whichtrans="'+ item.transfer + '"' +
+                    ' data-quantity="' + item.quantity  + '"' +
+                    ' data-item-code="'+ item.item_code + '"/>' +
+                    '</td>'
+                );
+
+                newRow.append('<td class="text-[10px] border border-slate-300 px-2">' + (index + 1) + '</td>');
+                newRow.append('<td class="text-[10px] border border-slate-300 px-2">' + item.datetx + '</td>');
+                newRow.append('<td class="text-[10px] border border-slate-300 px-2">' + item.item_code + '</td>');
+                newRow.append('<td class="text-[10px] border border-slate-300 px-2">' + item.items + '</td>');
+                newRow.append('<td class="text-[10px] border border-slate-300 px-2">' + item.quantity + '</td>');
+                newRow.append('<td class="text-[10px] border border-slate-300 px-2">' + item.warehouse + '</td>');
+                newRow.append('<td class="text-[10px] border border-slate-300 px-2">' + item.outlet + '</td>');
+                newRow.append('<td class="text-[10px] border border-slate-300 px-2">' + item.token_id + '</td>');
+
+                // Hidden inputs
+                newRow.append(
+                    '<input type="hidden" id="itemID'     + item.id + '" value="' + item.id        + '">' +
+                    '<input type="hidden" id="outlet'     + item.id + '" value="' + item.outlet    + '">' +
+                    '<input type="hidden" id="warehouse'  + item.id + '" value="' + item.warehouse + '">' +
+                    '<input type="hidden" id="whichtrans' + item.id + '" value="' + item.transfer  + '">' +
+                    '<input type="hidden" id="quantity'   + item.id + '" value="' + item.quantity  + '">' +
+                    '<input type="hidden" id="item_code'  + item.id + '" value="' + item.item_code + '">'
+                );
+
+                newRow.append(
+                    '<td class="text-[10px] border border-slate-300">' +
+                    '<button type="button" id="verify2" data-button-name="verify2"' +
+                    ' onclick="verifyFunction(\'' + item.id + '\')"' +
+                    ' class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Verify</button></td>'
+                );
+                newRow.append(
+                    '<td class="text-[10px] border border-slate-300">' +
+                    '<input class="block w-full px-2 text-sm bg-slate-200 form-input" type="date" name="date"/></td>'
+                );
+
+                let svg = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">' +
+                    '<path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>';
+                newRow.append(
+                    '<td class="text-[10px] border border-slate-300">' +
+                    '<button type="button" onclick="deleteFunction(\'' + item.id + '\')"' +
+                    ' class="ml-5 flex items-center justify-center text-red-600">' + svg + '</button></td>'
+                );
+
+                $('#verifyTrans .result').append(newRow);
+            });
+        }
+
+        // ── AJAX SEARCH ───────────────────────────────────────────
+        $(document).ready(function () {
+            $(document).on('change', '.commonClass', function () {
+                let transferType = $('#transferType').val();
                 $.ajax({
                     type: 'GET',
                     url: "{% url 'Stock:VerifyTransfer' %}",
-                    data: {
-                        transferType: transferType,
-                    },
-                    success: function(res){
-                        // foreach function
-                        resultFunction(res)
+                    data: { transferType: transferType },
+                    success: function (res) {
+                        resultFunction(res);
                     }
-                })
-            })
-    
+                });
+            });
         });
+
+        // ── CSRF ──────────────────────────────────────────────────
         function getCookie(name) {
             var cookieValue = null;
             if (document.cookie && document.cookie !== '') {
                 var cookies = document.cookie.split(';');
                 for (var i = 0; i < cookies.length; i++) {
                     var cookie = cookies[i].trim();
-                    // Check if this cookie contains the desired name
                     if (cookie.substring(0, name.length + 1) === (name + '=')) {
                         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                         break;
@@ -216,89 +319,56 @@
             }
             return cookieValue;
         }
-        function verifyFunction(id){
-            var csrftoken = getCookie('csrftoken');
 
-            let inputid = $('#itemID'+id).val()
-            let inputid2 =$('#outlet'+id).val()
-            let inputid3 =$('#warehouse'+id).val()
-            let inputid4 =$('#whichtrans'+id).val()
-            let inputid5 =$('#quantity'+id).val()
-            let inputid6 =$('#item_code'+id).val()
-            let buttonName = $("#verify2").data("button-name");
-            
+        // ── SINGLE VERIFY ─────────────────────────────────────────
+        function verifyFunction(id) {
+            var csrftoken = getCookie('csrftoken');
             $.ajax({
                 type: 'POST',
                 url: "{% url 'Stock:VerifyTransfer' %}",
                 headers: { 'X-CSRFToken': csrftoken },
                 data: {
-                    itemID: inputid,
-                    outlet: inputid2,
-                    warehouse: inputid3,
-                    whichtrans: inputid4,
-                    quantity: inputid5,
-                    item_code: inputid6,
-                    buttonName: buttonName,
+                    itemID:     $('#itemID'     + id).val(),
+                    outlet:     $('#outlet'     + id).val(),
+                    warehouse:  $('#warehouse'  + id).val(),
+                    whichtrans: $('#whichtrans' + id).val(),
+                    quantity:   $('#quantity'   + id).val(),
+                    item_code:  $('#item_code'  + id).val(),
+                    buttonName: 'verify2',
                 },
-                success: function(res) {
+                success: function (res) {
                     $('#verifyTrans .result').empty();
-                    toastr.options = {
-                            closeButton: true,
-                            positionClass: 'toast-top-right',
-                            progressBar: true,
-                        };
-                    toastr.success(res.message, "Success");
-                    // foreach function
-                    resultFunction(res)
+                    toastr.options = { closeButton: true, positionClass: 'toast-top-right', progressBar: true };
+                    toastr.success(res.message, 'Success');
+                    resultFunction(res);
                 },
-                error: function(error) {
-                    $(document).ready(function() {
-                        toastr.options = {
-                            closeButton: true,
-                            positionClass: 'toast-top-right',
-                            progressBar: true,
-                        };
-                        toastr.error(error.error, "Error");
-                    });
+                error: function () {
+                    toastr.error('Verification failed.', 'Error');
                 }
-            }) 
+            });
         }
-        function deleteFunction(id){
+
+        // ── DELETE ────────────────────────────────────────────────
+        function deleteFunction(id) {
             var csrftoken = getCookie('csrftoken');
-            let whichtrans =$('#whichtrans'+id).val()
             $.ajax({
                 type: 'POST',
                 url: "{% url 'Stock:VerifyTransfer' %}",
                 headers: { 'X-CSRFToken': csrftoken },
                 data: {
-                    deleteID:id,
-                    transtype : whichtrans,
+                    deleteID:  id,
+                    transtype: $('#whichtrans' + id).val(),
                 },
-                success: function(response) {
-                    $('#deleteitemID'+id).remove();
-
-                    // $(document).ready(function() {
-                        toastr.options = {
-                            closeButton: true,
-                            positionClass: 'toast-top-right',
-                            progressBar: true,
-                        };
-                        toastr.success(response.message, "Success");
-                    // });
+                success: function (response) {
+                    $('#row_' + id).remove();
+                    toastr.options = { closeButton: true, positionClass: 'toast-top-right', progressBar: true };
+                    toastr.success(response.message, 'Success');
                 },
-                error: function(error) {
-                    $(document).ready(function() {
-                        toastr.options = {
-                            closeButton: true,
-                            positionClass: 'toast-top-right',
-                            progressBar: true,
-                        };
-                        toastr.error(error.error, "Error");
-                    });
+                error: function () {
+                    toastr.error('Delete failed.', 'Error');
                 }
-            })      
+            });
         }
-        
     </script>
 
 {% endblock content %}
