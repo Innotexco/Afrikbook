@@ -169,7 +169,7 @@
             $('#searchBtnText').text('Searching...');
             $.ajax({
                 type: 'GET',
-                url:  "{% url 'vendor:CancleCustomerInvoice' %}",
+                url:  "{% url 'customer:CancleCustomerInvoice' %}",
                 data: {
                     fromdate: $('#fromdate').val(),
                     todate:   $('#todate').val(),
@@ -186,7 +186,7 @@
         $(document).on('change', '.commonClass', function () {
             $.ajax({
                 type: 'GET',
-                url:  "{% url 'vendor:CancleCustomerInvoice' %}",
+                url:  "{% url 'customer:CancleCustomerInvoice' %}",
                 data: {
                     invoice:    $('#invoice').val(),
                     sortbyItem: $('#sortbyItem').val(),
