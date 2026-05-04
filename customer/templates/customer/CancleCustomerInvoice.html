@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple" href="#">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+            </svg>
+            <span>Cancel Customer Invoice</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    <!-- Filters -->
+    <div class="px-4 py-2 my-5 bg-white rounded-lg shadow-md">
+        <div class="grid grid-cols-2 gap-4">
+
+            <div class="col-span-1 p-2 border-r">
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                    <label class="block text-sm">
+                        <span class="text-gray-700">From</span>
+                        <input type="date" id="fromdate"
+                            class="block w-full py-2 px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"/>
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">To</span>
+                        <input type="date" id="todate"
+                            class="block w-full py-2 px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"/>
+                    </label>
+                    <div class="block text-sm mt-5">
+                        <button type="button" id="getDate"
+                            class="w-full py-2 px-2 mt-1 text-sm font-medium text-center text-gray-600 bg-slate-200 border border-transparent rounded-lg hover:bg-slate-300 focus:outline-none flex items-center justify-center gap-2">
+                            <svg id="searchSpinner" class="hidden animate-spin h-4 w-4 text-slate-600"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                            </svg>
+                            <span id="searchBtnText">Search</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% csrf_token %}
+            <div class="col-span-1">
+                <div class="grid gap-6 md:grid-cols-2">
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Select by Item</span>
+                        <select class="commonClass block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none text-slate-600 shadow-lg"
+                            id="sortbyItem">
+                            <option>_ _Choose Item_ _</option>
+                            {% for item in items %}
+                                <option value="{{ item.generated_code }}">{{ item.item_name }} ({{ item.generated_code }})</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Select by Invoice ID</span>
+                        <select class="commonClass block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none text-slate-600 shadow-lg"
+                            id="invoice">
+                            <option>_ _Choose Invoice_ _</option>
+                            {% for inv in allinvoice %}
+                                <option value="{{ inv.invoiceID }}">{{ inv.invoiceID }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+        <div class="w-full overflow-x-auto table-responsive">
+            <table id="customerCancelTable" class="display" style="width:100%">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 bg-gray-50">
+                        <th class="py-3 px-2">SN</th>
+                        <th class="py-3 px-2">Invoice Date</th>
+                        <th class="py-3 px-2">Invoice No.</th>
+                        <th class="py-3 px-2">Customer</th>
+                        <th class="py-3 px-2">Item Name</th>
+                        <th class="py-3 px-2">Qty</th>
+                        <th class="py-3 px-2">Amount</th>
+                        <th class="py-3 px-2">Outlet</th>
+                        <th class="py-3 px-2">Token ID</th>
+                        <th class="py-3 px-2">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y default">
+                    {% for inv in allinvoice %}
+                    <tr class="text-gray-700" id="row_{{ inv.id }}">
+                        <td class="text-[10px] px-2">{{ forloop.counter }}</td>
+                        <td class="text-[10px] px-2">{{ inv.invoice_date|date:"d M Y" }}</td>
+                        <td class="text-[10px] px-2">{{ inv.invoiceID }}</td>
+                        <td class="text-[10px] px-2">{{ inv.customer_name }}</td>
+                        <td class="text-[10px] px-2">{{ inv.item_name }}</td>
+                        <td class="text-[10px] px-2">{{ inv.qty }}</td>
+                        <td class="text-[10px] px-2">{{ inv.amount }}</td>
+                        <td class="text-[10px] px-2">{{ inv.outlet }}</td>
+                        <td class="text-[10px] px-2">{{ inv.token_id }}</td>
+                        <td class="text-[10px] px-2">
+                            <button type="button"
+                                onclick="cancelInvoice('{{ inv.invoiceID }}', '{{ inv.cusID }}', '{{ inv.id }}')"
+                                class="py-1 px-3 text-[11px] font-semibold bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors duration-150">
+                                Cancel Invoice
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tbody class="bg-white divide-y result"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        /*function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }*/
+
+        // ── Cancel a single invoice via AJAX ─────────────────────────────
+        function cancelInvoice(invoiceID, cusID, rowID) {
+            alertify.defaults.glossary.title = "Hey {{ request.user.username }}";
+            alertify.confirm("Are you sure you want to cancel invoice " + invoiceID + "?",
+                // Proceed
+                function () {
+                    $.ajax({
+                        url:    "{% url 'customer:CancelSales' %}",
+                        method: "POST",
+                        data: {
+                            invoice:            invoiceID,
+                            cusID:              cusID,
+                            csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                        },
+                        success: function (data) {
+                            if (data == true) {
+                                alertify.success("Invoice " + invoiceID + " cancelled successfully");
+                                $('#row_' + rowID).fadeOut(400, function () { $(this).remove(); });
+                            } else {
+                                alertify.error("Invoice cancellation unsuccessful");
+                            }
+                        },
+                        error: function () {
+                            alertify.error("An unexpected error occurred. Please try again.");
+                        }
+                    });
+                },
+                // Cancel
+                function () {}
+            ).set('labels', { ok: 'Proceed', cancel: 'Cancel' });
+        }
+
+        // ── Date range search ─────────────────────────────────────────────
+        $('#getDate').on('click', function () {
+            $('#searchSpinner').removeClass('hidden');
+            $('#searchBtnText').text('Searching...');
+            $.ajax({
+                type: 'GET',
+                url:  "{% url 'vendor:CancleCustomerInvoice' %}",
+                data: {
+                    fromdate: $('#fromdate').val(),
+                    todate:   $('#todate').val(),
+                },
+                success: function (res) { resultFunction(res); },
+                complete: function () {
+                    $('#searchSpinner').addClass('hidden');
+                    $('#searchBtnText').text('Search');
+                }
+            });
+        });
+
+        // ── Dropdown filter ───────────────────────────────────────────────
+        $(document).on('change', '.commonClass', function () {
+            $.ajax({
+                type: 'GET',
+                url:  "{% url 'vendor:CancleCustomerInvoice' %}",
+                data: {
+                    invoice:    $('#invoice').val(),
+                    sortbyItem: $('#sortbyItem').val(),
+                },
+                success: function (res) { resultFunction(res); }
+            });
+        });
+
+        // ── Render AJAX results into table ────────────────────────────────
+        function resultFunction(res) {
+            if (res.failed) {
+                alert(res.failed);
+                return;
+            }
+
+            $('#customerCancelTable .default').remove();
+            $('#customerCancelTable .result').empty();
+
+            res.invoices.forEach(function (item, index) {
+                let row = $('<tr class="text-gray-700" id="row_' + item.id + '">');
+                row.append('<td class="text-[10px] px-2">' + (index + 1)          + '</td>');
+                row.append('<td class="text-[10px] px-2">' + item.invoice_date    + '</td>');
+                row.append('<td class="text-[10px] px-2">' + item.invoiceID       + '</td>');
+                row.append('<td class="text-[10px] px-2">' + item.customer_name   + '</td>');
+                row.append('<td class="text-[10px] px-2">' + item.item_name       + '</td>');
+                row.append('<td class="text-[10px] px-2">' + item.qty             + '</td>');
+                row.append('<td class="text-[10px] px-2">' + item.amount          + '</td>');
+                row.append('<td class="text-[10px] px-2">' + item.outlet          + '</td>');
+                row.append('<td class="text-[10px] px-2">' + item.token_id        + '</td>');
+                row.append(
+                    '<td class="text-[10px] px-2">' +
+                    '<button type="button" ' +
+                    'onclick="cancelInvoice(\'' + item.invoiceID + '\', \'' + item.cusID + '\', \'' + item.id + '\')" ' +
+                    'class="py-1 px-3 text-[11px] font-semibold bg-red-600 hover:bg-red-700 text-white rounded-md">' +
+                    'Cancel Invoice</button></td>'
+                );
+                $('#customerCancelTable .result').append(row);
+            });
+        }
+    </script>
+
+{% endblock content %}

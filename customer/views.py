@@ -745,6 +745,58 @@ def Verify(request):
         return JsonResponse({'message': "Error Verifying Payment"}, status=404)
 
 
+
+def CancleCustomerInvoicePage(request):
+    db              = request.user.company_id.db_name
+    customerInvoice = customer_invoice.objects.using(db).filter(
+        cancellation_status="0"
+    ).exclude(invoice_state="Cancelled")
+    getitem = Item.objects.using(db).all()
+
+    # ── AJAX GET — filter ────────────────────────────────────────────────
+    if request.method == 'GET' and any([
+        request.GET.get('fromdate'),
+        request.GET.get('invoice'),
+        request.GET.get('sortbyItem'),
+    ]):
+        qs = customerInvoice
+
+        fromdate   = request.GET.get('fromdate')
+        todate     = request.GET.get('todate')
+        invoice    = request.GET.get('invoice')
+        sortbyItem = request.GET.get('sortbyItem')
+
+        if fromdate and todate:
+            qs = qs.filter(invoice_date__date__range=[fromdate, todate])
+        if invoice and invoice != '_ _Choose Invoice_ _':
+            qs = qs.filter(invoiceID=invoice)
+        if sortbyItem and sortbyItem != '_ _Choose Item_ _':
+            qs = qs.filter(itemcode=sortbyItem)
+
+        if not qs.exists():
+            return JsonResponse({'failed': 'No records found'})
+
+        data = []
+        for row in qs.values('id', 'invoiceID', 'cusID', 'invoice_date',
+                              'customer_name', 'item_name', 'qty',
+                              'amount', 'outlet', 'token_id'):
+            row['invoice_date'] = (
+                row['invoice_date'].strftime('%d %b %Y')
+                if row['invoice_date'] else ''
+            )
+            data.append(row)
+
+        return JsonResponse({'invoices': data})
+
+    context = {
+        'allinvoice': customerInvoice,
+        'items':      getitem,
+    }
+    return render(request, 'customer/CancleCustomerInvoice.html', context)
+
+
+
+
 def CancelSales(request):
     db = request.user.company_id.db_name 
     invoice = request.POST.get("invoice")
@@ -803,6 +855,8 @@ def CancelSales(request):
         return JsonResponse(True, safe=False)
     except customer_invoice.DoesNotExist:
         return JsonResponse(False, safe=False)
+
+
 
 
 def Edit_incoice(request):
