@@ -819,31 +819,41 @@ def CancelSales(request):
         if inital_invioice.amount_paid == inital_invioice.amount_expected:
             #Paid
             if accountType == "Customer":
-                cus = customer_table.objects.using(db).filter(customer_code=cusID)
+                if not cus:
+                    return JsonResponse({'error': 'Customer not found'}, status=404)
                 CreditReceivable(request, db, cus, inital_invioice.invoice_date, inital_invioice.Gdescription, "Transfer", account, inital_invioice.amount_paid)
             
             elif accountType == "Vendor":
-                ven = vendor_table.objects.using(db).filter(custID=cusID)
+                ven = vendor_table.objects.using(db).filter(custID=cusID).first()
+                if not ven:
+                    return JsonResponse({'error': 'Vendor not found'}, status=404)
                 CreditPayable(request, db, ven, inital_invioice.invoice_date, inital_invioice.Gdescription, "Transfer", account, inital_invioice.amount_paid)
             
         elif inital_invioice.amount_paid != 0 and inital_invioice.amount_paid < inital_invioice.amount_expected:
             #Partly paid
             if accountType == "Customer":
-                cus = customer_table.objects.using(db).filter(customer_code=cusID)
+                if not cus:
+                    return JsonResponse({'error': 'Customer not found'}, status=404)
                 CreditReceivable(request, db, cus, inital_invioice.invoice_date, inital_invioice.Gdescription, "Transfer", account, inital_invioice.amount_paid)
             
             elif accountType == "Vendor":
-                ven = vendor_table.objects.using(db).filter(custID=cusID)
+                ven = vendor_table.objects.using(db).filter(custID=cusID).first()
+                if not ven:
+                    return JsonResponse({'error': 'Vendor not found'}, status=404)
                 CreditPayable(request, db, ven, inital_invioice.invoice_date, inital_invioice.Gdescription, "Transfer", account, inital_invioice.amount_paid)
                     
         else:
             if accountType == "Customer":
-                cus = customer_table.objects.using(db).filter(customer_code=cusID)
+                cus = customer_table.objects.using(db).filter(customer_code=cusID).first()
+                if not cus:
+                    return JsonResponse({'error': 'Customer not found'}, status=404)
                 debtor_account = chart_of_account.objects.using(db).get(account_bankname="Return Inward")
                 CreditReceivable(request, db, cus, inital_invioice.invoice_date, inital_invioice.Gdescription, "Transfer", debtor_account.account_id, inital_invioice.amount_paid)
                 CreateLog(db, debtor_account, inital_invioice.amount_expected)
             elif accountType == "Vendor":
-                ven = vendor_table.objects.using(db).filter(custID=cusID)
+                ven = vendor_table.objects.using(db).filter(custID=cusID).first()
+                if not ven:
+                    return JsonResponse({'error': 'Vendor not found'}, status=404)
                 debtor_account = chart_of_account.objects.using(db).get(account_bankname="Return Outward")
                 CreditPayable(request, db, ven, inital_invioice.invoice_date, inital_invioice.Gdescription, "Transfer", debtor_account.account_id, inital_invioice.amount_paid)
                 CreateLog(db, debtor_account, inital_invioice.amount_expected)
