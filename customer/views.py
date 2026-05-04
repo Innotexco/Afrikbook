@@ -819,6 +819,7 @@ def CancelSales(request):
         if inital_invioice.amount_paid == inital_invioice.amount_expected:
             #Paid
             if accountType == "Customer":
+                cus = customer_table.objects.using(db).filter(customer_code=cusID).first()
                 if not cus:
                     return JsonResponse({'error': 'Customer not found'}, status=404)
                 CreditReceivable(request, db, cus, inital_invioice.invoice_date, inital_invioice.Gdescription, "Transfer", account, inital_invioice.amount_paid)
@@ -832,6 +833,7 @@ def CancelSales(request):
         elif inital_invioice.amount_paid != 0 and inital_invioice.amount_paid < inital_invioice.amount_expected:
             #Partly paid
             if accountType == "Customer":
+                cus = customer_table.objects.using(db).filter(customer_code=cusID).first()
                 if not cus:
                     return JsonResponse({'error': 'Customer not found'}, status=404)
                 CreditReceivable(request, db, cus, inital_invioice.invoice_date, inital_invioice.Gdescription, "Transfer", account, inital_invioice.amount_paid)
