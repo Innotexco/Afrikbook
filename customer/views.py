@@ -813,7 +813,7 @@ def CancelSales(request):
                 # Increase outlet stockin returned quatity
                 IncreaseOutletStockinItemQuantity(db, outlet, item.itemcode, item.qty)
                 
-                CreateOutletStockinLog(db, item.invoice_date, item.invoiceID, item.order_no, item.customer_name, " ", outlet, item.Gdescription, item.item_name, item.item_descriptions, item.qty, item.token_id, item.Userlogin,  item.itemcode, item.unit_p, "")
+                CreateOutletStockinLog(db, item.invoice_date, item.invoiceID, item.order_ID, item.customer_name, " ", outlet, item.Gdescription, item.item_name, item.item_descriptions, item.qty, item.token_id, item.Userlogin,  item.itemcode, item.unit_p, "")
 
         account = chart_of_account.objects.using(db).get(account_bankname="Sales account").account_id
         if inital_invioice.amount_paid == inital_invioice.amount_expected:
