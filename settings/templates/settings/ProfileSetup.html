@@ -258,6 +258,37 @@
             </div>
             <!-- ── End Notification Preferences ──────────────────────────── -->
 
+            <!-- ── Auto-Verify Stock Transfers ───────────────────────────── -->
+            <div class="flex items-center justify-between px-5 py-4">
+                <div class="flex items-center gap-3">
+                    <div class="flex-shrink-0 w-9 h-9 bg-amber-100 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-700">Auto-Verify Stock Transfers</p>
+                        <p class="text-xs text-gray-400">
+                            When enabled, transfers are verified immediately without going through the approval queue.
+                            Turn off to require manual approval for all transfers.
+                        </p>
+                    </div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="auto_verify_transfer" id="auto_verify_transfer" class="sr-only peer"
+                        {% if profile.auto_verify_transfer %}checked{% endif %}>
+                    <div class="relative w-11 h-6 bg-gray-200 rounded-full peer
+                                peer-checked:bg-amber-500
+                                after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                                after:bg-white after:border-gray-300 after:border after:rounded-full
+                                after:h-5 after:w-5 after:transition-all
+                                peer-checked:after:translate-x-full peer-checked:after:border-white">
+                    </div>
+                </label>
+            </div>
+
+
             <input type="hidden" value="{{token}}" name="{{form.Token_ID.name}}">
             <input type="hidden" value="admin" name="{{form.Userlogin.name}}">
 

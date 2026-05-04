@@ -4,7 +4,7 @@ from settings.models import CreateProfile
 class ProfileSetupForm(forms.ModelForm):
     class Meta:
         model = CreateProfile
-        fields = ['ownerName', 'phone', 'phone2', 'email', 'Rc', 'CompanyName', 'services', 'address', 'country', 'currency', 'logo', 'show_customer_info', 'Token_ID', 'vat', 'Userlogin', 'pdf_template_preference', 'send_email_invoice', 'send_whatsapp_invoice']
+        fields = ['ownerName', 'phone', 'phone2', 'email', 'Rc', 'CompanyName', 'services', 'address', 'country', 'currency', 'logo', 'show_customer_info', 'Token_ID', 'vat', 'Userlogin', 'pdf_template_preference', 'send_email_invoice', 'send_whatsapp_invoice', 'auto_verify_transfer']
         
         
 
