@@ -586,12 +586,14 @@ def Create_UpdateNewProfile(request):
             Userlogin     = getdata.get('Userlogin')
 
             pdf_template          = request.POST.get('pdf_template_preference', 'classic')
-            send_email_invoice    = request.POST.get('send_email_invoice') == 'on'      # ← added
-            send_whatsapp_invoice = request.POST.get('send_whatsapp_invoice') == 'on'   # ← added
+            send_email_invoice    = request.POST.get('send_email_invoice') == 'on'
+            send_whatsapp_invoice = request.POST.get('send_whatsapp_invoice') == 'on'
+            auto_verify_transfer  = request.POST.get('auto_verify_transfer') == 'on'   # ← added
 
             logger.debug(
                 f"[Create_UpdateNewProfile] Prefs | pdf={pdf_template} | "
-                f"send_email={send_email_invoice} | send_whatsapp={send_whatsapp_invoice}"
+                f"send_email={send_email_invoice} | send_whatsapp={send_whatsapp_invoice} | "
+                f"auto_verify_transfer={auto_verify_transfer}"                             # ← added
             )
 
             if profiledata.count() > 0:
@@ -610,9 +612,15 @@ def Create_UpdateNewProfile(request):
 
                 updateProfile                         = formsUpdate.save(commit=False)
                 updateProfile.pdf_template_preference = pdf_template
-                updateProfile.send_email_invoice      = send_email_invoice      # ← added
-                updateProfile.send_whatsapp_invoice   = send_whatsapp_invoice   # ← added
+                updateProfile.send_email_invoice      = send_email_invoice
+                updateProfile.send_whatsapp_invoice   = send_whatsapp_invoice
+                updateProfile.auto_verify_transfer    = auto_verify_transfer    # ← added
                 updateProfile.save(using=db)
+
+                # Sync INT session so transfer views pick it up immediately
+                request.session['INT'] = 'Yes' if auto_verify_transfer else 'No'  # ← added
+                request.session.modified = True                                    # ← added
+
                 new_company_name = request.POST.get('CompanyName') or getdata.get('CompanyName')
                 if new_company_name:
                     try:
@@ -641,16 +649,22 @@ def Create_UpdateNewProfile(request):
                     context['success_message'] = 'Profile Successfully Updated'
                     logger.info(
                         f"[Create_UpdateNewProfile] Profile updated | pdf={pdf_template} | "
-                        f"send_email={send_email_invoice} | send_whatsapp={send_whatsapp_invoice}"
+                        f"send_email={send_email_invoice} | send_whatsapp={send_whatsapp_invoice} | "
+                        f"auto_verify_transfer={auto_verify_transfer}"                              # ← added
                     )
 
             else:
                 # CREATE new profile
-                profile_instance                        = forms.save(commit=False)
+                profile_instance                         = forms.save(commit=False)
                 profile_instance.pdf_template_preference = pdf_template
-                profile_instance.send_email_invoice      = send_email_invoice      # ← added
-                profile_instance.send_whatsapp_invoice   = send_whatsapp_invoice   # ← added
+                profile_instance.send_email_invoice      = send_email_invoice
+                profile_instance.send_whatsapp_invoice   = send_whatsapp_invoice
+                profile_instance.auto_verify_transfer    = auto_verify_transfer    # ← added
                 profile_instance.save(using=db)
+
+                # Sync INT session on first create too
+                request.session['INT'] = 'Yes' if auto_verify_transfer else 'No'  # ← added
+                request.session.modified = True                                    # ← added
 
                 SalesInterface.objects.using(db).create(
                     name          = name,
@@ -663,7 +677,8 @@ def Create_UpdateNewProfile(request):
                     context['success_message'] = 'Profile Successfully Created'
                     logger.info(
                         f"[Create_UpdateNewProfile] Profile created | pdf={pdf_template} | "
-                        f"send_email={send_email_invoice} | send_whatsapp={send_whatsapp_invoice}"
+                        f"send_email={send_email_invoice} | send_whatsapp={send_whatsapp_invoice} | "
+                        f"auto_verify_transfer={auto_verify_transfer}"                              # ← added
                     )
                     return redirect('settings:ProfileSetup')
                 else:
@@ -716,10 +731,17 @@ def complete_profileSetup(request):
             obj                       = form.save(commit=False)
             obj.send_email_invoice    = request.POST.get('send_email_invoice') == 'on'
             obj.send_whatsapp_invoice = request.POST.get('send_whatsapp_invoice') == 'on'
+            obj.auto_verify_transfer  = request.POST.get('auto_verify_transfer') == 'on'  
             obj.save(using=db)
+
+            # Sync INT session so transfer views pick it up immediately
+            request.session['INT'] = 'Yes' if obj.auto_verify_transfer else 'No'  
+            request.session.modified = True                                         
+
             logger.info(
                 f"[complete_profileSetup] Profile {profile_id} updated | "
-                f"send_email={obj.send_email_invoice} | send_whatsapp={obj.send_whatsapp_invoice}"
+                f"send_email={obj.send_email_invoice} | send_whatsapp={obj.send_whatsapp_invoice} | "
+                f"auto_verify_transfer={obj.auto_verify_transfer}"                 
             )
 
             # ── Sync company name to company_table ──────────────────────────
@@ -765,7 +787,9 @@ def complete_profileSetup(request):
     except Exception as e:
         logger.exception("[complete_profileSetup] Unexpected error during profile setup")
         return HttpResponseBadRequest(str(e))
-
+    
+    
+    
 @login_required(login_url='Profile Setup')
 @urls_name(name="Profile")
 def ViewProfile(request):

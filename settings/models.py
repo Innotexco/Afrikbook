@@ -129,6 +129,7 @@ class CreateProfile(models.Model):
     )
     send_email_invoice    = models.BooleanField(default=False,  help_text='Send invoice to customer via email')
     send_whatsapp_invoice = models.BooleanField(default=False, help_text='Send invoice to customer via WhatsApp')
+    auto_verify_transfer  = models.BooleanField(default=True, help_text='Automatically verify stock transfers without approval step')
 
     class Meta:
         db_table = 'profile'
