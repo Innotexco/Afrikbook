@@ -269,7 +269,7 @@ def cancle_invoice(request, context, form_invoiceID, db, form_id):
 
     # ── 5. Mark invoice as cancelled ──────────────────────────────────
     vendorInv.qty = 0
-    vendorInv.amount_paid = amount_expected   # fully paid in accounting sense after reversal
+    vendorInv.amount_paid = amount_expected
     vendorInv.cancellation = 1
     vendorInv.save(using=db)
 
