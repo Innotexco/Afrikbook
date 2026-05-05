@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {# Include any modal if needed, e.g., EditStock.html not required for sales #}
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md" href="#">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+            </svg>
+            <span>Cancelled Sales Invoices</span>
+        </div>
+        <span>Home &RightArrow;</span>
+    </a>
+
+    <div class="px-4 py-2 my-5 bg-white rounded-lg shadow-md">
+        <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-1 p-2 border-r">
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                    <label class="block text-sm">
+                        <span class="text-gray-700">From</span>
+                        <input type="date" id="fromdate" class="block w-full py-2 px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input" />
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">To</span>
+                        <input type="date" id="todate" class="block w-full py-2 px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input" />
+                    </label>
+                    <div class="block text-sm mt-5">
+                        <button type="button" id="getDate" class="w-full py-2 px-2 mt-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate flex items-center justify-center gap-2">
+                            <svg id="searchSpinner" class="hidden animate-spin h-4 w-4 text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            <span id="searchBtnText">Search</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-span-1">
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-2">
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Select by item</span>
+                        <select id="sortbyItem" class="commonClass block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg">
+                            <option>_ _Choose Item_ _</option>
+                            {% for item in items %}
+                                <option value="{{item.generated_code}}">{{item.item_name}} ({{item.generated_code}})</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Select by Invoice ID</span>
+                        <select id="invoice" class="commonClass block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg">
+                            <option>_ _Choose Invoice_ _</option>
+                            {% for inv in allinvoice %}
+                                <option value="{{inv.invoiceID}}">{{inv.invoiceID}}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+        <div class="w-full overflow-x-auto">
+            <table id="adjuststore" class="display" style="width:100%">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 bg-gray-50">
+                        <th class="py-3">SN</th>
+                        <th class="py-3">Sale Date</th>
+                        <th class="py-3">Invoice No.</th>
+                        <th class="py-3">Customer</th>
+                        <th class="py-3">Item Name</th>
+                        <th class="py-3">Qty</th>
+                        <th class="py-3">Amount</th>
+                        <th class="py-3">Token ID</th>
+                     </tr>
+                </thead>
+                <tbody class="bg-white divide-y default">
+                    {% for invoice in allinvoice %}
+                    <tr class="text-gray-700">
+                        <td class="text-[10px]">{{forloop.counter}}</td>
+                        <td class="text-[10px]">{{ invoice.invoice_date|date:"d M Y" }}</td>
+                        <td class="text-[10px]">{{ invoice.invoiceID }}</td>
+                        <td class="text-[10px]">{{ invoice.customer_name }}</td>
+                        <td class="text-[10px]">{{ invoice.item_name }}</td>
+                        <td class="text-[10px]">{{ invoice.qty }}</td>
+                        <td class="text-[10px]">{{ invoice.amount }}</td>
+                        <td class="text-[10px]">{{ invoice.token_id }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="text-center py-4">No cancelled sales invoices found.</td></tr>
+                    {% endfor %}
+                </tbody>
+                <tbody class="bg-white divide-y result"></tbody>
+             </table>
+        </div>
+    </div>
+
+    <script>
+        // AJAX search/filter - same as purchase version
+        $(document).ready(function() {
+            function fetchFilteredData() {
+                var fromdate = $('#fromdate').val();
+                var todate = $('#todate').val();
+                var invoice = $('#invoice').val();
+                var sortbyItem = $('#sortbyItem').val();
+                
+                $.ajax({
+                    url: "{% url 'viewCancleSales' %}",
+                    type: 'GET',
+                    data: {
+                        'fromdate': fromdate,
+                        'todate': todate,
+                        'invoice': invoice,
+                        'sortbyItem': sortbyItem
+                    },
+                    beforeSend: function() {
+                        $('#searchSpinner').removeClass('hidden');
+                        $('#searchBtnText').text('Searching...');
+                    },
+                    success: function(response) {
+                        if (response.stockin) {
+                            var tbody = $('.result');
+                            tbody.empty();
+                            $.each(response.stockin, function(index, item) {
+                                var row = `<tr class="text-gray-700">
+                                    <td class="text-[10px]">${index+1}</td>
+                                    <td class="text-[10px]">${item.datetx || ''}</td>
+                                    <td class="text-[10px]">${item.invoice_no || ''}</td>
+                                    <td class="text-[10px]">${item.customer_name || ''}</td>
+                                    <td class="text-[10px]">${item.item || ''}</td>
+                                    <td class="text-[10px]">${item.quantity || ''}</td>
+                                    <td class="text-[10px]">${item.amount || ''}</td>
+                                    <td class="text-[10px]">${item.token_id || ''}</td>
+                                </tr>`;
+                                tbody.append(row);
+                            });
+                            $('.default').hide();
+                        } else if (response.failed) {
+                            $('.result').html('<tr><td colspan="8" class="text-center py-4 text-red-500">' + response.failed + '</td></tr>');
+                            $('.default').hide();
+                        }
+                    },
+                    error: function() {
+                        alert('Error fetching data');
+                    },
+                    complete: function() {
+                        $('#searchSpinner').addClass('hidden');
+                        $('#searchBtnText').text('Search');
+                    }
+                });
+            }
+
+            $('#getDate').click(fetchFilteredData);
+            $('#sortbyItem, #invoice').change(fetchFilteredData);
+        });
+    </script>
+{% endblock %}
