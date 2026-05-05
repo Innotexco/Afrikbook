@@ -170,101 +170,111 @@ def stock_adjustment_arithmetic_logic(stockinQty, form_qty, getqty):
         return stockinQtyNew
         # stockinLog qty update
         
-
+from decimal import Decimal
 @login_required(login_url="/")
 @urls_name(name="Purchase Invoices")
 def cancle_invoice(request, context, form_invoiceID, db, form_id):
-    payable_qs = payable.objects.using(db).all()
-    getqty_outlet_stockinlog=None
-    getqty_stockinlog=None
-
     try:
         vendorInv = Vendor_invoice.objects.using(db).get(invoiceID=form_invoiceID, id=form_id)
-        amount_paid = vendorInv.amount_paid
-        amount_expected = vendorInv.amount_expected
-        # check if the items were fully paid for
-        if amount_paid == amount_expected:
-            payable_qs = payable.objects.using(db).create(
-                type='Credit', 
-                transaction_id=form_invoiceID, 
-                amount=vendorInv.amount, 
-                vendor_name=vendorInv.vendor_name,
-                payment_method='Cash',
-                Userlogin=request.user,
-            )
-
-
-        # check if the items were partly paid for
-        if amount_paid < amount_expected:
-            payable_qs = payable.objects.using(db).create(
-                type='Credit', 
-                transaction_id=form_invoiceID, 
-                amount=amount_paid, 
-                vendor_name=vendorInv.vendor_name,
-                payment_method='Cash',
-                Userlogin=request.user,
-            )
-
-        
-        # check if the items were not paid for
-        if amount_paid == 0.00:
-            liability_qs = Liability_account.objects.using(db).create(
-                type='Credit', 
-                transaction_id=form_invoiceID, 
-                amount=vendorInv.amount, 
-                vendor_name=vendorInv.vendor_name,
-                payment_method='Cash',
-                Userlogin=request.user,
-            )
-        try:
-            getqty_stockinlog = CreateStockInLog.objects.using(db).get(invoice_no=form_invoiceID, item_code=vendorInv.itemcode)
-            getqty_stockinlog.quantity = 0
-            getqty_stockinlog.status = 'Cancelled'
-            getqty_stockinlog.save(using=db)
-
-        except CreateStockInLog.DoesNotExist:
-            pass
-
-        try:
-            getqty_outlet_stockinlog = CreateOutletStockInLog.objects.using(db).get(invoice_no=form_invoiceID, item_code=vendorInv.itemcode)
-            getqty_outlet_stockinlog.quantity = 0
-            getqty_outlet_stockinlog.status = 'Cancelled'
-            getqty_outlet_stockinlog.save(using=db)
-        except CreateOutletStockInLog.DoesNotExist:
-            pass
-        if getqty_stockinlog is not None:
-            try:
-                get_qty_from_stockin = CreateStockIn.objects.using(db).get(warehouse=getqty_stockinlog.warehouse, item_code=getqty_stockinlog.item_code)
-                stockinQty =get_qty_from_stockin.quantity
-                get_qty_from_stockin.quantity = float(stockinQty) - float(vendorInv.qty)
-                # stockin qty update
-                get_qty_from_stockin.save(using=db)
-            except CreateStockIn.DoesNotExist:
-                pass
-        if getqty_outlet_stockinlog is not None:
-            try:
-                get_qty_from_stockin = CreateOutletStockIn.objects.using(db).get(warehouse=getqty_outlet_stockinlog.warehouse, item_code=getqty_outlet_stockinlog.item_code)
-                stockinQty =get_qty_from_stockin.quantity
-                get_qty_from_stockin.quantity = float(stockinQty) - float(vendorInv.qty)
-                # Outletstockin qty update
-                get_qty_from_stockin.save(using=db)
-            except CreateOutletStockIn.DoesNotExist:
-                pass
-
     except Vendor_invoice.DoesNotExist:
-        context['error_message']   = 'Data Not Found'
-    
-    
+        context['error_message'] = 'Data Not Found'
+        return context
 
-    if vendorInv and get_qty_from_stockin:
-            vendorInv.qty = 0
-            vendorInv.amount_paid  = amount_expected
-            vendorInv.cancellation  = 1
-            vendorInv.save(using=db)
-            context['success_message'] = 'Invoice has been canceled'
-    else:
-        context['error_message']   = 'Cancellation Failed'
+    amount_paid = Decimal(str(vendorInv.amount_paid))
+    amount_expected = Decimal(str(vendorInv.amount_expected))
 
+    # ── 1. Accounting entries ─────────────────────────────────────────
+    if amount_paid == amount_expected:
+        payable.objects.using(db).create(
+            type='Credit',
+            transaction_id=form_invoiceID,
+            amount=vendorInv.amount,
+            vendor_name=vendorInv.vendor_name,
+            payment_method='Cash',
+            Userlogin=request.user,
+        )
+    elif amount_paid < amount_expected and amount_paid > 0:
+        payable.objects.using(db).create(
+            type='Credit',
+            transaction_id=form_invoiceID,
+            amount=amount_paid,
+            vendor_name=vendorInv.vendor_name,
+            payment_method='Cash',
+            Userlogin=request.user,
+        )
+    elif amount_paid == 0:
+        Liability_account.objects.using(db).create(
+            type='Credit',
+            transaction_id=form_invoiceID,
+            amount=vendorInv.amount,
+            vendor_name=vendorInv.vendor_name,
+            payment_method='Cash',
+            Userlogin=request.user,
+        )
+
+    # ── 2. Mark logs as cancelled ─────────────────────────────────────
+    try:
+        stock_log = CreateStockInLog.objects.using(db).get(invoice_no=form_invoiceID, item_code=vendorInv.itemcode)
+        stock_log.quantity = 0
+        stock_log.status = 'Cancelled'
+        stock_log.save(using=db)
+    except CreateStockInLog.DoesNotExist:
+        stock_log = None
+
+    try:
+        outlet_log = CreateOutletStockInLog.objects.using(db).get(invoice_no=form_invoiceID, item_code=vendorInv.itemcode)
+        outlet_log.quantity = 0
+        outlet_log.status = 'Cancelled'
+        outlet_log.save(using=db)
+    except CreateOutletStockInLog.DoesNotExist:
+        outlet_log = None
+
+    # ── 3. Reverse warehouse stock (FIFO across multiple records) ────
+    qty_to_reverse = Decimal(str(vendorInv.qty))
+    if stock_log:
+        # Find all stock‑in records for this warehouse + item, oldest first
+        stock_records = CreateStockIn.objects.using(db).filter(
+            warehouse=stock_log.warehouse,
+            item_code=stock_log.item_code
+        ).order_by('id')
+        remaining = qty_to_reverse
+        for record in stock_records:
+            if remaining <= 0:
+                break
+            deduct = min(Decimal(str(record.quantity)), remaining)
+            record.quantity = Decimal(str(record.quantity)) - deduct
+            record.save(using=db)
+            remaining -= deduct
+        if remaining > 0:
+            context['error_message'] = f'Not enough warehouse stock to cancel (short by {remaining})'
+            return context
+
+    # ── 4. Reverse outlet stock (if any) ──────────────────────────────
+    if outlet_log:
+        outlet_records = CreateOutletStockIn.objects.using(db).filter(
+            warehouse=outlet_log.warehouse,   # or outlet_log.outlet – depends on your model
+            item_code=outlet_log.item_code
+        ).order_by('id')
+        remaining = qty_to_reverse
+        for record in outlet_records:
+            if remaining <= 0:
+                break
+            deduct = min(Decimal(str(record.quantity)), remaining)
+            record.quantity = Decimal(str(record.quantity)) - deduct
+            record.save(using=db)
+            remaining -= deduct
+        if remaining > 0:
+            context['error_message'] = f'Not enough outlet stock to cancel (short by {remaining})'
+            return context
+
+    # ── 5. Mark invoice as cancelled ──────────────────────────────────
+    vendorInv.qty = 0
+    vendorInv.amount_paid = amount_expected   # fully paid in accounting sense after reversal
+    vendorInv.cancellation = 1
+    vendorInv.save(using=db)
+
+    context['success_message'] = 'Invoice has been canceled'
+    return context
 
 # @login_required(login_url="/")
 # @urls_name(name="Purchase Invoices")
