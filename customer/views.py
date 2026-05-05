@@ -869,6 +869,69 @@ def CancelSales(request):
         return JsonResponse(False, safe=False)
 
 
+def getCancelledSalesFilter(request, db, con):
+    """AJAX helper to filter cancelled sales invoices by date, item, or invoice ID."""
+    if request.method == 'GET':
+        fromdate = request.GET.get('fromdate')
+        todate = request.GET.get('todate')
+        invoice = request.GET.get('invoice')
+        sortbyItem = request.GET.get('sortbyItem')
+        failed = {'failed': "No Data Found"}
+
+        qs = customer_invoice.objects.using(db).filter(con)
+
+        if fromdate and todate:
+            from_date, to_date = getdate(fromdate, todate)  # reuse your getdate function
+            qs = qs.filter(invoice_date__date__range=(from_date, to_date))
+
+        if sortbyItem and sortbyItem != '_ _Choose Item_ _':
+            qs = qs.filter(itemcode=sortbyItem)
+
+        if invoice and invoice != '_ _Choose Item_ _':
+            qs = qs.filter(invoiceID=invoice)
+
+        if not qs.exists():
+            return failed
+
+        result = [{
+            'id': obj.id,
+            'datetx': obj.invoice_date.strftime('%Y-%m-%d %H:%M:%S') if obj.invoice_date else None,
+            'invoice_no': obj.invoiceID,
+            'item': obj.item_name,
+            'quantity': str(obj.qty),
+            'item_decription': obj.item_description,
+            'token_id': obj.token_id,
+            'customer_name': obj.customer_name,
+            'amount': str(obj.amount),
+        } for obj in qs]
+        return result
+
+def viewCancleSales(request):
+    db = request.user.company_id.db_name
+    # Cancelled sales invoices: cancellation_status = "1" or invoice_state = "Cancelled"
+    cancelled_invoices = customer_invoice.objects.using(db).filter(
+        Q(cancellation_status="1") | Q(invoice_state="Cancelled")
+    ).distinct()
+    
+    warehouse = Warehouse.objects.using(db).all()
+    outlet = sales_outlet.objects.using(db).all()
+    getitem = Item.objects.using(db).all()
+    
+    context = {
+        'allinvoice': cancelled_invoices,
+        'items': getitem,
+        'warehouse': warehouse,
+        'outlet': outlet,
+        'title': 'Cancelled Sales Invoices',
+        'type': 'viewsalescancelled',   # to differentiate in template
+    }
+
+    # Handle AJAX filter request
+    stockinlog = getCancelledSalesFilter(request, db, Q(cancellation_status="1") | Q(invoice_state="Cancelled"))
+    if stockinlog:
+        return JsonResponse({'stockin': stockinlog})
+
+    return render(request, 'customer/viewCancleSales.html', context)
 
 
 def Edit_incoice(request):
