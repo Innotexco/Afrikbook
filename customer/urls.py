@@ -51,7 +51,7 @@ urlpatterns = [
     path('get_return_items/<str:invoice>/<int:item_id>/', views.GetReturnItemDetails, name='item-get_return_items'), #ajax
     path('invoice/<int:invoice_id>/', views.GetInvoiceDetails, name='invoice'), #ajax  
     path('cancel-customer-invoice/', views.CancleCustomerInvoicePage, name='CancleCustomerInvoice'), #ajax
-    path('view-cancelled-sales/', views.viewCancleSales, name='viewCancledSales'), #ajax
+    path('view_cancelled_sales/', views.viewCancleSales, name='viewCancledSales'), 
 
     path('get_items_qty', views.CheckItemQty, name='item-qty'), #ajax
     path('Stockget_items_qty', views.StockCheckItemQty, name='Stockitem-qty'), #ajax
