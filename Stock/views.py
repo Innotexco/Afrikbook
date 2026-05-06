@@ -698,6 +698,7 @@ def entry(x, qty, outlet, data):
 def OutletStockLevel(request):
     db   = request.user.company_id.db_name
     shop = sales_outlet.objects.using(db).all()
+    items = Item.objects.using(db).all().order_by('item_name')
 
     Itemcode       = request.GET.get('Itemcode',       '').strip()
     searchItem     = request.GET.get('searchItem',     '').strip()
@@ -750,6 +751,7 @@ def OutletStockLevel(request):
     context = {
         'shop':   shop,
         'outlet': stock,
+        'items':  items,
     }
     return render(request, 'OutletStockLevel.html', context)
 
@@ -801,6 +803,7 @@ def OutletStockLevel(request):
 def WarehouseStockLevel(request):
     db = request.user.company_id.db_name
     warehouse = Warehouse.objects.using(db).all()
+    items = Item.objects.using(db).all().order_by('item_name')
    
     Itemcode = request.GET.get('Itemcode') 
     searchItem = request.GET.get('searchItem') 
@@ -828,7 +831,8 @@ def WarehouseStockLevel(request):
     
     context = {
         'warehouse' : warehouse,
-        'stock': stock
+        'stock': stock,
+        'items': items
     }
    
     return render(request, 'WarehouseStockLevel.html', context)
