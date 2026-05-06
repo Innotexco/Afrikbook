@@ -112,7 +112,7 @@ def add_purchase_invoice(request, db):
                 # stock_in = Stock_In.objects.filter(warehouse=warehouse, item_code=itemcode).first()
                 
                 ## INSTANT TRANSFER
-                if warehouse is not '' and outlet is not '':
+                if warehouse and outlet:
                     # save Item In Stockin table first
                     try:
                         stock_in_query = CreateStockIn.objects.using(db).get(warehouse=warehouse, item_code=itemcode[i])
@@ -128,7 +128,7 @@ def add_purchase_invoice(request, db):
                         saveOutlet(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
                     saveOutletLog(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i, warehouse)
                 ## INSERT TO DEFAULT OUTLET IN USER TABLE
-                elif warehouse is '' and outlet is '':
+                elif not warehouse and not outlet:
                     if check_outlet:
                         try:
                             stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=check_outlet, item_code=itemcode[i])
@@ -140,7 +140,7 @@ def add_purchase_invoice(request, db):
 
                 else:
                     # STOCK IN WAREHOUSE
-                    if warehouse is not '':
+                    if warehouse:
                         try:
                             stock_in_query = CreateStockIn.objects.using(db).get(warehouse=warehouse, item_code=itemcode[i])
                             stock_in_query.quantity += int(quantities[i])
@@ -151,7 +151,7 @@ def add_purchase_invoice(request, db):
 
 
                     # STOCK IN OUTLET
-                    if outlet is not '':
+                    if outlet:
                         try:
                             stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=outlet, item_code=itemcode[i])
                             stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
