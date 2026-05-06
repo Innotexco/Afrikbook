@@ -795,8 +795,6 @@ def CancleCustomerInvoicePage(request):
     return render(request, 'customer/CancleCustomerInvoice.html', context)
 
 
-
-
 def CancelSales(request):
     db = request.user.company_id.db_name 
     invoice = request.POST.get("invoice")
@@ -887,7 +885,7 @@ def getCancelledSalesFilter(request, db, con):
         if sortbyItem and sortbyItem != '_ _Choose Item_ _':
             qs = qs.filter(itemcode=sortbyItem)
 
-        if invoice and invoice != '_ _Choose Item_ _':
+        if invoice and invoice != '_ _Choose Invoice_ _':
             qs = qs.filter(invoiceID=invoice)
 
         if not qs.exists():
