@@ -41,15 +41,14 @@
                         />
                     </label>
                     <label class="block text-sm">
-                        <span class="text-gray-700">
-                            Search(item)
-                        </span>
-                        <input 
-                            type="text"
-                            class="block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
-                            placeholder=""
-                            id="searchItem"
-                        />
+                        <span class="text-gray-700">Search(item)</span>
+                        <input type="text" class="block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder="Type or select item" id="searchItem" list="itemNameList">
+                        <datalist id="itemNameList">
+                            {% for item in items %}
+                                <option value="{{ item.item_name }}">{{ item.item_name }}</option>
+                            {% endfor %}
+                        </datalist>
                     </label>
                     <label class="block text-sm">
                         <span class="text-gray-700">
@@ -76,7 +75,7 @@
                     <!-- <div class="grid grid-cols-2  md:grid-cols-2 xl:grid-cols-4 mt-5"> -->
                     <label class="block text-sm">
                         <span class="text-gray-700">
-                            From Date ?
+                            From Date
                         </span>
                         <input 
                             type="date"
@@ -88,7 +87,7 @@
         
                     <label class="block text-sm">
                         <span class="text-gray-700">
-                            To Data ?
+                            To Date
                         </span>
                         <input 
                             type="date"

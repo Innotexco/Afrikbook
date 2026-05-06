@@ -40,7 +40,7 @@
                             id="Itemcode"
                         />
                     </label>
-                    <label class="block text-sm">
+                    {% comment %} <label class="block text-sm">
                         <span class="text-gray-700">
                             Search(item)
                         </span>
@@ -50,7 +50,22 @@
                             placeholder=""
                             id="searchItem"
                         />
+                    </label> {% endcomment %}
+                    
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Search(item)</span>
+                        <input type="text"
+                            class="block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder="Type or select item"
+                            id="searchItem"
+                            list="itemList">
+                        <datalist id="itemList">
+                            {% for item in items %}
+                                <option value="{{ item.item_name }}">{{ item.item_name }}</option>
+                            {% endfor %}
+                        </datalist>
                     </label>
+
                     <label class="block text-sm">
                         <span class="text-gray-700">
                             Search(category)
