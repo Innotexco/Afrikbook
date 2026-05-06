@@ -107,7 +107,7 @@
                 var sortbyItem = $('#sortbyItem').val();
                 
                 $.ajax({
-                    url: "{% url 'viewCancledSales' %}",
+                    url: "{% url 'customer:viewCancledSales' %}",
                     type: 'GET',
                     data: {
                         'fromdate': fromdate,
