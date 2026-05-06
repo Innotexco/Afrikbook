@@ -908,31 +908,32 @@ def getCancelledSalesFilter(request, db, con):
 
 def viewCancleSales(request):
     db = request.user.company_id.db_name
-    # Cancelled sales invoices: cancellation_status = "1" or invoice_state = "Cancelled"
-    cancelled_invoices = customer_invoice.objects.using(db).filter(
-        Q(cancellation_status="1") | Q(invoice_state="Cancelled")
-    ).distinct()
-    
-    warehouse = Warehouse.objects.using(db).all()
-    outlet = sales_outlet.objects.using(db).all()
+    con = Q(cancellation_status="1") | Q(invoice_state="Cancelled")
+    cancelled_invoices = customer_invoice.objects.using(db).filter(con).distinct()
     getitem = Item.objects.using(db).all()
-    
+
     context = {
         'allinvoice': cancelled_invoices,
-        'items': getitem,
-        'warehouse': warehouse,
-        'outlet': outlet,
-        'title': 'Cancelled Sales Invoices',
-        'type': 'viewsalescancelled',   # to differentiate in template
+        'items':      getitem,
+        'title':      'Cancelled Sales Invoices',
+        'type':       'viewsalescancelled',
     }
 
-    # Handle AJAX filter request
-    stockinlog = getCancelledSalesFilter(request, db, Q(cancellation_status="1") | Q(invoice_state="Cancelled"))
-    if stockinlog:
+    # Only run AJAX filter if at least one filter param is present
+    has_filter = any([
+        request.GET.get('fromdate'),
+        request.GET.get('todate'),
+        request.GET.get('invoice'),
+        request.GET.get('sortbyItem'),
+    ])
+
+    if request.method == 'GET' and has_filter:
+        stockinlog = getCancelledSalesFilter(request, db, con)
+        if isinstance(stockinlog, dict) and 'failed' in stockinlog:
+            return JsonResponse(stockinlog)
         return JsonResponse({'stockin': stockinlog})
 
     return render(request, 'customer/viewCancleSales.html', context)
-
 
 def Edit_incoice(request):
     db = request.user.company_id.db_name 
