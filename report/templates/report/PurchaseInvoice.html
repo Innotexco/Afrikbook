@@ -96,6 +96,7 @@
                 <thead>
                     <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
                         <th class="px-0 py-3">SN</th>
+                        <th class="px-0 py-3">Invoice No</th>
                         <th class="px-0 py-3">Invoice Date</th>
                         <th class="px-0 py-3">Item Name</th>
                         <th class="px-0 py-3">Supplier</th>
@@ -209,6 +210,7 @@
         
                                     const row = $('<tr id="row">').append(
                                         $('<td class="text-[10px]">').html(num),
+                                        $('<td class="text-[10px]">').text(item.invoiceID),
                                         $('<td class="text-[10px]">').text(item.invoice_date),
                                         $('<td class="text-[10px]">').text(item.item_name),
                                         $('<td class="text-[10px]">').text(item.vendor_name),
