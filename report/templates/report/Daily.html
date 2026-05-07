@@ -3,7 +3,66 @@
 
 {% block content %}
 
-<a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple" href="#">
+{# Modals for each day's detail #}
+{% for sale in daily_sales_data %}
+<dialog id="box{{ forloop.counter }}" class="modal py-3 px-3 rounded-lg">
+    <div class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md mb-2">
+        <span>{{ sale.date }} — Sales Detail</span>
+        <form method="dialog">
+            <button class="py-1 px-2 rounded-full bg-red-600 text-white font-semibold text-sm">X</button>
+        </form>
+    </div>
+    <div class="modal-box w-full">
+        <div class="px-4 py-3 bg-white rounded-lg shadow-md">
+            <div class="overflow-x-auto" id="modal_{{ forloop.counter }}">
+                {% include 'components/Periodheader.html' %}
+                <p class="text-center my-3 text-slate-700 text-sm font-bold">{{ sale.date }} Sales Report</p>
+                <table id="example2{{ forloop.counter }}" style="width:100%; border-collapse: collapse;">
+                    <thead>
+                        <tr class="text-[11px] font-semibold text-left text-gray-500 bg-gray-100 border-b">
+                            <th class="px-2 py-2">Item Code</th>
+                            <th class="px-2 py-2">Item Name</th>
+                            <th class="px-2 py-2">Description</th>
+                            <th class="px-2 py-2 text-right">Price</th>
+                            <th class="px-2 py-2 text-right">Qty</th>
+                            <th class="px-2 py-2 text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-100">
+                        {% for item in sale.sales %}
+                        <tr class="text-gray-700 hover:bg-slate-50">
+                            <td class="text-[10px] px-2 py-1.5">{{ item.itemcode }}</td>
+                            <td class="text-[10px] px-2 py-1.5 font-medium">{{ item.item_name }}</td>
+                            <td class="text-[10px] px-2 py-1.5 text-slate-500">{{ item.item_description }}</td>
+                            <td class="text-[10px] px-2 py-1.5 text-right">{{ item.unit_p|floatformat:2|intcomma }}</td>
+                            <td class="text-[10px] px-2 py-1.5 text-right">{{ item.qty }}</td>
+                            <td class="text-[10px] px-2 py-1.5 text-right font-medium text-green-700">{{ item.amount|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% for item in sale.purchase %}
+                        <tr class="bg-red-50">
+                            <td class="text-[10px] px-2 py-1.5 font-semibold text-red-600" colspan="5">Expenses</td>
+                            <td class="text-[10px] px-2 py-1.5 text-right font-semibold text-red-600">{{ item.amount|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="flex justify-end gap-6 mt-4 pt-3 border-t border-slate-100 text-[11px] font-medium text-slate-600">
+                    <span>Total Sales: <b class="text-green-700 ml-1">{{ sale.total_sales|floatformat:2|intcomma }}</b></span>
+                    <span>Total Expenses: <b class="text-red-600 ml-1">{{ sale.total_purchase|floatformat:2|intcomma }}</b></span>
+                    <span>Balance: <b class="ml-1 {% if sale.total >= 0 %}text-blue-700{% else %}text-red-700{% endif %}">{{ sale.total|floatformat:2|intcomma }}</b></span>
+                </div>
+            </div>
+            <div class="mt-3">
+                {% include 'modalBoxx/printbtn.html' with container=forloop.counter table="example2" table_no=forloop.counter %}
+            </div>
+        </div>
+    </div>
+</dialog>
+{% endfor %}
+
+{# Header #}
+<a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md" href="#">
     <div class="flex items-center">
         <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
@@ -13,49 +72,46 @@
     <span>Home &RightArrow;</span>
 </a>
 
-{# ----- Summary Cards ----- #}
+{# Summary Cards #}
 <div class="grid grid-cols-3 gap-4 my-5">
     <div class="bg-white rounded-lg shadow-md px-4 py-3 border-l-4 border-green-500">
         <p class="text-xs text-gray-500 uppercase font-semibold tracking-wide">Total Sales</p>
         <p class="text-xl font-bold text-green-700 mt-1">
-            <b class="currency text-sm font-normal text-gray-400"></b>
-            {{ total_sales|floatformat:2|intcomma }}
+            <b class="currency text-sm font-normal text-gray-400"></b>{{ total_sales|floatformat:2|intcomma }}
         </p>
     </div>
     <div class="bg-white rounded-lg shadow-md px-4 py-3 border-l-4 border-red-400">
         <p class="text-xs text-gray-500 uppercase font-semibold tracking-wide">Total Expenses</p>
         <p class="text-xl font-bold text-red-600 mt-1">
-            <b class="currency text-sm font-normal text-gray-400"></b>
-            {{ total_purchase|floatformat:2|intcomma }}
+            <b class="currency text-sm font-normal text-gray-400"></b>{{ total_purchase|floatformat:2|intcomma }}
         </p>
     </div>
     <div class="bg-white rounded-lg shadow-md px-4 py-3 border-l-4 border-blue-500">
         <p class="text-xs text-gray-500 uppercase font-semibold tracking-wide">Balance</p>
         <p class="text-xl font-bold text-blue-700 mt-1">
-            <b class="currency text-sm font-normal text-gray-400"></b>
-            {{ total|floatformat:2|intcomma }}
+            <b class="currency text-sm font-normal text-gray-400"></b>{{ total|floatformat:2|intcomma }}
         </p>
     </div>
 </div>
 
-{# ----- Date Filter ----- #}
+{# Date Filter #}
 <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
     <form method="POST">
         {% csrf_token %}
         <div class="grid gap-4 md:grid-cols-4">
             <label class="block text-sm">
                 <span class="text-gray-600 text-xs font-medium">From</span>
-                <input type="date" name="start_date" value="{{ start|date:'Y-m-d' }}"
+                <input type="date" name="start_date" id="from" value="{{ start|date:'Y-m-d' }}"
                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"/>
             </label>
             <label class="block text-sm">
                 <span class="text-gray-600 text-xs font-medium">To</span>
-                <input type="date" name="end_date" value="{{ end|date:'Y-m-d' }}"
+                <input type="date" name="end_date" id="to" value="{{ end|date:'Y-m-d' }}"
                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"/>
             </label>
             <div class="flex items-end">
-                <button type="submit"
-                        class="w-full h-9 px-4 text-sm font-medium text-center text-gray-600 bg-slate-200 border border-transparent rounded-lg hover:bg-slate-300 focus:outline-none transition-colors duration-150">
+                <button type="submit" id="search2"
+                        class="w-full h-9 px-4 text-sm font-medium text-center text-gray-600 bg-slate-200 border border-transparent rounded-lg hover:bg-slate-300 focus:outline-none transition-colors duration-150 hidden">
                     Search
                 </button>
             </div>
@@ -63,7 +119,7 @@
     </form>
 </div>
 
-{# ----- Period Label ----- #}
+{# Period Label #}
 <div class="flex items-center justify-between mb-2 px-1">
     <p class="text-sm text-gray-500">
         Showing: <span class="font-semibold text-slate-700">
@@ -73,8 +129,9 @@
     <p class="text-xs text-gray-400">{{ daily_sales_data|length }} day(s)</p>
 </div>
 
-{# ----- Main Table ----- #}
+{# Main Table #}
 <div class="w-full my-2 overflow-hidden rounded-lg shadow-xs" id="sumdaily">
+    {% include 'components/Periodheader.html' %}
     <div class="w-full overflow-x-auto">
         <table id="example2sumdaily" style="width:100%; border-collapse: collapse;">
             <thead>
@@ -88,16 +145,19 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-100">
                 {% for data in daily_sales_data %}
-                <tr class="text-gray-700 hover:bg-slate-50 transition-colors duration-100">
+
+                {# Summary row #}
+                <tr class="text-gray-700 hover:bg-slate-50 cursor-pointer transition-colors duration-100"
+                    onclick="Details('{{ forloop.counter }}')">
                     <td class="text-[11px] px-3 py-2 font-medium text-slate-600">{{ data.date }}</td>
                     <td class="text-[11px] px-3 py-2 text-right text-green-700 font-medium">{{ data.total_sales|floatformat:2|intcomma }}</td>
                     <td class="text-[11px] px-3 py-2 text-right text-red-500">{{ data.total_purchase|floatformat:2|intcomma }}</td>
                     <td class="text-[11px] px-3 py-2 text-right font-semibold {% if data.total >= 0 %}text-blue-700{% else %}text-red-700{% endif %}">
                         {{ data.total|floatformat:2|intcomma }}
                     </td>
-                    <td class="text-[11px] px-3 py-2 text-center">
+                    <td class="text-[11px] px-3 py-2 text-center" onclick="event.stopPropagation()">
                         {% if data.total_sales > 0 or data.total_purchase > 0 %}
-                        <button onclick="document.getElementById('box{{ forloop.counter }}').showModal()"
+                        <button onclick="box{{ forloop.counter }}.showModal()"
                                 class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 transition-colors"
                                 title="View details">
                             <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -116,71 +176,82 @@
                     </td>
                 </tr>
 
-                {# ----- Modal ----- #}
-                <dialog id="box{{ forloop.counter }}" class="modal rounded-lg shadow-lg p-0 w-11/12 max-w-4xl">
-                    <div class="bg-white rounded-lg overflow-hidden">
-                        <div class="flex justify-between items-center px-4 py-3 border-b bg-slate-100">
-                            <div>
-                                <h3 class="font-semibold text-slate-700 text-sm">{{ data.date }} — Sales Detail</h3>
-                                <p class="text-[10px] text-slate-400 mt-0.5">
-                                    {{ data.sales|length }} item(s){% if data.purchase %} &middot; {{ data.purchase|length }} expense(s){% endif %}
-                                </p>
-                            </div>
-                            <form method="dialog">
-                                <button class="py-1 px-3 rounded-full bg-red-600 hover:bg-red-700 text-white font-semibold text-xs transition-colors">✖ Close</button>
-                            </form>
-                        </div>
-                        <div class="p-4">
-                            <table class="w-full text-[10px] border border-slate-200 rounded-md overflow-hidden">
+                {# Inline collapsible detail row #}
+                <tr id="detail{{ forloop.counter }}"
+                    {% if not forloop.first %}style="display:none;"{% endif %}>
+                    <td colspan="5" class="p-0 bg-slate-50 border-b border-slate-200">
+                        <div class="px-4 py-3">
+                            <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                                Breakdown — {{ data.date }}
+                            </p>
+                            <table style="width:100%; border-collapse: collapse; border: 0.5px solid #e2e8f0;">
                                 <thead>
-                                    <tr class="bg-slate-100 text-slate-600 font-semibold">
-                                        <th class="px-2 py-2 text-left">Item Code</th>
-                                        <th class="px-2 py-2 text-left">Item Name</th>
-                                        <th class="px-2 py-2 text-left">Description</th>
-                                        <th class="px-2 py-2 text-right">Price</th>
-                                        <th class="px-2 py-2 text-right">Qty</th>
-                                        <th class="px-2 py-2 text-right">Amount</th>
+                                    <tr class="text-[10px] font-semibold text-slate-600 bg-slate-200">
+                                        <th class="px-2 py-1 text-left">Item Code</th>
+                                        <th class="px-2 py-1 text-left">Item Name</th>
+                                        <th class="px-2 py-1 text-left">Description</th>
+                                        <th class="px-2 py-1 text-right">Price</th>
+                                        <th class="px-2 py-1 text-right">Qty</th>
+                                        <th class="px-2 py-1 text-right">Amount</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
-                                    {% for sale in data.sales %}
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="px-2 py-1.5 text-slate-500">{{ sale.itemcode }}</td>
-                                        <td class="px-2 py-1.5 font-medium text-slate-700">{{ sale.item_name }}</td>
-                                        <td class="px-2 py-1.5 text-slate-500">{{ sale.item_description }}</td>
-                                        <td class="px-2 py-1.5 text-right">{{ sale.unit_p|floatformat:2|intcomma }}</td>
-                                        <td class="px-2 py-1.5 text-right">{{ sale.qty }}</td>
-                                        <td class="px-2 py-1.5 text-right font-medium text-green-700">{{ sale.amount|floatformat:2|intcomma }}</td>
+                                    {% for item in data.sales %}
+                                    <tr class="bg-white hover:bg-slate-50">
+                                        <td class="text-[10px] px-2 py-1 text-slate-500">{{ item.itemcode }}</td>
+                                        <td class="text-[10px] px-2 py-1 font-medium text-slate-700">{{ item.item_name }}</td>
+                                        <td class="text-[10px] px-2 py-1 text-slate-500">{{ item.item_description }}</td>
+                                        <td class="text-[10px] px-2 py-1 text-right">{{ item.unit_p|floatformat:2|intcomma }}</td>
+                                        <td class="text-[10px] px-2 py-1 text-right">{{ item.qty }}</td>
+                                        <td class="text-[10px] px-2 py-1 text-right font-medium text-green-700">{{ item.amount|floatformat:2|intcomma }}</td>
                                     </tr>
                                     {% endfor %}
-                                    {% for expense in data.purchase %}
+                                    {% for item in data.purchase %}
                                     <tr class="bg-red-50">
-                                        <td colspan="5" class="px-2 py-1.5 font-semibold text-red-600">Expense</td>
-                                        <td class="px-2 py-1.5 text-right font-semibold text-red-600">{{ expense.amount|floatformat:2|intcomma }}</td>
+                                        <td class="text-[10px] px-2 py-1 font-semibold text-red-600" colspan="5">Expenses</td>
+                                        <td class="text-[10px] px-2 py-1 text-right font-semibold text-red-600">{{ item.amount|floatformat:2|intcomma }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
-                            <div class="flex justify-end gap-6 mt-4 pt-3 border-t border-slate-100 text-[11px] font-medium text-slate-600">
-                                <span>Total Sales: <b class="text-green-700 ml-1">{{ data.total_sales|floatformat:2|intcomma }}</b></span>
-                                <span>Total Expenses: <b class="text-red-600 ml-1">{{ data.total_purchase|floatformat:2|intcomma }}</b></span>
-                                <span>Balance: <b class="ml-1 {% if data.total >= 0 %}text-blue-700{% else %}text-red-700{% endif %}">{{ data.total|floatformat:2|intcomma }}</b></span>
+                            <div class="flex justify-end gap-6 mt-2 text-[10px] font-medium text-slate-600">
+                                <span>Sales: <b class="text-green-700">{{ data.total_sales|floatformat:2|intcomma }}</b></span>
+                                <span>Expenses: <b class="text-red-600">{{ data.total_purchase|floatformat:2|intcomma }}</b></span>
+                                <span>Balance: <b class="{% if data.total >= 0 %}text-blue-700{% else %}text-red-700{% endif %}">{{ data.total|floatformat:2|intcomma }}</b></span>
                             </div>
                         </div>
-                        <div class="px-4 py-3 border-t bg-slate-50 flex justify-end">
-                            {% include 'modalBoxx/printbtn.html' with container=forloop.counter table="example2" table_no=forloop.counter %}
-                        </div>
-                    </div>
-                </dialog>
+                    </td>
+                </tr>
+
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
 
-{# ----- Print/Export ----- #}
+{# Print/Export #}
 <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
     {% include 'modalBoxx/printbtn.html' with container="sumdaily" table="example2" table_no="sumdaily" %}
 </div>
 
-{% endblock %}
+<script>
+    $(document).on('change', 'input[type="date"]', function () {
+        if ($('#from').val() && $('#to').val()) {
+            $('#search2').removeClass('hidden');
+        } else {
+            $('#search2').addClass('hidden');
+        }
+    });
+
+    function Details(id) {
+        var row = $('#detail' + id);
+        if (row.is(':visible')) {
+            row.hide('fast');
+        } else {
+            $('.drop').hide('fast');
+            row.show('fast');
+        }
+    }
+</script>
+
+{% endblock content %}
