@@ -46,11 +46,12 @@ def NewPurchase(request):
     payment = Payment_method.objects.using(db).all()
     outlet = sales_outlet.objects.using(db).all()
     item = Item.objects.using(db).all()
+    invoices = Vendor_invoice.objects.using(db).all()
 
 
-    invoiceID =  random_string_generator()
+    old_invoiceID =  invoices.latest().invoiceID if invoices.exists() else '1000000'
+    invoiceID = int(old_invoiceID) + 1
 
-    
     if request.method == "POST":
            
         # outlet = User.objects.get(id = request.user.id).outlet
@@ -67,7 +68,7 @@ def NewPurchase(request):
         'payment': payment,
         'outlet': outlet,
         'item': item,
-       'invoiceID': 'INV_'+invoiceID,
+       'invoiceID': invoiceID,
 
     }
     return render(request, 'vendor/NewPurchase.html', context)

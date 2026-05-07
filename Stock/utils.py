@@ -2,7 +2,7 @@ import random;
 import string;
 from .setCurrentUsers import get_current_user
 
-def random_string_generator(size=5, chars=string.ascii_letters + string.digits):
+def random_string_generator(size=7, chars=string.ascii_letters + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
 
