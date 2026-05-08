@@ -235,7 +235,7 @@ def SalesInvoice(request):
         shipping_address = []
 
     old_invoiceID =  invoices.latest('invoice_date').invoiceID if invoices.exists() else '1000000'
-    invoiceID = int(old_invoiceID) + 1
+    invoice = int(old_invoiceID) + 1
     form    = None
 
     # Pop WhatsApp URL from session — cleared after one render
@@ -255,7 +255,7 @@ def SalesInvoice(request):
         'vendor':           vendor,
         'accounts':         accounts,
         'items':            item,
-        'invoice':          invoiceID,
+        'invoice':          invoice,
         'form':             form,
         'company':          company,
         'shipping_address': shipping_address,
