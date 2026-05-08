@@ -811,6 +811,7 @@ def ReturnItems(request):
     amount = Vendor_Order.objects.using(db).all()
     item = Item.objects.using(db).all()
     account = chart_of_account.objects.using(db).filter(account_bankname__icontains="Return Outward")
+    invoices = Vendor_invoice.objects.using(db).all()
     
     if request.method == "POST":
         add_return_item(request, db)
@@ -821,7 +822,8 @@ def ReturnItems(request):
         'supplier': supplier,
         'amount': amount,
         'items': item,
-        'accounts': account
+        'accounts': account,
+        'invoices': invoices,
     }
    
     return render(request, 'vendor/ReturnItems.html', context)
