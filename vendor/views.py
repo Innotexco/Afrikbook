@@ -49,7 +49,7 @@ def NewPurchase(request):
     invoices = Vendor_invoice.objects.using(db).all()
 
 
-    old_invoiceID =  invoices.latest('created_at').invoiceID if invoices.exists() else '1000000'
+    old_invoiceID =  invoices.latest('invoice_date').invoiceID if invoices.exists() else '1000000'
     invoiceID = int(old_invoiceID) + 1
 
     if request.method == "POST":
