@@ -44,21 +44,20 @@
                 </label>
 
                 <label class="block text-sm">
-                    <span class="text-gray-700 dark:text-gray-400">Invoice Number </span>
-                    <input 
-                        type="text"
+                    <span class="text-gray-700 dark:text-gray-400">Invoice Number</span>
+                    <input type="text"
                         name="invoiceID"
-                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                        placeholder=""
                         id="invoiceID"
-                    />
-                    <input 
-                        type="hidden"
-                        name="initial_total"
+                        list="invoiceList"
                         class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                        placeholder=""
-                        id="initial_total"
-                    />
+                        placeholder="Type or select invoice"
+                        autocomplete="off">
+                    <datalist id="invoiceList">
+                        {% for inv in invoices %}
+                            <option value="{{ inv.invoiceID }}">{{ inv.invoiceID }}</option>
+                        {% endfor %}
+                    </datalist>
+                    <input type="hidden" name="initial_total" id="initial_total" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input">
                 </label>
 
                 <label class="block text-sm">
