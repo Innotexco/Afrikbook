@@ -308,6 +308,16 @@
         };
     </script>
     <script>
+        function formatDate(isoString) {
+            if (!isoString) return '';
+            const date = new Date(isoString);
+            // Use UTC methods to avoid timezone shifts (since the original is UTC)
+            const year = date.getUTCFullYear();
+            const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(date.getUTCDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`; 
+        }
+        
         function showModal(invoiceId, cusID){
             
                 //const invoiceId = $(this).val();
@@ -346,7 +356,8 @@
     
                                     const row = $('<tr class="text-gray-700">').append(
                                         $('<td class="text-[10px]">').text(num),
-                                        $('<td class="text-[10px]">').text(item.invoice_date),
+                                        //$('<td class="text-[10px]">').text(item.invoice_date),
+                                        $('<td class="text-[10px]">').text(formatDate(item.invoice_date)),
                                         $('<td class="text-[10px]">').text(item.invoiceID),
                                         $('<td class="text-[10px]">').text(item.cusID),
                                         $('<td class="text-[10px]">').text(item.item_name),
