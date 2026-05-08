@@ -811,7 +811,7 @@ def ReturnItems(request):
     amount = Vendor_Order.objects.using(db).all()
     item = Item.objects.using(db).all()
     account = chart_of_account.objects.using(db).filter(account_bankname__icontains="Return Outward")
-    invoices = Vendor_invoice.objects.using(db).all()
+    invoices = Vendor_invoice.objects.using(db).all().order_by('-invoice_date')
     
     if request.method == "POST":
         add_return_item(request, db)
