@@ -226,7 +226,7 @@ def SalesInvoice(request):
     company        = company_table.objects.get(id=request.user.company_id_id)
     item           = Item.objects.using(db).all()
     method         = shipping_method.objects.using(db).all()
-    invoices = customer_invoice.objects.using(db).all()
+    # invoices = customer_invoice.objects.using(db).all()
 
     try:
         response = requests.get('https://console.afrikbook.com/address', timeout=10)
@@ -234,8 +234,9 @@ def SalesInvoice(request):
     except requests.RequestException:
         shipping_address = []
 
-    old_invoiceID =  invoices.latest('invoice_date').invoiceID if invoices.exists() else '1000000'
-    invoice = int(old_invoiceID) + 1
+    # old_invoiceID =  invoices.latest('invoice_date').invoiceID if invoices.exists() else '1000000'
+    # invoice = int(old_invoiceID) + 1
+    invoice = generate_invoice_id(db)
     form    = None
 
     # Pop WhatsApp URL from session — cleared after one render
