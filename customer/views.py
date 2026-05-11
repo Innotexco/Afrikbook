@@ -183,50 +183,18 @@ def RefundCustomer(request):
     return render(request, "customer/RefundCustomer.html", context)
 
 
-
-import re
-
-def get_latest_invoice_number(db):
-    """
-    Fetch the highest numeric invoice ID, ignoring cancelled/returned suffixes.
-    """
-    invoices = customer_invoice.objects.using(db).all()
-    
-    if not invoices.exists():
-        return 1000000
-
-    latest_num = 1000000
-    for inv in invoices.values_list('invoiceID', flat=True):
-        if not inv:
-            continue
-        # Strip any suffix like _cancelled, _returned, _voided etc.
-        # Keep only the numeric part at the start
-        match = re.match(r'^(\d+)', str(inv))
-        if match:
-            num = int(match.group(1))
-            if num > latest_num:
-                latest_num = num
-
-    return latest_num
-
-
-def generate_invoice_no(db):
-    latest = get_latest_invoice_number(db)
-    return latest + 1
-
-
 @login_required(login_url='/')
 @urls_name(name="Sales Invoices")
 def SalesInvoice(request):
-    db             = request.user.company_id.db_name
-    customer       = customer_table.objects.using(db).all()
-    vendor         = vendor_table.objects.using(db).all()
-    accounts       = chart_of_account.objects.using(db).all()
+    db = request.user.company_id.db_name
+    customer = customer_table.objects.using(db).all()
+    vendor = vendor_table.objects.using(db).all()
+    accounts = chart_of_account.objects.using(db).all()
     billing_address = billing_addr.objects.using('afrikbook_client').all()
-    company        = company_table.objects.get(id=request.user.company_id_id)
-    item           = Item.objects.using(db).all()
-    method         = shipping_method.objects.using(db).all()
-    # invoices = customer_invoice.objects.using(db).all()
+    company = company_table.objects.get(id=request.user.company_id_id)
+    item = Item.objects.using(db).all()
+    method = shipping_method.objects.using(db).all()
+    invoices = customer_invoice.objects.using(db).all()
 
     try:
         response = requests.get('https://console.afrikbook.com/address', timeout=10)
@@ -234,35 +202,42 @@ def SalesInvoice(request):
     except requests.RequestException:
         shipping_address = []
 
-    # old_invoiceID =  invoices.latest('invoice_date').invoiceID if invoices.exists() else '1000000'
-    # invoice = int(old_invoiceID) + 1
-    invoice = generate_invoice_no(db)
-    form    = None
+    if invoices.exists():
+        latest_invoice = invoices.latest('invoice_date')
+        latest_id_str = latest_invoice.invoiceID
+        numeric_part = latest_id_str.split('_')[0]
+        if numeric_part.isdigit():
+            next_invoice = int(numeric_part) + 1
+        else:
+            next_invoice = 1000000  
+    else:
+        next_invoice = 1000000
 
-    # Pop WhatsApp URL from session — cleared after one render
+    invoice = str(next_invoice)
+    form = None
+
     whatsapp_url = request.session.pop('whatsapp_url', None)
 
     if request.method == "POST":
         outlet = User.objects.get(id=request.user.id).outlet
         if outlet:
             form = add_new_sales(request, db)
-            # Re-pop in case add_new_sales just set it this request
             whatsapp_url = request.session.pop('whatsapp_url', None)
         else:
             messages.error(request, "Assign outlet to logged in user")
 
     context = {
-        'customers':        customer,
-        'vendor':           vendor,
-        'accounts':         accounts,
-        'items':            item,
-        'invoice':          invoice,
-        'form':             form,
-        'company':          company,
+        'customers': customer,
+        'vendor': vendor,
+        'accounts': accounts,
+        'items': item,
+        'invoice': invoice,
+        'form': form,
+        'company': company,
         'shipping_address': shipping_address,
-        'billing_address':  billing_address,
-        'shipping_method':  method,
-        'whatsapp_url':     whatsapp_url,   # ← passed to template
+        'billing_address': billing_address,
+        'shipping_method': method,
+        'whatsapp_url': whatsapp_url,
     }
     return render(request, "customer/NewSales.html", context)
 
