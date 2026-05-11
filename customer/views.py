@@ -210,7 +210,7 @@ def get_latest_invoice_number(db):
     return latest_num
 
 
-def generate_invoice_id(db):
+def generate_invoice_no(db):
     latest = get_latest_invoice_number(db)
     return latest + 1
 
@@ -236,7 +236,7 @@ def SalesInvoice(request):
 
     # old_invoiceID =  invoices.latest('invoice_date').invoiceID if invoices.exists() else '1000000'
     # invoice = int(old_invoiceID) + 1
-    invoice = generate_invoice_id(db)
+    invoice = generate_invoice_no(db)
     form    = None
 
     # Pop WhatsApp URL from session — cleared after one render
