@@ -23,6 +23,7 @@ from client .api import is_endpoint_available
 from django.contrib.auth.decorators import login_required
 from routers.page_permission import  urls_name
 from main .models import company_table
+import re
 
 #Vendor functions
 from vendor.functions.purchasequote import add_purchase_quote
@@ -204,14 +205,15 @@ def SalesInvoice(request):
 
     if invoices.exists():
         latest_invoice = invoices.latest('invoice_date')
-        latest_id_str = latest_invoice.invoiceID
-        numeric_part = latest_id_str.split('_')[0]
-        if numeric_part.isdigit():
-            next_invoice = int(numeric_part) + 1
-        else:
-            next_invoice = 1000000  
+        latest_id_str  = latest_invoice.invoiceID
+        numeric_part   = re.match(r'^(\d+)', str(latest_id_str))
+        next_invoice   = int(numeric_part.group(1)) + 1 if numeric_part else 1000000
     else:
         next_invoice = 1000000
+
+    # Keep incrementing until we find an ID that doesn't exist yet
+    while customer_invoice.objects.using(db).filter(invoiceID=str(next_invoice)).exists():
+        next_invoice += 1
 
     invoice = str(next_invoice)
     form = None
