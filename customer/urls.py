@@ -27,6 +27,7 @@ urlpatterns = [
 
     #sales invoice urls
     path('NewSales', views.SalesInvoice, name='NewSales'),
+    path('sales/edit/<str:invoice_id>/', views.EditSalesInvoice, name='EditSalesInvoice'),
 
     #sales quote urls
     path('NewSalesQuote', views.AddSalesQuote, name='NewSalesQuote'),

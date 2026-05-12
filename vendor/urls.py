@@ -15,6 +15,7 @@ urlpatterns = [
     path('GetInvoiceDetails/<str:invoice_id>/',GetInvoiceDetails, name='GetInvoiceDetails'), #ajax
     path('GetReturnOutwardItemDetails/<str:invoice>/<int:item_id>/',GetReturnOutwardItemDetails, name='GetReturnOutwardItemDetails'), #ajax
     path('new-purchase/', NewPurchase, name='NewPurchase'),
+    path('purchase/edit/<str:invoice_id>/', EditPurchaseInvoice, name='EditPurchaseInvoice'),
     path('purchase-adjustment/', PurchaseAdjustment, name='PurchaseAdjustment'),
     path('cancle-purchase/', CanclePurchaseInvoice, name='CanclePurchaseInvoice'),
     # path('cancle-purchase/', cancle_invoice, name='CanclePurchaseInvoice'),

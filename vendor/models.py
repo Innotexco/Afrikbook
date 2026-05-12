@@ -30,6 +30,33 @@ class Vendor_invoice(models.Model):
         db_table = "vendor_invoice"
 
 
+class edited_Vendor_invoice(models.Model):
+    original_invoiceID  = models.CharField(max_length=255)
+    edited_by           = models.CharField(max_length=255, blank=True)
+    edited_at           = models.DateTimeField(auto_now_add=True)
+    cusID               = models.CharField(max_length=25, blank=True)
+    vendor_name         = models.CharField(max_length=255)
+    invoiceID           = models.CharField(max_length=255)
+    orderID             = models.CharField(max_length=255, blank=True, null=True)
+    Gdescription        = models.TextField(blank=True, null=True)
+    invoice_date        = models.DateTimeField()
+    due_date            = models.DateField()
+    itemcode            = models.CharField(max_length=255)
+    item_name           = models.CharField(max_length=255)
+    item_descriptions   = models.CharField(max_length=255, blank=True)
+    qty                 = models.IntegerField(default=0)
+    unit_p              = models.CharField(max_length=255)
+    discount_price      = models.DecimalField(max_digits=65, decimal_places=2, default=0.00, blank=True)
+    amount              = models.DecimalField(max_digits=65, decimal_places=2, default=0.00)
+    token_id            = models.CharField(max_length=255, blank=True)
+    amount_paid         = models.DecimalField(max_digits=65, decimal_places=2, default=0.00, blank=True)
+    amount_expected     = models.DecimalField(max_digits=65, decimal_places=2, default=0.00, blank=True)
+    cancellation        = models.IntegerField(default=0, blank=True)
+    warehouse           = models.CharField(max_length=255, blank=True, null=True)
+    Userlogin           = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        db_table = "edited_vendor_invoice"
 
 
 class Vendor_Quote(models.Model):
