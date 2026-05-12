@@ -56,9 +56,9 @@
                 <select name="warehouse"
                         class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-select">
                     {% for wh in warehouses %}
-                    <option value="{{ wh.name }}"
-                        {% if wh.name == first.warehouse %}selected{% endif %}>
-                        {{ wh.name }}
+                    <option value="{{ wh.warehouse_name }}"
+                        {% if wh.warehouse_name == first.warehouse %}selected{% endif %}>
+                        {{ wh.warehouse_name }}
                     </option>
                     {% endfor %}
                 </select>
@@ -70,9 +70,9 @@
                         class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-select">
                     <option value="">-- None --</option>
                     {% for o in outlets %}
-                    <option value="{{ o.name }}"
-                        {% if o.name == first.outlet %}selected{% endif %}>
-                        {{ o.name }}
+                    <option value="{{ o.outlet_name }}"
+                        {% if o.outlet_name == first.outlet %}selected{% endif %}>
+                        {{ o.outlet_name }}
                     </option>
                     {% endfor %}
                 </select>
@@ -83,7 +83,7 @@
                 <select name="source"
                         class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-select">
                     {% for p in payments %}
-                    <option value="{{ p.name }}">{{ p.name }}</option>
+                    <option value="{{ p.method }}">{{ p.method }}</option>
                     {% endfor %}
                 </select>
             </label>
