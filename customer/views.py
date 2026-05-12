@@ -24,6 +24,8 @@ from django.contrib.auth.decorators import login_required
 from routers.page_permission import  urls_name
 from main .models import company_table
 import re
+import copy
+from django.db import transaction as db_transaction
 
 #Vendor functions
 from vendor.functions.purchasequote import add_purchase_quote
@@ -242,6 +244,249 @@ def SalesInvoice(request):
         'whatsapp_url': whatsapp_url,
     }
     return render(request, "customer/NewSales.html", context)
+
+
+
+
+def EditSalesInvoice(request, invoice_id):
+    db       = request.user.company_id.db_name
+    invoices = customer_invoice.objects.using(db).filter(invoiceID=invoice_id)
+
+    if not invoices.exists():
+        messages.error(request, "Invoice not found")
+        return redirect('customer:SalesInvoice')
+
+    first     = invoices.first()
+    customers = customer_table.objects.using(db).all()
+    vendors   = vendor_table.objects.using(db).all()
+    accounts  = chart_of_account.objects.using(db).all()
+    items     = Item.objects.using(db).all()
+    method    = shipping_method.objects.using(db).all()
+
+    if request.method == 'POST' and request.POST.get('action') == 'update_all':
+        try:
+            with db_transaction.atomic(using=db):
+
+                # ── Step 1: Archive original lines ───────────────────────
+                for line in invoices:
+                    edited_customer_invoice.objects.using(db).create(
+                        original_invoiceID  = invoice_id,
+                        edited_by           = request.user.username,
+                        cusID               = line.cusID,
+                        customer_name       = line.customer_name,
+                        invoiceID           = line.invoiceID,
+                        order_ID            = line.order_ID,
+                        Gdescription        = line.Gdescription,
+                        invoice_date        = line.invoice_date,
+                        due_date            = line.due_date,
+                        itemcode            = line.itemcode,
+                        item_name           = line.item_name,
+                        item_description    = line.item_description,
+                        qty                 = line.qty,
+                        unit_p              = line.unit_p,
+                        discount            = line.discount,
+                        amount              = line.amount,
+                        token_id            = line.token_id,
+                        amount_paid         = line.amount_paid,
+                        amount_expected     = line.amount_expected,
+                        cancellation_status = line.cancellation_status,
+                        status              = line.status,
+                        Userlogin           = line.Userlogin,
+                        payment_method      = line.payment_method,
+                        Transfer            = line.Transfer,
+                        POS                 = line.POS,
+                        Cash                = line.Cash,
+                        Customer_account    = line.Customer_account,
+                        Cheque              = line.Cheque,
+                        invoice_state       = line.invoice_state,
+                        purchaseP           = line.purchaseP,
+                        total_purchaseP     = line.total_purchaseP,
+                        outlet              = line.outlet,
+                    )
+
+                # ── Step 2: Undo original stock reductions ────────────────
+                if first.invoice_state == "Supplied":
+                    for line in invoices:
+                        IncreaseOutletStockinItemQuantity(
+                            db, line.outlet, line.itemcode, line.qty
+                        )
+
+                # ── Step 3: Undo accounting entries ──────────────────────
+                # Reverse by calling CancelSales logic directly
+                accountType = get_customer_or_vendor(db, invoice_id)
+                try:
+                    sales_account = chart_of_account.objects.using(db).get(
+                        account_bankname="Sales account"
+                    )
+                    if first.amount_paid == first.amount_expected:
+                        if accountType == "Customer":
+                            cus = customer_table.objects.using(db).filter(
+                                customer_code=first.cusID
+                            )
+                            CreditReceivable(
+                                request, db, cus, first.invoice_date,
+                                first.Gdescription, "Transfer",
+                                sales_account.account_id, first.amount_paid
+                            )
+                        elif accountType == "Vendor":
+                            ven = vendor_table.objects.using(db).filter(
+                                custID=first.cusID
+                            )
+                            CreditPayable(
+                                request, db, ven, first.invoice_date,
+                                first.Gdescription, "Transfer",
+                                sales_account.account_id, first.amount_paid
+                            )
+                except chart_of_account.DoesNotExist:
+                    logger.warning(
+                        f"[EditSalesInvoice] Sales account not found for reversal | "
+                        f"invoiceID={invoice_id}"
+                    )
+
+                # ── Step 4: Delete original invoice lines ─────────────────
+                invoices.delete()
+
+                # ── Step 5: Build a fake POST from submitted form data
+                #            and call add_new_sales ─────────────────────────
+                request.POST = request.POST.copy()
+
+                # Remap submitted form fields to what add_new_sales expects
+                new_cusID        = request.POST.get('cusID', '')
+                new_date         = request.POST.get('invoice_date')
+                new_due_date     = request.POST.get('due_date')
+                new_desc         = request.POST.get('Gdescription')
+                payment_method   = request.POST.get('payment_method', first.payment_method)
+
+                # Line IDs that were NOT removed
+                removed_raw  = request.POST.get('removed_ids', '')
+                removed_set  = set(r.strip() for r in removed_raw.split(',') if r.strip())
+
+                line_ids      = request.POST.getlist('line_id[]')
+                line_qtys     = request.POST.getlist('line_qty[]')
+                line_units    = request.POST.getlist('line_unit[]')
+                line_descs    = request.POST.getlist('line_desc[]')
+                line_discounts = request.POST.getlist('line_discount[]')
+
+                # New items added in the form
+                new_codes     = request.POST.getlist('new_item_code[]')
+                new_qtys      = request.POST.getlist('new_qty[]')
+                new_units     = request.POST.getlist('new_unit[]')
+                new_descs     = request.POST.getlist('new_desc[]')
+                new_discounts = request.POST.getlist('new_discount[]')
+
+                # Build item lists for add_new_sales
+                item_list     = []
+                qty_list      = []
+                unit_list     = []
+                desc_list     = []
+                discount_list = []
+                amount_list   = []
+                name_list     = []
+                purchaseP_list = []
+
+                # Existing lines (not removed)
+                archived = edited_customer_invoice.objects.using(db).filter(
+                    original_invoiceID=invoice_id
+                )
+                archived_map = {str(a.id): a for a in archived}
+
+                for idx, lid in enumerate(line_ids):
+                    if lid in removed_set:
+                        continue
+                    # Find original line from archive by matching order
+                    orig_lines = list(
+                        edited_customer_invoice.objects.using(db)
+                        .filter(original_invoiceID=invoice_id)
+                        .order_by('id')
+                    )
+                    if idx < len(orig_lines):
+                        orig = orig_lines[idx]
+                        qty      = float(line_qtys[idx]) if line_qtys[idx] else float(orig.qty)
+                        unit_p   = float(line_units[idx]) if line_units[idx] else float(orig.unit_p)
+                        discount = float(line_discounts[idx]) if line_discounts[idx] else float(orig.discount or 0)
+                        amt      = (qty * unit_p) - discount
+
+                        item_list.append(orig.itemcode)
+                        qty_list.append(str(qty))
+                        unit_list.append(str(unit_p))
+                        desc_list.append(line_descs[idx] if line_descs[idx] else orig.item_description)
+                        discount_list.append(str(discount))
+                        amount_list.append(str(amt))
+                        name_list.append(orig.item_name)
+                        purchaseP_list.append(str(orig.purchaseP))
+
+                # New items
+                for i, code in enumerate(new_codes):
+                    if not code:
+                        continue
+                    try:
+                        item_obj = Item.objects.using(db).get(generated_code=code)
+                        qty      = float(new_qtys[i]) if new_qtys[i] else 1
+                        unit_p   = float(new_units[i]) if new_units[i] else 0
+                        discount = float(new_discounts[i]) if new_discounts[i] else 0
+                        amt      = (qty * unit_p) - discount
+
+                        item_list.append(code)
+                        qty_list.append(str(qty))
+                        unit_list.append(str(unit_p))
+                        desc_list.append(new_descs[i] if new_descs[i] else '')
+                        discount_list.append(str(discount))
+                        amount_list.append(str(amt))
+                        name_list.append(item_obj.item_name)
+                        purchaseP_list.append('0')
+                    except Item.DoesNotExist:
+                        messages.error(request, f"Item {code} not found — skipped")
+                        continue
+
+                # Compute total
+                grand_total = sum(float(a) for a in amount_list)
+
+                # Patch POST so add_new_sales reads the right values
+                request.POST['invoiceID']      = invoice_id
+                request.POST['cusID']          = new_cusID or first.cusID
+                request.POST['venID']          = request.POST.get('venID', '')
+                request.POST['accountType']    = request.POST.get('accountType', 'Customer')
+                request.POST['genby']          = request.POST.get('genby', first.customer_name)
+                request.POST['invoice_date']   = new_date
+                request.POST['due_date']       = new_due_date
+                request.POST['order_id']       = request.POST.get('order_id', first.order_ID or '')
+                request.POST['Gdescription']   = new_desc
+                request.POST['payment_method'] = payment_method
+                request.POST['sub-total']      = str(grand_total)
+                request.POST['total']          = str(grand_total)
+                request.POST['vat']            = request.POST.get('vat', '0')
+                request.POST.setlist('item[]',      item_list)
+                request.POST.setlist('qty[]',       qty_list)
+                request.POST.setlist('unit[]',      unit_list)
+                request.POST.setlist('desc[]',      desc_list)
+                request.POST.setlist('discount[]',  discount_list)
+                request.POST.setlist('amount[]',    amount_list)
+                request.POST.setlist('item_name',   name_list)
+                request.POST.setlist('purchaseP',   purchaseP_list)
+
+                # Call the real create function
+                add_new_sales(request, db)
+
+        except Exception as e:
+            logger.error(
+                f"[EditSalesInvoice] Failed | invoiceID={invoice_id} | "
+                f"{e}\n{traceback.format_exc()}"
+            )
+            messages.error(request, f"Edit failed: {e}")
+
+        return redirect('customer:EditSalesInvoice', invoice_id=invoice_id)
+
+    context = {
+        'invoices':   invoices,
+        'first':      first,
+        'customers':  customers,
+        'vendors':    vendors,
+        'items':      items,
+        'accounts':   accounts,
+        'invoice_id': invoice_id,
+        'shipping_method': method,
+    }
+    return render(request, 'customer/EditSalesInvoice.html', context)
 
 
 

@@ -106,6 +106,7 @@
                             </a> {% endcomment %} -->
                             View
                         </th>
+                        <th class="px-4 py-3">Edit</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y mb-6" id="'+i+'">
@@ -134,7 +135,22 @@
                             {{display.amount_expected}}
                         </td>
                         <td class="text-[10px]">
-                            <a onclick="showModal('{{display.invoiceID}}' )" 
+                            <a onclick="showModal('{{display.invoiceID}}')" 
+                                class="flex items-center justify-center text-green-600 cursor-pointer"
+                                aria-label="View">
+                                <svg
+                                    class="w-5 h-5"
+                                    aria-hidden="true"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7zm0 11a4 4 0 110-8 4 4 0 010 8zm0-2.5A1.5 1.5 0 1010 8a1.5 1.5 0 000 3.5z"/>
+                                </svg>
+                            </a>
+                        </td>
+                                
+                        <td class="text-[10px]">
+                            <a  href=" {% url "customer:EditSalesInvoice" display.invoiceID %}"
                                 class="flex items-center justify-center text-blue-500 cursor-pointer"
                                 aria-label="Edit">
                                 <svg
