@@ -2,7 +2,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib import messages 
 
 
-from .models import vendor_table, Vendor_Quote, Vendor_Order, Vendor_Return, Vendor_invoice
+from .models import vendor_table, Vendor_Quote, Vendor_Order, Vendor_Return, Vendor_invoice, edited_Vendor_invoice
 
 # from account.models import Payment_method, StockIn_Log, Stock_In, account_log, Outlet_StockIn, Outlet_StockIn_Log, chart_of_account
 from account.models import *
@@ -24,10 +24,12 @@ from django.http.response import JsonResponse
 from routers.page_permission import  urls_name
 from Stock.utils import random_string_generator;
 from django.contrib.auth.decorators import login_required
+from django.db import transaction as db_transaction
 from django.db.models import Q
 
 from itertools import zip_longest
 import logging
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -92,11 +94,69 @@ def EditPurchaseInvoice(request, invoice_id):
     accounts   = chart_of_account.objects.using(db).filter(account_id__startswith='2')
     payments   = Payment_method.objects.using(db).all()
 
+    # Build a set of item codes already on this invoice for duplicate check
+    existing_itemcodes = set(
+        invoices.values_list('itemcode', flat=True)
+    )
+
     if request.method == 'POST' and request.POST.get('action') == 'update_all':
         try:
             with db_transaction.atomic(using=db):
 
-                # ── Step 1: Archive original lines ───────────────────────
+                removed_raw    = request.POST.get('removed_ids', '')
+                removed_set    = set(r.strip() for r in removed_raw.split(',') if r.strip())
+                new_codes      = request.POST.getlist('new_item_code[]')
+                new_qtys       = request.POST.getlist('new_qty[]')
+                new_units      = request.POST.getlist('new_unit[]')
+                new_descs      = request.POST.getlist('new_desc[]')
+                new_discounts  = request.POST.getlist('new_discount[]')
+                line_ids       = request.POST.getlist('line_id[]')
+                line_qtys      = request.POST.getlist('line_qty[]')
+                line_units     = request.POST.getlist('line_unit[]')
+                line_descs     = request.POST.getlist('line_desc[]')
+                line_discounts = request.POST.getlist('line_discount[]')
+                line_itemcodes = request.POST.getlist('line_itemcode[]')
+
+                # ── Duplicate check: if new item already exists in invoice,
+                #    merge its qty into the existing line instead ──────────
+                merge_map = {}  # itemcode → extra qty to add
+                truly_new_codes     = []
+                truly_new_qtys      = []
+                truly_new_units     = []
+                truly_new_descs     = []
+                truly_new_discounts = []
+
+                for i, code in enumerate(new_codes):
+                    if not code:
+                        continue
+                    qty = float(new_qtys[i]) if new_qtys[i] else 1
+
+                    if code in existing_itemcodes:
+                        # Merge into existing line
+                        if code in merge_map:
+                            merge_map[code] += qty
+                        else:
+                            merge_map[code] = qty
+                        messages.warning(
+                            request,
+                            f"Item '{code}' already on invoice — quantity merged into existing line."
+                        )
+                    else:
+                        truly_new_codes.append(code)
+                        truly_new_qtys.append(new_qtys[i])
+                        truly_new_units.append(new_units[i])
+                        truly_new_descs.append(new_descs[i])
+                        truly_new_discounts.append(new_discounts[i])
+
+                # Apply merges to line_qtys before archiving
+                for idx, lid in enumerate(line_ids):
+                    if idx < len(line_itemcodes):
+                        code = line_itemcodes[idx]
+                        if code in merge_map:
+                            current_qty = float(line_qtys[idx]) if line_qtys[idx] else 0
+                            line_qtys[idx] = str(current_qty + merge_map[code])
+
+                # ── Step 1: Archive original lines ────────────────────────
                 for line in invoices:
                     edited_Vendor_invoice.objects.using(db).create(
                         original_invoiceID = invoice_id,
@@ -119,12 +179,12 @@ def EditPurchaseInvoice(request, invoice_id):
                         amount_paid        = line.amount_paid,
                         amount_expected    = line.amount_expected,
                         cancellation       = line.cancellation,
-                        warehouse          = first.warehouse if hasattr(first, 'warehouse') else '',
+                        warehouse          = getattr(line, 'warehouse', ''),
                         Userlogin          = line.Userlogin,
                     )
 
                 # ── Step 2: Undo stock additions ──────────────────────────
-                old_warehouse = first.warehouse if hasattr(first, 'warehouse') else None
+                old_warehouse = getattr(first, 'warehouse', None)
                 old_outlet    = request.POST.get('old_outlet', '')
 
                 for line in invoices:
@@ -149,38 +209,27 @@ def EditPurchaseInvoice(request, invoice_id):
                     bank_account = chart_of_account.objects.using(db).get(
                         account_bankname='Purchase Account'
                     )
-                    bank_account.actual_balance -= decimal.Decimal(str(first.amount_expected or 0))
+                    bank_account.actual_balance -= decimal.Decimal(
+                        str(first.amount_expected or 0)
+                    )
                     bank_account.save(using=db)
                 except chart_of_account.DoesNotExist:
                     logger.warning(
-                        f"[EditPurchaseInvoice] Purchase Account not found for reversal | "
+                        f"[EditPurchaseInvoice] Purchase Account not found | "
                         f"invoiceID={invoice_id}"
                     )
 
                 # ── Step 4: Delete original lines ─────────────────────────
                 invoices.delete()
 
-                # ── Step 5: Build item lists and call add_purchase_invoice ─
-                removed_raw   = request.POST.get('removed_ids', '')
-                removed_set   = set(r.strip() for r in removed_raw.split(',') if r.strip())
-                line_ids      = request.POST.getlist('line_id[]')
-                line_qtys     = request.POST.getlist('line_qty[]')
-                line_units    = request.POST.getlist('line_unit[]')
-                line_descs    = request.POST.getlist('line_desc[]')
-                line_discounts = request.POST.getlist('line_discount[]')
-                new_codes     = request.POST.getlist('new_item_code[]')
-                new_qtys      = request.POST.getlist('new_qty[]')
-                new_units     = request.POST.getlist('new_unit[]')
-                new_descs     = request.POST.getlist('new_desc[]')
-                new_discounts = request.POST.getlist('new_discount[]')
-
-                item_list      = []
-                qty_list       = []
-                unit_list      = []
-                desc_list      = []
-                discount_list  = []
-                amount_list    = []
-                name_list      = []
+                # ── Step 5: Build item lists ──────────────────────────────
+                item_list     = []
+                qty_list      = []
+                unit_list     = []
+                desc_list     = []
+                discount_list = []
+                amount_list   = []
+                name_list     = []
 
                 archived_lines = list(
                     edited_Vendor_invoice.objects.using(db)
@@ -188,6 +237,7 @@ def EditPurchaseInvoice(request, invoice_id):
                     .order_by('id')
                 )
 
+                # Existing lines (with merges applied, minus removed)
                 for idx, lid in enumerate(line_ids):
                     if lid in removed_set:
                         continue
@@ -206,20 +256,19 @@ def EditPurchaseInvoice(request, invoice_id):
                         amount_list.append(str(amt))
                         name_list.append(orig.item_name)
 
-                for i, code in enumerate(new_codes):
-                    if not code:
-                        continue
+                # Truly new items (not duplicates)
+                for i, code in enumerate(truly_new_codes):
                     try:
                         item_obj = Item.objects.using(db).get(generated_code=code)
-                        qty      = float(new_qtys[i]) if new_qtys[i] else 1
-                        unit_p   = float(new_units[i]) if new_units[i] else 0
-                        discount = float(new_discounts[i]) if new_discounts[i] else 0
+                        qty      = float(truly_new_qtys[i]) if truly_new_qtys[i] else 1
+                        unit_p   = float(truly_new_units[i]) if truly_new_units[i] else 0
+                        discount = float(truly_new_discounts[i]) if truly_new_discounts[i] else 0
                         amt      = (qty * unit_p) - discount
 
                         item_list.append(code)
                         qty_list.append(str(int(qty)))
                         unit_list.append(str(unit_p))
-                        desc_list.append(new_descs[i] if new_descs[i] else '')
+                        desc_list.append(truly_new_descs[i] if truly_new_descs[i] else '')
                         discount_list.append(str(discount))
                         amount_list.append(str(amt))
                         name_list.append(item_obj.item_name)
@@ -229,7 +278,7 @@ def EditPurchaseInvoice(request, invoice_id):
 
                 grand_total = sum(float(a) for a in amount_list)
 
-                # Patch POST for add_purchase_invoice
+                # ── Step 6: Patch POST and call add_purchase_invoice ──────
                 request.POST = request.POST.copy()
                 request.POST['invoiceID']    = invoice_id
                 request.POST['orderID']      = request.POST.get('order_id', first.orderID or '')
@@ -261,17 +310,19 @@ def EditPurchaseInvoice(request, invoice_id):
         return redirect('vendor:EditPurchaseInvoice', invoice_id=invoice_id)
 
     context = {
-        'invoices':   invoices,
-        'first':      first,
-        'vendors':    vendors,
-        'warehouses': warehouses,
-        'outlets':    outlets,
-        'items':      items,
-        'accounts':   accounts,
-        'payments':   payments,
-        'invoice_id': invoice_id,
+        'invoices':          invoices,
+        'first':             first,
+        'vendors':           vendors,
+        'warehouses':        warehouses,
+        'outlets':           outlets,
+        'items':             items,
+        'accounts':          accounts,
+        'payments':          payments,
+        'invoice_id':        invoice_id,
+        'existing_itemcodes': list(existing_itemcodes),
     }
     return render(request, 'vendor/EditPurchaseInvoice.html', context)
+
 
 
 

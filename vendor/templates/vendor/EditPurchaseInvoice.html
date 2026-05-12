@@ -14,228 +14,418 @@
 </a>
 
 {% if messages %}
-<div class="my-3">
+<div class="my-3 space-y-1">
     {% for message in messages %}
-    <div class="px-4 py-2 rounded-lg text-sm {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+    <div class="px-4 py-2 rounded-lg text-sm
+        {% if message.tags == 'error' %}bg-red-100 text-red-700
+        {% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-700
+        {% else %}bg-green-100 text-green-700{% endif %}">
         {{ message }}
     </div>
     {% endfor %}
 </div>
 {% endif %}
 
-{# ── Header ── #}
-<div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
-    <h3 class="text-sm font-semibold text-slate-600 mb-3">Invoice Header</h3>
-    <form method="POST">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="update_invoice">
+<form method="POST" id="editForm">
+    {% csrf_token %}
+    <input type="hidden" name="action"      value="update_all">
+    <input type="hidden" name="removed_ids" id="removed_ids" value="">
+    <input type="hidden" name="old_outlet"  value="{{ first.outlet|default:'' }}">
+
+    {# ── Invoice Header ── #}
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+        <h3 class="text-sm font-semibold text-slate-600 mb-3">Invoice Header</h3>
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+
             <label class="block text-sm">
                 <span class="text-gray-600 text-xs font-medium">Vendor</span>
-                <select name="vendor_id" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-select">
-                    <option value="">-- Keep current: {{ first.vendor_name }} --</option>
+                <select name="vendor_id"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-select">
+                    <option value="">-- Keep: {{ first.vendor_name }} --</option>
                     {% for v in vendors %}
-                    <option value="{{ v.id }}" {% if v.custID == first.cusID %}selected{% endif %}>{{ v.name }}</option>
+                    <option value="{{ v.id }}"
+                        {% if v.custID == first.cusID %}selected{% endif %}>
+                        {{ v.name }}
+                    </option>
                     {% endfor %}
                 </select>
             </label>
+
             <label class="block text-sm">
                 <span class="text-gray-600 text-xs font-medium">Warehouse</span>
-                <select name="warehouse" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-select">
+                <select name="warehouse"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-select">
                     {% for wh in warehouses %}
-                    <option value="{{ wh.name }}" {% if wh.name == first.warehouse %}selected{% endif %}>{{ wh.name }}</option>
+                    <option value="{{ wh.name }}"
+                        {% if wh.name == first.warehouse %}selected{% endif %}>
+                        {{ wh.name }}
+                    </option>
                     {% endfor %}
                 </select>
             </label>
+
+            <label class="block text-sm">
+                <span class="text-gray-600 text-xs font-medium">Outlet (optional)</span>
+                <select name="outlet"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-select">
+                    <option value="">-- None --</option>
+                    {% for o in outlets %}
+                    <option value="{{ o.name }}"
+                        {% if o.name == first.outlet %}selected{% endif %}>
+                        {{ o.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label class="block text-sm">
+                <span class="text-gray-600 text-xs font-medium">Payment Method</span>
+                <select name="source"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-select">
+                    {% for p in payments %}
+                    <option value="{{ p.name }}">{{ p.name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+
             <label class="block text-sm">
                 <span class="text-gray-600 text-xs font-medium">Invoice Date</span>
-                <input type="date" name="invoice_date" value="{{ first.invoice_date|date:'Y-m-d' }}"
+                <input type="date" name="invoice_date"
+                       value="{{ first.invoice_date|date:'Y-m-d' }}"
                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"/>
             </label>
+
             <label class="block text-sm">
                 <span class="text-gray-600 text-xs font-medium">Due Date</span>
-                <input type="date" name="due_date" value="{{ first.due_date|date:'Y-m-d' }}"
+                <input type="date" name="due_date"
+                       value="{{ first.due_date|date:'Y-m-d' }}"
                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"/>
             </label>
+
             <label class="block text-sm xl:col-span-2">
                 <span class="text-gray-600 text-xs font-medium">Description</span>
-                <input type="text" name="Gdescription" value="{{ first.Gdescription }}"
+                <input type="text" name="Gdescription"
+                       value="{{ first.Gdescription }}"
                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"/>
             </label>
-        </div>
-        <div class="mt-3">
-            <button type="submit"
-                    class="px-4 py-1.5 text-sm font-medium text-gray-600 bg-slate-200 border border-transparent rounded-lg hover:bg-slate-300 focus:outline-none transition-colors">
-                Update Header
-            </button>
-        </div>
-    </form>
-</div>
 
-{# ── Line Items ── #}
-<div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
-    <h3 class="text-sm font-semibold text-slate-600 mb-3">Line Items</h3>
-    <div class="w-full overflow-x-auto">
-        <table style="width:100%; border-collapse: collapse;">
-            <thead>
-                <tr class="text-[11px] font-semibold text-left text-gray-500 bg-gray-100 border-b">
-                    <th class="px-2 py-2">Item Code</th>
-                    <th class="px-2 py-2">Item Name</th>
-                    <th class="px-2 py-2">Description</th>
-                    <th class="px-2 py-2 text-right">Unit Price</th>
-                    <th class="px-2 py-2 text-right w-28">Qty</th>
-                    <th class="px-2 py-2 text-right">Discount</th>
-                    <th class="px-2 py-2 text-right">Amount</th>
-                    <th class="px-2 py-2 text-center w-16">Remove</th>
-                </tr>
-            </thead>
-            <tbody id="lineItems" class="bg-white divide-y divide-gray-100">
-                {% for line in invoices %}
-                <tr id="line_{{ line.id }}">
-                    <td class="text-[10px] px-2 py-1.5 text-slate-500">{{ line.itemcode }}</td>
-                    <td class="text-[10px] px-2 py-1.5 font-medium text-slate-700">{{ line.item_name }}</td>
-                    <td class="text-[10px] px-2 py-1.5 text-slate-500">{{ line.item_descriptions }}</td>
-                    <td class="text-[10px] px-2 py-1.5 text-right">{{ line.unit_p|floatformat:2|intcomma }}</td>
-                    <td class="text-[10px] px-2 py-1.5 text-right">
-                        <input type="number" value="{{ line.qty }}" min="0.01" step="0.01"
-                               class="qty-input w-20 px-1 text-right border border-slate-300 rounded text-[10px] focus:outline-none focus:border-slate-400"
-                               data-id="{{ line.id }}" data-unit="{{ line.unit_p }}" data-discount="{{ line.discount }}"/>
-                    </td>
-                    <td class="text-[10px] px-2 py-1.5 text-right">{{ line.discount|floatformat:2|intcomma }}</td>
-                    <td class="text-[10px] px-2 py-1.5 text-right font-medium text-blue-700" id="amount_{{ line.id }}">
-                        {{ line.amount|floatformat:2|intcomma }}
-                    </td>
-                    <td class="text-[10px] px-2 py-1.5 text-center">
-                        <button onclick="removeLine({{ line.id }})"
-                                class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-50 hover:bg-red-100 text-red-600 transition-colors">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        </div>
     </div>
-    <div class="flex justify-end mt-4 text-[11px] font-medium text-slate-600">
-        <span>Total: <b class="text-blue-700 ml-1" id="grandTotal"></b></span>
-    </div>
-</div>
 
-{# ── Add Item ── #}
-<div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
-    <h3 class="text-sm font-semibold text-slate-600 mb-3">Add Item</h3>
-    <form method="POST">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="add_item">
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-            <label class="block text-sm">
-                <span class="text-gray-600 text-xs font-medium">Item</span>
-                <select name="item_code" required class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-select">
-                    <option value="">Select Item</option>
-                    {% for item in items %}
-                    <option value="{{ item.generated_code }}">{{ item.item_name }}</option>
+    {# ── Existing Line Items ── #}
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+        <h3 class="text-sm font-semibold text-slate-600 mb-3">Line Items</h3>
+        <div class="w-full overflow-x-auto">
+            <table style="width:100%; border-collapse: collapse;">
+                <thead>
+                    <tr class="text-[11px] font-semibold text-left text-gray-500 bg-gray-100 border-b border-gray-200">
+                        <th class="px-2 py-2">Item Code</th>
+                        <th class="px-2 py-2">Item Name</th>
+                        <th class="px-2 py-2">Description</th>
+                        <th class="px-2 py-2 text-right">Unit Price</th>
+                        <th class="px-2 py-2 text-right w-24">Qty</th>
+                        <th class="px-2 py-2 text-right w-24">Discount</th>
+                        <th class="px-2 py-2 text-right">Amount</th>
+                        <th class="px-2 py-2 text-center w-20">Remove</th>
+                    </tr>
+                </thead>
+                <tbody id="lineItems" class="bg-white divide-y divide-gray-100">
+                    {% for line in invoices %}
+                    <tr id="line_{{ line.id }}" class="line-row transition-all duration-200">
+
+                        <input type="hidden" name="line_id[]"        value="{{ line.id }}">
+                        <input type="hidden" name="line_unit[]"      value="{{ line.unit_p }}">
+                        <input type="hidden" name="line_itemcode[]"  value="{{ line.itemcode }}">
+                        <input type="hidden" name="line_name[]"      value="{{ line.item_name }}">
+
+                        <td class="text-[10px] px-2 py-1.5 text-slate-500">{{ line.itemcode }}</td>
+                        <td class="text-[10px] px-2 py-1.5 font-medium text-slate-700">{{ line.item_name }}</td>
+                        <td class="text-[10px] px-2 py-1.5">
+                            <input type="text" name="line_desc[]"
+                                   value="{{ line.item_descriptions }}"
+                                   class="w-full px-1 border border-slate-200 rounded text-[10px] focus:outline-none focus:border-slate-400 bg-transparent"/>
+                        </td>
+                        <td class="text-[10px] px-2 py-1.5 text-right text-slate-600">
+                            {{ line.unit_p|floatformat:2|intcomma }}
+                        </td>
+                        <td class="text-[10px] px-2 py-1.5 text-right">
+                            <input type="number" name="line_qty[]"
+                                   value="{{ line.qty }}"
+                                   min="1" step="1"
+                                   class="qty-input w-20 px-1 text-right border border-slate-300 rounded text-[10px] focus:outline-none focus:border-slate-400"
+                                   data-id="{{ line.id }}"
+                                   data-unit="{{ line.unit_p }}"/>
+                        </td>
+                        <td class="text-[10px] px-2 py-1.5 text-right">
+                            <input type="number" name="line_discount[]"
+                                   value="{{ line.discount_price|default:0 }}"
+                                   min="0" step="0.01"
+                                   class="discount-input w-20 px-1 text-right border border-slate-300 rounded text-[10px] focus:outline-none focus:border-slate-400"
+                                   data-id="{{ line.id }}"/>
+                        </td>
+                        <td class="text-[10px] px-2 py-1.5 text-right font-medium text-blue-700"
+                            id="amount_{{ line.id }}">
+                            {{ line.amount|floatformat:2|intcomma }}
+                        </td>
+                        <td class="text-[10px] px-2 py-1.5 text-center">
+                            <button type="button"
+                                    onclick="markRemove({{ line.id }}, this)"
+                                    class="remove-btn inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-50 hover:bg-red-100 text-red-600 transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                     stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
                     {% endfor %}
-                </select>
-            </label>
-            <label class="block text-sm">
-                <span class="text-gray-600 text-xs font-medium">Description</span>
-                <input type="text" name="desc"
-                       class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"/>
-            </label>
-            <label class="block text-sm">
-                <span class="text-gray-600 text-xs font-medium">Qty</span>
-                <input type="number" name="qty" min="0.01" step="0.01" required value="1"
-                       class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"/>
-            </label>
-            <label class="block text-sm">
-                <span class="text-gray-600 text-xs font-medium">Unit Price</span>
-                <input type="number" name="unit_p" min="0" step="0.01" required value="0"
-                       class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"/>
-            </label>
-            <label class="block text-sm">
-                <span class="text-gray-600 text-xs font-medium">Discount</span>
-                <input type="number" name="discount" min="0" step="0.01" value="0"
-                       class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"/>
-            </label>
+                </tbody>
+            </table>
         </div>
-        <div class="mt-3">
-            <button type="submit"
-                    class="px-4 py-1.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 border border-transparent rounded-lg focus:outline-none transition-colors">
-                + Add Item
+
+        <div class="flex justify-end mt-3 text-[11px] font-medium text-slate-600">
+            <span>Total: <b class="text-blue-700 ml-1 text-sm" id="grandTotal">0.00</b></span>
+        </div>
+    </div>
+
+    {# ── New Items ── #}
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-slate-600">Add New Items</h3>
+            <button type="button" onclick="addNewItemRow()"
+                    class="px-3 py-1 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors">
+                + Add Row
             </button>
         </div>
-    </form>
-</div>
 
-{% csrf_token %}
+        {# Duplicate notice banner — hidden by default #}
+        <div id="duplicateNotice"
+             class="hidden mb-3 px-3 py-2 bg-yellow-50 border border-yellow-300 rounded-lg text-xs text-yellow-800">
+            <b>⚠ Duplicate detected:</b>
+            <span id="duplicateMsg"></span>
+            The quantity will be merged into the existing line when you save.
+        </div>
+
+        <div id="newItemsContainer" class="space-y-2"></div>
+        <p class="text-xs text-slate-400 mt-2" id="noNewItems">
+            No new items yet — click "+ Add Row" to add.
+        </p>
+    </div>
+
+    {# ── Save / Cancel ── #}
+    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+        <div class="grid gap-4 md:grid-cols-2">
+            <button type="submit"
+                    class="w-full h-9 text-sm font-medium text-center text-white bg-blue-600 hover:bg-blue-700 border border-transparent rounded-lg focus:outline-none transition-colors">
+                Save All Changes
+            </button>
+            <a href="{% url 'vendor:NewPurchase' %}"
+               class="flex items-center justify-center w-full h-9 text-sm font-medium text-gray-600 bg-slate-200 hover:bg-slate-300 border border-transparent rounded-lg transition-colors">
+                Cancel
+            </a>
+        </div>
+        <p id="removalWarning"
+           class="hidden mt-3 text-xs text-center text-red-500 font-medium">
+            ⚠ <span id="removalCount">0</span> item(s) marked for removal.
+            Stock will be reversed on save.
+        </p>
+    </div>
+
+</form>
 
 <script>
-function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        document.cookie.split(';').forEach(function(cookie) {
-            cookie = cookie.trim();
-            if (cookie.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(cookie.slice(name.length + 1));
-            }
-        });
+    const itemOptions = [
+        {% for item in items %}
+        {
+            code:  "{{ item.generated_code }}",
+            name:  "{{ item.item_name }}",
+            price: "{{ item.purchase_price|default:0 }}"
+        },
+        {% endfor %}
+    ];
+
+    const existingItemcodes = new Set({{ existing_itemcodes|safe }});
+
+    let newRowCount  = 0;
+    const removedIds = [];
+
+    {# ── Mark / unmark removal ── #}
+    function markRemove(id, btn) {
+        const row = $('#line_' + id);
+        const idx = removedIds.indexOf(id);
+
+        if (idx > -1) {
+            removedIds.splice(idx, 1);
+            row.removeClass('opacity-40 bg-red-50');
+            row.find('input').prop('disabled', false);
+            $(btn).html(`<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>`);
+            $(btn).removeClass('bg-green-50 text-green-600 hover:bg-green-100')
+                  .addClass('bg-red-50 text-red-600 hover:bg-red-100');
+        } else {
+            removedIds.push(id);
+            row.addClass('opacity-40 bg-red-50');
+            row.find('input').prop('disabled', true);
+            $(btn).text('Undo');
+            $(btn).removeClass('bg-red-50 text-red-600 hover:bg-red-100')
+                  .addClass('bg-green-50 text-green-600 hover:bg-green-100');
+        }
+
+        $('#removed_ids').val(removedIds.join(','));
+        updateRemovalWarning();
+        recalcTotal();
     }
-    return cookieValue;
-}
 
-function removeLine(id) {
-    if (!confirm('Remove this item? Stock will be reversed.')) return;
-    $.ajax({
-        type: 'POST',
-        url:  '',
-        headers: { 'X-CSRFToken': getCookie('csrftoken') },
-        data: { action: 'remove_item', item_id: id },
-        success: function(res) {
-            if (res.success) {
-                $('#line_' + id).fadeOut(300, function() {
-                    $(this).remove();
-                    recalcTotal();
-                });
-                toastr.success(res.message);
-            } else {
-                toastr.error(res.message);
-            }
+    function updateRemovalWarning() {
+        if (removedIds.length > 0) {
+            $('#removalCount').text(removedIds.length);
+            $('#removalWarning').removeClass('hidden');
+        } else {
+            $('#removalWarning').addClass('hidden');
         }
-    });
-}
+    }
 
-$(document).on('change', '.qty-input', function() {
-    var id  = $(this).data('id');
-    var qty = $(this).val();
-    $.ajax({
-        type: 'POST',
-        url:  '',
-        headers: { 'X-CSRFToken': getCookie('csrftoken') },
-        data: { action: 'update_qty', item_id: id, qty: qty },
-        success: function(res) {
-            if (res.success) {
-                $('#amount_' + id).text(parseFloat(res.new_amount).toLocaleString('en', {minimumFractionDigits: 2}));
-                recalcTotal();
-                toastr.success('Quantity updated');
-            } else {
-                toastr.error(res.message);
-            }
+    {# ── Live amount recalc for existing lines ── #}
+    $(document).on('input', '.qty-input, .discount-input', function() {
+        const id       = $(this).data('id');
+        const row      = $('#line_' + id);
+        const unit     = parseFloat(row.find('.qty-input').data('unit')) || 0;
+        const qty      = parseFloat(row.find('.qty-input').val()) || 0;
+        const discount = parseFloat(row.find('.discount-input').val()) || 0;
+        const amount   = Math.max(0, (qty * unit) - discount);
+        $('#amount_' + id).text(amount.toLocaleString('en', { minimumFractionDigits: 2 }));
+        recalcTotal();
+    });
+
+    {# ── Grand total ── #}
+    function recalcTotal() {
+        var total = 0;
+        $('#lineItems tr.line-row').each(function() {
+            if ($(this).hasClass('opacity-40')) return;
+            var amtText = $(this).find('[id^="amount_"]').text().replace(/,/g, '');
+            total += parseFloat(amtText) || 0;
+        });
+        $('.new-item-row').each(function() {
+            var qty      = parseFloat($(this).find('.new-qty').val()) || 0;
+            var unit     = parseFloat($(this).find('.new-unit').val()) || 0;
+            var discount = parseFloat($(this).find('.new-discount').val()) || 0;
+            total += Math.max(0, (qty * unit) - discount);
+        });
+        $('#grandTotal').text(total.toLocaleString('en', { minimumFractionDigits: 2 }));
+    }
+
+    {# ── Duplicate check on item select change ── #}
+    function checkDuplicate(select) {
+        const code = $(select).val();
+        if (code && existingItemcodes.has(code)) {
+            const name = $(select).find(':selected').text();
+            $('#duplicateMsg').text(
+                ` "${name}" is already on this invoice.`
+            );
+            $('#duplicateNotice').removeClass('hidden');
+            $(select).closest('.new-item-row')
+                     .addClass('border-yellow-400 bg-yellow-50');
+        } else {
+            // Check if any other new row still has a duplicate
+            let anyDupe = false;
+            $('.new-item-select').each(function() {
+                if (existingItemcodes.has($(this).val())) anyDupe = true;
+            });
+            if (!anyDupe) $('#duplicateNotice').addClass('hidden');
+            $(select).closest('.new-item-row')
+                     .removeClass('border-yellow-400 bg-yellow-50');
         }
-    });
-});
+    }
 
-function recalcTotal() {
-    var total = 0;
-    $('#lineItems tr').each(function() {
-        var amtText = $(this).find('[id^="amount_"]').text().replace(/,/g, '');
-        total += parseFloat(amtText) || 0;
-    });
-    $('#grandTotal').text(total.toLocaleString('en', {minimumFractionDigits: 2}));
-}
+    {# ── Add new item row ── #}
+    function addNewItemRow() {
+        $('#noNewItems').hide();
+        newRowCount++;
+        const n = newRowCount;
 
-$(document).ready(function() { recalcTotal(); });
+        let options = '<option value="">Select Item</option>';
+        itemOptions.forEach(function(item) {
+            options += `<option value="${item.code}"
+                data-price="${item.price}">${item.name}</option>`;
+        });
+
+        const row = `
+        <div class="new-item-row grid gap-2 md:grid-cols-6 p-2 bg-slate-50 rounded-lg border border-slate-200 transition-colors"
+             id="newRow_${n}">
+            <label class="block text-xs">
+                <span class="text-gray-500 text-[10px]">Item</span>
+                <select name="new_item_code[]"
+                        class="new-item-select block w-full px-1 mt-0.5 text-[10px] border border-slate-300 rounded focus:outline-none text-slate-600"
+                        data-row="${n}"
+                        onchange="autoFillPrice(this, ${n}); checkDuplicate(this);">
+                    ${options}
+                </select>
+            </label>
+            <label class="block text-xs">
+                <span class="text-gray-500 text-[10px]">Description</span>
+                <input type="text" name="new_desc[]"
+                       class="block w-full px-1 mt-0.5 text-[10px] border border-slate-300 rounded focus:outline-none"/>
+            </label>
+            <label class="block text-xs">
+                <span class="text-gray-500 text-[10px]">Qty</span>
+                <input type="number" name="new_qty[]" value="1" min="1" step="1"
+                       class="new-qty block w-full px-1 mt-0.5 text-[10px] border border-slate-300 rounded focus:outline-none"
+                       oninput="recalcTotal()"/>
+            </label>
+            <label class="block text-xs">
+                <span class="text-gray-500 text-[10px]">Unit Price</span>
+                <input type="number" name="new_unit[]" value="0" min="0" step="0.01"
+                       class="new-unit block w-full px-1 mt-0.5 text-[10px] border border-slate-300 rounded focus:outline-none"
+                       id="newUnit_${n}" oninput="recalcTotal()"/>
+            </label>
+            <label class="block text-xs">
+                <span class="text-gray-500 text-[10px]">Discount</span>
+                <input type="number" name="new_discount[]" value="0" min="0" step="0.01"
+                       class="new-discount block w-full px-1 mt-0.5 text-[10px] border border-slate-300 rounded focus:outline-none"
+                       oninput="recalcTotal()"/>
+            </label>
+            <div class="flex items-end">
+                <button type="button" onclick="removeNewRow(${n})"
+                        class="w-full px-2 py-1 text-[10px] text-red-600 bg-red-50 hover:bg-red-100 rounded transition-colors">
+                    Remove
+                </button>
+            </div>
+        </div>`;
+
+        $('#newItemsContainer').append(row);
+    }
+
+    function autoFillPrice(select, n) {
+        const price = $(select).find(':selected').data('price') || 0;
+        $('#newUnit_' + n).val(price);
+        recalcTotal();
+    }
+
+    function removeNewRow(n) {
+        $('#newRow_' + n).remove();
+        if ($('.new-item-row').length === 0) {
+            $('#noNewItems').show();
+            $('#duplicateNotice').addClass('hidden');
+        }
+        recalcTotal();
+    }
+
+    {# ── Submit guard ── #}
+    $('#editForm').on('submit', function(e) {
+        const remaining = $('#lineItems tr.line-row:not(.opacity-40)').length;
+        const newItems  = $('.new-item-row').length;
+        if (remaining + newItems === 0) {
+            e.preventDefault();
+            alert('Invoice must have at least one item.');
+            return false;
+        }
+        return true;
+    });
+
+    $(document).ready(function() { recalcTotal(); });
 </script>
 
 {% endblock %}
