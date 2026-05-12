@@ -109,7 +109,7 @@
                         <th class="px-4 py-3">Edit</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y mb-6" id="'+i+'">
+                <tbody class="bg-white pl-1 pr-1 divide-y mb-6" id="'+i+'">
 
                     
                     {% for display in sales %}
@@ -388,7 +388,7 @@
                                     $('<td class="text-[10px]">').text(item.unit_p),
                                     $('<td class="text-[10px]">').text(item.qty),
                                     $('<td class="text-[10px]">').text(item.amount),
-                                    $('<td class="text-[10px]">').append('<a onclick="showEditDateModal(\'' + item.cusID + '\', \'' + item.item_name + '\', \'' + item.unit_p + '\', \'' + item.invoice_date + '\', \'' + item.invoiceID + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer"  aria-label="Edit">Edit</a>'),
+                                    //$('<td class="text-[10px]">').append('<a onclick="showEditDateModal(\'' + item.cusID + '\', \'' + item.item_name + '\', \'' + item.unit_p + '\', \'' + item.invoice_date + '\', \'' + item.invoiceID + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer"  aria-label="Edit">Edit</a>'),
                                 );
                                 
                                 table.append(row);
