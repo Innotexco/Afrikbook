@@ -179,6 +179,12 @@
 
     {# ── New Items ── #}
     <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+        <div id="duplicateNotice"
+            class="hidden mb-3 px-3 py-2 bg-yellow-50 border border-yellow-300 rounded-lg text-xs text-yellow-800">
+            <b>⚠ Duplicate detected:</b>
+            <span id="duplicateMsg"></span>
+            The quantity will be merged into the existing line when you save.
+        </div>
         <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-semibold text-slate-600">Add New Items</h3>
             <button type="button" onclick="addNewItemRow()"
@@ -216,6 +222,7 @@
 </form>
 
 <script>
+    const existingItemcodes = new Set({{ existing_itemcodes|safe }});
     {# Item list for dynamic rows #}
     const itemOptions = [
         {% for item in items %}
@@ -313,7 +320,7 @@
                 <span class="text-gray-500 text-[10px]">Item</span>
                 <select name="new_item_code[]"
                         class="new-item-select block w-full px-1 mt-0.5 text-[10px] border border-slate-300 rounded focus:outline-none text-slate-600"
-                        data-row="${n}" onchange="autoFillPrice(this, ${n})">
+                        data-row="${n}" onchange="autoFillPrice(this, ${n}); checkDuplicate(this);">
                     ${options}
                 </select>
             </label>
@@ -362,6 +369,13 @@
         $('#newRow_' + n).remove();
         if ($('.new-item-row').length === 0) {
             $('#noNewItems').show();
+            $('#duplicateNotice').addClass('hidden');
+        } else {
+            let anyDupe = false;
+            $('.new-item-select').each(function() {
+                if (existingItemcodes.has($(this).val())) anyDupe = true;
+            });
+            if (!anyDupe) $('#duplicateNotice').addClass('hidden');
         }
         recalcTotal();
     }
@@ -380,6 +394,26 @@
 
     {# ── Init ── #}
     $(document).ready(function() { recalcTotal(); });
+
+    function checkDuplicate(select) {
+        const code = $(select).val();
+        if (code && existingItemcodes.has(code)) {
+            const name = $(select).find(':selected').text();
+            $('#duplicateMsg').text(` "${name}" is already on this invoice.`);
+            $('#duplicateNotice').removeClass('hidden');
+            $(select).closest('.new-item-row')
+                    .addClass('border-yellow-400 bg-yellow-50');
+        } else {
+            // Hide the notice only if NO new row still has a duplicate
+            let anyDupe = false;
+            $('.new-item-select').each(function() {
+                if (existingItemcodes.has($(this).val())) anyDupe = true;
+            });
+            if (!anyDupe) $('#duplicateNotice').addClass('hidden');
+            $(select).closest('.new-item-row')
+                    .removeClass('border-yellow-400 bg-yellow-50');
+        }
+    }
 </script>
 
 {% endblock %}
