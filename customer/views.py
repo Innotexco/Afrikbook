@@ -262,6 +262,10 @@ def EditSalesInvoice(request, invoice_id):
     accounts  = chart_of_account.objects.using(db).all()
     items     = Item.objects.using(db).all()
     method    = shipping_method.objects.using(db).all()
+    
+    existing_itemcodes = set(
+        invoices.values_list('itemcode', flat=True)
+    )
 
     if request.method == 'POST' and request.POST.get('action') == 'update_all':
         try:
@@ -366,6 +370,8 @@ def EditSalesInvoice(request, invoice_id):
                 line_units    = request.POST.getlist('line_unit[]')
                 line_descs    = request.POST.getlist('line_desc[]')
                 line_discounts = request.POST.getlist('line_discount[]')
+                
+                line_itemcodes = request.POST.getlist('line_itemcode[]')
 
                 # New items added in the form
                 new_codes     = request.POST.getlist('new_item_code[]')
@@ -373,6 +379,43 @@ def EditSalesInvoice(request, invoice_id):
                 new_units     = request.POST.getlist('new_unit[]')
                 new_descs     = request.POST.getlist('new_desc[]')
                 new_discounts = request.POST.getlist('new_discount[]')
+                
+                merge_map = {}          
+                truly_new_codes     = []
+                truly_new_qtys      = []
+                truly_new_units     = []
+                truly_new_descs     = []
+                truly_new_discounts = []
+
+                for i, code in enumerate(new_codes):
+                    if not code:
+                        continue
+                    qty = float(new_qtys[i]) if new_qtys[i] else 1
+
+                    if code in existing_itemcodes:
+                        # Merge into the existing line
+                        if code in merge_map:
+                            merge_map[code] += qty
+                        else:
+                            merge_map[code] = qty
+                        messages.warning(
+                            request,
+                            f"Item '{code}' already on invoice — quantity merged into existing line."
+                        )
+                    else:
+                        truly_new_codes.append(code)
+                        truly_new_qtys.append(new_qtys[i])
+                        truly_new_units.append(new_units[i])
+                        truly_new_descs.append(new_descs[i])
+                        truly_new_discounts.append(new_discounts[i])
+
+                # Apply merges to the existing line quantities
+                for idx, lid in enumerate(line_ids):
+                    if idx < len(line_itemcodes):
+                        code = line_itemcodes[idx]
+                        if code in merge_map:
+                            current_qty = float(line_qtys[idx]) if line_qtys[idx] else 0
+                            line_qtys[idx] = str(current_qty + merge_map[code])
 
                 # Build item lists for add_new_sales
                 item_list     = []
@@ -485,6 +528,7 @@ def EditSalesInvoice(request, invoice_id):
         'accounts':   accounts,
         'invoice_id': invoice_id,
         'shipping_method': method,
+        'existing_itemcodes': list(existing_itemcodes),
     }
     return render(request, 'customer/EditSalesInvoice.html', context)
 
