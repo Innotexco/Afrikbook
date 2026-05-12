@@ -53,11 +53,12 @@
                 <span class="text-gray-600 text-xs font-medium">Payment Method</span>
                 <select name="payment_method"
                         class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-select">
-                    {% for method in payment_methods %}
-                    <option value="{{ method }}"
-                        {% if method == first.payment_method %}selected{% endif %}>
-                        {{ method }}
-                    </option>
+                        <option>Cash</option>
+                        <option>POS</option>
+                        <option>Transfer</option>
+                        <option>Bank Payment</option>
+                    {% for p in payments %}
+                    <option value="{{ p.method }}" {% if p == first.method %}selected{% endif %}>{{ p.method }}</option>
                     {% endfor %}
                 </select>
             </label>
