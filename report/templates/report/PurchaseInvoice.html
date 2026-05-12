@@ -217,7 +217,17 @@
                                         $('<td class="text-[10px]">').text(item.qty),
                                         $('<td class="text-[10px]">').text(item.amount),
                                         $('<td class="text-[10px]">').text(item.Userlogin),
-                                        $('<td class="text-[10px]">').append('<a onclick="showModal(\'' + item.invoiceID + '\', \'' + item.cusID + '\')" class="flex items-center justify-center text-blue-500 border px-3 bg-gray-50 cursor-pointer"  aria-label="Edit">View</a>'),
+                                        $('<td class="text-[10px] flex gap-2">')
+                                        .append(
+                                            '<a onclick="showModal(\'' + item.invoiceID + '\', \'' + item.cusID + '\')" ' +
+                                            'class="flex items-center justify-center text-blue-500 border px-2 py-1 bg-gray-50 cursor-pointer rounded" ' +
+                                            'aria-label="View">View</a>'
+                                        )
+                                        .append(
+                                            '<a href="{%url "vendor:EditPurchaseInvoice" %}' + item.invoiceID + '/" ' +
+                                            'class="flex items-center justify-center text-green-600 border px-2 py-1 bg-gray-50 cursor-pointer rounded" ' +
+                                            'aria-label="Edit">Edit</a>'
+                                        ),
                                         
                                     
                                     );
