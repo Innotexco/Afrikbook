@@ -30,6 +30,7 @@ from django.db.models import Q
 from itertools import zip_longest
 import logging
 import traceback
+import decimal
 
 logger = logging.getLogger(__name__)
 
