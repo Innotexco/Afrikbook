@@ -428,7 +428,7 @@ def EditSalesInvoice(request, invoice_id):
 
                 # Existing lines (not removed)
                 archived = edited_customer_invoice.objects.using(db).filter(
-                    original_invoiceID=invoice_id
+                    invoiceID=invoice_id
                 )
                 archived_map = {str(a.id): a for a in archived}
 
@@ -438,7 +438,7 @@ def EditSalesInvoice(request, invoice_id):
                     # Find original line from archive by matching order
                     orig_lines = list(
                         edited_customer_invoice.objects.using(db)
-                        .filter(original_invoiceID=invoice_id)
+                        .filter(invoiceID=invoice_id)
                         .order_by('id')
                     )
                     if idx < len(orig_lines):
