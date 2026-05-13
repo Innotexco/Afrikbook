@@ -51,15 +51,36 @@
 
             <label class="block text-sm">
                 <span class="text-gray-600 text-xs font-medium">Payment Method</span>
-                <select name="payment_method"
+
+                <select name="source"
                         class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-select">
-                        <option>Cash</option>
-                        <option>POS</option>
-                        <option>Transfer</option>
-                        <option>Bank Payment</option>
-                    {% for p in payments %}
-                    <option value="{{ p.method }}" {% if p == first.method %}selected{% endif %}>{{ p.method }}</option>
-                    {% endfor %}
+
+                    <option value="Cash"
+                        {% if invoices.payment_method == 'Cash' %}selected{% endif %}>
+                        Cash
+                    </option>
+
+                    <option value="POS"
+                        {% if invoices.payment_method == 'Customer Balance' %}selected{% endif %}>
+                        Customer Balance
+                    </option>
+
+                    <option value="Transfer"
+                        {% if invoices.payment_method == 'Transfer' %}selected{% endif %}>
+                        Transfer
+                    </option>
+
+                    <option value="Bank Payment"
+                        {% if invoices.payment_method == 'Cheque' %}selected{% endif %}>
+                        Cheque
+                    </option>
+
+                    <option value="Bank Payment"
+                        {% if invoices.payment_method == 'Transfer and Cash' %}selected{% endif %}>
+                        Transfer and Cash
+                    </option>
+
+
                 </select>
             </label>
 
