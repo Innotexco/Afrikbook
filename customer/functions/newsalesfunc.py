@@ -659,7 +659,7 @@ def add_new_sales(request, db):
             continue
  
         # Auto-fix zero/empty quantity
-        if not quantities[i] or int(quantities[i]) == 0:
+        if not quantities[i] or float(quantities[i]) == 0:
             quantities[i] = 1
             logger.debug(f"[add_new_sales] Auto-set qty=1 | item [{i}] | itemcode={itemcode[i]}")
  
