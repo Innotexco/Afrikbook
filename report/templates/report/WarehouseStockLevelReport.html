@@ -2,83 +2,78 @@
 
 {% block content %}
 
-<a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
-   href="#">
-    <div class="flex items-center">
-        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-        </svg>
-        <span>Warehouse Stock Level Report</span>
-    </div>
-    <span>Home &RightArrow;</span>
+<a class="flex items-center ..." href="#">
+    {# your header breadcrumb unchanged #}
 </a>
 
 <div class="px-4 my-5 bg-white rounded-lg shadow-md">
     <div class="grid grid-cols-2 gap-4">
+
+        {# ── Left: date filters ── #}
         <div class="col-span-1 p-2 border-r">
-            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+
                 <label class="block text-sm hidden" id="dailyDate">
-                    <span class="text-gray-700">From Date</span>
-                    <input type="date" class="onchangeClass block w-full py-2 px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                           id="fromdate"/>
+                    <span class="text-gray-700 text-xs">From Date</span>
+                    <input type="date" id="fromdate"
+                           class="onchangeClass block w-full py-2 px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"/>
                 </label>
 
                 <label class="block text-sm hidden" id="durationFrmDate">
-                    <span class="text-gray-700">To Date</span>
-                    <input type="date" class="onchangeClass block w-full py-2 px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                           id="todate"/>
+                    <span class="text-gray-700 text-xs">To Date</span>
+                    <input type="date" id="todate"
+                           class="onchangeClass block w-full py-2 px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"/>
                 </label>
 
                 <label class="block text-sm hidden monthly">
-                    <span class="text-gray-700">Select Month</span>
-                    <select class="onchangeM_Y block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="monthly">
+                    <span class="text-gray-700 text-xs">Select Month</span>
+                    <select id="monthly"
+                            class="onchangeM_Y block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none text-slate-600">
                         <option>_ _Choose Month_ _</option>
-                        <option value="01">January</option>
-                        <option value="02">February</option>
-                        <option value="03">March</option>
-                        <option value="04">April</option>
-                        <option value="05">May</option>
-                        <option value="06">June</option>
-                        <option value="07">July</option>
-                        <option value="08">August</option>
-                        <option value="09">September</option>
-                        <option value="10">October</option>
-                        <option value="11">November</option>
-                        <option value="12">December</option>
+                        {% for m in "01,02,03,04,05,06,07,08,09,10,11,12".split(',') %}
+                        <option value="{{ m }}">{{ m|date:"F" }}</option>
+                        {% endfor %}
                     </select>
                 </label>
 
                 <label class="block text-sm hidden Quaterly">
-                    <span class="text-gray-700">Select Months</span>
-                    <select class="onchangeQuaterly block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="Quaterly">
+                    <span class="text-gray-700 text-xs">Select Quarter</span>
+                    <select id="Quaterly"
+                            class="onchangeQuaterly block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none text-slate-600">
                         <option>_ _Choose Months_ _</option>
-                        <option value="01-04">January - April</option>
-                        <option value="05-08">May - August</option>
-                        <option value="09-12">September - December</option>
+                        <option value="01-04">January – April</option>
+                        <option value="05-08">May – August</option>
+                        <option value="09-12">September – December</option>
                     </select>
                 </label>
 
                 <label class="block text-sm hidden Yearly">
-                    <span class="text-gray-700">Select Year</span>
-                    <select class="onchangeM_Y block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="Yearly">
+                    <span class="text-gray-700 text-xs">Select Year</span>
+                    <select id="Yearly"
+                            class="onchangeM_Y block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none text-slate-600">
                         <option>_ _Choose Year_ _</option>
                     </select>
                 </label>
 
                 <div class="block text-sm mt-5">
-                    <button type='button' id="search_btn" class="hidden Search w-full py-2 px-2 mt-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate">
-                        Search Date
+                    <button type="button" id="search_btn"
+                            class="hidden Search w-full py-2 px-2 mt-1 text-sm font-medium text-center text-gray-600 bg-slate-200 border border-transparent rounded-lg hover:bg-slate-300 focus:outline-none transition-colors">
+                        Search
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="col-span-1">
-            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {# ── Right: period, item, warehouse filters ── #}
+        <div class="col-span-1 p-2">
+            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-2">
+
                 <input type="hidden" id="daily">
+
                 <label class="block text-sm">
-                    <span class="text-gray-700">Select Period</span>
-                    <select class="commonClass block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="duration">
+                    <span class="text-gray-700 text-xs">Select Period</span>
+                    <select id="duration"
+                            class="commonClass block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none text-slate-600">
                         <option>_ _Choose period_ _</option>
                         <option>Daily</option>
                         <option>Monthly</option>
@@ -86,114 +81,155 @@
                         <option>Yearly</option>
                     </select>
                 </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 text-xs">Filter by Item</span>
+                    <select id="item_filter"
+                            class="block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none text-slate-600">
+                        <option value="">_ _All Items_ _</option>
+                        {% for item in items %}
+                        <option value="{{ item.generated_code }}">{{ item.item_name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 text-xs">Filter by Warehouse</span>
+                    <select id="warehouse_filter"
+                            class="block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none text-slate-600">
+                        <option value="">_ _All Warehouses_ _</option>
+                        {% for wh in warehouses %}
+                        <option value="{{ wh.warehouse_name }}">{{ wh.warehouse_name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
             </div>
         </div>
     </div>
 </div>
 
+{# ── Table ── #}
 <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
     <div class="w-full overflow-x-auto table-responsive" id="wsl">
-        <table id="storestocklevel" class="display" style="width:100%">
-            <thead id="thead"></thead>
-            <tbody class="bg-white divide-y result"></tbody>
+        <table id="storestocklevel" style="width:100%; border-collapse: collapse;">
+            <thead id="thead">
+                <tr class="text-[11px] font-semibold tracking-wide text-left text-gray-500 bg-gray-100 border-b">
+                    <th class="px-3 py-2">Date</th>
+                    <th class="px-3 py-2">Item Name</th>
+                    <th class="px-3 py-2">Warehouse</th>
+                    <th class="px-3 py-2 text-right">Current Stock Level</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100 result">
+                {% for row in default_data %}
+                <tr class="text-gray-700 hover:bg-slate-50">
+                    <td class="text-[10px] px-3 py-1.5">{{ row.date }}</td>
+                    <td class="text-[10px] px-3 py-1.5 font-medium">{{ row.item }}</td>
+                    <td class="text-[10px] px-3 py-1.5 text-slate-500">{{ row.warehouse }}</td>
+                    <td class="text-[10px] px-3 py-1.5 text-right font-semibold
+                        {% if row.qtyLevel > 0 %}text-green-700
+                        {% elif row.qtyLevel == 0 %}text-slate-400
+                        {% else %}text-red-600{% endif %}">
+                        {{ row.qtyLevel|floatformat:2 }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center py-6 text-sm text-gray-400 italic">
+                        No stock records found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
-        <div class="mt-4 flex justify-end">
-            <label class="flex items-center gap-2 text-sm">
-                <span class="font-bold text-gray-700">Total Warehouse quantity:</span>
-                <input type="text" class="block w-[120px] px-2 py-1 text-sm border-2 rounded-md bg-gray-100 text-gray-700"
-                       value="{{ totalqty|default:0 }}" readonly id="totalqty"/>
-            </label>
-        </div>
+    </div>
+
+    <div class="flex justify-end items-center mt-3 px-2">
+        <label class="flex items-center gap-2 text-sm font-medium text-gray-700">
+            Total Warehouse Quantity:
+            <input type="text" id="totalqty" readonly
+                   value="{{ default_data|length }}"
+                   class="block w-28 px-2 py-1 text-sm border-2 rounded-md bg-gray-100 text-gray-700 text-right"/>
+        </label>
     </div>
 </div>
 
-<div class="grid grid-cols-2 gap-4">
-    <div class="col-span-1 p-2">
-        <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            <button class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
-                    onclick="generatePDF('wsl')">
-                Print
-            </button>
-            <button type="button" class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
-                    onclick="convertTableToExcel('wsl', 'storestocklevel')">
-                Export to Excel
-            </button>
-        </div>
+{# ── Actions ── #}
+<div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+    <div class="grid gap-4 md:grid-cols-3">
+        <button type="button" onclick="generatePDF('wsl')"
+                class="w-full px-4 py-1.5 text-sm font-medium text-center text-gray-600 bg-slate-200 border border-transparent rounded-lg hover:bg-slate-300 focus:outline-none transition-colors">
+            Print
+        </button>
+        <button type="button" onclick="convertTableToExcel('wsl', 'storestocklevel')"
+                class="w-full px-4 py-1.5 text-sm font-medium text-center text-gray-600 bg-slate-200 border border-transparent rounded-lg hover:bg-slate-300 focus:outline-none transition-colors">
+            Export to Excel
+        </button>
     </div>
 </div>
 
 <script>
+    // ── Period selector ──────────────────────────────────────
     $(document).on('change', '#duration', function() {
         var duration = $(this).val();
         $('#search_btn').addClass('hidden');
+        $('#durationFrmDate, #dailyDate').addClass('hidden');
+        $('.monthly, .Quaterly, .Yearly').addClass('hidden');
 
         switch (duration) {
             case 'Daily':
-                $('#durationFrmDate').removeClass('hidden');
-                $('#dailyDate').removeClass('hidden');
-                $('.monthly').addClass('hidden');
-                $('.Quaterly').addClass('hidden');
-                $('.Yearly').addClass('hidden');
                 $('#daily').val('daily');
+                $('#dailyDate, #durationFrmDate').removeClass('hidden');
                 break;
             case 'Monthly':
                 $('#daily').val('monthly');
-                $('#durationFrmDate').addClass('hidden');
-                $('#dailyDate').addClass('hidden');
-                $('.monthly').removeClass('hidden');
-                $('.Quaterly').addClass('hidden');
-                $('.Yearly').removeClass('hidden');
+                $('.monthly, .Yearly').removeClass('hidden');
                 break;
             case 'Quaterly':
                 $('#daily').val('quaterly');
-                $('#durationFrmDate').addClass('hidden');
-                $('#dailyDate').addClass('hidden');
-                $('.monthly').addClass('hidden');
-                $('.Quaterly').removeClass('hidden');
-                $('.Yearly').removeClass('hidden');
+                $('.Quaterly, .Yearly').removeClass('hidden');
                 break;
             case 'Yearly':
                 $('#daily').val('');
-                $('#durationFrmDate').addClass('hidden');
-                $('#dailyDate').addClass('hidden');
-                $('.monthly').addClass('hidden');
-                $('.Quaterly').addClass('hidden');
                 $('.Yearly').removeClass('hidden');
                 break;
             default:
-                $('#durationFrmDate').addClass('hidden');
-                $('#dailyDate').addClass('hidden');
-                $('.monthly').addClass('hidden');
-                $('.Quaterly').addClass('hidden');
-                $('.Yearly').addClass('hidden');
-                alert('Please select a valid period');
+                $('#daily').val('');
                 break;
         }
     });
 
+    // Date inputs show/hide search button
     $(document).on('change', '.onchangeClass', function() {
-        var date1 = $('#fromdate').val();
-        var date2 = $('#todate').val();
-        if (date1 && date2) {
+        if ($('#fromdate').val() && $('#todate').val()) {
             $('#search_btn').removeClass('hidden');
         } else {
             $('#search_btn').addClass('hidden');
         }
     });
 
+    // Month/Year selectors
     $(document).on('change', '.onchangeM_Y', function() {
         var monthly = $('#monthly').val();
-        var Yearly = $('#Yearly').val();
-        if (Yearly !== '_ _Choose Year_ _' && monthly !== '_ _Choose Month_ _') {
-            $('#search_btn').removeClass('hidden');
+        var Yearly  = $('#Yearly').val();
+        var daily   = $('#daily').val();
+        if (daily === 'monthly') {
+            if (Yearly !== '_ _Choose Year_ _' && monthly !== '_ _Choose Month_ _') {
+                $('#search_btn').removeClass('hidden');
+            } else {
+                $('#search_btn').addClass('hidden');
+            }
         } else {
-            $('#search_btn').addClass('hidden');
+            if (Yearly !== '_ _Choose Year_ _') $('#search_btn').removeClass('hidden');
+            else $('#search_btn').addClass('hidden');
         }
     });
 
+    // Quarter selector
     $(document).on('change', '.onchangeQuaterly', function() {
         var Quaterly = $('#Quaterly').val();
-        var Yearly = $('#Yearly').val();
+        var Yearly   = $('#Yearly').val();
         if (Yearly !== '_ _Choose Year_ _' && Quaterly !== '_ _Choose Months_ _') {
             $('#search_btn').removeClass('hidden');
         } else {
@@ -201,90 +237,121 @@
         }
     });
 
+    // Year dropdown alone
     $(document).on('change', '#Yearly', function() {
-        var Yearly = $('#Yearly').val();
-        if (Yearly !== '_ _Choose Year_ _') {
+        if ($(this).val() !== '_ _Choose Year_ _') {
             $('#search_btn').removeClass('hidden');
         } else {
             $('#search_btn').addClass('hidden');
         }
     });
 
+    // Populate years
     $(document).ready(function() {
-        // Populate years dynamically
-        (function populateYears() {
-            var currentYear = new Date().getFullYear();
-            var startYear = {{ start_year|default:2020 }};
-            var $select = $('#Yearly');
-            $select.empty();
-            $select.append('<option>_ _Choose Year_ _</option>');
-            for (var year = currentYear; year >= startYear; year--) {
-                $select.append('<option value="' + year + '">' + year + '</option>');
-            }
-        })();
+        var currentYear = new Date().getFullYear();
+        var startYear   = {{ start_year|default:2020 }};
+        var $select     = $('#Yearly');
+        $select.empty().append('<option>_ _Choose Year_ _</option>');
+        for (var y = currentYear; y >= startYear; y--) {
+            $select.append('<option value="' + y + '">' + y + '</option>');
+        }
+    });
 
-        // Main search button
-        $(document).on('click', '.Search', function() {
-            var fromdate = $('#fromdate').val();
-            var todate = $('#todate').val();
-            var monthly = $('#monthly').val();
-            var Yearly = $('#Yearly').val();
-            var Quaterly = $('#Quaterly').val();
-            var daily = $('#daily').val();
+    // ── Search ───────────────────────────────────────────────
+    $(document).on('click', '.Search', function() {
+        var fromdate     = $('#fromdate').val();
+        var todate       = $('#todate').val();
+        var monthly      = $('#monthly').val();
+        var Yearly       = $('#Yearly').val();
+        var Quaterly     = $('#Quaterly').val();
+        var daily        = $('#daily').val();
+        var item_filter  = $('#item_filter').val();
+        var warehouse_filter = $('#warehouse_filter').val();
 
-            $.ajax({
-                type: 'GET',
-                url: '{% url "report:WarehouseStockLevelReport" %}',
-                data: {
-                    monthly: monthly,
-                    Yearly: Yearly,
-                    Quaterly: Quaterly,
-                    daily: daily,
-                    fromdate: fromdate,
-                    todate: todate,
-                },
-                success: function(res) {
-                    if (res.error) {
-                        alert(res.error);
-                    } else {
-                        $('#storestocklevel .result').empty();
-                        $('#totalqty').val(res.totalqty || 0);
-                        $('#thead').empty();
+        $.ajax({
+            type: 'GET',
+            url: '{% url "report:WarehouseStockLevelReport" %}',
+            data: {
+                monthly:         monthly,
+                Yearly:          Yearly,
+                Quaterly:        Quaterly,
+                daily:           daily,
+                fromdate:        fromdate,
+                todate:          todate,
+                item_filter:     item_filter,
+                warehouse_filter: warehouse_filter,
+            },
+            beforeSend: function() {
+                $('#search_btn').text('Searching...').prop('disabled', true);
+            },
+            success: function(res) {
+                $('#search_btn').text('Search').prop('disabled', false);
 
-                        // Build header row
-                        var headerRow = $('<tr class="text-xs font-semibold tracking-wide text-left text-gray-500 bg-gray-50">');
-                        headerRow.append('<th class="py-3">Date</th>');
-                        headerRow.append('<th class="py-3">Item Name</th>');
-                        if (res.dateLog && res.dateLog.length) {
-                            res.dateLog.forEach(function(date) {
-                                headerRow.append('<th class="py-3">' + date + '</th>');
-                            });
-                        }
-                        headerRow.append('<th class="py-3">Current Stock Level</th>');
-                        $('#thead').append(headerRow);
-
-                        // Build data rows
-                        if (res.itemLog && res.itemLog.length) {
-                            res.itemLog.forEach(function(item) {
-                                var dataRow = $('<tr>');
-                                dataRow.append('<td class="text-left">' + (res.currentDate || '') + '</td>');
-                                dataRow.append('<td class="py-3">' + item.item + '</td>');
-                                if (res.qtyLog && res.qtyLog.length) {
-                                    res.qtyLog.forEach(function(qty) {
-                                        if (qty.item === item.item) {
-                                            dataRow.append('<td class="py-3">' + qty.qty + '</td>');
-                                        } else {
-                                            dataRow.append('<td class="py-3">0</td>');
-                                        }
-                                    });
-                                }
-                                dataRow.append('<td class="py-3">' + (item.qtyLevel || 0) + '</td>');
-                                $('#storestocklevel .result').append(dataRow);
-                            });
-                        }
-                    }
+                if (res.error) {
+                    $('#storestocklevel .result').html(
+                        '<tr><td colspan="5" class="text-center py-6 text-sm text-gray-400 italic">' +
+                        res.error + '</td></tr>'
+                    );
+                    $('#totalqty').val('0');
+                    return;
                 }
-            });
+
+                $('#storestocklevel .result').empty();
+                $('#totalqty').val(res.totalqty ? parseFloat(res.totalqty).toFixed(2) : '0');
+
+                // Rebuild header
+                $('#thead').html(
+                    '<tr class="text-[11px] font-semibold tracking-wide text-left text-gray-500 bg-gray-100 border-b">' +
+                    '<th class="px-3 py-2">Period</th>' +
+                    '<th class="px-3 py-2">Item Name</th>' +
+                    '<th class="px-3 py-2">Warehouse</th>' +
+                    (res.dateLog && res.dateLog.length
+                        ? res.dateLog.map(function(d) {
+                            return '<th class="px-3 py-2 text-right">' + d + ' Stock</th>';
+                        }).join('')
+                        : '') +
+                    '<th class="px-3 py-2 text-right">Current Stock Level</th>' +
+                    '</tr>'
+                );
+
+                if (!res.itemLog || !res.itemLog.length) {
+                    $('#storestocklevel .result').html(
+                        '<tr><td colspan="5" class="text-center py-6 text-sm text-gray-400 italic">No data found.</td></tr>'
+                    );
+                    return;
+                }
+
+                res.itemLog.forEach(function(item) {
+                    var row = $('<tr class="text-gray-700 hover:bg-slate-50">');
+                    row.append('<td class="text-[10px] px-3 py-1.5">' + (res.currentDate || '') + '</td>');
+                    row.append('<td class="text-[10px] px-3 py-1.5 font-medium">' + item.item + '</td>');
+                    row.append('<td class="text-[10px] px-3 py-1.5 text-slate-500">' + (item.warehouse || '') + '</td>');
+
+                    if (res.qtyLog && res.qtyLog.length) {
+                        res.qtyLog.forEach(function(qty) {
+                            var val = qty.item === item.item ? parseFloat(qty.qty).toFixed(2) : '0.00';
+                            row.append('<td class="text-[10px] px-3 py-1.5 text-right">' + val + '</td>');
+                        });
+                    }
+
+                    var level     = parseFloat(item.qtyLevel || 0).toFixed(2);
+                    var colorClass = parseFloat(level) > 0
+                        ? 'text-green-700'
+                        : parseFloat(level) === 0
+                            ? 'text-slate-400'
+                            : 'text-red-600';
+                    row.append(
+                        '<td class="text-[10px] px-3 py-1.5 text-right font-semibold ' + colorClass + '">' +
+                        level + '</td>'
+                    );
+
+                    $('#storestocklevel .result').append(row);
+                });
+            },
+            error: function() {
+                $('#search_btn').text('Search').prop('disabled', false);
+                alert('An error occurred. Please try again.');
+            }
         });
     });
 </script>

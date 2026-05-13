@@ -1452,148 +1452,247 @@ def currentStockLevel_Outlet(db, item_, outlet_filter=None):
 
 
 
-
 def WarehouseStockLevelReport(request):
     db = AfrikBookDB(request)
+    items = Item.objects.using(db).all()
+    warehouses = Warehouse.objects.using(db).all()
+
+    # ── Default display: 5 latest log entries ─────────────────────
+    latest = CreateStockInLog.objects.using(db).order_by('-datetx')[:5]
+    default_data = []
+    seen = set()
+    for log in latest:
+        if log.item_code not in seen:
+            seen.add(log.item_code)
+            default_data.append({
+                'item':      log.item,
+                'qtyLevel':  currentStockLevel(db, log.item_code),
+                'date':      str(log.datetx),
+                'warehouse': log.warehouse or '',
+            })
 
     if request.method == 'GET':
         daily       = request.GET.get('daily')
         fromdate    = request.GET.get('fromdate')
         todate      = request.GET.get('todate')
         Yearly      = request.GET.get('Yearly')
-        monthly      = request.GET.get('monthly')
-        Quaterly      = request.GET.get('Quaterly')
-        if fromdate and todate is not None or Yearly is not None or monthly or Quaterly:
-           return levelReportWarehouse(request, db, fromdate, todate, daily, Yearly, monthly, Quaterly)
-   
-    return render(request, 'report/WarehouseStockLevelReport.html')
+        monthly     = request.GET.get('monthly')
+        Quaterly    = request.GET.get('Quaterly')
+        item_filter = request.GET.get('item_filter')
+        warehouse_filter = request.GET.get('warehouse_filter')
+
+        # Trigger search only when at least one period parameter is present
+        if (fromdate and todate) or Yearly or monthly or Quaterly:
+            return levelReportWarehouse(
+                request, db, fromdate, todate, daily,
+                Yearly, monthly, Quaterly,
+                item_filter, warehouse_filter
+            )
+
+    context = {
+        'items':        items,
+        'warehouses':   warehouses,
+        'default_data': default_data,
+        'start_year':   2020,
+    }
+    return render(request, 'report/WarehouseStockLevelReport.html', context)
 
 
+def levelReportWarehouse(request, db, fromdate, todate, daily,
+                         year, month, quater,
+                         item_filter=None, warehouse_filter=None):
+    # ── Validate numeric parameters ──────────────────────
+    if not year or not year.isdigit():
+        return JsonResponse({'error': 'Please select a valid year.'})
+    year = int(year)
 
+    if daily == 'monthly':
+        if not month or not month.isdigit() or not (1 <= int(month) <= 12):
+            return JsonResponse({'error': 'Please select a valid month.'})
+        month = int(month)
 
-def levelReportWarehouse(request, db, fromdate, todate, daily, year, month, quater):
-    quaterLog =[]
+    elif daily == 'quaterly':
+        if not quater or '-' not in quater:
+            return JsonResponse({'error': 'Please select a valid quarter.'})
+        parts = quater.split('-')
+        if len(parts) != 2 or not all(p.isdigit() for p in parts):
+            return JsonResponse({'error': 'Invalid quarter format.'})
+        if not (1 <= int(parts[0]) <= 12 and 1 <= int(parts[1]) <= 12):
+            return JsonResponse({'error': 'Quarter months must be between 1 and 12.'})
+
+    quaterLog = []
     if daily == 'daily':
         from_date, to_date = getdateReport(fromdate, todate)
         select_date_range = Q(datetx__range=(from_date, to_date))
     elif daily == 'monthly':
         period = month
-        select_date_range = (Q(datetx__year=year) & Q(datetx__month=month))
+        select_date_range = Q(datetx__year=year) & Q(datetx__month=month)
     elif daily == 'quaterly':
-        date_parts= quater.split('-')
-        num = int(date_parts[0])
-
-        while num <= int(date_parts[1]):
-            quaterLog.append(num)
-            num = num + 1
-        # period = quater
-        select_date_range = (Q(datetx__year=year) & Q(datetx__month__range=(date_parts[0], date_parts[1])))
-    else:
-        period = year
+        date_parts = quater.split('-')
+        start = int(date_parts[0])
+        end   = int(date_parts[1])
+        quaterLog = list(range(start, end + 1))
+        select_date_range = Q(datetx__year=year) & Q(datetx__month__range=(start, end))
+    else:  # yearly
         select_date_range = Q(datetx__year=year)
+
     try:
         report = CreateStockInLog.objects.using(db).filter(select_date_range)
-        if report.count() > 1:
-            itemLog =[]
-            period_log =[]
-            non_dict_item_log =[]
-            qtyLog =[]
-            DayLog =[]
-            total_qty =0.00
-            all_qty_sent_to_warehouse =0.00
-            all_qty_sent_from_warehouse =0.00
-            all_qty_sent_within_warehouse_table =0.00
-            count = 0
-            for data in report:
-                strDate = str(data.datetx)
-                itemName = str(data.item)
-                date_obj = datetime.strptime(strDate, '%Y-%m-%d')
-                # year = date_obj.strftime('%Y')
-                # month = date_obj.strftime('%m')
+
+        # Apply item and warehouse filters
+        if item_filter:
+            report = report.filter(item_code=item_filter)
+        if warehouse_filter:
+            report = report.filter(warehouse=warehouse_filter)
+
+        if report.count() < 1:
+            return JsonResponse({'error': 'No record found'})
+
+        itemLog          = []
+        period_log       = []
+        non_dict_item_log = []
+        qtyLog           = []
+        DayLog           = []
+        count            = 0
+
+        for data in report:
+            strDate  = str(data.datetx)
+            itemName = str(data.item)
+            date_obj = datetime.strptime(strDate, '%Y-%m-%d')
+
+            if daily == 'daily':
+                period = strDate
+                select_date_range = Q(datetx=strDate)
+            elif daily == 'quaterly':
+                period = quaterLog[count]
+                if count != len(quaterLog) - 1:
+                    count += 1
+                select_date_range = Q(datetx__year=year) & Q(datetx__month=str(period))
+            elif daily == 'monthly':
+                period = month
+            else:
+                period = year
+
+            if itemName not in non_dict_item_log:
+                non_dict_item_log.append(itemName)
+                qtyLevel = currentStockLevel(db, data.item_code, warehouse_filter)
+                itemLog.append({
+                    'date':      strDate,
+                    'qty':       data.quantity,
+                    'item':      data.item,
+                    'qtyLevel':  qtyLevel,
+                    'warehouse': data.warehouse or '',
+                })
+
+            if period not in period_log:
+                period_log.append(period)
+
+                total_qty = 0.00
+                all_qty_sent_to_warehouse       = 0.00
+                all_qty_sent_from_warehouse     = 0.00
+                all_qty_sent_within_warehouse   = 0.00
+
+                # Inflow logs for this period
+                inflow_qs = CreateStockInLog.objects.using(db).filter(
+                    ~Q(outlet=None) & select_date_range
+                )
+                if warehouse_filter:
+                    inflow_qs = inflow_qs.filter(warehouse=warehouse_filter)
+                if item_filter:
+                    inflow_qs = inflow_qs.filter(item_code=item_filter)
+                for row in inflow_qs:
+                    all_qty_sent_to_warehouse += float(row.quantity)
+
+                # Outflow 1: transfers from warehouse to outlet
+                outflow1_qs = CreateOutletStockInLog.objects.using(db).filter(
+                    Q(warehouse__icontains='warehouse') & select_date_range
+                )
+                if warehouse_filter:
+                    outflow1_qs = outflow1_qs.filter(warehouse=warehouse_filter)
+                if item_filter:
+                    outflow1_qs = outflow1_qs.filter(item_code=item_filter)
+                for row in outflow1_qs:
+                    all_qty_sent_from_warehouse += float(row.quantity)
+
+                # Outflow 2: transfers between warehouses
+                outflow2_qs = CreateStockInLog.objects.using(db).filter(
+                    Q(warehouse__icontains='warehouse') & select_date_range
+                )
+                if warehouse_filter:
+                    outflow2_qs = outflow2_qs.filter(warehouse=warehouse_filter)
+                if item_filter:
+                    outflow2_qs = outflow2_qs.filter(item_code=item_filter)
+                for row in outflow2_qs:
+                    all_qty_sent_within_warehouse += float(row.quantity)
+
+                total_qty = all_qty_sent_to_warehouse - (
+                    all_qty_sent_from_warehouse + all_qty_sent_within_warehouse
+                )
+                qtyLog.append({
+                    'qty': total_qty,
+                    'item': data.item,
+                    'month': month,
+                    'date': year
+                })
+
                 if daily == 'daily':
-                    period = strDate
-                    select_date_range = Q(datetx=strDate)
+                    DayLog.append(date_obj.strftime('%A'))
+                elif daily == 'monthly':
+                    fullmonthName = date_obj.strftime('%B')
+                    DayLog.append(f'{fullmonthName}_{year}')
                 elif daily == 'quaterly':
-                    period = quaterLog[count]
-                    if count != len(quaterLog) -1:
-                        count = count + 1
-                    select_date_range = (Q(datetx__year=year) & Q(datetx__month=str(period)))
-                # elif daily == 'monthly':
-                #     period = month
-                #     select_date_range = Q(datetx__year=year) & Q(datetx__month=month)
-                # else:
-                #     period = year
-                #     select_date_range = Q(datetx__year=year)
-
-                if itemName not in non_dict_item_log:
-                    # qtyLevel=0.00
-                    non_dict_item_log.append(itemName)
-                    qtyLevel = currentStockLevel(db, data.item_code)
-                    itemLog.append({'date':strDate,  'qty':data.quantity, 'item':data.item, 'qtyLevel':qtyLevel})
-
-                if  period not in period_log:
-                    period_log.append(period)
-                    total_qty =0.00
-                    all_qty_sent_to_warehouse =0.00
-                    all_qty_sent_from_warehouse =0.00
-                    all_qty_sent_within_warehouse_table =0.00
-                    all_qty_sent_to_warehouse_for_that_day = CreateStockInLog.objects.using(db).filter(~Q(outlet=None) & select_date_range)
-                    for warehouse_qty_sent_to_warehouse in all_qty_sent_to_warehouse_for_that_day:
-                        all_qty_sent_to_warehouse = float(all_qty_sent_to_warehouse) + float(warehouse_qty_sent_to_warehouse.quantity)
-
-                    get_item_transfered_from_warehouse_to_outlet = CreateOutletStockInLog.objects.using(db).filter(Q(warehouse__icontains='warehouse') & select_date_range)
-                    for warehouse_qty_in_outlet in get_item_transfered_from_warehouse_to_outlet:
-                        all_qty_sent_from_warehouse = float(all_qty_sent_from_warehouse) + float(warehouse_qty_in_outlet.quantity)
-                    
-
-                    get_item_transfered_from_outlet_to_outlet = CreateStockInLog.objects.using(db).filter(Q(warehouse__icontains='warehouse') & select_date_range)
-                    for outlet_qty_in_outlet in get_item_transfered_from_outlet_to_outlet:
-                        all_qty_sent_within_warehouse_table = float(all_qty_sent_within_warehouse_table) + float(outlet_qty_in_outlet.quantity)
-
-                    add_deductions = float(all_qty_sent_from_warehouse) + float(all_qty_sent_within_warehouse_table)
-
-                    total_qty = float(all_qty_sent_to_warehouse) - float(add_deductions)
-
-                    # non_dict_year_log.append(year)
-                    # non_dict_month_log.append(month)
-
-                    qtyLog.append({'qty':total_qty, 'item':data.item, 'month':month, 'date':year})
-                    
-
-
-                    if daily == 'daily':
-                        date_obj = datetime.strptime(strDate, '%Y-%m-%d')
-                        day_of_week_name = date_obj.strftime('%A')
-                        DayLog.append(day_of_week_name)
-                    elif daily == 'monthly':
-                        fullmonthName = date_obj.strftime('%B')
-                        DayLog.append('{month}_{year}'.format(month=fullmonthName, year=year))
-                    elif daily == 'quaterly':
-                        date_obj_ = datetime.strptime(str(period), '%m')
-                        fullmonthName = date_obj_.strftime('%B')
-                        DayLog.append('{month}_{year}'.format(month=fullmonthName, year=year))
-                    else:
-                        DayLog.append('{year}'.format(year=year))
-
+                    date_obj_ = datetime.strptime(str(period), '%m')
+                    fullmonthName = date_obj_.strftime('%B')
+                    DayLog.append(f'{fullmonthName}_{year}')
                 else:
-                    pass
-                    # for index, item in enumerate(qtyLog):
-                    #     if item.get('date') == year:
-                    #         item['qty'] = total_qty
+                    DayLog.append(str(year))
 
-                
+        currentDate = str(date.today())
+        totalqty = sum(i['qtyLevel'] for i in itemLog)
+        return JsonResponse({
+            'dateLog':     DayLog,
+            'itemLog':     itemLog,
+            'qtyLog':      qtyLog,
+            'currentDate': currentDate,
+            'totalqty':    totalqty,
+        })
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)})
 
 
-            currentDate = date.today()
+def currentStockLevel(db, item_, warehouse_filter=None):
+    """Calculate current stock level for an item, optionally filtered by warehouse."""
+    all_qty_sent_to_store     = 0.00
+    all_qty_sent_from_store   = 0.00
+    all_qty_sent_within_store = 0.00
 
-            if DayLog is not None:
-                return JsonResponse({'dateLog': DayLog, 'itemLog': itemLog, 'qtyLog': qtyLog, 'currentDate': currentDate})
-        else:
-            return JsonResponse({'error': 'No record found'})
-    except CreateStockInLog.DoesNotExist:
-            return JsonResponse({'error': 'No record found'})
-   
+    # Inflow
+    inflow = CreateStockInLog.objects.using(db).filter(item_code=item_)
+    if warehouse_filter:
+        inflow = inflow.filter(warehouse=warehouse_filter)
+    for row in inflow:
+        all_qty_sent_to_store += float(row.quantity)
 
+    # Outflow: warehouse → outlet
+    outflow1 = CreateStockInLog.objects.using(db).filter(
+        Q(warehouse__icontains='warehouse') & Q(item_code=item_)
+    )
+    if warehouse_filter:
+        outflow1 = outflow1.filter(warehouse=warehouse_filter)
+    for row in outflow1:
+        all_qty_sent_from_store += float(row.quantity)
+
+    # Outflow: warehouse → warehouse
+    outflow2 = CreateOutletStockInLog.objects.using(db).filter(
+        Q(warehouse__icontains='warehouse') & Q(item_code=item_)
+    )
+    if warehouse_filter:
+        outflow2 = outflow2.filter(warehouse=warehouse_filter)
+    for row in outflow2:
+        all_qty_sent_within_store += float(row.quantity)
+
+    return all_qty_sent_to_store - (all_qty_sent_from_store + all_qty_sent_within_store)
 
 
 
