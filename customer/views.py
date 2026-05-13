@@ -275,8 +275,6 @@ def EditSalesInvoice(request, invoice_id):
                 # ── Step 1: Archive original lines ───────────────────────
                 for line in invoices:
                     edited_customer_invoice.objects.using(db).create(
-                        original_invoiceID  = invoice_id,
-                        edited_by           = request.user.username,
                         cusID               = line.cusID,
                         customer_name       = line.customer_name,
                         invoiceID           = line.invoiceID,
