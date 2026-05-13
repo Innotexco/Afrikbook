@@ -266,6 +266,15 @@
 
     // ── Search ───────────────────────────────────────────────────────────────
     $(document).on('click', '.Search', function() {
+        var fromdate     = $('#fromdate').val();
+        var todate       = $('#todate').val();
+        var monthly      = $('#monthly').val();
+        var Yearly       = $('#Yearly').val();
+        var Quaterly     = $('#Quaterly').val();
+        var daily        = $('#daily').val();
+        var item_filter  = $('#item_filter').val();
+        var outlet_filter = $('#outlet_filter').val();
+
         var requestData = {
             daily:        daily,
             fromdate:     fromdate,
