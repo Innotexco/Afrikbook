@@ -587,8 +587,10 @@ def add_new_sales(request, db):
     )
  
     try:
-        int_purchaseP   = [int(num) if num.isdigit() else 0 for num in purchaseP]
-        total_purchaseP = sum(int_purchaseP)
+        total_purchaseP = sum(
+            float(num) if num and str(num).strip() not in ('', '0') else 0
+            for num in purchaseP
+        )
     except Exception as e:
         logger.error(f"[add_new_sales] Failed to compute purchaseP totals: {e}")
         total_purchaseP = 0
@@ -666,7 +668,8 @@ def add_new_sales(request, db):
             clean_unit_p    = clean_decimal(unit[i])
             clean_discount  = clean_decimal(discount[i]) if discount[i] else decimal.Decimal('0.00')
             clean_amount    = clean_decimal(amount[i])
-            clean_purchaseP = clean_decimal(purchaseP[i])
+            raw_purchaseP   = purchaseP[i] if i < len(purchaseP) else '0'
+            clean_purchaseP = clean_decimal(raw_purchaseP) if raw_purchaseP else decimal.Decimal('0.00')
  
             logger.debug(
                 f"[add_new_sales] Cleaned line [{i}] | unit_p={clean_unit_p} | "
