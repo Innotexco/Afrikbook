@@ -108,7 +108,7 @@
                             class="block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none text-slate-600">
                         <option value="">_ _All Outlets_ _</option>
                         {% for outlet in outlets %}
-                        <option value="{{ outlet.name }}">{{ outlet.name }}</option>
+                        <option value="{{ outlet.outlet_name }}">{{ outlet.outlet_name }}</option>
                         {% endfor %}
                     </select>
                 </label>
