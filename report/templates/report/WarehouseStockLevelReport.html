@@ -37,9 +37,18 @@
                     <select id="monthly"
                             class="onchangeM_Y block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none text-slate-600">
                         <option>_ _Choose Month_ _</option>
-                        {% for m in "01,02,03,04,05,06,07,08,09,10,11,12".split(',') %}
-                        <option value="{{ m }}">{{ m|date:"F" }}</option>
-                        {% endfor %}
+                        <option value="01">January</option>
+                        <option value="02">February</option>
+                        <option value="03">March</option>
+                        <option value="04">April</option>
+                        <option value="05">May</option>
+                        <option value="06">June</option>
+                        <option value="07">July</option>
+                        <option value="08">August</option>
+                        <option value="09">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
                     </select>
                 </label>
 
