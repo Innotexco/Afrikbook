@@ -262,6 +262,7 @@ def EditSalesInvoice(request, invoice_id):
     accounts  = chart_of_account.objects.using(db).all()
     items     = Item.objects.using(db).all()
     method    = shipping_method.objects.using(db).all()
+    payments  = Payment_method.objects.using(db).all()
     
     existing_itemcodes = set(
         invoices.values_list('itemcode', flat=True)
@@ -527,6 +528,7 @@ def EditSalesInvoice(request, invoice_id):
         'items':      items,
         'accounts':   accounts,
         'invoice_id': invoice_id,
+        'payments':payments,
         'shipping_method': method,
         'existing_itemcodes': list(existing_itemcodes),
     }
