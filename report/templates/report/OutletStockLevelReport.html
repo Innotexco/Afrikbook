@@ -249,9 +249,9 @@
     });
 
     // Also show search button when item or outlet filter changes
-    $(document).on('change', '#item_filter, #outlet_filter', function() {
-        $('#search_btn').removeClass('hidden');
-    });
+    //$(document).on('change', '#item_filter, #outlet_filter', function() {
+       // $('#search_btn').removeClass('hidden');
+    //});
 
     // ── Populate years ───────────────────────────────────────────────────────
     $(document).ready(function() {
@@ -361,6 +361,34 @@
                 alert('An error occurred. Please try again.');
             }
         });
+    });
+
+
+    $(document).on('change', '#duration, #monthly, #Yearly, #Quaterly, #fromdate, #todate, #item_filter, #outlet_filter', function() {
+        var duration = $('#duration').val();
+        var fromdate = $('#fromdate').val();
+        var todate   = $('#todate').val();
+        var monthly  = $('#monthly').val();
+        var Yearly   = $('#Yearly').val();
+        var Quaterly = $('#Quaterly').val();
+
+        var valid = false;
+
+        if (duration === 'Daily' && fromdate && todate) {
+            valid = true;
+        } else if (duration === 'Monthly' && Yearly && Yearly !== '_ _Choose Year_ _' && monthly && monthly !== '_ _Choose Month_ _') {
+            valid = true;
+        } else if (duration === 'Quaterly' && Yearly && Yearly !== '_ _Choose Year_ _' && Quaterly && Quaterly !== '_ _Choose Months_ _') {
+            valid = true;
+        } else if (duration === 'Yearly' && Yearly && Yearly !== '_ _Choose Year_ _') {
+            valid = true;
+        }
+
+        if (valid) {
+            $('#search_btn').removeClass('hidden');
+        } else {
+            $('#search_btn').addClass('hidden');
+        }
     });
 </script>
 
