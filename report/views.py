@@ -1247,22 +1247,23 @@ def levelReportOutlet(
     
     if not year or not year.isdigit():
         return JsonResponse({'error': 'Please select a valid year.'})
-
     year = int(year)
-    
-    if daily in ('monthly', 'quaterly'):
+
+    if daily == 'monthly':
+        # Month is only required when the period is "Monthly"
         if not month or not month.isdigit() or not (1 <= int(month) <= 12):
             return JsonResponse({'error': 'Please select a valid month.'})
         month = int(month)
 
-    # Quarter must be in format "01-04" etc.
-    if daily == 'quaterly':
+    elif daily == 'quaterly':
+        # For quarterly, validate the quarter string (e.g. "01-04")
+        if not quater or '-' not in quater:
+            return JsonResponse({'error': 'Please select a valid quarter.'})
         parts = quater.split('-')
         if len(parts) != 2 or not all(p.isdigit() for p in parts):
-            return JsonResponse({'error': 'Please select a valid quarter.'})
-        # Make sure parts are within valid month numbers
+            return JsonResponse({'error': 'Invalid quarter format.'})
         if not (1 <= int(parts[0]) <= 12 and 1 <= int(parts[1]) <= 12):
-            return JsonResponse({'error': 'Invalid quarter range.'})
+            return JsonResponse({'error': 'Quarter months must be between 1 and 12.'})
         
     quaterLog = []
 
