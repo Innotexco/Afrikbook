@@ -1244,6 +1244,26 @@ def levelReportOutlet(
     year, month, quater,
     item_filter=None, outlet_filter=None
 ):
+    
+    if not year or not year.isdigit():
+        return JsonResponse({'error': 'Please select a valid year.'})
+
+    year = int(year)
+    
+    if daily in ('monthly', 'quaterly'):
+        if not month or not month.isdigit() or not (1 <= int(month) <= 12):
+            return JsonResponse({'error': 'Please select a valid month.'})
+        month = int(month)
+
+    # Quarter must be in format "01-04" etc.
+    if daily == 'quaterly':
+        parts = quater.split('-')
+        if len(parts) != 2 or not all(p.isdigit() for p in parts):
+            return JsonResponse({'error': 'Please select a valid quarter.'})
+        # Make sure parts are within valid month numbers
+        if not (1 <= int(parts[0]) <= 12 and 1 <= int(parts[1]) <= 12):
+            return JsonResponse({'error': 'Invalid quarter range.'})
+        
     quaterLog = []
 
     if daily == 'daily':
@@ -1254,14 +1274,14 @@ def levelReportOutlet(
         select_date_range = Q(datetx__year=year) & Q(datetx__month=month)
         select_date_range_for_cusInv = Q(invoice_date__year=year) & Q(invoice_date__month=month)
     elif daily == 'quaterly':
+        # parts already validated
         date_parts = quater.split('-')
-        num = int(date_parts[0])
-        while num <= int(date_parts[1]):
-            quaterLog.append(num)
-            num += 1
-        select_date_range = Q(datetx__year=year) & Q(datetx__month__range=(date_parts[0], date_parts[1]))
-        select_date_range_for_cusInv = Q(invoice_date__year=year) & Q(invoice_date__month__range=(date_parts[0], date_parts[1]))
-    else:
+        start = int(date_parts[0])
+        end   = int(date_parts[1])
+        quaterLog = list(range(start, end + 1))
+        select_date_range = Q(datetx__year=year) & Q(datetx__month__range=(start, end))
+        select_date_range_for_cusInv = Q(invoice_date__year=year) & Q(invoice_date__month__range=(start, end))
+    else:  # yearly
         select_date_range = Q(datetx__year=year)
         select_date_range_for_cusInv = Q(invoice_date__year=year)
 
