@@ -266,28 +266,26 @@
 
     // ── Search ───────────────────────────────────────────────────────────────
     $(document).on('click', '.Search', function() {
-        var fromdate     = $('#fromdate').val();
-        var todate       = $('#todate').val();
-        var monthly      = $('#monthly').val();
-        var Yearly       = $('#Yearly').val();
-        var Quaterly     = $('#Quaterly').val();
-        var daily        = $('#daily').val();
-        var item_filter  = $('#item_filter').val();
-        var outlet_filter = $('#outlet_filter').val();
+        var requestData = {
+            daily:        daily,
+            fromdate:     fromdate,
+            todate:       todate,
+            Yearly:       Yearly,
+            item_filter:  item_filter,
+            outlet_filter: outlet_filter,
+        };
+
+        // Only include monthly or quarterly if relevant
+        if (daily === 'monthly') {
+            requestData.monthly = monthly;
+        } else if (daily === 'quaterly') {
+            requestData.Quaterly = Quaterly;
+        }
 
         $.ajax({
             type: 'GET',
-            url:  '{% url "report:OutletStockLevelReport" %}',
-            data: {
-                monthly:       monthly,
-                Yearly:        Yearly,
-                Quaterly:      Quaterly,
-                daily:         daily,
-                fromdate:      fromdate,
-                todate:        todate,
-                item_filter:   item_filter,
-                outlet_filter: outlet_filter,
-            },
+            url: '{% url "report:OutletStockLevelReport" %}',
+            data: requestData,
             beforeSend: function() {
                 $('#search_btn').text('Searching...').prop('disabled', true);
             },
