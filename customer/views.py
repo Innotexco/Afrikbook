@@ -475,7 +475,7 @@ def EditSalesInvoice(request, invoice_id):
                         discount_list.append(str(discount))
                         amount_list.append(str(amt))
                         name_list.append(item_obj.item_name)
-                        purchaseP_list.append('0')
+                        purchaseP_list.append('0.00')
                     except Item.DoesNotExist:
                         messages.error(request, f"Item {code} not found — skipped")
                         continue
