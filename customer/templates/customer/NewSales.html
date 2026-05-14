@@ -47,12 +47,42 @@
                 </div>
                 <input type="hidden" id="genby" name="genby" value="" />
 
-                <label class="block text-sm hidden">
+                {% comment %} <label class="block text-sm hidden">
                     <span class="text-gray-700 dark:text-gray-400">Invoice Number</span>
                     <input type="text"
                         class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
                         name="invoiceID" id="invoiceID" value="{{invoice}}" readonly>
                     <span class="py-2 text-red-500 errors">{{form.invoiceID.errors}}</span>
+                </label> {% endcomment %}
+
+                <input type="hidden" id="genby" name="genby" value="" />
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Invoice Number
+                        <span class="text-xs text-slate-400 font-normal ml-1">
+                            (leave blank to auto-generate)
+                        </span>
+                    </span>
+                    <div class="flex items-center gap-2 mt-1">
+                        <input type="text"
+                            class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            name="invoiceID"
+                            id="invoiceID"
+                            placeholder="{{ auto_invoice }}"
+                            value=""
+                        />
+                        <button type="button"
+                            id="useAutoInvoice"
+                            class="flex-shrink-0 px-2 py-1 text-xs text-slate-500 bg-slate-100 border border-slate-300 rounded-md hover:bg-slate-200 transition-colors"
+                            title="Use auto-generated ID">
+                            Auto
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-0.5">
+                        Auto: <b id="autoInvoicePreview" class="text-slate-600">{{ auto_invoice }}</b>
+                    </p>
+                    <span class="py-2 text-red-500 errors">{{ form.invoiceID.errors }}</span>
                 </label>
 
                 <label class="block text-sm">
@@ -540,6 +570,73 @@
 
         // Re-run hint whenever the total field value changes (e.g. after items are added)
         $("#total").on("change input", updatePartPaymentHint);
+
+
+        //  Invoice number: auto-fill if left empty
+        const AUTO_INVOICE = "{{ auto_invoice }}";
+
+        // "Auto" button fills the field with the suggested ID
+        $('#useAutoInvoice').on('click', function() {
+            $('#invoiceID').val(AUTO_INVOICE);
+        });
+
+        // Before form submit: if field is empty, fill with auto ID
+        $('#sales_form').on('submit', function() {
+            if (!$('#invoiceID').val().trim()) {
+                $('#invoiceID').val(AUTO_INVOICE);
+            }
+        });
+
+        // Also patch it in checkout() before the form submits
+        // by intercepting the Email() inner function call
+        const _origSubmit = HTMLFormElement.prototype.submit;
+        document.getElementById('sales_form').addEventListener('submit', function() {
+            if (!document.getElementById('invoiceID').value.trim()) {
+                document.getElementById('invoiceID').value = AUTO_INVOICE;
+            }
+        });
+
+        // Live: show duplicate warning if user types an existing invoice ID
+        $('#invoiceID').on('blur', function() {
+            var val = $(this).val().trim();
+            if (!val) return;
+            $.ajax({
+                url:  'invoiceExist/' + val + '/',
+                success: function(exists) {
+                    if (exists === true || exists === 'true') {
+                        $('#invoiceID')
+                            .addClass('border-red-400')
+                            .attr('title', 'This invoice ID already exists');
+                        if (!$('#invoiceDupeWarn').length) {
+                            $('#invoiceID').after(
+                                '<p id="invoiceDupeWarn" class="text-[10px] text-red-500 mt-0.5">' +
+                                '⚠ Invoice ID already exists. Choose a different one or clear to auto-generate.' +
+                                '</p>'
+                            );
+                        }
+                    } else {
+                        $('#invoiceID').removeClass('border-red-400').removeAttr('title');
+                        $('#invoiceDupeWarn').remove();
+                    }
+                }
+            });
+        });
+
+        // Clear warning when user edits the field
+        $('#invoiceID').on('input', function() {
+            $(this).removeClass('border-red-400').removeAttr('title');
+            $('#invoiceDupeWarn').remove();
+        });
+
+        // Update the receipt header live as the user types
+        $('#invoiceID').on('input', function() {
+            var val = $(this).val().trim() || AUTO_INVOICE;
+            $('#receipt').text('Invoice No: ' + val);
+        });
+
+        $(document).ready(function() {
+            $('#receipt').text('Invoice No: ' + AUTO_INVOICE);
+        });
     </script>
 
 {% endblock content %}

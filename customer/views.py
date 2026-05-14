@@ -204,20 +204,42 @@ def SalesInvoice(request):
         shipping_address = response.json() if response.status_code == 200 else []
     except requests.RequestException:
         shipping_address = []
-
-    if invoices.exists():
-        latest_invoice = invoices.latest('invoice_date')
-        latest_id_str  = latest_invoice.invoiceID
-        numeric_part   = re.match(r'^(\d+)', str(latest_id_str))
-        next_invoice   = int(numeric_part.group(1)) + 1 if numeric_part else 1000000
-    else:
+        
         next_invoice = 1000000
+        
+        if invoices.exists():
+            highest = 0
+            for inv in invoices.values_list('invoiceID', flat=True):
+                if not inv:
+                    continue
+                # Strip any _cancelled / _returned suffix
+                match = re.match(r'^(\d+)', str(inv))
+                if match:
+                    num = int(match.group(1))
+                    if num > highest:
+                        highest = num
+            if highest >= 1000000:
+                next_invoice = highest + 1
+                
+        while customer_invoice.objects.using(db).filter(invoiceID=str(next_invoice)).exists():
+            next_invoice += 1
 
-    # Keep incrementing until we find an ID that doesn't exist yet
-    while customer_invoice.objects.using(db).filter(invoiceID=str(next_invoice)).exists():
-        next_invoice += 1
+        auto_invoice = str(next_invoice)
 
-    invoice = str(next_invoice)
+
+    # if invoices.exists():
+    #     latest_invoice = invoices.latest('invoice_date')
+    #     latest_id_str  = latest_invoice.invoiceID
+    #     numeric_part   = re.match(r'^(\d+)', str(latest_id_str))
+    #     next_invoice   = int(numeric_part.group(1)) + 1 if numeric_part else 1000000
+    # else:
+    #     next_invoice = 1000000
+
+    # # Keep incrementing until we find an ID that doesn't exist yet
+    # while customer_invoice.objects.using(db).filter(invoiceID=str(next_invoice)).exists():
+    #     next_invoice += 1
+
+    # invoice = str(next_invoice)
     form = None
 
     whatsapp_url = request.session.pop('whatsapp_url', None)
@@ -235,7 +257,7 @@ def SalesInvoice(request):
         'vendor': vendor,
         'accounts': accounts,
         'items': item,
-        'invoice': invoice,
+        'auto_invoice': auto_invoice,
         'form': form,
         'company': company,
         'shipping_address': shipping_address,

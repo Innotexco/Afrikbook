@@ -475,7 +475,7 @@ def add_new_sales(request, db):
     executed = False
     user = False
  
-    # ── 1. Parse POST data ───────────────────────────────────────────────────
+    # ── 1. Parse POST data ───────────────────────────────────
     try:
         cusID             = request.POST['cusID']
         venID             = request.POST['venID']
@@ -506,6 +506,22 @@ def add_new_sales(request, db):
         method            = request.POST.get('shipping_method')
         shipping          = request.POST.get('shipping_address')
         shipping_cost     = request.POST.get('shipping_cost')
+        
+        invoiceID = request.POST.get('invoiceID', '').strip()
+        if not invoiceID:
+            # Regenerate auto ID server-side as a safety net
+            import re
+            all_invoices = customer_invoice.objects.using(db).all()
+            highest = 1000000
+            for inv_id in all_invoices.values_list('invoiceID', flat=True):
+                match = re.match(r'^(\d+)', str(inv_id or ''))
+                if match:
+                    num = int(match.group(1))
+                    if num > highest:
+                        highest = num
+            invoiceID = str(highest + 1)
+            while customer_invoice.objects.using(db).filter(invoiceID=invoiceID).exists():
+                invoiceID = str(int(invoiceID) + 1)
  
         logger.info(
             f"[add_new_sales] START | invoiceID={invoiceID} | db={db} | "
