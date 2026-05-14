@@ -95,7 +95,7 @@ class customer_invoice(models.Model):
     customer_name       = models.CharField(max_length=225, blank=True, null=True)	
     invoiceID           = models.CharField(max_length=225, blank=True, null=True)	
     order_ID            = models.CharField(max_length=225, blank=True, null=True)	
-    Gdescription        = models.CharField(max_length=225)	
+    Gdescription        = models.CharField(max_length=225, blank=True, null=True)	
     invoice_date        = models.DateTimeField()	
     due_date            = models.DateField()	
     itemcode            = models.CharField(max_length=50)	
@@ -126,50 +126,13 @@ class customer_invoice(models.Model):
         db_table = "customer_invoice"
         
         
-class edited_customer_invoice(models.Model):
-    original_invoiceID  = models.CharField(max_length=225)
-    edited_by           = models.CharField(max_length=50, blank=True)
-    edited_at           = models.DateTimeField(auto_now_add=True)
-    cusID               = models.CharField(max_length=225)
-    customer_name       = models.CharField(max_length=225, blank=True, null=True)
-    invoiceID           = models.CharField(max_length=225, blank=True, null=True)
-    order_ID            = models.CharField(max_length=225, blank=True, null=True)
-    Gdescription        = models.CharField(max_length=225)
-    invoice_date        = models.DateTimeField()
-    due_date            = models.DateField()
-    itemcode            = models.CharField(max_length=50)
-    item_name           = models.CharField(max_length=200, blank=True, null=True)
-    item_description    = models.CharField(max_length=225, blank=True, null=True)
-    qty                 = models.DecimalField(decimal_places=2, max_digits=12, default=0.00)
-    unit_p              = models.DecimalField(decimal_places=2, max_digits=12)
-    discount            = models.DecimalField(decimal_places=2, max_digits=12, blank=True, null=True)
-    amount              = models.DecimalField(decimal_places=2, max_digits=12)
-    token_id            = models.CharField(max_length=50, blank=True)
-    amount_paid         = models.DecimalField(decimal_places=2, max_digits=12)
-    amount_expected     = models.DecimalField(decimal_places=2, max_digits=12)
-    cancellation_status = models.CharField(max_length=50, default="0")
-    status              = models.CharField(max_length=50, default="0")
-    Userlogin           = models.CharField(max_length=50, blank=True)
-    payment_method      = models.CharField(max_length=50, blank=True)
-    Transfer            = models.CharField(max_length=50, default="0")
-    POS                 = models.CharField(max_length=50, default="0")
-    Cash                = models.CharField(max_length=50, default="0")
-    Customer_account    = models.CharField(max_length=50, default="0")
-    Cheque              = models.CharField(max_length=50, default="0")
-    invoice_state       = models.CharField(max_length=50)
-    purchaseP           = models.DecimalField(decimal_places=2, max_digits=12)
-    total_purchaseP     = models.DecimalField(decimal_places=2, max_digits=12)
-    outlet              = models.CharField(max_length=50, blank=False)
-
-    class Meta:
-        db_table = "edited_customer_invoice"
-        
+     
 class edited_customer_invoice(models.Model):
     cusID               = models.CharField(max_length=225)	
     customer_name       = models.CharField(max_length=225, blank=True, null=True)	
     invoiceID           = models.CharField(max_length=225, blank=True, null=True)	
     order_ID            = models.CharField(max_length=225, blank=True, null=True)	
-    Gdescription        = models.CharField(max_length=225)	
+    Gdescription        = models.CharField(max_length=225, blank=True, null=True)	
     invoice_date        = models.DateTimeField()	
     due_date            = models.DateField()	
     itemcode            = models.CharField(max_length=50)	
@@ -210,7 +173,7 @@ class Vat(models.Model):
 
 class receivable(models.Model):	
     date           = models.DateField()	
-    description	   = models.CharField(max_length=255)
+    description	   = models.CharField(max_length=255, blank=True, null=True)
     type           = models.CharField(max_length=50)	
     amount         = models.DecimalField(decimal_places=2, max_digits=64, )		
     initial_amount = models.DecimalField(decimal_places=2, max_digits=64, blank=True, null=True)		
