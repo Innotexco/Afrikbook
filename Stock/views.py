@@ -433,6 +433,7 @@ def WarehouseToOutlet(request):
        'listitems': listitems,
        'form': form,
        'shop' : shop,
+       'today': date.today(),
    }
    if request.method == 'POST':
       Warehouse_outlet(request, context, db)
@@ -457,6 +458,7 @@ def OutletToWarehouse(request):
        'listitems': listitems,
        'form': form,
        'shop' : shop,
+       'today': date.today(),
    }
    if request.method == 'POST':
       outlet_Warehouse(request, context, db)
@@ -476,6 +478,7 @@ def OutletToOutlet(request):
        'listitems': listitems,
        'form': form,
        'shop': shop,
+       'today': date.today(),
    }
    if request.method == 'POST':
       outlet_outlet(request, context, db)
