@@ -29,6 +29,18 @@
     <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
         <form action="" method="post">{% csrf_token %}
             <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+                
+                <label class="block text-sm">
+                    <span class="text-gray-700">Date</span>
+                    <input 
+                        type="date"
+                        name="datetx"
+                        id="transfer_date"
+                        value="{{ today|date:'Y-m-d' }}"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                    />
+                </label>
+
                 <label class="block text-sm">
                     <span class="text-gray-700">
                         Select Outlet _From

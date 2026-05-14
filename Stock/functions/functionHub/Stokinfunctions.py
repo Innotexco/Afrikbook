@@ -106,6 +106,9 @@ def Warehouse_outlet(request, context, db):
     supplier          = request.POST.get('supplier')
     ref_no            = request.POST.get('ref_no')
     INT = request.session.get('INT', 'Yes')
+    datetx = request.POST.get('datetx')   
+    if not datetx:
+        datetx = date.today()
     today = date.today()
     allgood = False
     iftrue = False
@@ -129,13 +132,13 @@ def Warehouse_outlet(request, context, db):
                             newQty2 = float(oldQty2) + float(quantity[i])
                             updateQTYto.quantity = newQty2
                             updateQTYto.save()
-                        savedata = CreateOutletStockInLog.objects.using(db).create(datetx= today,token_id=token_id, Userlogin=Userlogin, supplier=supplier, ref_no=ref_no, description=description, warehouse= warehouse, outlet=outlet, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i], wholesale_price=wholesale_price[i], transfer="W_O")
+                        savedata = CreateOutletStockInLog.objects.using(db).create(datetx= datetx, token_id=token_id, Userlogin=Userlogin, supplier=supplier, ref_no=ref_no, description=description, warehouse= warehouse, outlet=outlet, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i], wholesale_price=wholesale_price[i], transfer="W_O")
                         if savedata:
                             allgood = True
                     except CreateOutletStockIn.DoesNotExist:
                         QTY = quantity[i] if INT == 'Yes' else 0.00
-                        CreateOutletStockIn.objects.using(db).create(datetx= today, token_id=token_id, Userlogin=Userlogin, supplier=supplier, description=description,  outlet=outlet, item_decription=item_decription[i], item=item[i], selling_price=selling_price[i], wholesale_price=wholesale_price[i], quantity= QTY, item_code= item_code[i], main=False)
-                        savedata = CreateOutletStockInLog.objects.using(db).create(datetx= today, token_id=token_id, Userlogin=Userlogin, supplier=supplier, ref_no=ref_no, description=description, warehouse= warehouse, outlet=outlet, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i], wholesale_price=wholesale_price[i], transfer="W_O")
+                        CreateOutletStockIn.objects.using(db).create(datetx= datetx, token_id=token_id, Userlogin=Userlogin, supplier=supplier, description=description,  outlet=outlet, item_decription=item_decription[i], item=item[i], selling_price=selling_price[i], wholesale_price=wholesale_price[i], quantity= QTY, item_code= item_code[i], main=False)
+                        savedata = CreateOutletStockInLog.objects.using(db).create(datetx= datetx, token_id=token_id, Userlogin=Userlogin, supplier=supplier, ref_no=ref_no, description=description, warehouse= warehouse, outlet=outlet, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i], wholesale_price=wholesale_price[i], transfer="W_O")
                         if savedata:
                             allgood = True
             i = i+1
@@ -173,6 +176,10 @@ def outlet_Warehouse(request, context, db):
     supplier          = request.POST.get('supplier')
     ref_no            = request.POST.get('ref_no')
     INT = request.session.get('INT', 'Yes')
+    
+    datetx = request.POST.get('datetx')
+    if not datetx:
+        datetx = date.today()
 
     allgood = False
     iftrue = False
@@ -195,14 +202,14 @@ def outlet_Warehouse(request, context, db):
                             newQty2 = float(oldQty2) + float(quantity[i])
                             updateQTYto.quantity = newQty2
                             updateQTYto.save()
-                        savedata = CreateStockInLog.objects.using(db).create(token_id=token_id, Userlogin=Userlogin, supplier=supplier, ref_no=ref_no, description=description, warehouse= outlet, outlet=warehouse, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i], transfer="O_W")
+                        savedata = CreateStockInLog.objects.using(db).create(token_id=token_id, Userlogin=Userlogin, supplier=supplier, ref_no=ref_no, description=description, warehouse= outlet, outlet=warehouse, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i], transfer="O_W", datetx=datetx)
                         if savedata:
                             allgood = True
 
                     except CreateStockIn.DoesNotExist:
                         QTY = quantity[i] if INT == 'Yes' else 0.00
                         CreateStockIn.objects.using(db).create(token_id=token_id, Userlogin=Userlogin, supplier=supplier, description=description, warehouse= warehouse,  item_decription=item_decription[i], item=item[i], quantity= QTY, item_code= item_code[i], main=False)
-                        savedata = CreateStockInLog.objects.using(db).create(token_id=token_id, Userlogin=Userlogin, supplier=supplier, ref_no=ref_no, description=description, warehouse= outlet, outlet=warehouse, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i], transfer="O_W")
+                        savedata = CreateStockInLog.objects.using(db).create(token_id=token_id, Userlogin=Userlogin, supplier=supplier, ref_no=ref_no, description=description, warehouse= outlet, outlet=warehouse, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i], transfer="O_W", datetx=datetx)
                         if savedata:
                             allgood = True
             i = i+1
@@ -240,6 +247,10 @@ def outlet_outlet(request, context, db):
     supplier          = request.POST.get('supplier')
     ref_no            = request.POST.get('ref_no')
     INT = request.session.get('INT', 'Yes')
+    
+    datetx = request.POST.get('datetx')
+    if not datetx:
+        datetx = date.today()
 
     allgood = False
     iftrue = False
@@ -261,13 +272,13 @@ def outlet_outlet(request, context, db):
                             newQty2 = float(oldQty2) + float(quantity[i])
                             updateQTYto.quantity = newQty2
                             updateQTYto.save()
-                        savedata = CreateOutletStockInLog.objects.using(db).create(token_id=token_id, Userlogin=Userlogin, supplier=supplier, ref_no=ref_no, description=description, warehouse= warehouse, outlet=outlet, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i], transfer="O_O")
+                        savedata = CreateOutletStockInLog.objects.using(db).create(token_id=token_id, Userlogin=Userlogin, supplier=supplier, ref_no=ref_no, description=description, warehouse= warehouse, outlet=outlet, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i], transfer="O_O", datetx=datetx)
                         if savedata:
                             allgood = True
                     except CreateOutletStockIn.DoesNotExist:
                         QTY = quantity[i] if INT == 'Yes' else 0.00
                         CreateOutletStockIn.objects.using(db).create(token_id=token_id, Userlogin=Userlogin, supplier=supplier, description=description, outlet= outlet, item_decription=item_decription[i], selling_price=selling_price[i], item=item[i], quantity= QTY, item_code= item_code[i], main=False)
-                        savedata = CreateOutletStockInLog.objects.using(db).create(token_id=token_id, Userlogin=Userlogin, supplier=supplier,  ref_no=ref_no, description=description, warehouse= warehouse, outlet=outlet, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i], transfer="O_O")
+                        savedata = CreateOutletStockInLog.objects.using(db).create(token_id=token_id, Userlogin=Userlogin, supplier=supplier,  ref_no=ref_no, description=description, warehouse= warehouse, outlet=outlet, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i], transfer="O_O", datetx=datetx)
                         if savedata:
                             allgood = True
 
