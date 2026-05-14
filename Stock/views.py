@@ -387,7 +387,8 @@ def WarehouseToWarehouse(request):
       'warehouse' : warehouse,
       'form' : form,
       'tokenID': 'Token_'+randomtoken,
-      'refID': 'Ref_'+randomtoken
+      'refID': 'Ref_'+randomtoken,
+      'today': date.today(),  
    }
 
    id = request.GET.get('id')

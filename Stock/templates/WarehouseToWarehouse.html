@@ -31,14 +31,16 @@
         <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
             <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
                 
-                <!-- <label class="block text-sm">
+                <label class="block text-sm">
                     <span class="text-gray-700">Date</span>
                     <input 
                         type="date"
+                        name="datetx"
+                        id="transfer_date"
+                        value="{{ today|date:'Y-m-d' }}"
                         class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                        placeholder=""
                     />
-                </label> -->
+                </label>
                 
                 <label class="block text-sm">
                     
@@ -78,14 +80,6 @@
                     {{ form.source }}
                     <input type="hidden" id="token_id" value="{{tokenID}}" name="{{form.token_id.name}}" /> <!--this could be removed the next time you come here -->
                     <input type="hidden" id="ref_no" value="{{refID}}" name="{{form.ref_no.name}}" /> 
-                </label>
-
-                <label class="block text-sm">
-                    <span class="text-gray-600">Date</span>
-                    <date
-                        class=""
-                        name="{{form.datetx}}"
-                    ></date>
                 </label>
                
 
