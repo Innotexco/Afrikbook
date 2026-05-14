@@ -23,7 +23,10 @@ def Warehouse_warehouse(request, context, db):
     ref_no            = request.POST.get('ref_no')
     INT = request.session.get('INT', 'Yes')
 
-
+    datetx = request.POST.get('datetx')  
+    if not datetx:
+        datetx = date.today()  
+    
     if warehouse == outlet:
         message = 'You cannot select the same Warehouse'
         return JsonResponse({'message': message})
@@ -55,7 +58,7 @@ def Warehouse_warehouse(request, context, db):
                             updateQTYto.quantity = newQty2
                             updateQTYto.save()
 
-                        savedata = CreateStockInLog.objects.using(db).create(token_id=token_id, Userlogin=Userlogin, supplier=supplier, source= source, ref_no=ref_no, description=description, warehouse= warehouse, outlet=outlet, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i], transfer="W_W")
+                        savedata = CreateStockInLog.objects.using(db).create(token_id=token_id, Userlogin=Userlogin, supplier=supplier, source= source, ref_no=ref_no, description=description, warehouse= warehouse, outlet=outlet, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i], transfer="W_W", datetx=datetx)
                         if savedata:
                             allgood = True
                     except CreateStockIn.DoesNotExist:
@@ -63,7 +66,7 @@ def Warehouse_warehouse(request, context, db):
                         
                         CreateStockIn.objects.using(db).create(token_id=token_id, Userlogin=Userlogin, supplier=supplier, description=description, warehouse= outlet, item_decription=item_decription[i], item=item[i], quantity = QTY, item_code= item_code[i], main=False)
 
-                        savedata = CreateStockInLog.objects.using(db).create(token_id=token_id, Userlogin=Userlogin, supplier=supplier, source= source, ref_no=ref_no, description=description, warehouse= warehouse, outlet=outlet, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i], transfer="W_W")
+                        savedata = CreateStockInLog.objects.using(db).create(token_id=token_id, Userlogin=Userlogin, supplier=supplier, source= source, ref_no=ref_no, description=description, warehouse= warehouse, outlet=outlet, item_decription=item_decription[i], item=item[i], quantity= quantity[i], item_code= item_code[i], selling_price=selling_price[i], transfer="W_W", datetx=datetx)
 
                         if savedata:
                             allgood = True
