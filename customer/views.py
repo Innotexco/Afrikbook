@@ -199,6 +199,7 @@ def SalesInvoice(request):
     method = shipping_method.objects.using(db).all()
     invoices = customer_invoice.objects.using(db).all()
 
+    auto_invoice = "1000000"
     try:
         response = requests.get('https://console.afrikbook.com/address', timeout=10)
         shipping_address = response.json() if response.status_code == 200 else []
