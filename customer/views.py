@@ -199,33 +199,32 @@ def SalesInvoice(request):
     method = shipping_method.objects.using(db).all()
     invoices = customer_invoice.objects.using(db).all()
 
-    auto_invoice = "1000000"
-
     try:
         response = requests.get('https://console.afrikbook.com/address', timeout=10)
         shipping_address = response.json() if response.status_code == 200 else []
     except requests.RequestException:
         shipping_address = []
+        
+        next_invoice = 1000000
+        
+        if invoices.exists():
+            highest = 0
+            for inv in invoices.values_list('invoiceID', flat=True):
+                if not inv:
+                    continue
+                # Strip any _cancelled / _returned suffix
+                match = re.match(r'^(\d+)', str(inv))
+                if match:
+                    num = int(match.group(1))
+                    if num > highest:
+                        highest = num
+            if highest >= 1000000:
+                next_invoice = highest + 1
+                
+        while customer_invoice.objects.using(db).filter(invoiceID=str(next_invoice)).exists():
+            next_invoice += 1
 
-    # Generate a guaranteed unique invoice ID
-    next_invoice = 1000000
-    if invoices.exists():
-        highest = 0
-        for inv in invoices.values_list('invoiceID', flat=True):
-            if not inv:
-                continue
-            match = re.match(r'^(\d+)', str(inv))
-            if match:
-                num = int(match.group(1))
-                if num > highest:
-                    highest = num
-        if highest >= 1000000:
-            next_invoice = highest + 1
-
-    while customer_invoice.objects.using(db).filter(invoiceID=str(next_invoice)).exists():
-        next_invoice += 1
-
-    auto_invoice = str(next_invoice)
+        auto_invoice = str(next_invoice)
 
 
     # if invoices.exists():
