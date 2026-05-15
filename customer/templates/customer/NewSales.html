@@ -680,6 +680,20 @@
             $("input[name='accountType']:checked").trigger("change");
             updateGenby();
         });
+
+        // ── More / Less fields toggle ─────────────────────────────────────────────
+        $(document).on('click', '.more-fields-btn', function() {
+            var $moreFields = $('#more-fields');
+            var isHidden    = $moreFields.hasClass('hidden');
+
+            if (isHidden) {
+                $moreFields.removeClass('hidden');
+                $(this).text('Less Fields');
+            } else {
+                $moreFields.addClass('hidden');
+                $(this).text('More Fields');
+            }
+        });
     </script>
 
 {% endblock content %}
