@@ -701,29 +701,40 @@ def AgedPayable(request):
 def GetCustomerDetailsAndInvoice(request, code, cusID):
     db = AfrikBookDB(request)
     try:
-       customer = customer_table.objects.using(db).get(customer_code=cusID)
-       
-       lookups = Q(cusID=cusID) & Q(invoiceID=code)
-       
-       invoice = customer_invoice.objects.using(db).filter(lookups).values()
-       serialized_data = list(invoice)
-       data = {
-           "customer":{
-            'name': customer.name,
-            'phone': customer.phone,
-            'email': customer.email,
-            'category': customer.category,
-            'code': customer.customer_code,
-            'company': customer.company_name,
-            # 'address': customer.address,
-            'balance': customer.Balance,
-           },
-           "invoice": serialized_data
-            
+        customer = customer_table.objects.using(db).get(customer_code=cusID)
+
+        lookups = Q(cusID=cusID) & Q(invoiceID=code)
+        invoices = customer_invoice.objects.using(db).filter(lookups).values()
+
+        serialized_inv = []
+        for inv in invoices:
+            if inv.get('invoice_date'):
+                if hasattr(inv['invoice_date'], 'strftime'):
+                    inv['invoice_date'] = inv['invoice_date'].strftime('%Y-%m-%d')
+                else:
+                    inv['invoice_date'] = str(inv['invoice_date'])
+            serialized_inv.append(inv)
+
+        data = {
+            "customer": {
+                "name": customer.name,
+                "phone": customer.phone,
+                "email": customer.email,
+                "description": getattr(customer, 'description', ''),
+                "category": getattr(customer, 'category', ''),
+                "code": customer.customer_code,
+                "customer_id": customer.customer_code, 
+                "company": getattr(customer, 'company_name', customer.name),
+                "address": getattr(customer, 'address', ''),
+                "balance": str(getattr(customer, 'balance', getattr(customer, 'Balance', 0))),
+            },
+            "invoice": serialized_inv
         }
-       return JsonResponse(data)
-    except customer_table.DoesNotExist: 
-        return JsonResponse({'error': 'Item not found'}, status=404)
+        return JsonResponse(data)
+    except customer_table.DoesNotExist:
+        return JsonResponse({'error': 'Customer not found'}, status=404)
+    
+    
     
 def ViewSalesLadger(request, code):
     db = AfrikBookDB(request)
