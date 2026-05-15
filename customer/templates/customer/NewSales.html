@@ -682,17 +682,14 @@
         });
 
         // ── More / Less fields toggle ─────────────────────────────────────────────
-        $(document).on('click', '.more-fields-btn', function() {
-            var $moreFields = $('#more-fields');
-            var isHidden    = $moreFields.hasClass('hidden');
+        $(document).on('click', '.more-fields', function () {
+            var $btn = $('#more-fields-btn');
 
-            if (isHidden) {
-                $moreFields.removeClass('hidden');
-                $(this).text('Less Fields');
-            } else {
-                $moreFields.addClass('hidden');
-                $(this).text('More Fields');
-            }
+            $btn.text(
+                $btn.text() === 'More Fields'
+                    ? 'Less Fields'
+                    : 'More Fields'
+            );
         });
     </script>
 
