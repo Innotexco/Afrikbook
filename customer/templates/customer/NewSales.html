@@ -55,7 +55,6 @@
                     <span class="py-2 text-red-500 errors">{{form.invoiceID.errors}}</span>
                 </label> {% endcomment %}
 
-                <input type="hidden" id="genby" name="genby" value="" />
 
                 <label class="block text-sm">
                     <span class="text-gray-700 dark:text-gray-400">
@@ -636,6 +635,50 @@
 
         $(document).ready(function() {
             $('#receipt').text('Invoice No: ' + AUTO_INVOICE);
+        });
+
+        // Update hidden field with selected customer/vendor name
+        function updateGenby() {
+            var customerName = $("#id_customer option:selected").text();
+            var vendorName   = $("#id_vendor option:selected").text();
+            var acctType     = checked_radio_value();
+
+            if (acctType === "Customer") {
+                if (customerName !== "Select Customer") {
+                    $("#genby").val(customerName);
+                } else {
+                    $("#genby").val("");
+                }
+            } else if (acctType === "Vendor") {
+                if (vendorName !== "Select Vendor") {
+                    $("#genby").val(vendorName);
+                } else {
+                    $("#genby").val("");
+                }
+            } else {
+                $("#genby").val("");
+            }
+        }
+
+        // Attach event listeners
+        $("#id_customer, #id_vendor").on("change", updateGenby);
+        $("input[name='accountType']").on("change", function() {
+            // Also switch visibility of the dropdowns (if you hide/show)
+            if ($(this).val() === "Customer") {
+                $("#id_customer").removeClass("hidden").prop("disabled", false);
+                $("#id_vendor").addClass("hidden").prop("disabled", true);
+            } else {
+                $("#id_vendor").removeClass("hidden").prop("disabled", false);
+                $("#id_customer").addClass("hidden").prop("disabled", true);
+            }
+            updateGenby();
+        });
+
+        // Initial call in case something is pre‑selected
+        $(document).ready(function() {
+            // Optionally pre‑hide vendor dropdown if Customer radio is checked
+            $("input[name='accountType']:checked").trigger("change");
+            updateGenby();
         });
     </script>
 
