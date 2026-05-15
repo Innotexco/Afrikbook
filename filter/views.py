@@ -137,40 +137,44 @@ def aged_receivable_filter_by_date(request):
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
     customer = request.GET.get('customer')
-    
-    filter_conditions = Q()
-    
-    if start_date_str and end_date_str:
-        pass
-        filter_conditions &= Q(cur_datetime__date__range=(convertDate(start_date_str, end_date_str)))
 
-           
+    filter_conditions = Q()
+
+    if start_date_str and end_date_str:
+        start_date, end_date = convertDate(start_date_str, end_date_str)
+        filter_conditions &= Q(invoice_date__range=(start_date, end_date))
+
     if customer:
         filter_conditions &= Q(cusID=customer)
-    
+
     data = []
-    if filter_conditions:   
-        # Perform filtering based on the date range
-        filtered_data = customer_invoice.objects.using(db).filter(Q(amount_paid__lt=F('amount_expected')) & filter_conditions).values() 
+    if filter_conditions:
+        filtered_data = customer_invoice.objects.using(db).filter(
+            Q(amount_paid__lt=F('amount_expected')) & filter_conditions
+        ).values()
+        seen = set()
         for item in filtered_data:
-            if item['invoiceID'] not in [d['invoiceID'] for d in data]:
+            if item['invoiceID'] not in seen:
+                seen.add(item['invoiceID'])
                 data.append(item)
-                
-    amount_total = customer_invoice.objects.using(db).filter(Q(amount_paid__lt=F('amount_expected')) & filter_conditions).values("invoiceID").distinct().aggregate(total_amount=Sum("amount_expected"))['total_amount'] or 0
-    amount_paid_total = customer_invoice.objects.using(db).filter(Q(amount_paid__lt=F('amount_expected')) & filter_conditions).values("invoiceID").distinct().aggregate(total_amount_paid=Sum("amount_paid"))['total_amount_paid'] or 0
-        
 
-    total_amount = amount_total - amount_paid_total #customer_invoice.objects.using(db).filter(Q(amount_paid__lt=F('amount_expected')) & filter_conditions).values().aggregate(total_amount=Sum('amount_paid'))['total_amount'] or 0
+    amount_total = customer_invoice.objects.using(db).filter(
+        Q(amount_paid__lt=F('amount_expected')) & filter_conditions
+    ).values("invoiceID").distinct().aggregate(total_amount=Sum("amount_expected"))['total_amount'] or 0
 
-    
+    amount_paid_total = customer_invoice.objects.using(db).filter(
+        Q(amount_paid__lt=F('amount_expected')) & filter_conditions
+    ).values("invoiceID").distinct().aggregate(total_amount_paid=Sum("amount_paid"))['total_amount_paid'] or 0
 
-    serializer_data = list(data)
+    total_amount = amount_total - amount_paid_total
 
-    response ={
-        "serializer_data":serializer_data,
-        "total_amount":total_amount,
+    response = {
+        "serializer_data": list(data),
+        "total_amount": total_amount,
     }
     return JsonResponse(response, safe=False)
+
+
 
 def sales_filter_by_date(request):
     db = request.user.company_id.db_name
