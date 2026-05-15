@@ -680,6 +680,17 @@
             $("input[name='accountType']:checked").trigger("change");
             updateGenby();
         });
+
+        $(document).on('click', '.more-fields', function() {
+            var $moreFieldsDiv = $('#more-fields');
+            if ($moreFieldsDiv.is(':hidden')) {
+                $moreFieldsDiv.removeClass('hidden');
+                $(this).text('Less fields');
+            } else {
+                $moreFieldsDiv.addClass('hidden');
+                $(this).text('More fields');
+            }
+        });
     </script>
 
 {% endblock content %}
