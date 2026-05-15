@@ -875,7 +875,7 @@ def ReturnedInwardChangeDate(request):
                 'phone': customer.phone,
                 'email': customer.email,
                 'code': customer.customer_code,
-                'address': customer.address,
+                # 'address': customer.address,
                 'balance': customer.Balance,
             },
             'invoice': invoice,
