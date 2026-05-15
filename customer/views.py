@@ -207,27 +207,27 @@ def SalesInvoice(request):
         shipping_address = []
 
     # ── Auto invoice ID (outside the try/except above) ───────────────────────
-    start_number = 1000000
-    highest = 0
-    all_ids = customer_invoice.objects.using(db).values_list('invoiceID', flat=True)
+    next_invoice = 1000000
 
-    for inv_id in all_ids:
-        if not inv_id:
-            continue
-        match = re.search(r'\d+', str(inv_id))
-        if match:
-            num = int(match.group())
-            if num > highest:
-                highest = num
-
-    next_invoice = max(start_number, highest + 1)
+    if invoices.exists():
+        highest = 0
+        for inv in invoices.values_list('invoiceID', flat=True):
+            if not inv:
+                continue
+            match = re.match(r'^(\d+)', str(inv))
+            if match:
+                num = int(match.group(1))
+                if num > highest:
+                    highest = num
+        if highest >= 1000000:
+            next_invoice = highest + 1
 
     while customer_invoice.objects.using(db).filter(invoiceID=str(next_invoice)).exists():
         next_invoice += 1
 
     auto_invoice = str(next_invoice)
 
-    # ── Handle POST ─────────────────────────────────────
+    # ── Handle POST ──────────────────────────────────────────────────────────
     form         = None
     whatsapp_url = request.session.pop('whatsapp_url', None)
 
@@ -279,7 +279,7 @@ def EditSalesInvoice(request, invoice_id):
         try:
             with db_transaction.atomic(using=db):
 
-                # ── Step 1: Archive original lines ──
+                # ── Step 1: Archive original lines ───────────────────────
                 for line in invoices:
                     edited_customer_invoice.objects.using(db).create(
                         cusID               = line.cusID,
@@ -321,7 +321,7 @@ def EditSalesInvoice(request, invoice_id):
                             db, line.outlet, line.itemcode, line.qty
                         )
 
-                # ── Step 3: Undo accounting entries ─
+                # ── Step 3: Undo accounting entries ──────────────────────
                 # Reverse by calling CancelSales logic directly
                 accountType = get_customer_or_vendor(db, invoice_id)
                 try:
@@ -357,7 +357,7 @@ def EditSalesInvoice(request, invoice_id):
                 invoices.delete()
 
                 # ── Step 5: Build a fake POST from submitted form data
-                #            and call add_new_sales ────
+                #            and call add_new_sales ─────────────────────────
                 request.POST = request.POST.copy()
 
                 # Remap submitted form fields to what add_new_sales expects
@@ -1062,7 +1062,7 @@ def CancleCustomerInvoicePage(request):
     ).exclude(invoice_state="Cancelled")
     getitem = Item.objects.using(db).all()
 
-    # ── AJAX GET — filter ───────────────────────────
+    # ── AJAX GET — filter ────────────────────────────────────────────────
     if request.method == 'GET' and any([
         request.GET.get('fromdate'),
         request.GET.get('invoice'),
