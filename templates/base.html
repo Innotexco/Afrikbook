@@ -50,6 +50,15 @@
         <script src="{% static 'jquery/jquery.min.js' %}"></script>
        
         
+        <style>
+            @media print {
+                body * { visibility: hidden; }
+                #stock, #stock * { visibility: visible; }
+                #stock { position: absolute; left: 0; top: 0; width: 100%; }
+                button, .no-print, select { display: none !important; }
+            }
+        </style>
+
         {% comment %} <script>
 
             new DataTable('#example');
