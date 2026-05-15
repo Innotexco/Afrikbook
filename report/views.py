@@ -702,31 +702,27 @@ def GetCustomerDetailsAndInvoice(request, code, cusID):
     db = AfrikBookDB(request)
     try:
         customer = customer_table.objects.using(db).get(customer_code=cusID)
+        invoices = customer_invoice.objects.using(db).filter(
+            Q(cusID=cusID) & Q(invoiceID=code)
+        ).values()
 
-        lookups = Q(cusID=cusID) & Q(invoiceID=code)
-        invoices = customer_invoice.objects.using(db).filter(lookups).values()
 
         serialized_inv = []
         for inv in invoices:
-            if inv.get('invoice_date'):
-                if hasattr(inv['invoice_date'], 'strftime'):
-                    inv['invoice_date'] = inv['invoice_date'].strftime('%Y-%m-%d')
-                else:
-                    inv['invoice_date'] = str(inv['invoice_date'])
+            inv['invoice_date'] = inv['invoice_date'].strftime('%Y-%m-%d') if inv.get('invoice_date') else ''
             serialized_inv.append(inv)
 
         data = {
             "customer": {
-                "name": customer.name,
+                "company": getattr(customer, 'company_name', customer.name),
+                "code": customer.customer_code,
+                "customer_id": customer.customer_code,   
+                "description": getattr(customer, 'description', ''),
                 "phone": customer.phone,
                 "email": customer.email,
-                "description": getattr(customer, 'description', ''),
-                "category": getattr(customer, 'category', ''),
-                "code": customer.customer_code,
-                "customer_id": customer.customer_code, 
-                "company": getattr(customer, 'company_name', customer.name),
                 "address": getattr(customer, 'address', ''),
                 "balance": str(getattr(customer, 'balance', getattr(customer, 'Balance', 0))),
+                
             },
             "invoice": serialized_inv
         }
