@@ -949,12 +949,18 @@ function switchTemplateForCurrentPDF() {
 }
 
 // Enhanced hide_elements function
-function hide_elements(hide) {
-    // Only hide UI controls that are OUTSIDE the printable container
-    const selectors = ['button', 'select', 'input[type="date"]', '.no-print'];
-    selectors.forEach(function(selector) {
-        $(selector).not(`#stock ${selector}`).css('display', hide ? 'none' : '');
-    });
+function hide_elements(hide, containerId) {
+    if (hide) {
+        // Hide all UI controls page-wide
+        $('button, select, input[type="date"], .no-print, a[href]').css('display', 'none');
+        // But keep everything inside the print container visible
+        if (containerId) {
+            $('#' + containerId).find('button, select, input[type="date"], a[href]').css('display', '');
+        }
+    } else {
+        // Restore everything
+        $('button, select, input[type="date"], .no-print, a[href]').css('display', '');
+    }
 }
 
 // Optional: Function to preview template before generating PDF
@@ -1151,50 +1157,19 @@ window.pdfGenerator = {
 </script>
 <script>
 
-    function hide_elements(value){
-        const element = document.getElementById("'+i+'")
-
-        if( element != null){
-            const lastTh = document.querySelectorAll('thead tr th:last-child');
-            const lastTd = document.querySelectorAll('tbody tr td:last-child');
-            const input_border = document.querySelectorAll('.w-\\[100px\\]');
-         
-            if(value == true){
-               
-                lastTh.forEach(function(th){
-                    th.classList.add('hidden')
-                })
-                
-                lastTd.forEach(function(td){
-                    
-                    td.classList.add('hidden')
-                })
-
-                input_border.forEach(function(input){
-                    input.classList.remove('border-2')
-                })
-    
-            }else{
-               
-                // lastTh.classList.remove('hidden')
-                lastTh.forEach(function(th){
-                    th.classList.remove('hidden')
-                })
-        
-                
-
-                lastTd.forEach(function(td){
-                    td.classList.remove('hidden')
-                })
-               
-                    input_border.forEach(function(input){
-                        input.classList.add('border-2')
-                        
-                })
+    function hide_elements(hide, containerId) {
+        if (hide) {
+            // Hide all UI controls page-wide
+            $('button, select, input[type="date"], .no-print, a[href]').css('display', 'none');
+            // But keep everything inside the print container visible
+            if (containerId) {
+                $('#' + containerId).find('button, select, input[type="date"], a[href]').css('display', '');
             }
+        } else {
+            // Restore everything
+            $('button, select, input[type="date"], .no-print, a[href]').css('display', '');
         }
     }
-
     function viewColunm(value){
         // var executed = false
         //         var hide = false
