@@ -50,12 +50,13 @@
         <script src="{% static 'jquery/jquery.min.js' %}"></script>
        
         
-        <style>
+        <style id="printStyle">
             @media print {
-                body * { visibility: hidden; }
-                #stock, #stock * { visibility: visible; }
-                #stock { position: absolute; left: 0; top: 0; width: 100%; }
-                button, .no-print, select { display: none !important; }
+                body > *                { display: none !important; }
+                #printTarget            { display: block !important; }
+                #printTarget *          { visibility: visible !important; }
+                button, select, .no-print { display: none !important; }
+                section.hidden          { display: none !important; }
             }
         </style>
 
