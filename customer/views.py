@@ -191,83 +191,68 @@ def RefundCustomer(request):
 def SalesInvoice(request):
     db = request.user.company_id.db_name
     customer = customer_table.objects.using(db).all()
-    vendor = vendor_table.objects.using(db).all()
+    vendor   = vendor_table.objects.using(db).all()
     accounts = chart_of_account.objects.using(db).all()
     billing_address = billing_addr.objects.using('afrikbook_client').all()
-    company = company_table.objects.get(id=request.user.company_id_id)
-    item = Item.objects.using(db).all()
-    method = shipping_method.objects.using(db).all()
+    company  = company_table.objects.get(id=request.user.company_id_id)
+    item     = Item.objects.using(db).all()
+    method   = shipping_method.objects.using(db).all()
     invoices = customer_invoice.objects.using(db).all()
 
+    # ── Shipping address ─────────────────────────────────────────────────────
     try:
         response = requests.get('https://console.afrikbook.com/address', timeout=10)
         shipping_address = response.json() if response.status_code == 200 else []
     except requests.RequestException:
         shipping_address = []
-        
-        next_invoice = 1000000
-        
-        if invoices.exists():
-            highest = 0
-            for inv in invoices.values_list('invoiceID', flat=True):
-                if not inv:
-                    continue
-                # Strip any _cancelled / _returned suffix
-                match = re.match(r'^(\d+)', str(inv))
-                if match:
-                    num = int(match.group(1))
-                    if num > highest:
-                        highest = num
-            if highest >= 1000000:
-                next_invoice = highest + 1
-                
-        while customer_invoice.objects.using(db).filter(invoiceID=str(next_invoice)).exists():
-            next_invoice += 1
 
-        auto_invoice = str(next_invoice)
+    # ── Auto invoice ID (outside the try/except above) ───────────────────────
+    next_invoice = 1000000
 
+    if invoices.exists():
+        highest = 0
+        for inv in invoices.values_list('invoiceID', flat=True):
+            if not inv:
+                continue
+            match = re.match(r'^(\d+)', str(inv))
+            if match:
+                num = int(match.group(1))
+                if num > highest:
+                    highest = num
+        if highest >= 1000000:
+            next_invoice = highest + 1
 
-    # if invoices.exists():
-    #     latest_invoice = invoices.latest('invoice_date')
-    #     latest_id_str  = latest_invoice.invoiceID
-    #     numeric_part   = re.match(r'^(\d+)', str(latest_id_str))
-    #     next_invoice   = int(numeric_part.group(1)) + 1 if numeric_part else 1000000
-    # else:
-    #     next_invoice = 1000000
+    while customer_invoice.objects.using(db).filter(invoiceID=str(next_invoice)).exists():
+        next_invoice += 1
 
-    # # Keep incrementing until we find an ID that doesn't exist yet
-    # while customer_invoice.objects.using(db).filter(invoiceID=str(next_invoice)).exists():
-    #     next_invoice += 1
+    auto_invoice = str(next_invoice)
 
-    # invoice = str(next_invoice)
-    form = None
-
+    # ── Handle POST ──────────────────────────────────────────────────────────
+    form         = None
     whatsapp_url = request.session.pop('whatsapp_url', None)
 
     if request.method == "POST":
         outlet = User.objects.get(id=request.user.id).outlet
         if outlet:
-            form = add_new_sales(request, db)
+            form         = add_new_sales(request, db)
             whatsapp_url = request.session.pop('whatsapp_url', None)
         else:
             messages.error(request, "Assign outlet to logged in user")
 
     context = {
-        'customers': customer,
-        'vendor': vendor,
-        'accounts': accounts,
-        'items': item,
-        'auto_invoice': auto_invoice,
-        'form': form,
-        'company': company,
+        'customers':        customer,
+        'vendor':           vendor,
+        'accounts':         accounts,
+        'items':            item,
+        'auto_invoice':     auto_invoice,
+        'form':             form,
+        'company':          company,
         'shipping_address': shipping_address,
-        'billing_address': billing_address,
-        'shipping_method': method,
-        'whatsapp_url': whatsapp_url,
+        'billing_address':  billing_address,
+        'shipping_method':  method,
+        'whatsapp_url':     whatsapp_url,
     }
     return render(request, "customer/NewSales.html", context)
-
-
 
 
 def EditSalesInvoice(request, invoice_id):
