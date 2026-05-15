@@ -683,10 +683,8 @@
 
         // ── More / Less fields toggle ─────────────────────────────────────────────
         $(document).on('click', '.more-fields', function () {
-            var $btn = $('#more-fields-btn');
-
-            $btn.text(
-                $btn.text() === 'More fields'
+            $(this).text(
+                $(this).text().trim() === 'More fields'
                     ? 'Less fields'
                     : 'More fields'
             );
