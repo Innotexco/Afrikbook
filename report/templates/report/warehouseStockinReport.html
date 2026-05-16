@@ -91,14 +91,31 @@
     </div>
 </div>
 
-<div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+{% comment %} <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
     <div class="w-full overflow-x-auto table-responsive" id="stock">
-        <table id="warestocklevel" style="width:100%">
+        <table id="storestocklevel" class="display" style="width:100%">
             <thead id="thead"></thead>
             <tbody class="bg-white divide-y result"></tbody>
         </table>
     </div>
-</div>
+</div> {% endcomment %}
+
+<div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+    <div class="w-full overflow-x-auto table-responsive" id="stock">
+        <table id="storestocklevel" style="width:100%; border-collapse: collapse;">
+            <thead id="thead">
+                <tr class="text-[11px] font-semibold tracking-wide text-left text-gray-500 bg-gray-100 border-b">
+                    <th class="px-3 py-2">Date</th>
+                    <th class="px-3 py-2">Item Name</th>
+                    <th class="px-3 py-2">Warehouse</th>
+                    <th class="px-3 py-2 text-right">Current Stock Level</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100 result">
+               
+            </tbody>
+        </table>
+    </div>
 
 <div class="grid grid-cols-2 gap-4">
     <div class="col-span-1 p-2">
@@ -108,7 +125,7 @@
                 Print
             </button>
             <button type="button" class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
-                    onclick="convertTableToExcel('stock', 'warestocklevel')">
+                    onclick="convertTableToExcel('stock', 'storestocklevel')">
                 Export to Excel
             </button>
         </div>
@@ -116,9 +133,30 @@
 </div>
 
 <script>
+    $(document).ready(function() {
+        // Populate years dropdown
+        (function populateYears() {
+            var currentYear = new Date().getFullYear();
+            var startYear = {{ start_year|default:2020 }};
+            var $select = $('#Yearly');
+            $select.empty();
+            $select.append('<option>_ _Choose Year_ _</option>');
+            for (var year = currentYear; year >= startYear; year--) {
+                $select.append('<option value="' + year + '">' + year + '</option>');
+            }
+        })();
+
+        // Initially hide search button
+        $('#search_btn').addClass('hidden');
+    });
+
+    // Period selection change handler
     $(document).on('change', '#duration', function() {
         var duration = $(this).val();
         $('#search_btn').addClass('hidden');
+        
+        // Clear existing table data when period changes
+        $('#storestocklevel tbody.result').empty();
 
         switch (duration) {
             case 'Daily':
@@ -159,11 +197,11 @@
                 $('.monthly').addClass('hidden');
                 $('.Quaterly').addClass('hidden');
                 $('.Yearly').addClass('hidden');
-                alert('Please select a valid period');
                 break;
         }
     });
 
+    // Daily date range change handler
     $(document).on('change', '.onchangeClass', function() {
         var date1 = $('#fromdate').val();
         var date2 = $('#todate').val();
@@ -174,6 +212,7 @@
         }
     });
 
+    // Monthly & Yearly change handler (for Monthly period)
     $(document).on('change', '.onchangeM_Y', function() {
         var monthly = $('#monthly').val();
         var Yearly = $('#Yearly').val();
@@ -184,6 +223,7 @@
         }
     });
 
+    // Quarterly change handler
     $(document).on('change', '.onchangeQuaterly', function() {
         var Quaterly = $('#Quaterly').val();
         var Yearly = $('#Yearly').val();
@@ -194,73 +234,89 @@
         }
     });
 
+    // Yearly only change handler
     $(document).on('change', '#Yearly', function() {
         var Yearly = $('#Yearly').val();
-        if (Yearly !== '_ _Choose Year_ _') {
+        // Only show search button if current period is Yearly
+        if ($('#duration').val() === 'Yearly' && Yearly !== '_ _Choose Year_ _') {
             $('#search_btn').removeClass('hidden');
-        } else {
-            $('#search_btn').addClass('hidden');
+        } else if ($('#duration').val() === 'Monthly') {
+            // For Monthly, both month and year are needed - handled by .onchangeM_Y
+            var monthly = $('#monthly').val();
+            if (Yearly !== '_ _Choose Year_ _' && monthly !== '_ _Choose Month_ _') {
+                $('#search_btn').removeClass('hidden');
+            } else {
+                $('#search_btn').addClass('hidden');
+            }
+        } else if ($('#duration').val() === 'Quaterly') {
+            var Quaterly = $('#Quaterly').val();
+            if (Yearly !== '_ _Choose Year_ _' && Quaterly !== '_ _Choose Months_ _') {
+                $('#search_btn').removeClass('hidden');
+            } else {
+                $('#search_btn').addClass('hidden');
+            }
+        } else if ($('#duration').val() === 'Yearly') {
+            if (Yearly !== '_ _Choose Year_ _') {
+                $('#search_btn').removeClass('hidden');
+            } else {
+                $('#search_btn').addClass('hidden');
+            }
         }
     });
 
-    $(document).ready(function() {
-        // Populate years dropdown
-        (function populateYears() {
-            var currentYear = new Date().getFullYear();
-            var startYear = {{ start_year|default:2020 }};
-            var $select = $('#Yearly');
-            $select.empty();
-            $select.append('<option>_ _Choose Year_ _</option>');
-            for (var year = currentYear; year >= startYear; year--) {
-                $select.append('<option value="' + year + '">' + year + '</option>');
-            }
-        })();
+    // Search button click handler
+    $(document).on('click', '.Search', function() {
+        var fromdate = $('#fromdate').val();
+        var todate = $('#todate').val();
+        var monthly = $('#monthly').val();
+        var Yearly = $('#Yearly').val();
+        var Quaterly = $('#Quaterly').val();
+        var daily = $('#daily').val();
 
-        // Search button click
-        $(document).on('click', '.Search', function() {
-            var fromdate = $('#fromdate').val();
-            var todate = $('#todate').val();
-            var monthly = $('#monthly').val();
-            var Yearly = $('#Yearly').val();
-            var Quaterly = $('#Quaterly').val();
-            var daily = $('#daily').val();
+        // Show loading indicator on button
+        var $btn = $(this);
+        var originalText = $btn.text();
+        $btn.text('Loading...').prop('disabled', true);
 
-            $.ajax({
-                type: 'GET',
-                url: '{% url "report:WarehouseStockinReport" %}',
-                data: {
-                    monthly: monthly,
-                    Yearly: Yearly,
-                    Quaterly: Quaterly,
-                    daily: daily,
-                    fromdate: fromdate,
-                    todate: todate,
-                },
-                success: function(res) {
-                    if (res.error) {
-                        alert(res.error);
-                    } else {
-                        $('#warestocklevel .result').empty();
-                        $('#thead').empty();
-
-                        // Build header
-                        var headerRow = $('<tr class="text-xs font-semibold tracking-wide text-left text-gray-500 bg-gray-50">');
-                        headerRow.append('<th class="py-3">Items</th>');
-                        headerRow.append('<th class="py-3">Period</th>');
-                        headerRow.append('<th class="py-3">Current Stock Level</th>');
-                        $('#thead').append(headerRow);
-
-                        // Build data rows
-                        res.data.forEach(function(item) {
-                            var dataRow = $('<tr>');
-                            dataRow.append('<td class="py-3">' + item.item + '</td>');
-                            dataRow.append('<td class="py-3">' + item.period + '</td>');
-                            dataRow.append('<td class="py-3">' + item.report + '</td>');
-                            $('#warestocklevel .result').append(dataRow);
+        $.ajax({
+            type: 'GET',
+            url: '{% url "report:WarehouseStockinReport" %}',
+            data: {
+                monthly: monthly,
+                Yearly: Yearly,
+                Quaterly: Quaterly,
+                daily: daily,
+                fromdate: fromdate,
+                todate: todate,
+            },
+            success: function(res) {
+                if (res.error) {
+                    alert(res.error);
+                } else {
+                    var tbody = $('#storestocklevel tbody.result');
+                    tbody.empty();
+                    
+                    if (res.data && res.data.length > 0) {
+                        $.each(res.data, function(index, item) {
+                            var row = $('<tr class="text-sm border-b">');
+                            row.append($('<td class="px-3 py-2">').text(item.date || ''));
+                            row.append($('<td class="px-3 py-2">').text(item.item_name || item.name || ''));
+                            row.append($('<td class="px-3 py-2">').text(item.warehouse || ''));
+                            row.append($('<td class="px-3 py-2 text-right">').text(item.current_stock_level || item.stock_level || 0));
+                            tbody.append(row);
                         });
+                    } else {
+                        tbody.append('<tr><td colspan="4" class="text-center py-4 text-gray-500">No records found for selected period.</td></tr>');
                     }
                 }
-            });
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", error);
+                alert("An error occurred while fetching data. Please try again.");
+            },
+            complete: function() {
+                $btn.text(originalText).prop('disabled', false);
+            }
         });
     });
 </script>
