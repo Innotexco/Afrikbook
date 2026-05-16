@@ -93,7 +93,7 @@
 
 <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
     <div class="w-full overflow-x-auto table-responsive" id="stock">
-        <table id="storestocklevel" style="width:100%">
+        <table id="warestocklevel" style="width:100%">
             <thead id="thead"></thead>
             <tbody class="bg-white divide-y result"></tbody>
         </table>
@@ -103,21 +103,17 @@
 <div class="grid grid-cols-2 gap-4">
     <div class="col-span-1 p-2">
         <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            <button onclick="testPrint()">Test Print</button>
-
+            <button class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                    onclick="generatePDF('stock')">
+                Print
+            </button>
             <button type="button" class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
-                    onclick="convertTableToExcel('stock', 'storestocklevel')">
+                    onclick="convertTableToExcel('stock', 'warestocklevel')">
                 Export to Excel
             </button>
         </div>
     </div>
 </div>
-
-<script>
-function testPrint() {
-    window.print();
-}
-</script>
 
 <script>
     $(document).on('change', '#duration', function() {
