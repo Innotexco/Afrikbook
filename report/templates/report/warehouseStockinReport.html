@@ -240,7 +240,7 @@
                     if (res.error) {
                         alert(res.error);
                     } else {
-                        $('#storestocklevel .result').empty();
+                        $('#warestocklevel .result').empty();
                         $('#thead').empty();
 
                         // Build header
@@ -256,7 +256,7 @@
                             dataRow.append('<td class="py-3">' + item.item + '</td>');
                             dataRow.append('<td class="py-3">' + item.period + '</td>');
                             dataRow.append('<td class="py-3">' + item.report + '</td>');
-                            $('#storestocklevel .result').append(dataRow);
+                            $('#warestocklevel .result').append(dataRow);
                         });
                     }
                 }
