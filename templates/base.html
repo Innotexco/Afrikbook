@@ -67,6 +67,15 @@
         </script> {% endcomment %}
         
       
+        <style>
+            @media print {
+                body > * { display: none !important; }
+                #printTarget { display: block !important; }
+                #printTarget * { visibility: visible !important; }
+                button, select, .no-print { display: none !important; }
+            }
+        </style>
+
     </head>
 
     <body class="body-wrapper">
