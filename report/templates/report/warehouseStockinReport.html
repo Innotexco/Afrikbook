@@ -237,11 +237,9 @@
     // Yearly only change handler
     $(document).on('change', '#Yearly', function() {
         var Yearly = $('#Yearly').val();
-        // Only show search button if current period is Yearly
         if ($('#duration').val() === 'Yearly' && Yearly !== '_ _Choose Year_ _') {
             $('#search_btn').removeClass('hidden');
         } else if ($('#duration').val() === 'Monthly') {
-            // For Monthly, both month and year are needed - handled by .onchangeM_Y
             var monthly = $('#monthly').val();
             if (Yearly !== '_ _Choose Year_ _' && monthly !== '_ _Choose Month_ _') {
                 $('#search_btn').removeClass('hidden');
@@ -264,7 +262,7 @@
         }
     });
 
-    // Search button click handler
+    // Search button click handler - UPDATED to match backend response
     $(document).on('click', '.Search', function() {
         var fromdate = $('#fromdate').val();
         var todate = $('#todate').val();
@@ -273,7 +271,6 @@
         var Quaterly = $('#Quaterly').val();
         var daily = $('#daily').val();
 
-        // Show loading indicator on button
         var $btn = $(this);
         var originalText = $btn.text();
         $btn.text('Loading...').prop('disabled', true);
@@ -299,10 +296,12 @@
                     if (res.data && res.data.length > 0) {
                         $.each(res.data, function(index, item) {
                             var row = $('<tr class="text-sm border-b">');
-                            row.append($('<td class="px-3 py-2">').text(item.date || ''));
-                            row.append($('<td class="px-3 py-2">').text(item.item_name || item.name || ''));
-                            row.append($('<td class="px-3 py-2">').text(item.warehouse || ''));
-                            row.append($('<td class="px-3 py-2 text-right">').text(item.current_stock_level || item.stock_level || 0));
+                            // Map: period -> Date, item -> Item Name, report -> Current Stock Level
+                            // Warehouse field not present in response, leave empty
+                            row.append($('<td class="px-3 py-2">').text(item.period || ''));
+                            row.append($('<td class="px-3 py-2">').text(item.item || ''));
+                            row.append($('<td class="px-3 py-2">').text('')); // No warehouse data
+                            row.append($('<td class="px-3 py-2 text-right">').text(item.report !== undefined ? item.report : 0));
                             tbody.append(row);
                         });
                     } else {
