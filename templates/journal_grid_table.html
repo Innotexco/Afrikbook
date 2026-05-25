@@ -73,7 +73,7 @@
         }
 
     });
-    $(document).on('click', '.journal_remove_row',function(){
+    /*$(document).on('click', '.journal_remove_row',function(){
         var row_id = $(this).attr("id");
         const debit =  $(this).closest('tr').find('input[name="dbt[]"]').val();
         // const credit =  $(this).closest('tr').find('input[name="cr[]"]').val();
@@ -91,7 +91,30 @@
             $('#row'+row_id+'').remove();
             total_d.value = parseInt(total_d.value) - parseInt(debit);
         }
+    });*/
+
+
+
+    $(document).on('click', '.journal_remove_row', function(){
+        var row_id = $(this).attr("id");
+        $(this).closest('tr').remove();
+
+        // Recalculate total cleanly after removal
+        var sum = 0;
+        $('input[name="dbt[]"]').each(function() {
+            var val = parseFloat($(this).val());
+            if (!isNaN(val)) sum += val;
+        });
+        $('#total-d').val(sum.toFixed(2));
+
+        // Renumber remaining rows
+        $('#journal_row_add tr').each(function(index) {
+            $(this).find('td:first').text(index + 1);
+        });
     });
+
+    
+
     $(document).on('input', '#cr',function(event){
         const creditInput = document.getElementsByName("cr[]");
 
@@ -109,7 +132,7 @@
         const Total_c = document.getElementById("total-c");
         Total_c.value = sum
     })
-    $(document).on('input', '#dbt',function(event){
+    /*$(document).on('input', '#dbt',function(event){
         const debitInput = document.getElementsByName("dbt[]");
 
         // Initialize a variable to store the sum
@@ -126,7 +149,16 @@
         // Display the sum in a result div
         const Total_c = document.getElementById("total-d");
         Total_c.value = sum
-    })
+    })*/
+
+    $(document).on('input', 'input[name="dbt[]"]', function() {
+        var sum = 0;
+        $('input[name="dbt[]"]').each(function() {
+            var val = parseFloat($(this).val());
+            if (!isNaN(val)) sum += val;
+        });
+        $('#total-d').val(sum.toFixed(2));
+    });
 
      
      function fetchAccounts(selected){
