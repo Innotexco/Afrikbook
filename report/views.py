@@ -579,33 +579,47 @@ def AgedReceivables(request):
     company = company_table.objects.get(id=request.user.company_id_id)
     
     if request.method == "POST":
-        discount = request.POST.get("Discount")
-        cost = request.POST.get("cost")
+        discount = Decimal(request.POST.get("Discount", 0))
+        cost = Decimal(request.POST.get("cost", 0))          
         customer = request.POST.get("customer")
         invoice = request.POST.get("invoice")
         today = datetime.now()
+        
         try:
             cus = customer_table.objects.using(db).get(customer_code=customer)
+            inv = customer_invoice.objects.using(db).get(invoiceID=invoice, cusID=customer)
+            
+            invoice_total = Decimal(str(inv.total_amount))   # or whatever field holds total
+            current_paid = Decimal(str(inv.amount_paid))     # already paid (including previous installments + discounts)
             account = chart_of_account.objects.using(db).get(account_bankname="Sales Account").account_id
-            if discount == "NaN":
-                description = "Payment Received"
-                CreditReceivable(request, db, cus, today, description, "Transfer", account, cost)
-                customer_invoice.objects.using(db).filter(invoiceID=invoice, cusID=customer).update(amount_paid=F('amount_paid')+cost)
-            else:
-                description = "Payment Received"
-                CreditReceivable(request, db, cus, today, description, "Transfer", account, cost)
-                description = "Discount Allowed"
-                CreditReceivable(request, db, cus, today, description, "Transfer", account, discount)
-                # acc = Expenses_account.objects.using(db).get(account_bankname="Discount Allowed").actual_balance += discount
-                # acc.save()
-                total = int(cost) + int(discount)
-                customer_invoice.objects.using(db).filter(invoiceID=invoice, cusID=customer).update(amount_paid=F('amount_paid')+total)
+            
+            
+            if cost > 0:
+                CreditReceivable(
+                    request, db, cus, today,
+                    "Payment Received (Installment)",
+                    "Transfer", account, cost, invoice,
+                    invoice_total, current_paid
+                )
                 
-            # DebitReceivable(request, db, cus, today, description, "Transfer", cost)    
+                inv.amount_paid += cost
+                inv.save(using=db)
+            
+            
+            if discount > 0:
+                CreditReceivable(
+                    request, db, cus, today,
+                    "Discount Allowed",
+                    "Transfer", account, discount, invoice,
+                    invoice_total, current_paid + cost   # total paid BEFORE discount = previous + cash paid
+                )
+                inv.amount_paid += discount
+                inv.save(using=db)
+            
             return JsonResponse(True, safe=False)
-        except customer_table.DoesNotExist:
+            
+        except Exception as e:
             return JsonResponse(False, safe=False)
-        
   
 
     context ={
@@ -616,6 +630,18 @@ def AgedReceivables(request):
     }
     return render(request, 'report/AgedReceivables.html', context)
 
+
+def get_invoice_details(request):
+    customer = request.GET.get('customer')
+    invoice = request.GET.get('invoice')
+    db = AfrikBookDB(request)
+    inv = customer_invoice.objects.using(db).get(invoiceID=invoice, cusID=customer)
+    return JsonResponse({
+        'success': True,
+        'total': str(inv.total_amount),
+        'amount_paid': str(inv.amount_paid),
+        'balance': str(inv.total_amount - inv.amount_paid)
+    })
 
 @login_required(login_url='/')
 @urls_name(name="Payables")

@@ -164,39 +164,37 @@ def DebitReceivable(request, db, cus, refund_date, Gdescription, p_method, accou
     create_receivable.save(using=db)
 
 
-def CreditReceivable(request, db, cus, refund_date, Gdescription, p_method, account, total, invoiceID=None):
+from decimal import Decimal
+
+def CreditReceivable(request, db, cus, refund_date, Gdescription, p_method, account, amount_paid_now, invoiceID, invoice_total, current_paid_before):
+    
     transaction_id = uuid.uuid4()
-
-    if receivable.objects.using(db).filter(customer_id=cus.customer_code).exists():
-        initial_bal = receivable.objects.using(db).filter(
-            customer_id=cus.customer_code
-        ).last().balance
-    else:
-        initial_bal = decimal.Decimal('0.00')
-
-    if initial_bal > 0:
-        balance = decimal.Decimal(str(initial_bal)) - decimal.Decimal(str(total))
-    else:
-        balance = decimal.Decimal(str(initial_bal)) + decimal.Decimal(str(total))
-
+    
+    new_total_paid = current_paid_before + Decimal(str(amount_paid_now))
+    
+    balance = Decimal(str(invoice_total)) - new_total_paid
+    if balance < 0:
+        balance = Decimal('0.00')
+    
+    
     create_receivable = receivable(
         date           = refund_date,
         description    = Gdescription,
         type           = "Credit",
-        amount         = total,
+        amount         = amount_paid_now,
         payment_method = p_method,
         invoice_status = "Unused",
         customer_id    = cus.customer_code,
         customer_name  = cus.name,
-        initial_amount = initial_bal,
+        initial_amount = invoice_total,
         balance        = balance,
         account_posted = account,
         transaction_id = transaction_id,
-        token_id       = invoiceID or "",
+        token_id       = invoiceID,
         Userlogin      = request.user.username,
     )
     create_receivable.save(using=db)
-
+    
 
 
 def ReduceOutletStockinItemQuantity(db, outlet, itemcode, qty):
