@@ -339,155 +339,109 @@
 
 
 <script>
-     
-    
-// ── Unified party search (single input) ──────────────────────────────────
-var partySearchTimer = null;
-var $partyInput = $('#party_name_input');
-var $partySuggestions = $('#party_suggestions');
-var $partyPhone = $('#party_phone');
-var $partyStatus = $('#name_status');
+    // ── Unified party search (single input) ──────────────────────────────────
+    var partySearchTimer = null;
+    var $partyInput = $('#party_name_input');
+    var $partySuggestions = $('#party_suggestions');
+    var $partyPhone = $('#party_phone');
+    var $partyStatus = $('#name_status');
 
-function fetchPartySuggestions(query, showAll = false) {
-    $partySuggestions.addClass('hidden').empty();
-    if (!showAll && (!query || query.length < 2)) {
-        if (query && query.length === 0) $partyStatus.text('');
-        return;
-    }
-    // If showAll is true, we pass a special parameter; otherwise normal search
-    var url = showAll ? '/search-vendor-customer/?all=true' : '/search-vendor-customer/?q=' + encodeURIComponent(query);
-    $.ajax({
-        url: url,
-        success: function(res) {
-            if (res.results && res.results.length > 0) {
-                res.results.forEach(function(r) {
-                    var badge = r.type === 'vendor'
-                        ? '<span class="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full ml-2">vendor</span>'
-                        : '<span class="text-[9px] bg-green-100 text-green-600 px-1.5 py-0.5 rounded-full ml-2">customer</span>';
-                    var $li = $('<li class="px-3 py-2 hover:bg-slate-100 cursor-pointer flex items-center justify-between border-b border-slate-100 last:border-0">')
-                        .html('<span><strong>' + escapeHtml(r.name) + '</strong>' + (r.phone ? ' · ' + escapeHtml(r.phone) : '') + '</span>' + badge);
-                    $li.on('click', function() {
-                        $partyInput.val(r.name);
-                        $partyPhone.val(r.phone || '');
-                        $partyStatus.html('✓ Selected from ' + r.type + ' list').removeClass('text-orange-500').addClass('text-green-600');
-                        $partySuggestions.addClass('hidden');
-                        if (r.type === 'vendor') $('#partyVendor').prop('checked', true);
-                        else $('#partyCustomer').prop('checked', true);
-                    });
-                    $partySuggestions.append($li);
-                });
-                $partySuggestions.removeClass('hidden');
-                $partyStatus.text('');
-            } else if (!showAll) {
-                var partyType = $('#partyVendor').is(':checked') ? 'vendor' : 'customer';
-                $partyStatus.html('⚠️ Not found — a new ' + partyType + ' will be created on save').removeClass('text-green-600').addClass('text-orange-500');
-                $partySuggestions.addClass('hidden');
-            } else {
-                $partySuggestions.addClass('hidden');
-            }
-        }
-    });
-}
-
-// Type to search
-$partyInput.on('input', function() {
-    var q = $(this).val().trim();
-    clearTimeout(partySearchTimer);
-    $partySuggestions.addClass('hidden');
-    if (q.length === 0) {
-        $partyStatus.text('');
-        $partyPhone.val('');
-        return;
-    }
-    if (q.length < 2) {
-        $partyStatus.text('Type at least 2 characters to search');
-        return;
-    }
-    partySearchTimer = setTimeout(function() { fetchPartySuggestions(q, false); }, 300);
-});
-
-// Show all parties when clicking the dropdown button
-$('#showAllPartiesBtn').on('click', function(e) {
-    e.stopPropagation();
-    fetchPartySuggestions('', true);
-});
-
-// Clear phone and status when input is cleared
-$partyInput.on('change', function() {
-    if (!$(this).val().trim()) {
-        $partyPhone.val('');
-        $partyStatus.text('');
-        $partySuggestions.addClass('hidden');
-    }
-});
-
-// Close suggestions when clicking outside
-$(document).on('click', function(e) {
-    if (!$(e.target).closest('#party_name_input, #party_suggestions, #showAllPartiesBtn').length) {
-        $partySuggestions.addClass('hidden');
-    }
-});
-
-// Helper to escape HTML
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
-}
-
-    $("#form").submit( function(e){
-        const accounts = $("#accounts").val()
-        if(accounts === ""){
-            e.preventDefault()
-            $('.accounts').html('This field is required')
-        }
-        else{
-            $('.accounts').html('')
-           $("#submit").attr('disabled', false)
-        }
-    })
-
-
-    // ── Dropdown selection fills the text input + phone + radio ──────────────
-    $('#party_name_select').on('change', function() {
-        var selected = $(this).find(':selected');
-        var name     = selected.val();
-        var phone    = selected.data('phone') || '';
-        var type     = selected.data('type');
-
-        if (!name) {
-            // Reset if "— Select from list —" chosen
-            $('#vendor_name_input').val('');
-            $('#party_phone').val('');
-            $('#name_status').text('');
+    function fetchPartySuggestions(query, showAll = false) {
+        $partySuggestions.addClass('hidden').empty();
+        if (!showAll && (!query || query.length < 2)) {
+            if (query && query.length === 0) $partyStatus.text('');
             return;
         }
+        var url = showAll ? '/search-vendor-customer/?all=true' : '/search-vendor-customer/?q=' + encodeURIComponent(query);
+        $.ajax({
+            url: url,
+            success: function(res) {
+                if (res.results && res.results.length > 0) {
+                    res.results.forEach(function(r) {
+                        var badge = r.type === 'vendor'
+                            ? '<span class="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full ml-2">vendor</span>'
+                            : '<span class="text-[9px] bg-green-100 text-green-600 px-1.5 py-0.5 rounded-full ml-2">customer</span>';
+                        var $li = $('<li class="px-3 py-2 hover:bg-slate-100 cursor-pointer flex items-center justify-between border-b border-slate-100 last:border-0">')
+                            .html('<span><strong>' + escapeHtml(r.name) + '</strong>' + (r.phone ? ' · ' + escapeHtml(r.phone) : '') + '</span>' + badge);
+                        $li.on('click', function() {
+                            $partyInput.val(r.name);
+                            $partyPhone.val(r.phone || '');
+                            $partyStatus.html('✓ Selected from ' + r.type + ' list').removeClass('text-orange-500').addClass('text-green-600');
+                            $partySuggestions.addClass('hidden');
+                            if (r.type === 'vendor') $('#partyVendor').prop('checked', true);
+                            else $('#partyCustomer').prop('checked', true);
+                        });
+                        $partySuggestions.append($li);
+                    });
+                    $partySuggestions.removeClass('hidden');
+                    $partyStatus.text('');
+                } else if (!showAll) {
+                    var partyType = $('#partyVendor').is(':checked') ? 'vendor' : 'customer';
+                    $partyStatus.html('⚠️ Not found — a new ' + partyType + ' will be created on save').removeClass('text-green-600').addClass('text-orange-500');
+                    $partySuggestions.addClass('hidden');
+                } else {
+                    $partySuggestions.addClass('hidden');
+                }
+            }
+        });
+    }
 
-        $('#vendor_name_input').val(name);
-        $('#party_phone').val(phone);
-        $('#name_status')
-            .text('Selected from ' + type + ' list')
-            .removeClass('text-orange-500')
-            .addClass('text-green-600');
+    $partyInput.on('input', function() {
+        var q = $(this).val().trim();
+        clearTimeout(partySearchTimer);
+        $partySuggestions.addClass('hidden');
+        if (q.length === 0) {
+            $partyStatus.text('');
+            $partyPhone.val('');
+            return;
+        }
+        if (q.length < 2) {
+            $partyStatus.text('Type at least 2 characters to search');
+            return;
+        }
+        partySearchTimer = setTimeout(function() { fetchPartySuggestions(q, false); }, 300);
+    });
 
-        if (type === 'vendor') {
-            $('#partyVendor').prop('checked', true);
+    $('#showAllPartiesBtn').on('click', function(e) {
+        e.stopPropagation();
+        fetchPartySuggestions('', true);
+    });
+
+    $partyInput.on('change', function() {
+        if (!$(this).val().trim()) {
+            $partyPhone.val('');
+            $partyStatus.text('');
+            $partySuggestions.addClass('hidden');
+        }
+    });
+
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('#party_name_input, #party_suggestions, #showAllPartiesBtn').length) {
+            $partySuggestions.addClass('hidden');
+        }
+    });
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // ── Form submission validation ──
+    $("#form").submit(function(e) {
+        const accounts = $("#accounts").val();
+        if (accounts === "") {
+            e.preventDefault();
+            $('.accounts').html('This field is required');
         } else {
-            $('#partyCustomer').prop('checked', true);
+            $('.accounts').html('');
+            $("#submit").attr('disabled', false);
         }
     });
-
-    // ── When user types in the text box, reset the dropdown selection ─────────
-    $('#vendor_name_input').on('input', function() {
-        if ($(this).val().trim()) {
-            $('#party_name_select').val('');
-        }
-    });
-    
 </script>
 {% include 'journal_grid_table.html' %}
 
