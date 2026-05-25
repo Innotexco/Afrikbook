@@ -15,6 +15,7 @@ urlpatterns = [
     path('Account-Series-Report', views.AccountSeriesReport, name='AccountSeriesReport'),
     path('receivables', views.Receivables, name='Receivables'),
     path('aged-receivable', views.AgedReceivables, name='AgedReceivables'),
+    path('get-invoice-details/', views.get_invoice_details, name='get_invoice_details'), #Ajax
     path('aged-payable', views.AgedPayable, name='AgedPayable'),
     path('expired-items', views.ExpiredItems, name='ExpiredItems'),
     path('customer-ledger', views.CustomerLedger, name='CustomerLedger'),

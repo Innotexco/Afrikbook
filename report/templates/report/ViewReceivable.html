@@ -89,26 +89,31 @@
         </div>
     </div>
 
-    <!-- ── Totals and Payment ── -->
+    <!-- ── Totals and Installment Payment ── -->
     <div class="flex flex-col sm:flex-row justify-between items-end gap-4 mt-4">
         <div class="w-full sm:w-auto space-y-2">
             <div class="flex items-center gap-2">
-                <span class="text-gray-600 w-28">Total Amount:</span>
+                <span class="text-gray-600 w-32">Total Invoice Amount:</span>
                 <input type="text" id="total" readonly
                     class="w-32 px-2 py-1 text-xs border rounded bg-gray-50 text-right font-medium" />
             </div>
             <div class="flex items-center gap-2">
-                <span class="text-gray-600 w-28">Amount Paid:</span>
+                <span class="text-gray-600 w-32">Already Paid:</span>
                 <input type="text" id="amount_paid" readonly
                     class="w-32 px-2 py-1 text-xs border rounded bg-gray-50 text-right font-medium" />
             </div>
             <div class="flex items-center gap-2">
-                <span class="text-gray-600 w-28">Discount Given:</span>
+                <span class="text-gray-600 w-32">Discount (this payment):</span>
                 <input type="number" id="Discount" value="0" step="0.01"
                     class="w-32 px-2 py-1 text-xs border rounded text-right" />
             </div>
             <div class="flex items-center gap-2">
-                <span class="text-gray-600 w-28">Balance (Credit):</span>
+                <span class="text-gray-600 w-32">Payment Amount (₦):</span>
+                <input type="number" id="payment_amount" value="0" step="0.01"
+                    class="w-32 px-2 py-1 text-xs border rounded text-right font-medium" />
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-gray-600 w-32">Remaining Balance After:</span>
                 <input type="text" id="total-cost" readonly
                     class="w-32 px-2 py-1 text-xs border rounded bg-gray-50 text-right font-medium text-red-600" />
             </div>
@@ -132,60 +137,99 @@
 {% csrf_token %}
 
 <script>
-    $("#Discount").on("input", function(){
-        var discount = parseInt($(this).val());
-        var ex = parseInt($("#total").val());
-        var paid = parseInt($("#amount_paid").val());
-        if (discount > 0){
-            var balance = ex - (paid + discount)
-            
-            $("#total-cost").val(balance);
-        }
-        else if(isNaN(discount)){
-            var balance = ex - (paid + 0)
-            
-            $("#total-cost").val(balance);
+    // Function to update the remaining balance after partial payment
+    function updateRemainingBalance() {
+        let total = parseFloat($("#total").val()) || 0;
+        let paid = parseFloat($("#amount_paid").val()) || 0;
+        let discount = parseFloat($("#Discount").val()) || 0;
+        let payment = parseFloat($("#payment_amount").val()) || 0;
 
-        }
+        let remaining = total - (paid + payment + discount);
+        if (remaining < 0) remaining = 0;
+        $("#total-cost").val(remaining.toFixed(2));
 
+        // Optional: disable Pay button if payment amount is zero or > remaining
+        if (payment <= 0 || payment > (total - paid - discount)) {
+            $("#pay").prop('disabled', true);
+        } else {
+            $("#pay").prop('disabled', false);
+        }
+    }
+
+    // Listen to changes on discount and payment amount
+    $("#Discount, #payment_amount").on("input", function() {
+        updateRemainingBalance();
     });
 
+    // When modal is opened, ensure payment_amount is reset and recalc
+    // (you may call updateRemainingBalance() after populating the modal fields)
 
-    $("#pay").on("click", function(){
-        var datas = {
-            Discount: parseInt($("#Discount").val()),
-            cost: parseInt($("#total-cost").val()),
-            customer: $("#code").html(),
-            invoice: $("#invoice").html(),
+    // Submit the installment payment
+    $("#pay").on("click", function() {
+        let paymentAmount = parseFloat($("#payment_amount").val()) || 0;
+        let discount = parseFloat($("#Discount").val()) || 0;
+        let customer = $("#code").text().trim();
+        let invoice = $("#invoice").text().trim();
+
+        if (paymentAmount <= 0) {
+            alertify.error("Please enter a valid payment amount.");
+            return;
+        }
+
+        let datas = {
+            Discount: discount,
+            cost: paymentAmount,          // send only the cash amount paid now
+            customer: customer,
+            invoice: invoice,
             csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
-        }
-        if (datas.cost != "" & datas.customer != "" & datas.invoice != ""){
+        };
 
-            $.ajax({
-                url: window.location.href,
-                method: "POST",
-                data: datas,
-                success: function(data){
-                    if (data === true){
-                        Filter();
-                        $("#x").click();
-                        alertify.success("Payment received")
-                    }
-                    else{
-                        $("#x").click();
-                        alertify.error("Transaction Unsuccesful")
-                    }
-
-                },
-                error: function(error){
-                   
+        $.ajax({
+            url: window.location.href,
+            method: "POST",
+            data: datas,
+            success: function(data) {
+                if (data === true) {
+                    alertify.success("Installment payment recorded.");
+                    // Refresh the modal data to show updated paid amount and balance
+                    refreshInvoiceData(customer, invoice);
+                    // Also refresh the parent table (Filter) if needed
+                    if (typeof Filter === 'function') Filter();
+                } else {
+                    alertify.error("Transaction unsuccessful.");
+                    $("#x").click();
                 }
-            })
-        }
-        else {
-            alertify.error("Refresh Page")
-        }
+            },
+            error: function() {
+                alertify.error("Server error. Please try again.");
+            }
+        });
+    });
 
-    })
+    // Function to refresh modal data after payment (re‑fetch invoice details)
+    function refreshInvoiceData(customerId, invoiceId) {
+        // You need an endpoint that returns updated invoice info (total, paid, etc.)
+        // For simplicity, you can reload the page or re‑fetch via AJAX.
+        // Example:
+        $.ajax({
+            url: "/get-invoice-details/",   // create this endpoint if not exists
+            data: { customer: customerId, invoice: invoiceId },
+            success: function(res) {
+                if (res.success) {
+                    $("#total").val(res.total);
+                    $("#amount_paid").val(res.amount_paid);
+                    $("#total-cost").val(res.balance);
+                    $("#payment_amount").val(0);
+                    $("#Discount").val(0);
+                    updateRemainingBalance();
+                } else {
+                    location.reload(); // fallback
+                }
+            },
+            error: function() {
+                location.reload();
+            }
+        });
+    }
 </script>
 
