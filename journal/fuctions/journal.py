@@ -97,7 +97,7 @@ def create_new_journal_enty(request, db):
                                     name      = cus.name,
                                     phone     = cus.phone or phone or '0000000000',
                                     email     = dummy_email,
-                                    address   = cus.address or 'N/A',
+                                    address   = 'N/A',  
                                     Userlogin = request.user.username,
                                 )
                             except customer_table.DoesNotExist:

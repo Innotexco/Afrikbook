@@ -38,9 +38,7 @@ def NewJournal(request):
     }
     return render(request, "journal/NewJournalEntry.html", context)
 
-
 def search_vendor_customer(request):
-    """AJAX: search vendor + customer tables by name, return combined suggestions."""
     db    = request.user.company_id.db_name
     query = request.GET.get('q', '').strip()
 
@@ -52,14 +50,25 @@ def search_vendor_customer(request):
 
         customers = customer_table.objects.using(db).filter(
             name__icontains=query
-        ).values('name', 'phone', 'email', 'address')[:10]
+        ).values('name', 'phone', 'email', 'company_name', 'category')[:10]
 
         for v in vendors:
-            results.append({'name': v['name'], 'phone': v['phone'] or '', 'type': 'vendor'})
+            results.append({
+                'name':  v['name'],
+                'phone': v['phone'] or '',
+                'email': v['email'] or '',
+                'type':  'vendor',
+            })
         for c in customers:
-            results.append({'name': c['name'], 'phone': c['phone'] or '', 'type': 'customer'})
+            results.append({
+                'name':  c['name'],
+                'phone': c['phone'] or '',
+                'email': c['email'] or '',
+                'type':  'customer',
+            })
 
     return JsonResponse({'results': results})
+
 
 
 @login_required(login_url='/')
