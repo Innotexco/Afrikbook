@@ -134,11 +134,31 @@
                 <label class="block text-sm">
                     <span class="text-gray-700">Vendor / Customer Name</span>
                     <div class="relative mt-1">
+                        <select id="party_name_select"
+                                class="block w-full px-2 py-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none text-slate-600 mb-1">
+                            <option value="">— Select from list —</option>
+                            <optgroup label="Vendors">
+                                {% for v in vendor %}
+                                <option value="{{ v.name }}" data-phone="{{ v.phone }}" data-type="vendor">
+                                    {{ v.name }}{% if v.phone %} · {{ v.phone }}{% endif %}
+                                </option>
+                                {% endfor %}
+                            </optgroup>
+                            <optgroup label="Customers">
+                                {% for c in customers %}
+                                <option value="{{ c.name }}" data-phone="{{ c.phone }}" data-type="customer">
+                                    {{ c.name }}{% if c.phone %} · {{ c.phone }}{% endif %}
+                                </option>
+                                {% endfor %}
+                            </optgroup>
+                        </select>
+
+                        {# ── Or type a new name ── #}
                         <input type="text" id="vendor_name_input" name="vendor_name"
                             autocomplete="off"
-                            placeholder="Type to search or enter new name..."
+                            placeholder="Or type to search / enter new name..."
                             class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input" />
-                        {# Suggestion dropdown #}
+
                         <ul id="name_suggestions"
                             class="absolute z-50 w-full bg-white border border-slate-200 rounded-md shadow-lg hidden max-h-48 overflow-y-auto text-sm">
                         </ul>
@@ -412,6 +432,43 @@
            $("#submit").attr('disabled', false)
         }
     })
+
+
+    // ── Dropdown selection fills the text input + phone + radio ──────────────
+    $('#party_name_select').on('change', function() {
+        var selected = $(this).find(':selected');
+        var name     = selected.val();
+        var phone    = selected.data('phone') || '';
+        var type     = selected.data('type');
+
+        if (!name) {
+            // Reset if "— Select from list —" chosen
+            $('#vendor_name_input').val('');
+            $('#party_phone').val('');
+            $('#name_status').text('');
+            return;
+        }
+
+        $('#vendor_name_input').val(name);
+        $('#party_phone').val(phone);
+        $('#name_status')
+            .text('Selected from ' + type + ' list')
+            .removeClass('text-orange-500')
+            .addClass('text-green-600');
+
+        if (type === 'vendor') {
+            $('#partyVendor').prop('checked', true);
+        } else {
+            $('#partyCustomer').prop('checked', true);
+        }
+    });
+
+    // ── When user types in the text box, reset the dropdown selection ─────────
+    $('#vendor_name_input').on('input', function() {
+        if ($(this).val().trim()) {
+            $('#party_name_select').val('');
+        }
+    });
     
 </script>
 {% include 'journal_grid_table.html' %}
