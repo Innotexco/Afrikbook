@@ -1,392 +1,494 @@
+
 {% extends 'base.html' %}
+
 
 {% block content %}
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8">
-    <!-- Modern breadcrumb / page header -->
-    <div class="flex items-center justify-between mb-6">
-        <div class="flex items-center space-x-2 text-sm text-slate-500">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-            <span>Dashboard</span>
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-            <span class="font-medium text-slate-700">Journal Entry</span>
+    
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="#">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+            <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            ></path>
+            </svg>
+            <span>New Journal Entry</span>
         </div>
-        <div class="text-xs bg-white px-3 py-1 rounded-full shadow-sm text-slate-500 border border-slate-200">
-            New transaction
-        </div>
-    </div>
+        <span>Home &RightArrow;</span>
+    </a>
+    <form method="post" id="form">      {% csrf_token %}
+        <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
 
-    <form method="post" id="journalForm" class="space-y-6">
-        {% csrf_token %}
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
 
-        <!-- Card 1: Entry details -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/40">
-                <h2 class="text-base font-semibold text-slate-700 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    Entry details
-                </h2>
-                <p class="text-xs text-slate-400 mt-0.5">Transaction header information</p>
-            </div>
-            <div class="p-5">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                    <div class="space-y-1">
-                        <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider">Date *</label>
-                        <input type="date" name="date" value="{{ form.date.value|default:'' }}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:border-slate-400 focus:ring-2 focus:ring-slate-200 transition bg-white">
-                        <span class="text-xs text-red-500 errors">{{form.date.errors}}</span>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider">Invoice #</label>
-                        <div class="relative">
-                            <input type="text" name="invoice_no" value="{{invoice}}" readonly class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-500 cursor-default">
-                            <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider">Category *</label>
-                        <select name="category" id="selector" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:border-slate-400 focus:ring-1 focus:ring-slate-300 bg-white">
-                            <option selected disabled>Select category</option>
-                            <optgroup label="EXPENSES">
-                                {% for account in accounts %}
-                                    {% if account.series_name|upper == "EXPENSES" %}
-                                        <option value="{{account.account_id}}({{account.series_name}})">{{account.account_bankname}} ({{account.account_type}})</option>
-                                    {% endif %}
-                                {% endfor %}
-                            </optgroup>
-                            <optgroup label="INCOME">
-                                {% for account in accounts %}
-                                    {% if account.series_name|upper == "INCOME" %}
-                                        <option value="{{account.account_id}}({{account.series_name}})">{{account.account_bankname}} ({{account.account_type}})</option>
-                                    {% endif %}
-                                {% endfor %}
-                            </optgroup>
-                            <optgroup label="ASSETS">
-                                {% for account in accounts %}
-                                    {% if account.series_name|upper == "ASSETS" %}
-                                        <option value="{{account.account_id}}({{account.series_name}})">{{account.account_bankname}} ({{account.account_type}})</option>
-                                    {% endif %}
-                                {% endfor %}
-                            </optgroup>
-                            <optgroup label="LIABILITY">
-                                {% for account in accounts %}
-                                    {% if account.series_name|upper == "LIABILITY" %}
-                                        <option value="{{account.account_id}}({{account.series_name}})">{{account.account_bankname}} ({{account.account_type}})</option>
-                                    {% endif %}
-                                {% endfor %}
-                            </optgroup>
-                            <optgroup label="EQUITY">
-                                {% for account in accounts %}
-                                    {% if account.series_name|upper == "EQUITY" %}
-                                        <option value="{{account.account_id}}({{account.series_name}})">{{account.account_bankname}} ({{account.account_type}})</option>
-                                    {% endif %}
-                                {% endfor %}
-                            </optgroup>
-                        </select>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider">Account (Credit) *</label>
-                        <select id="accounts" name="credit-account" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:border-slate-400 bg-white">
-                            <option selected disabled>Select account</option>
+                <label class="block text-sm">
+                    <span class="text-gray-700">Date</span>
+                    <input 
+                        type="date"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        name="date"
+                    />
+                    <span class="py-2 text-red-500 errors">{{form.date.errors}}</span>
+                </label>
+
+                <label class="block text-sm">
+                     <span class="text-gray-700 dark:text-gray-400">Invoice Number {% comment %}(Optional){% endcomment %}</span> 
+                    <input 
+                        type="text"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                        placeholder=""
+                        name="invoice_no"
+                        value="{{invoice}}"
+                        readonly
+                    />
+                    <span class="py-2 text-red-500 errors">{{form.invoice_no.errors}}</span>
+                </label>
+
+                
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Operating Expense / Income id
+                    </span>
+                    <select required class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" name="category" nchange="fetchAccounts(this)" id="selector">
+                        <option selected disabled></option>
+                        <optgroup label="EXPENSES">
                             {% for account in accounts %}
-                                <option value="{{account.account_id}}">{{account.account_id}} ({{account.series_name}})</option>
+                               {% if  account.series_name|upper == "EXPENSES" %}
+                                    <option value="{{account.account_id}}({{account.series_name}})">{{account.account_bankname}}({{account.account_type}})</option>
+                                {% endif %}
                             {% endfor %}
-                        </select>
-                        <span class="text-xs text-red-500 accounts"></span>
-                    </div>
-                </div>
+                        </optgroup>
+                        <optgroup label="INCOME">
+                            {% for account in accounts %}
+                                {% if  account.series_name|upper == "INCOME" %}
+                                   <option value="{{account.account_id}}({{account.series_name}})">{{account.account_bankname}}({{account.account_type}})</option>
+                                {% endif %}
+                            {% endfor %}
+                        </optgroup>
+                        <optgroup label="ASSETS">
+                            {% for account in accounts %}
+                                {% if  account.series_name|upper == "ASSETS" %}
+                                   <option value="{{account.account_id}}({{account.series_name}})">{{account.account_bankname}}({{account.account_type}})</option>
+                                {% endif %}
+                            {% endfor %}
+                        </optgroup>
+                        <optgroup label="LIABILITY">
+                            {% for account in accounts %}
+                                {% if  account.series_name|upper == "LIABILITY" %}
+                                   <option value="{{account.account_id}}({{account.series_name}})">{{account.account_bankname}}({{account.account_type}})</option>
+                                {% endif %}
+                            {% endfor %}
+                        </optgroup>
+                        
+                        <optgroup label="EQUITY">
+                            {% for account in accounts %}
+                                {% if  account.series_name|upper == "EQUITY" %}
+                                   <option value="{{account.account_id}}({{account.series_name}})">{{account.account_bankname}}({{account.account_type}})</option>
+                                {% endif %}
+                            {% endfor %}
+                        </optgroup> 
+    
+                    </select>
+                </label>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
-                    <div class="space-y-1">
-                        <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider">Order Number <span class="text-slate-300 font-normal">(optional)</span></label>
-                        <input type="text" name="order_no" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:border-slate-400">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider">Narration / Memo</label>
-                        <textarea name="narration" rows="1" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:border-slate-400 resize-none"></textarea>
-                        <span class="text-xs text-red-500 errors">{{form.narration.errors}}</span>
-                    </div>
-                </div>
+                <label class="block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">
+                        Select Account
+                    </span>
+                    <select required class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="accounts" name="credit-account" nchange="fetchName(this)">
+                        <option selected disabled></option>
+                        {% for account in accounts %}
+                            <option value="{{account.account_id}}">{{account.account_id}}({{account.series_name}})</option>
+                        {% endfor %}
+                       
+                    </select>
+                    <span class="py-2 text-red-500 accounts"></span>
+                </label>
             </div>
+
+        <!-- Party selector (Customer / Vendor) - improved single-field design -->
+        <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-3">
+            <div class="text-sm">
+                <span class="text-gray-700 block mb-1">Party Type</span>
+                <label class="inline-flex items-center text-gray-600">
+                    <input type="radio" name="party_type" value="vendor" id="partyVendor"
+                        class="text-slate-600 form-radio focus:border-slate-400 focus:outline-none" checked />
+                    <span class="ml-1">Vendor</span>
+                </label>
+                <label class="inline-flex items-center ml-6 text-gray-600">
+                    <input type="radio" name="party_type" value="customer" id="partyCustomer"
+                        class="text-slate-600 form-radio focus:border-slate-400 focus:outline-none" />
+                    <span class="ml-1">Customer</span>
+                </label>
+            </div>
+
+            <label class="block text-sm col-span-2">
+                <span class="text-gray-700">Vendor / Customer Name</span>
+                <div class="relative mt-1">
+                    <!-- Single combined input for search + type new -->
+                    <input type="text" id="party_name_input" name="vendor_name"
+                        autocomplete="off"
+                        placeholder="Type to search existing or enter new name..."
+                        class="block w-full px-3 py-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input" />
+                    
+                    <!-- Suggestions dropdown (appears while typing) -->
+                    <ul id="party_suggestions"
+                        class="absolute z-50 w-full bg-white border border-slate-200 rounded-md shadow-lg hidden max-h-48 overflow-y-auto text-sm">
+                    </ul>
+                    
+                    <!-- Optional: dropdown toggle button (shows all parties) -->
+                    <button type="button" id="showAllPartiesBtn"
+                        class="absolute inset-y-0 right-0 px-2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                        title="Show all vendors/customers">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                </div>
+                <p id="name_status" class="text-[10px] mt-0.5 text-slate-400"></p>
+            </label>
+
+            <label class="block text-sm">
+                <span class="text-gray-700">Phone</span>
+                <input type="text" name="phone" id="party_phone"
+                    class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"
+                    placeholder="Auto-filled or enter manually" />
+            </label>
+
+            <label class="block text-sm">
+                    <span class="text-gray-600">Narration</span>
+                    <textarea
+                        class="block w-full mt-1 px-2 text-sm form-textarea border-2 rounded-md focus:border-slate-300  focus:outline-none focus:shadow-outline-green text-slate-600"
+                        rows="1"
+                        placeholder=""
+                        name="narration"
+                    ></textarea>
+                    <span class="py-2 text-red-500 errors">{{form.narration.errors}}</span>
+                </label>
+                <div id="more-fields" class="hidden">
+                    <label class="block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">Order Number (Optional)</span>
+                        <input 
+                            type="text"
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            name="order_no"
+                        />
+                    </label>
+                </div>
         </div>
 
-        <!-- Card 2: Party (Vendor / Customer) -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/40 flex flex-wrap items-center justify-between gap-3">
-                <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    <h2 class="text-base font-semibold text-slate-700">Counterparty</h2>
-                </div>
-                <div class="flex gap-4 text-sm">
-                    <label class="inline-flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="party_type" value="vendor" id="partyVendor" class="w-4 h-4 text-slate-600 focus:ring-slate-300" checked>
-                        <span class="text-slate-600">🏢 Vendor</span>
-                    </label>
-                    <label class="inline-flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="party_type" value="customer" id="partyCustomer" class="w-4 h-4 text-slate-600 focus:ring-slate-300">
-                        <span class="text-slate-600">👤 Customer</span>
-                    </label>
-                </div>
-            </div>
-            <div class="p-5">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div class="space-y-2">
-                        <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider">Party Name *</label>
-                        <select id="party_name_select" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white mb-2">
-                            <option value="">⚡ Quick select from list</option>
-                            <optgroup label="Vendors">
-                                {% for v in vendor %}
-                                <option value="{{ v.name }}" data-phone="{{ v.phone }}" data-type="vendor">{{ v.name }}{% if v.phone %} · {{ v.phone }}{% endif %}</option>
-                                {% endfor %}
-                            </optgroup>
-                            <optgroup label="Customers">
-                                {% for c in customers %}
-                                <option value="{{ c.name }}" data-phone="{{ c.phone }}" data-type="customer">{{ c.name }}{% if c.phone %} · {{ c.phone }}{% endif %}</option>
-                                {% endfor %}
-                            </optgroup>
-                        </select>
-                        <div class="relative">
-                            <div class="relative">
-                                <input type="text" id="vendor_name_input" name="vendor_name" autocomplete="off" placeholder="Search or type new name..." class="w-full px-3 py-2 pl-9 border border-slate-300 rounded-xl text-sm focus:border-slate-400 focus:ring-2 focus:ring-slate-200 transition">
-                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                                </div>
-                            </div>
-                            <ul id="name_suggestions" class="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg hidden max-h-48 overflow-y-auto text-sm"></ul>
-                            <p id="name_status" class="text-[11px] mt-1 text-slate-400"></p>
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider">Phone number</label>
-                        <input type="text" name="phone" id="party_phone" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:border-slate-400" placeholder="Auto-filled / enter manually">
-                    </div>
-                </div>
-            </div>
-        </div>
+                
 
-        <!-- Card 3: Line items (dynamic table) -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/40 flex justify-between items-center flex-wrap gap-3">
-                <div>
-                    <h2 class="text-base font-semibold text-slate-700 flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                        Line items
-                    </h2>
-                    <p class="text-xs text-slate-400 mt-0.5">Products, services or adjustments</p>
+            
+
+                
+
+                
+
+                
+           
+            {% include 'components/morefields.html' %}
+           
+
+            <div class="w-full my-5 overflow-hidden shadow-xs">
+                <div class="w-full overflow-x-auto">
+                    <table class="border-collapse border border-slate-400 w-full">
+                        <thead>
+                            <tr class="font-medium tracking-wide text-left px-4 text-gray-500 border-b bg-gray-200">
+                                <th class="border border-slate-300 px-4 text-[10px] ...">SN</th>
+                                <th class="border border-slate-300 px-4 text-[10px] ...">Item</th>
+                                <th class="border border-slate-300 px-4 text-[10px] ...">Description</th>
+                                {% comment %} <th class="border border-slate-300 px-4 text-[10px] ...">Debit</th>
+                                <th class="border border-slate-300 px-4 text-[10px] ...">Credit</th> {% endcomment %}
+                                <th class="border border-slate-300 px-4 text-[10px] ...">Amount</th>
+                                <th class="border border-slate-300 px-4 text-[10px] ...">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16.933 16.933" id="action"><g transform="translate(-304.8 -742.781) scale(.26458)"><path d="m 1182.0001,2833.3622 a 1.0000403,1.0001 0 0 0 -0.8319,0.4453 l -1.7031,2.5547 h -2.4647 a 1.0000403,1.0001 0 0 0 -0.8319,0.4453 l -1.9999,3 a 1.0000403,1.0001 0 0 0 0,1.1114 l 1.6307,2.4433 -1.6307,2.4453 a 1.0000403,1.0001 0 0 0 0,1.1114 l 1.9999,3 a 1.0000403,1.0001 0 0 0 0.8319,0.4433 h 2.4647 l 1.7031,2.5567 a 1.0000403,1.0001 0 0 0 0.8319,0.4433 h 3.9998 a 1.0000403,1.0001 0 0 0 0.8319,-0.4433 l 1.7031,-2.5567 h 2.4647 a 1.0000403,1.0001 0 0 0 0.8319,-0.4433 l 1.9999,-3 a 1.0000403,1.0001 0 0 0 0,-1.1114 l -1.6307,-2.4453 1.6307,-2.4433 a 1.0000403,1.0001 0 0 0 0,-1.1114 l -1.9999,-3 a 1.0000403,1.0001 0 0 0 -0.8319,-0.4453 h -2.4647 l -1.7031,-2.5547 a 1.0000403,1.0001 0 0 0 -0.8319,-0.4453 z m 0.5352,2 h 2.9294 l 1.7031,2.5567 a 1.0000403,1.0001 0 0 0 0.832,0.4433 h 2.4646 l 1.3339,2 -1.6307,2.4453 a 1.0000403,1.0001 0 0 0 0,1.1114 l 1.6307,2.4433 -1.3339,2 h -2.4646 a 1.0000403,1.0001 0 0 0 -0.832,0.4453 l -1.7031,2.5547 h -2.9294 l -1.7031,-2.5547 a 1.0000403,1.0001 0 0 0 -0.832,-0.4453 h -2.4646 l -1.332,-1.998 1.6288,-2.4453 a 1.0000403,1.0001 0 0 0 0,-1.1114 l -1.6307,-2.4453 1.3339,-2 h 2.4646 a 1.0000403,1.0001 0 0 0 0.832,-0.4433 z" style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;isolation:auto;mix-blend-mode:normal;solid-color:#000;solid-opacity:1" color="#000" enable-background="accumulate" font-family="sans-serif" font-weight="400" overflow="visible"></path><path d="m 1184,2839.3622 c -2.1973,0 -4,1.8027 -4,4 0,2.1973 1.8027,4 4,4 2.1973,0 4,-1.8027 4,-4 0,-2.1973 -1.8027,-4 -4,-4 z m 0,2 c 1.1164,0 2,0.8836 2,2 0,1.1164 -0.8836,2 -2,2 -1.1164,0 -2,-0.8836 -2,-2 0,-1.1164 0.8836,-2 2,-2 z" style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;isolation:auto;mix-blend-mode:normal;solid-color:#000;solid-opacity:1" color="#000" enable-background="accumulate" font-family="sans-serif" font-weight="400" overflow="visible" paint-order="fill markers stroke"></path><path d="M1184 2825.3622c-9.9293 0-18 8.0707-18 18 0 9.9293 8.0707 18 18 18 9.9293 0 18-8.0707 18-18 0-9.9293-8.0707-18-18-18zm0 2c8.8484 0 16 7.1516 16 16 0 8.8484-7.1516 16-16 16-8.8484 0-16-7.1516-16-16 0-8.8484 7.1516-16 16-16zM1180 2813.3622c-1.0907 0-2 .9096-2 2.0006v1.9987c0 1.0911.9093 2.0007 2 2.0007h8c1.0907 0 2-.9096 2-2.0007v-1.9987c0-1.091-.9093-2.0006-2-2.0006zm0 1.9986h8c0 0 0 0 0 0v1.9987c0 0 0 0 0 0h-8c0 0 0 0 0 0v-1.9987c0 0 0 0 0 0z" style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;isolation:auto;mix-blend-mode:normal;solid-color:#000;solid-opacity:1" color="#000" enable-background="accumulate" font-family="sans-serif" font-weight="400" overflow="visible" paint-order="fill markers stroke"></path><path d="m 1183,2818.3622 v 4 h 2 v -4 z" style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;isolation:auto;mix-blend-mode:normal;solid-color:#000;solid-opacity:1" color="#000" enable-background="accumulate" font-family="sans-serif" font-weight="400" overflow="visible"></path><path d="M1184 2821.3622c-12.1384 0-22 9.8616-22 22 0 12.1384 9.8616 22 22 22 12.1384 0 22-9.8616 22-22 0-12.1384-9.8616-22-22-22zm0 2c11.0575 0 20 8.9424 20 20 0 11.0575-8.9425 20-20 20-11.0575 0-20-8.9425-20-20 0-11.0576 8.9425-20 20-20zM1207.9762 2851.3628a.99756741.99872065 0 00-.9546.8251c-.1458.7647-.3607 1.5004-.6371 2.2019-.5527 1.4031-1.3523 2.6655-2.3358 3.7215-.4918.5279-1.0294 1.0041-1.6053 1.4218a.99756741.99872065 0 101.1689 1.617c.682-.4947 1.3175-1.057 1.8955-1.6774 1.1561-1.2412 2.0876-2.7154 2.7314-4.3495.3218-.817.5711-1.6732.7403-2.5609a.99756741.99872065 0 00-1.0033-1.1995zM1212.9727 2849.3626a1.0011502 1.0006126 0 00-.9581.8266c-.3047 1.5962-.7549 3.1343-1.3334 4.5999-1.1571 2.9313-2.8299 5.5696-4.8938 7.7814-1.032 1.1057-2.1615 2.1033-3.3727 2.98a1.0012631 1.0007252 0 101.1732 1.622c1.3176-.9538 2.5433-2.0396 3.662-3.2381 2.2372-2.3973 4.0442-5.2477 5.2927-8.4105.6241-1.5813 1.1087-3.2401 1.437-4.9595a1.0011502 1.0006126 0 00-1.0069-1.2018zM1165.03 2825.3624a.99937718.99727437 0 00-.6265.1987c-.6832.494-1.3199 1.0554-1.899 1.6749-1.1581 1.2394-2.0913 2.7114-2.7363 4.3432-.3224.8158-.5721 1.6708-.7416 2.5573a.99937718.99727437 0 101.9615.3739c.146-.7637.3612-1.4983.6381-2.1989.5538-1.401 1.3548-2.6616 2.3401-3.716.4927-.5271 1.0313-1.0027 1.6082-1.4198a.99937718.99727437 0 00-.5445-1.8133zM1165.03 2819.3623a1.0003812 1.0005755 0 00-.6271.1973c-1.3166.9539-2.5415 2.0395-3.6592 3.238-2.2354 2.3972-4.0412 5.2475-5.2886 8.4102-.6237 1.5812-1.1079 3.24-1.436 4.9594a1.0004634 1.0006577 0 101.9654.3752c.3045-1.5963.7543-3.1343 1.3324-4.5999 1.1562-2.9312 2.8277-5.5693 4.8901-7.781 1.0311-1.1057 2.1598-2.1052 3.37-2.9819a1.0003812 1.0005755 0 00-.5451-1.8173z" style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;isolation:auto;mix-blend-mode:normal;solid-color:#000;solid-opacity:1" color="#000" enable-background="accumulate" font-family="sans-serif" font-weight="400" overflow="visible" paint-order="fill markers stroke"></path><path d="m 1201.0007,2823.3622 a 0.99894731,0.9994888 0 0 0 -0.6965,1.7177 l 1.9782,1.9773 a 0.99894731,0.9994888 0 1 0 1.4125,-1.4133 l -1.9783,-1.9772 a 0.99894731,0.9994888 0 0 0 -0.7159,-0.3045 z" style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;isolation:auto;mix-blend-mode:normal;solid-color:#000;solid-opacity:1" color="#000" enable-background="accumulate" font-family="sans-serif" font-weight="400" overflow="visible"></path></g></svg>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="journal_row_add">
+                            <tr>
+                                <td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">
+                                    1
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="text"
+                                        name="item[]"
+                                        id="item"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                        placeholder=""
+                                    /> 
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="text"
+                                        name="desc[]"
+                                        id="desc"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                        placeholder=""
+                                    />
+                                </td>
+                                <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="number"
+                                        name="dbt[]"
+                                        id="dbt"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                        placeholder=""
+                                    />
+                                </td>
+                                {% comment %} <td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">
+                                    <input 
+                                        type="text"
+                                        name="cr[]"
+                                        id="cr"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                        placeholder=""
+                                    />
+                                </td> {% endcomment %}
+                                <td class="border border-slate-300 py-0 my-0">
+                                    <button type="button" id="'+i+'" class="journal_remove_row flex justify-center items-center w-full h-3 px-2 py-1 text-[12px] font-semibold text-center text-gray-600 transition-colors duration-150 border border-transparent focus:outline-none focus:shadow-outline-slate">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" enable-background="new 0 0 64 64" viewBox="0 0 64 64" id="delete"><g transform="translate(232 228)"><path fill="#134563" d="M-207.5-205.1h3v24h-3zM-201.5-205.1h3v24h-3zM-195.5-205.1h3v24h-3zM-219.5-214.1h39v3h-39z"></path><path fill="#134563" d="M-192.6-212.6h-2.8v-3c0-.9-.7-1.6-1.6-1.6h-6c-.9 0-1.6.7-1.6 1.6v3h-2.8v-3c0-2.4 2-4.4 4.4-4.4h6c2.4 0 4.4 2 4.4 4.4v3"></path><path fill="#134563" d="M-191-172.1h-18c-2.4 0-4.5-2-4.7-4.4l-2.8-36 3-.2 2.8 36c.1.9.9 1.6 1.7 1.6h18c.9 0 1.7-.8 1.7-1.6l2.8-36 3 .2-2.8 36c-.2 2.5-2.3 4.4-4.7 4.4"></path></g></svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <button type="button" id="addRowBtn" class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition shadow-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    Add item
+            </div>
+        
+            <div class="grid gap-6 md:grid-cols-2">
+                
+                <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+                    type="submit">
+                    Create
                 </button>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full border-collapse">
-                    <thead class="bg-slate-50 text-slate-500 text-[11px] font-semibold uppercase tracking-wider border-b border-slate-200">
-                        <tr>
-                            <th class="px-4 py-3 text-left w-12">#</th>
-                            <th class="px-4 py-3 text-left">Item</th>
-                            <th class="px-4 py-3 text-left">Description</th>
-                            <th class="px-4 py-3 text-right w-36">Amount (₦)</th>
-                            <th class="px-4 py-3 text-center w-12"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="journal_row_add" class="divide-y divide-slate-100"></tbody>
-                </table>
-            </div>
-            <div class="px-5 py-4 border-t border-slate-100 bg-slate-50/30 flex flex-col sm:flex-row justify-end gap-4">
-                <div class="flex items-center gap-4 justify-end">
-                    <div class="text-right">
-                        <div class="text-xs text-slate-500 uppercase">Total amount</div>
-                        <input type="text" name="total-d" id="total-d" readonly class="w-36 px-3 py-2 bg-white border border-slate-200 rounded-xl text-right font-mono text-sm font-medium text-slate-700">
-                    </div>
-                    <div class="text-right">
-                        <div class="text-xs text-slate-500 uppercase">Amount paid</div>
-                        <input type="number" name="amount_paid" id="amount_paid" value="0" class="w-36 px-3 py-2 border border-slate-300 rounded-xl text-right text-sm focus:border-slate-400">
-                    </div>
+        
+                <div class="block justify-end items-center w-full">
+                    <label class="flex justify-end items-center gap-2 text-[11px] w-full">
+                        <span class="text-gray-700">Total </span>
+                        <input 
+                            type="text"
+                            name="total-d"
+                            id="total-d"
+                            class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            required
+                            readonly
+                        />
+                    </label>
+                    <label class="flex justify-end items-center gap-2 text-[11px] w-full mt-1">
+                        <span class="text-gray-700">Amount Paid </span>
+                        <input 
+                            type="number"
+                            name="amount_paid"
+                            id="amount_paid"
+                            class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                            required
+                           
+                        />
+                    </label>
+        
+                    {% comment %} <label class="flex justify-end items-center gap-2 text-[11px] w-full mt-1">
+                        <div class="flex justify-center items-center gap-6">
+                            <span class="text-gray-700">
+                                Discount
+                            </span>
+                            <label class="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    class="text-gray-700 form-checkbox focus:border-slate-200 focus:outline-none focus:shadow-outline-slate"
+                                />
+                                <span class="ml-2 text-gray-700">
+                                    Include VAT 7.5%
+                                </span>
+                            </label>
+                        </div>
+                        <input 
+                            type="text"
+                            class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder=""
+                        />
+                    </label> 
+        
+                    <label class="flex justify-end items-center gap-2 text-[11px] w-full mt-1">
+                        <span class="text-gray-700">Total Credit</span>
+                        <input 
+                            type="text"
+                            name="total-c"
+                            id="total-c"
+                            class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/>
+                    </label> {% endcomment %}
                 </div>
+        
             </div>
-        </div>
 
-        <!-- Submit button -->
-        <div class="flex justify-end sticky bottom-4 z-10">
-            <button type="submit" id="submitBtn" class="inline-flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl shadow-md transition transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-slate-500">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
-                Create Journal Entry
-            </button>
         </div>
     </form>
-</div>
+
+
 
 <script>
-    // ---------- Dynamic rows management ----------
-    let rowCounter = 1;
-    const $tbody = $('#journal_row_add');
+     
+    
+// ── Unified party search (single input) ──────────────────────────────────
+var partySearchTimer = null;
+var $partyInput = $('#party_name_input');
+var $partySuggestions = $('#party_suggestions');
+var $partyPhone = $('#party_phone');
+var $partyStatus = $('#name_status');
 
-    function updateSerialNumbers() {
-        $('#journal_row_add tr').each(function(index, row) {
-            $(row).find('.sn-cell').text(index + 1);
-        });
+function fetchPartySuggestions(query, showAll = false) {
+    $partySuggestions.addClass('hidden').empty();
+    if (!showAll && (!query || query.length < 2)) {
+        if (query && query.length === 0) $partyStatus.text('');
+        return;
     }
-
-    function recalcTotal() {
-        let total = 0;
-        $('.item-amount').each(function() {
-            let val = parseFloat($(this).val());
-            if (!isNaN(val)) total += val;
-        });
-        $('#total-d').val(total.toFixed(2));
-    }
-
-    function bindRemoveEvents() {
-        $('.remove-row-btn').off('click').on('click', function() {
-            if ($('#journal_row_add tr').length <= 1) {
-                if(confirm("At least one line item is required. Clear amounts instead?")) {
-                    $(this).closest('tr').find('.item-amount').val('');
-                    recalcTotal();
-                }
-                return;
+    // If showAll is true, we pass a special parameter; otherwise normal search
+    var url = showAll ? '/search-vendor-customer/?all=true' : '/search-vendor-customer/?q=' + encodeURIComponent(query);
+    $.ajax({
+        url: url,
+        success: function(res) {
+            if (res.results && res.results.length > 0) {
+                res.results.forEach(function(r) {
+                    var badge = r.type === 'vendor'
+                        ? '<span class="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full ml-2">vendor</span>'
+                        : '<span class="text-[9px] bg-green-100 text-green-600 px-1.5 py-0.5 rounded-full ml-2">customer</span>';
+                    var $li = $('<li class="px-3 py-2 hover:bg-slate-100 cursor-pointer flex items-center justify-between border-b border-slate-100 last:border-0">')
+                        .html('<span><strong>' + escapeHtml(r.name) + '</strong>' + (r.phone ? ' · ' + escapeHtml(r.phone) : '') + '</span>' + badge);
+                    $li.on('click', function() {
+                        $partyInput.val(r.name);
+                        $partyPhone.val(r.phone || '');
+                        $partyStatus.html('✓ Selected from ' + r.type + ' list').removeClass('text-orange-500').addClass('text-green-600');
+                        $partySuggestions.addClass('hidden');
+                        if (r.type === 'vendor') $('#partyVendor').prop('checked', true);
+                        else $('#partyCustomer').prop('checked', true);
+                    });
+                    $partySuggestions.append($li);
+                });
+                $partySuggestions.removeClass('hidden');
+                $partyStatus.text('');
+            } else if (!showAll) {
+                var partyType = $('#partyVendor').is(':checked') ? 'vendor' : 'customer';
+                $partyStatus.html('⚠️ Not found — a new ' + partyType + ' will be created on save').removeClass('text-green-600').addClass('text-orange-500');
+                $partySuggestions.addClass('hidden');
+            } else {
+                $partySuggestions.addClass('hidden');
             }
-            $(this).closest('tr').remove();
-            updateSerialNumbers();
-            recalcTotal();
-        });
-    }
-
-    function bindAmountEvents() {
-        $('.item-amount').off('input').on('input', function() {
-            recalcTotal();
-        });
-    }
-
-    function addNewRow() {
-        const newIndex = $('#journal_row_add tr').length + 1;
-        const newRow = `
-            <tr class="hover:bg-slate-50/60 transition">
-                <td class="px-4 py-2 text-sm text-slate-500 text-center sn-cell">${newIndex}</td>
-                <td class="px-4 py-2"><input type="text" name="item[]" class="w-full min-w-[120px] px-2 py-1.5 border border-slate-200 rounded-lg text-sm focus:border-slate-300" placeholder="Item name"></td>
-                <td class="px-4 py-2"><input type="text" name="desc[]" class="w-full min-w-[180px] px-2 py-1.5 border border-slate-200 rounded-lg text-sm" placeholder="Description"></td>
-                <td class="px-4 py-2 text-right"><input type="number" step="any" name="dbt[]" class="item-amount w-32 px-2 py-1.5 border border-slate-200 rounded-lg text-right text-sm" placeholder="0.00"></td>
-                <td class="px-4 py-2 text-center"><button type="button" class="remove-row-btn text-slate-400 hover:text-red-500 transition p-1 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 13a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-13M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg></button></td>
-            </tr>
-        `;
-        $tbody.append(newRow);
-        bindRemoveEvents();
-        bindAmountEvents();
-        updateSerialNumbers();
-        recalcTotal();
-    }
-
-    function initTableRows() {
-        $tbody.empty();
-        const initRow = `
-            <tr>
-                <td class="px-4 py-2 text-sm text-slate-500 text-center sn-cell">1</td>
-                <td class="px-4 py-2"><input type="text" name="item[]" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm" placeholder="e.g., Consulting"></td>
-                <td class="px-4 py-2"><input type="text" name="desc[]" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm" placeholder="Description"></td>
-                <td class="px-4 py-2 text-right"><input type="number" step="any" name="dbt[]" class="item-amount w-32 px-2 py-1.5 border border-slate-200 rounded-lg text-right text-sm" placeholder="0.00"></td>
-                <td class="px-4 py-2 text-center"><button type="button" class="remove-row-btn text-slate-400 hover:text-red-500 transition"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 13a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-13M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg></button></td>
-            </tr>
-        `;
-        $tbody.append(initRow);
-        bindRemoveEvents();
-        bindAmountEvents();
-        recalcTotal();
-    }
-
-    $('#addRowBtn').on('click', addNewRow);
-    initTableRows();
-
-    // ---------- Vendor / Customer search with AJAX ----------
-    let nameSearchTimer = null;
-    $('#vendor_name_input').on('input', function() {
-        let q = $(this).val().trim();
-        clearTimeout(nameSearchTimer);
-        $('#name_suggestions').addClass('hidden').empty();
-        $('#name_status').text('');
-        if (q.length < 2) return;
-        nameSearchTimer = setTimeout(function() {
-            $.ajax({
-                url: '/search-vendor-customer/',
-                data: { q: q },
-                success: function(res) {
-                    let $list = $('#name_suggestions');
-                    $list.empty();
-                    if (res.results && res.results.length > 0) {
-                        res.results.forEach(function(r) {
-                            let badge = r.type === 'vendor' 
-                                ? '<span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full ml-2">vendor</span>' 
-                                : '<span class="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full ml-2">customer</span>';
-                            let $li = $('<li class="px-3 py-2 hover:bg-slate-100 cursor-pointer flex justify-between items-center border-b border-slate-100 last:border-0">')
-                                .html(`<span class="font-medium">${escapeHtml(r.name)}</span>${badge}`);
-                            $li.on('click', function() {
-                                $('#vendor_name_input').val(r.name);
-                                $('#party_phone').val(r.phone || '');
-                                $('#name_status').html('✓ Found in ' + r.type + ' records').removeClass('text-slate-400').addClass('text-green-600');
-                                $list.addClass('hidden');
-                                if (r.type === 'vendor') $('#partyVendor').prop('checked', true);
-                                else $('#partyCustomer').prop('checked', true);
-                            });
-                            $list.append($li);
-                        });
-                        $list.removeClass('hidden');
-                    } else {
-                        $('#name_status').html('⚠️ Not found — new ' + ($('#partyVendor').is(':checked') ? 'vendor' : 'customer') + ' will be created').removeClass('text-green-600').addClass('text-amber-600');
-                    }
-                }
-            });
-        }, 300);
-    });
-
-    function escapeHtml(str) {
-        if(!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    $(document).on('click', function(e) {
-        if (!$(e.target).closest('#vendor_name_input, #name_suggestions').length) {
-            $('#name_suggestions').addClass('hidden');
         }
     });
+}
 
+// Type to search
+$partyInput.on('input', function() {
+    var q = $(this).val().trim();
+    clearTimeout(partySearchTimer);
+    $partySuggestions.addClass('hidden');
+    if (q.length === 0) {
+        $partyStatus.text('');
+        $partyPhone.val('');
+        return;
+    }
+    if (q.length < 2) {
+        $partyStatus.text('Type at least 2 characters to search');
+        return;
+    }
+    partySearchTimer = setTimeout(function() { fetchPartySuggestions(q, false); }, 300);
+});
+
+// Show all parties when clicking the dropdown button
+$('#showAllPartiesBtn').on('click', function(e) {
+    e.stopPropagation();
+    fetchPartySuggestions('', true);
+});
+
+// Clear phone and status when input is cleared
+$partyInput.on('change', function() {
+    if (!$(this).val().trim()) {
+        $partyPhone.val('');
+        $partyStatus.text('');
+        $partySuggestions.addClass('hidden');
+    }
+});
+
+// Close suggestions when clicking outside
+$(document).on('click', function(e) {
+    if (!$(e.target).closest('#party_name_input, #party_suggestions, #showAllPartiesBtn').length) {
+        $partySuggestions.addClass('hidden');
+    }
+});
+
+// Helper to escape HTML
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+    $("#form").submit( function(e){
+        const accounts = $("#accounts").val()
+        if(accounts === ""){
+            e.preventDefault()
+            $('.accounts').html('This field is required')
+        }
+        else{
+            $('.accounts').html('')
+           $("#submit").attr('disabled', false)
+        }
+    })
+
+
+    // ── Dropdown selection fills the text input + phone + radio ──────────────
     $('#party_name_select').on('change', function() {
-        let selected = $(this).find(':selected');
-        let name = selected.val();
-        let phone = selected.data('phone') || '';
-        let type = selected.data('type');
-        if (!name) return;
+        var selected = $(this).find(':selected');
+        var name     = selected.val();
+        var phone    = selected.data('phone') || '';
+        var type     = selected.data('type');
+
+        if (!name) {
+            // Reset if "— Select from list —" chosen
+            $('#vendor_name_input').val('');
+            $('#party_phone').val('');
+            $('#name_status').text('');
+            return;
+        }
+
         $('#vendor_name_input').val(name);
         $('#party_phone').val(phone);
-        $('#name_status').html(`✓ Selected from ${type} list`).removeClass('text-amber-600').addClass('text-green-600');
-        if (type === 'vendor') $('#partyVendor').prop('checked', true);
-        else $('#partyCustomer').prop('checked', true);
-    });
+        $('#name_status')
+            .text('Selected from ' + type + ' list')
+            .removeClass('text-orange-500')
+            .addClass('text-green-600');
 
-    $('#vendor_name_input').on('input', function() {
-        if ($(this).val().trim()) $('#party_name_select').val('');
-    });
-
-    // Form validation for credit account
-    $("#journalForm").submit(function(e) {
-        const creditAccount = $("#accounts").val();
-        if (!creditAccount) {
-            e.preventDefault();
-            $('.accounts').html('Please select a credit account');
+        if (type === 'vendor') {
+            $('#partyVendor').prop('checked', true);
         } else {
-            $('.accounts').html('');
-        }
-        let totalVal = parseFloat($('#total-d').val());
-        if (isNaN(totalVal) || totalVal === 0) {
-            if(!confirm("Total amount is zero. Do you want to submit anyway?")) {
-                e.preventDefault();
-            }
+            $('#partyCustomer').prop('checked', true);
         }
     });
+
+    // ── When user types in the text box, reset the dropdown selection ─────────
+    $('#vendor_name_input').on('input', function() {
+        if ($(this).val().trim()) {
+            $('#party_name_select').val('');
+        }
+    });
+    
 </script>
+{% include 'journal_grid_table.html' %}
 
 {% endblock content %}
