@@ -113,56 +113,69 @@
                 </label>
             </div>
 
-        <!-- Party selector (Customer / Vendor) - improved single-field design -->
-        <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-3">
-            <div class="text-sm">
-                <span class="text-gray-700 block mb-1">Party Type</span>
-                <label class="inline-flex items-center text-gray-600">
-                    <input type="radio" name="party_type" value="vendor" id="partyVendor"
-                        class="text-slate-600 form-radio focus:border-slate-400 focus:outline-none" checked />
-                    <span class="ml-1">Vendor</span>
-                </label>
-                <label class="inline-flex items-center ml-6 text-gray-600">
-                    <input type="radio" name="party_type" value="customer" id="partyCustomer"
-                        class="text-slate-600 form-radio focus:border-slate-400 focus:outline-none" />
-                    <span class="ml-1">Customer</span>
-                </label>
-            </div>
+           {# ── Party selector (Customer / Vendor) ── #}
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-3">
 
-            <label class="block text-sm col-span-2">
-                <span class="text-gray-700">Vendor / Customer Name</span>
-                <div class="relative mt-1">
-                    <!-- Single combined input for search + type new -->
-                    <input type="text" id="party_name_input" name="vendor_name"
-                        autocomplete="off"
-                        placeholder="Type to search existing or enter new name..."
-                        class="block w-full px-3 py-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input" />
-                    
-                    <!-- Suggestions dropdown (appears while typing) -->
-                    <ul id="party_suggestions"
-                        class="absolute z-50 w-full bg-white border border-slate-200 rounded-md shadow-lg hidden max-h-48 overflow-y-auto text-sm">
-                    </ul>
-                    
-                    <!-- Optional: dropdown toggle button (shows all parties) -->
-                    <button type="button" id="showAllPartiesBtn"
-                        class="absolute inset-y-0 right-0 px-2 text-slate-400 hover:text-slate-600 focus:outline-none"
-                        title="Show all vendors/customers">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </button>
+                <div class="text-sm">
+                    <span class="text-gray-700 block mb-1">Party Type</span>
+                    <label class="inline-flex items-center text-gray-600">
+                        <input type="radio" name="party_type" value="vendor" id="partyVendor"
+                            class="text-slate-600 form-radio focus:border-slate-400 focus:outline-none"
+                            checked />
+                        <span class="ml-1">Vendor</span>
+                    </label>
+                    <label class="inline-flex items-center ml-6 text-gray-600">
+                        <input type="radio" name="party_type" value="customer" id="partyCustomer"
+                            class="text-slate-600 form-radio focus:border-slate-400 focus:outline-none" />
+                        <span class="ml-1">Customer</span>
+                    </label>
                 </div>
-                <p id="name_status" class="text-[10px] mt-0.5 text-slate-400"></p>
-            </label>
 
-            <label class="block text-sm">
-                <span class="text-gray-700">Phone</span>
-                <input type="text" name="phone" id="party_phone"
-                    class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"
-                    placeholder="Auto-filled or enter manually" />
-            </label>
+                <label class="block text-sm">
+                    <span class="text-gray-700">Vendor / Customer Name</span>
+                    <div class="relative mt-1">
+                        
+                        <select id="party_name_select"
+                                class="block w-full px-2 py-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none text-slate-600 mb-1">
+                            <option value="">— Select from list —</option>
+                            <optgroup label="Vendors">
+                                {% for v in vendor %}
+                                <option value="{{ v.name }}" data-phone="{{ v.phone }}" data-type="vendor">
+                                    {{ v.name }}{% if v.phone %} · {{ v.phone }}{% endif %}
+                                </option>
+                                {% endfor %}
+                            </optgroup>
+                            <optgroup label="Customers">
+                                {% for c in customers %}
+                                <option value="{{ c.name }}" data-phone="{{ c.phone }}" data-type="customer">
+                                    {{ c.name }}{% if c.phone %} · {{ c.phone }}{% endif %}
+                                </option>
+                                {% endfor %}
+                            </optgroup>
+                        </select>
 
-            <label class="block text-sm">
+                        {# ── Or type a new name ── #}
+                        <input type="text" id="vendor_name_input" name="vendor_name"
+                            autocomplete="off"
+                            placeholder="Or type to search / enter new name..."
+                            class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input" />
+
+                        <ul id="name_suggestions"
+                            class="absolute z-50 w-full bg-white border border-slate-200 rounded-md shadow-lg hidden max-h-48 overflow-y-auto text-sm">
+                        </ul>
+                    </div>
+                    <p id="name_status" class="text-[10px] mt-0.5 text-slate-400"></p>
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Phone</span>
+                    <input type="text" name="phone" id="party_phone"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"
+                        placeholder="Auto-filled or enter manually" />
+                </label>
+
+
+                <label class="block text-sm">
                     <span class="text-gray-600">Narration</span>
                     <textarea
                         class="block w-full mt-1 px-2 text-sm form-textarea border-2 rounded-md focus:border-slate-300  focus:outline-none focus:shadow-outline-green text-slate-600"
@@ -183,11 +196,8 @@
                         />
                     </label>
                 </div>
-        </div>
 
-                
-
-            
+            </div>
 
                 
 
@@ -339,109 +349,91 @@
 
 
 <script>
-    // ── Unified party search (single input) ──────────────────────────────────
-    var partySearchTimer = null;
-    var $partyInput = $('#party_name_input');
-    var $partySuggestions = $('#party_suggestions');
-    var $partyPhone = $('#party_phone');
-    var $partyStatus = $('#name_status');
+     
+    
+    // ── Journal party name search ─────────────────────────────────────────────
+    var nameSearchTimer = null;
 
-    function fetchPartySuggestions(query, showAll = false) {
-        $partySuggestions.addClass('hidden').empty();
-        if (!showAll && (!query || query.length < 2)) {
-            if (query && query.length === 0) $partyStatus.text('');
-            return;
-        }
-        var url = showAll ? '/search-vendor-customer/?all=true' : '/search-vendor-customer/?q=' + encodeURIComponent(query);
-        $.ajax({
-            url: url,
-            success: function(res) {
-                if (res.results && res.results.length > 0) {
-                    res.results.forEach(function(r) {
-                        var badge = r.type === 'vendor'
-                            ? '<span class="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full ml-2">vendor</span>'
-                            : '<span class="text-[9px] bg-green-100 text-green-600 px-1.5 py-0.5 rounded-full ml-2">customer</span>';
-                        var $li = $('<li class="px-3 py-2 hover:bg-slate-100 cursor-pointer flex items-center justify-between border-b border-slate-100 last:border-0">')
-                            .html('<span><strong>' + escapeHtml(r.name) + '</strong>' + (r.phone ? ' · ' + escapeHtml(r.phone) : '') + '</span>' + badge);
-                        $li.on('click', function() {
-                            $partyInput.val(r.name);
-                            $partyPhone.val(r.phone || '');
-                            $partyStatus.html('✓ Selected from ' + r.type + ' list').removeClass('text-orange-500').addClass('text-green-600');
-                            $partySuggestions.addClass('hidden');
-                            if (r.type === 'vendor') $('#partyVendor').prop('checked', true);
-                            else $('#partyCustomer').prop('checked', true);
-                        });
-                        $partySuggestions.append($li);
-                    });
-                    $partySuggestions.removeClass('hidden');
-                    $partyStatus.text('');
-                } else if (!showAll) {
-                    var partyType = $('#partyVendor').is(':checked') ? 'vendor' : 'customer';
-                    $partyStatus.html('⚠️ Not found — a new ' + partyType + ' will be created on save').removeClass('text-green-600').addClass('text-orange-500');
-                    $partySuggestions.addClass('hidden');
-                } else {
-                    $partySuggestions.addClass('hidden');
-                }
-            }
-        });
-    }
-
-    $partyInput.on('input', function() {
+    $('#vendor_name_input').on('input', function() {
         var q = $(this).val().trim();
-        clearTimeout(partySearchTimer);
-        $partySuggestions.addClass('hidden');
-        if (q.length === 0) {
-            $partyStatus.text('');
-            $partyPhone.val('');
-            return;
-        }
-        if (q.length < 2) {
-            $partyStatus.text('Type at least 2 characters to search');
-            return;
-        }
-        partySearchTimer = setTimeout(function() { fetchPartySuggestions(q, false); }, 300);
+        clearTimeout(nameSearchTimer);
+        $('#name_suggestions').addClass('hidden').empty();
+        $('#name_status').text('');
+
+        if (q.length < 2) return;
+
+        nameSearchTimer = setTimeout(function() {
+            $.ajax({
+                url:  '/search-vendor-customer/',
+                data: { q: q },
+                success: function(res) {
+                    var $list = $('#name_suggestions');
+                    $list.empty();
+
+                    if (res.results && res.results.length > 0) {
+                        res.results.forEach(function(r) {
+                            var badge = r.type === 'vendor'
+                                ? '<span class="text-[9px] bg-blue-100 text-blue-600 px-1 rounded ml-1">vendor</span>'
+                                : '<span class="text-[9px] bg-green-100 text-green-600 px-1 rounded ml-1">customer</span>';
+                            var $li = $('<li class="px-3 py-1.5 hover:bg-slate-100 cursor-pointer flex items-center justify-between">')
+                                .append($('<span>').text(r.name))
+                                .append($(badge));
+
+                            $li.on('click', function() {
+                                $('#vendor_name_input').val(r.name);
+                                $('#party_phone').val(r.phone || '');
+                                $('#name_status').text('Found in ' + r.type + ' records').addClass('text-green-600').removeClass('text-orange-500');
+                                $list.addClass('hidden').empty();
+
+                                // ── Auto-select the radio based on where the name was found ──
+                                if (r.type === 'vendor') {
+                                    $('#partyVendor').prop('checked', true);
+                                } else if (r.type === 'customer') {
+                                    $('#partyCustomer').prop('checked', true);
+                                }
+                            });
+
+                            $list.append($li);
+                        });
+                        $list.removeClass('hidden');
+                    } else {
+                        $('#name_status')
+                            .text('Not found — a new vendor will be created on save.')
+                            .removeClass('text-green-600')
+                            .addClass('text-orange-500');
+                    }
+                }
+            });
+        }, 300);
     });
 
-    $('#showAllPartiesBtn').on('click', function(e) {
-        e.stopPropagation();
-        fetchPartySuggestions('', true);
-    });
-
-    $partyInput.on('change', function() {
-        if (!$(this).val().trim()) {
-            $partyPhone.val('');
-            $partyStatus.text('');
-            $partySuggestions.addClass('hidden');
-        }
-    });
-
+    // Close suggestions when clicking outside
     $(document).on('click', function(e) {
-        if (!$(e.target).closest('#party_name_input, #party_suggestions, #showAllPartiesBtn').length) {
-            $partySuggestions.addClass('hidden');
+        if (!$(e.target).closest('#vendor_name_input, #name_suggestions').length) {
+            $('#name_suggestions').addClass('hidden');
         }
     });
 
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    // ── Form submission validation ──
-    $("#form").submit(function(e) {
-        const accounts = $("#accounts").val();
-        if (accounts === "") {
-            e.preventDefault();
-            $('.accounts').html('This field is required');
-        } else {
-            $('.accounts').html('');
-            $("#submit").attr('disabled', false);
+    // Clear phone when name is cleared
+    $('#vendor_name_input').on('change', function() {
+        if (!$(this).val().trim()) {
+            $('#party_phone').val('');
+            $('#name_status').text('');
         }
     });
+
+    $("#form").submit( function(e){
+        const accounts = $("#accounts").val()
+        if(accounts === ""){
+            e.preventDefault()
+            $('.accounts').html('This field is required')
+        }
+        else{
+            $('.accounts').html('')
+           $("#submit").attr('disabled', false)
+        }
+    })
+    
 </script>
 {% include 'journal_grid_table.html' %}
 
