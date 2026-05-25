@@ -18,22 +18,49 @@ from routers.page_permission import  urls_name
 @urls_name(name="Add New Journal")
 def NewJournal(request):
     db = request.user.company_id.db_name
-    loan = loan_account.objects.using(db).all()
-    vendor = vendor_table.objects.using(db).all()
+    loan     = loan_account.objects.using(db).all()
+    vendor   = vendor_table.objects.using(db).all()
+    customer = customer_table.objects.using(db).all()
     Accounts = chart_of_account.objects.using(db).all()
     acc_types = accounts.objects.using(db).all()
-    
+
     form = None
     if request.method == "POST":
-       form = create_new_journal_enty(request, db)  
+        form = create_new_journal_enty(request, db)
+
     context = {
-        'vendor':vendor,
-        'accounts':Accounts,
-        'acc_types':acc_types,
-        'invoice': generate_invoice_id(),
-        'form': form,
-    } 
+        'vendor':     vendor,
+        'customers':  customer,
+        'accounts':   Accounts,
+        'acc_types':  acc_types,
+        'invoice':    generate_invoice_id(),
+        'form':       form,
+    }
     return render(request, "journal/NewJournalEntry.html", context)
+
+
+def search_vendor_customer(request):
+    """AJAX: search vendor + customer tables by name, return combined suggestions."""
+    db    = request.user.company_id.db_name
+    query = request.GET.get('q', '').strip()
+
+    results = []
+    if query:
+        vendors = vendor_table.objects.using(db).filter(
+            name__icontains=query
+        ).values('name', 'phone', 'email', 'address')[:10]
+
+        customers = customer_table.objects.using(db).filter(
+            name__icontains=query
+        ).values('name', 'phone', 'email', 'address')[:10]
+
+        for v in vendors:
+            results.append({'name': v['name'], 'phone': v['phone'] or '', 'type': 'vendor'})
+        for c in customers:
+            results.append({'name': c['name'], 'phone': c['phone'] or '', 'type': 'customer'})
+
+    return JsonResponse({'results': results})
+
 
 @login_required(login_url='/')
 @urls_name(name="Add New Journal")
