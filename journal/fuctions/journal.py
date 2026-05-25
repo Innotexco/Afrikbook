@@ -9,140 +9,117 @@ from account.acct_functions.account import checkAccountType
 from customer.functions.generalFunction import CreateLog, DebitPayable, CreditPayable
 from journal.models import new_journal_entry, journal_entry_bin
 from django.db.models import Sum
+from customer.models import customer_table
+from vendor.models import vendor_table
 
 
 def create_new_journal_enty(request, db):
-    
-    message_displayed = False  # Initialize the message_displayed variable
-   
-    date = request.POST['date']
-    invoice_no = request.POST['invoice_no']
-    order_no = request.POST['order_no']
-    category = request.POST.get('category')
-    account_id = request.POST.get('credit-account')
-    vendor = request.POST['vendor_name']
-    phone = request.POST.get('phone')
-    narration = request.POST['narration']
-    
-    
-    item = request.POST.getlist('item[]')
+    message_displayed = False
+
+    date         = request.POST['date']
+    invoice_no   = request.POST['invoice_no']
+    order_no     = request.POST.get('order_no', '')
+    category     = request.POST.get('category')
+    account_id   = request.POST.get('credit-account')
+    vendor_name  = request.POST.get('vendor_name', '').strip()
+    phone        = request.POST.get('phone', '').strip()
+    party_type   = request.POST.get('party_type', 'vendor')  # 'vendor' or 'customer'
+    narration    = request.POST['narration']
+
+    item         = request.POST.getlist('item[]')
     descriptions = request.POST.getlist('desc[]')
-    credit = request.POST.getlist('cr[]')
-    amount = request.POST.getlist('dbt[]')
-    # total = request.POST['total']
-    # total_credit = request.POST['total-c']
-    total_debit = request.POST['total-d']
-    amount_paid = request.POST['amount_paid']
+    amount       = request.POST.getlist('dbt[]')
+    total_debit  = request.POST['total-d']
+    amount_paid  = request.POST['amount_paid']
 
     transaction_type = "Debit"
-    transaction_source = None
-    
-    if account_id != None : 
-        # Account = checkAccountType(request, category)
+
+    if account_id:
         account = chart_of_account.objects.using(db).get(account_id=account_id)
-        vendor_name = vendor + "("+ account.series_name + ")"
-    
+
         if account.series_name == "Expenses":
-            transaction_source = vendor
+            transaction_source = vendor_name
         elif account.series_name == "Income":
             transaction_source = "Sales"
-        elif account.series_name == "Liability":
-            transaction_source = vendor
-        elif account.series_name == "Assets":
-            transaction_source = "Purchase"
-    
+        else:
+            transaction_source = vendor_name
+
         for i in range(len(item)):
-
-            # Check if the itemcode (value) is equal to 1
-            if str(item[i]) != "":
-            
-            
-                form_data = {
-                    'date': date,
-                    'invoice_no':invoice_no,
-                    'order_no':order_no,
-                    'account':account.account_id,
-                    'vendor_name':vendor,
-                    'category':category,
-                    'narration':narration,
-                    'item': item[i],
-                    'description':descriptions[i],
-                    'debit': amount_paid,
-                    'credit': total_debit,
-                    'total': amount[i],
-                    'transaction_type':transaction_type
-                }
-                # form_data = {
-                #     'date': date,
-                #     'invoice_no':invoice_no,
-                #     'order_no':order_no,
-                #     'account':"6",
-                #     'vendor_name':vendor_name,
-                #     'category':category,
-                #     'narration':narration,
-                #     'item': item[i],
-                #     'description':descriptions[i],
-                #     'debit': debit[i],
-                #     'credit': credit[i],
-                #     'total': total,
-                #     'total_debit': total_debit,
-                #     'total_credit': total_credit,
-                #     'transaction_type':transaction_type
-                # }
-                
-                form = JournalEntryForm(form_data)
-                journal_log_form = JournalEntryLogForm(form_data)
-                if category != None:
-                   
-                    if form.is_valid():
-                        form_i = form.save(commit=False)
-                        form_i.Userlogin = request.user.username
-                        form_i.save(using=db)
-
-                        # Display the success message only once
-                        if not message_displayed:
-
-                            if vendor:
-                                try:
-                                    ven = vendor_table.objects.using(db).get(name=vendor, phone=phone)
-                                except vendor_table.DoesNotExist:
-                                    ven = vendor_table.objects.using(db).create(name=vendor, phone=phone, Userlogin=request.user.username)
-                                    start =account.account_id[0]
-                                    id = generate_new_account_id()
-                                    new_id = start+id+"-"+vendor
-                                    
-                                    account = chart_of_account.objects.using(db).create(
-                                        account_id = new_id,
-                                        series_name = account.series_name,
-                                        account_type = account.account_type,
-                                        account_bankname = vendor,
-                                        status = "Active",
-                                        actual_balance = total_debit,
-                                        Userlogin = request.user.username
-                                    )
-                                
-                                DebitPayable(request, db, ven, date, narration, "Transfer", account.account_id, amount_paid)
-                                CreditPayable(request, db, ven, date, narration, "Transfer", account.account_id,  total_debit)
-                            CreateLog(db, account, amount_paid)
-
-                      
-                            messages.success(request, "New Journal Entry was created successfully")
-                            message_displayed = True  # Update the message_displayed variable
-                    else:
-                
-                        return form
-                else:
-                    if not message_displayed:
-                        messages.error(request, "Select Operating expenses")
-                        message_displayed = True
-            else:
+            if str(item[i]).strip() == "":
                 if not message_displayed:
                     messages.error(request, "Add at least one item")
                     message_displayed = True
+                continue
+
+            if category is None:
+                if not message_displayed:
+                    messages.error(request, "Select Operating expenses")
+                    message_displayed = True
+                continue
+
+            form_data = {
+                'date':             date,
+                'invoice_no':       invoice_no,
+                'order_no':         order_no,
+                'account':          account.account_id,
+                'vendor_name':      vendor_name,
+                'category':         category,
+                'narration':        narration,
+                'item':             item[i],
+                'description':      descriptions[i],
+                'debit':            amount_paid,
+                'credit':           total_debit,
+                'total':            amount[i],
+                'transaction_type': transaction_type,
+            }
+
+            form = JournalEntryForm(form_data)
+            if form.is_valid():
+                form_i = form.save(commit=False)
+                form_i.Userlogin = request.user.username
+                form_i.save(using=db)
+
+                if not message_displayed:
+                    if vendor_name:
+                        
+                        #Resolve or create vendor
+                        import uuid
+                        dummy_email = f"{uuid.uuid4().hex[:8]}@noemail.local"
+
+                        try:
+                            ven = vendor_table.objects.using(db).get(name__iexact=vendor_name)
+                        except vendor_table.DoesNotExist:
+                            # Try customer table first
+                            try:
+                                cus = customer_table.objects.using(db).get(name__iexact=vendor_name)
+                                
+                                ven = vendor_table.objects.using(db).create(
+                                    name      = cus.name,
+                                    phone     = cus.phone or phone or '0000000000',
+                                    email     = dummy_email,
+                                    address   = cus.address or 'N/A',
+                                    Userlogin = request.user.username,
+                                )
+                            except customer_table.DoesNotExist:
+
+                                ven = vendor_table.objects.using(db).create(
+                                    name      = vendor_name,
+                                    phone     = phone or '0000000000',
+                                    email     = dummy_email,
+                                    address   = 'N/A',
+                                    Userlogin = request.user.username,
+                                )
+
+                        DebitPayable(request, db, ven, date, narration, "Transfer", account.account_id, amount_paid)
+                        CreditPayable(request, db, ven, date, narration, "Transfer", account.account_id, total_debit)
+
+                    CreateLog(db, account, amount_paid)
+                    messages.success(request, "New Journal Entry was created successfully")
+                    message_displayed = True
+            else:
+                return form
     else:
         messages.error(request, "Select valid Account")
-
-
 
 def transfer_to_bin(request, db, status, invoice_no):
     

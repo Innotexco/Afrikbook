@@ -33,7 +33,7 @@ def add_vendor(request, db):
     email = request.POST.get('email')
     try:
         vendor_table.objects.using(db).get(email=email)
-        messages.success(request, "Email alredy exists")
+        messages.error(request, "Email already exists")
     except vendor_table.DoesNotExist:
         if form.is_valid():
             vendor = form.save(commit=False)

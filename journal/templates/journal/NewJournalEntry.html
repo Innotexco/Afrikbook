@@ -113,32 +113,46 @@
                 </label>
             </div>
 
-            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
+           {# ── Party selector (Customer / Vendor) ── #}
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-3">
 
+                <div class="text-sm">
+                    <span class="text-gray-700 block mb-1">Party Type</span>
+                    <label class="inline-flex items-center text-gray-600">
+                        <input type="radio" name="party_type" value="vendor" id="partyVendor"
+                            class="text-slate-600 form-radio focus:border-slate-400 focus:outline-none"
+                            checked />
+                        <span class="ml-1">Vendor</span>
+                    </label>
+                    <label class="inline-flex items-center ml-6 text-gray-600">
+                        <input type="radio" name="party_type" value="customer" id="partyCustomer"
+                            class="text-slate-600 form-radio focus:border-slate-400 focus:outline-none" />
+                        <span class="ml-1">Customer</span>
+                    </label>
+                </div>
 
                 <label class="block text-sm">
-                   
-                    <label for="myInput"> Vendor / Name</label>
-                    <input type="text" id="myInput" name="vendor_name" list="option_list"  placeholder="Select or enter..." class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input">
-                    <datalist id="option_list" >
-                        {% for vendor in vendor %}
-                            <option value="{{vendor.name}}" data-phone="{{vendor.phone}}">{{vendor.name}}</option>
-                        {% endfor %}
-                    </datalist>
-                    
-                </label>
-                <label class="block text-sm">
-                    <span class="text-gray-700 dark:text-gray-400">Vendor Phone</span>
-                    <input 
-                        type="text"
-                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                        placeholder=""
-                        name="phone"
-                        id="phone"
-                    />
+                    <span class="text-gray-700">Vendor / Customer Name</span>
+                    <div class="relative mt-1">
+                        <input type="text" id="vendor_name_input" name="vendor_name"
+                            autocomplete="off"
+                            placeholder="Type to search or enter new name..."
+                            class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input" />
+                        {# Suggestion dropdown #}
+                        <ul id="name_suggestions"
+                            class="absolute z-50 w-full bg-white border border-slate-200 rounded-md shadow-lg hidden max-h-48 overflow-y-auto text-sm">
+                        </ul>
+                    </div>
+                    <p id="name_status" class="text-[10px] mt-0.5 text-slate-400"></p>
                 </label>
 
-                
+                <label class="block text-sm">
+                    <span class="text-gray-700">Phone</span>
+                    <input type="text" name="phone" id="party_phone"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input"
+                        placeholder="Auto-filled or enter manually" />
+                </label>
+
 
                 <label class="block text-sm">
                     <span class="text-gray-600">Narration</span>
@@ -162,8 +176,14 @@
                     </label>
                 </div>
 
-                
             </div>
+
+                
+
+                
+
+                
+           
             {% include 'components/morefields.html' %}
            
 
@@ -310,6 +330,70 @@
 <script>
      
     
+    // ── Journal party name search ─────────────────────────────────────────────
+    var nameSearchTimer = null;
+
+    $('#vendor_name_input').on('input', function() {
+        var q = $(this).val().trim();
+        clearTimeout(nameSearchTimer);
+        $('#name_suggestions').addClass('hidden').empty();
+        $('#name_status').text('');
+
+        if (q.length < 2) return;
+
+        nameSearchTimer = setTimeout(function() {
+            $.ajax({
+                url:  '/search-vendor-customer/',
+                data: { q: q },
+                success: function(res) {
+                    var $list = $('#name_suggestions');
+                    $list.empty();
+
+                    if (res.results && res.results.length > 0) {
+                        res.results.forEach(function(r) {
+                            var badge = r.type === 'vendor'
+                                ? '<span class="text-[9px] bg-blue-100 text-blue-600 px-1 rounded ml-1">vendor</span>'
+                                : '<span class="text-[9px] bg-green-100 text-green-600 px-1 rounded ml-1">customer</span>';
+                            var $li = $('<li class="px-3 py-1.5 hover:bg-slate-100 cursor-pointer flex items-center justify-between">')
+                                .append($('<span>').text(r.name))
+                                .append($(badge));
+
+                            $li.on('click', function() {
+                                $('#vendor_name_input').val(r.name);
+                                $('#party_phone').val(r.phone || '');
+                                $('#name_status').text('Found in ' + r.type + ' records').addClass('text-green-600').removeClass('text-orange-500');
+                                $list.addClass('hidden').empty();
+                            });
+
+                            $list.append($li);
+                        });
+                        $list.removeClass('hidden');
+                    } else {
+                        $('#name_status')
+                            .text('Not found — a new vendor will be created on save.')
+                            .removeClass('text-green-600')
+                            .addClass('text-orange-500');
+                    }
+                }
+            });
+        }, 300);
+    });
+
+    // Close suggestions when clicking outside
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('#vendor_name_input, #name_suggestions').length) {
+            $('#name_suggestions').addClass('hidden');
+        }
+    });
+
+    // Clear phone when name is cleared
+    $('#vendor_name_input').on('change', function() {
+        if (!$(this).val().trim()) {
+            $('#party_phone').val('');
+            $('#name_status').text('');
+        }
+    });
+
     $("#form").submit( function(e){
         const accounts = $("#accounts").val()
         if(accounts === ""){
