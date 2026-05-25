@@ -586,7 +586,7 @@ def AgedReceivables(request):
         today = datetime.now()
         try:
             cus = customer_table.objects.using(db).get(customer_code=customer)
-            account = chart_of_account.objects.using(db).get(account_bankname="Sales account").account_id
+            account = chart_of_account.objects.using(db).get(account_bankname="Sales Account").account_id
             if discount == "NaN":
                 description = "Payment Received"
                 CreditReceivable(request, db, cus, today, description, "Transfer", account, cost)
