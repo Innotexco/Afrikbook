@@ -363,6 +363,13 @@
                                 $('#party_phone').val(r.phone || '');
                                 $('#name_status').text('Found in ' + r.type + ' records').addClass('text-green-600').removeClass('text-orange-500');
                                 $list.addClass('hidden').empty();
+
+                                // ── Auto-select the radio based on where the name was found ──
+                                if (r.type === 'vendor') {
+                                    $('#partyVendor').prop('checked', true);
+                                } else if (r.type === 'customer') {
+                                    $('#partyCustomer').prop('checked', true);
+                                }
                             });
 
                             $list.append($li);
