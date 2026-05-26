@@ -580,20 +580,39 @@ def AgedReceivables(request):
     
     if request.method == "POST":
         discount = Decimal(request.POST.get("Discount", 0))
-        cost = Decimal(request.POST.get("cost", 0))          
+        cost = Decimal(request.POST.get("cost", 0))
         customer = request.POST.get("customer")
         invoice = request.POST.get("invoice")
         today = datetime.now()
-        
+
         try:
-            cus = customer_table.objects.using(db).get(customer_code=customer)
-            inv = customer_invoice.objects.using(db).get(invoiceID=invoice, cusID=customer)
-            
-            invoice_total = Decimal(str(inv.total_amount))   # or whatever field holds total
-            current_paid = Decimal(str(inv.amount_paid))     # already paid (including previous installments + discounts)
-            account = chart_of_account.objects.using(db).get(account_bankname="Sales Account").account_id
-            
-            
+            # 1. Validate inputs
+            if not customer or not invoice:
+                return JsonResponse({"success": False, "error": "Customer or Invoice missing"}, status=400)
+
+            # 2. Get customer
+            try:
+                cus = customer_table.objects.using(db).get(customer_code=customer)
+            except customer_table.DoesNotExist:
+                return JsonResponse({"success": False, "error": f"Customer '{customer}' not found"}, status=404)
+
+            # 3. Get invoice
+            try:
+                inv = customer_invoice.objects.using(db).get(invoiceID=invoice, cusID=customer)
+            except customer_invoice.DoesNotExist:
+                return JsonResponse({"success": False, "error": f"Invoice '{invoice}' for customer '{customer}' not found"}, status=404)
+
+            # 4. Get account
+            try:
+                account_obj = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+                account = account_obj.account_id
+            except chart_of_account.DoesNotExist:
+                return JsonResponse({"success": False, "error": "Sales Account not found in chart of accounts"}, status=500)
+
+            invoice_total = Decimal(str(inv.amount_expected))
+            current_paid = Decimal(str(inv.amount_paid))
+
+            # 5. Record cash payment
             if cost > 0:
                 CreditReceivable(
                     request, db, cus, today,
@@ -601,25 +620,27 @@ def AgedReceivables(request):
                     "Transfer", account, cost, invoice,
                     invoice_total, current_paid
                 )
-                
                 inv.amount_paid += cost
                 inv.save(using=db)
-            
-            
+
+            # 6. Record discount
             if discount > 0:
                 CreditReceivable(
                     request, db, cus, today,
                     "Discount Allowed",
                     "Transfer", account, discount, invoice,
-                    invoice_total, current_paid + cost   # total paid BEFORE discount = previous + cash paid
+                    invoice_total, current_paid + cost
                 )
                 inv.amount_paid += discount
                 inv.save(using=db)
-            
-            return JsonResponse(True, safe=False)
-            
+
+            return JsonResponse({"success": True})
+
         except Exception as e:
-            return JsonResponse(False, safe=False)
+            # Log the error for debugging (print to console or use logging)
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
   
 
     context ={
