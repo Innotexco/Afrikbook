@@ -1,143 +1,4 @@
-
-
-<dialog id="my_modal_view_receivable" class="modal py-3 px-3 rounded-lg">
-    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
-      href="#">
-        <div class="flex items-center">
-            <svg
-                class="w-5 h-5 mr-2"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-            >
-            <path
-                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-            ></path>
-            </svg>
-            <span>View Receivable</span>
-        </div>
-        <span>
-            <form method="dialog" class="modal-backdrop">
-                <button class="py-1 px-2 rounded-full bg-red-600 text-[14px] text-white font-semibold" id="x">X</button>
-            </form>
-        </span>
-    </a>
-
-    <div class="modal-box">
-        <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md" id="agrv">
-    {% include 'components/Periodheader.html' %}
-
-    <h3 class="text-center text-gray-900 font-extrabold my-5 text-2xl">Customer Details</h3>
-
-    <!-- ── Customer Info Card ── -->
-    <div class="bg-gray-50 p-5 rounded-lg grid grid-cols-4 gap-4 text-sm">
-        <div>
-            <span class="text-gray-500 text-xs">Company</span>
-            <p id="company" class="font-semibold text-gray-800">-</p>
-        </div>
-        <div>
-            <span class="text-gray-500 text-xs">Invoice Date</span>
-            <p id="date" class="font-semibold text-gray-800">-</p>
-        </div>
-        <div>
-            <span class="text-gray-500 text-xs">Invoice ID</span>
-            <p id="invoice" class="font-semibold text-gray-800">-</p>
-        </div>
-        <div>
-            <span class="text-gray-500 text-xs">Customer ID</span>
-            <p id="code" class="font-semibold text-gray-800">-</p>
-        </div>
-        <div class="col-span-2">
-            <span class="text-gray-500 text-xs">Description</span>
-            <p id="desc" class="font-semibold text-gray-800">-</p>
-        </div>
-        <div>
-            <span class="text-gray-500 text-xs">Phone</span>
-            <p id="phone" class="font-semibold text-gray-800">-</p>
-        </div>
-        <div>
-            <span class="text-gray-500 text-xs">Email</span>
-            <p id="email" class="font-semibold text-gray-800">-</p>
-        </div>
-        <div class="col-span-2">
-            <span class="text-gray-500 text-xs">Address</span>
-            <p id="address" class="font-semibold text-gray-800">-</p>
-        </div>
-        <div>
-            <span class="text-gray-500 text-xs">Balance</span>
-            <p id="balance" class="font-semibold text-green-700">-</p>
-        </div>
-    </div>
-
-    <!-- ── Invoice Lines Table ── -->
-    <div class="w-full my-5 overflow-hidden shadow-xs">
-        <div class="w-full overflow-x-auto">
-            <table id="invoiceTable" class="border-collapse border border-slate-300 w-full text-xs">
-                <thead class="bg-gray-100">
-                    <tr class="font-medium text-gray-600">
-                        <th class="px-2 py-2">SN</th>
-                        <th class="px-2 py-2">Description</th>
-                        <th class="px-2 py-2">Qty</th>
-                        <th class="px-2 py-2">Unit Price</th>
-                        <th class="px-2 py-2">Discount</th>
-                        <th class="px-2 py-2">Amount</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y">
-                    <!-- Populated by JS -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- ── Totals and Installment Payment ── -->
-    <div class="flex flex-col sm:flex-row justify-between items-end gap-4 mt-4">
-        <div class="w-full sm:w-auto space-y-2">
-            <div class="flex items-center gap-2">
-                <span class="text-gray-600 w-32">Total Invoice Amount:</span>
-                <input type="text" id="total" readonly
-                    class="w-32 px-2 py-1 text-xs border rounded bg-gray-50 text-right font-medium" />
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="text-gray-600 w-32">Already Paid:</span>
-                <input type="text" id="amount_paid" readonly
-                    class="w-32 px-2 py-1 text-xs border rounded bg-gray-50 text-right font-medium" />
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="text-gray-600 w-32">Discount (this payment):</span>
-                <input type="number" id="Discount" value="0" step="0.01"
-                    class="w-32 px-2 py-1 text-xs border rounded text-right" />
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="text-gray-600 w-32">Payment Amount (₦):</span>
-                <input type="number" id="payment_amount" value="0" step="0.01"
-                    class="w-32 px-2 py-1 text-xs border rounded text-right font-medium" />
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="text-gray-600 w-32">Remaining Balance After:</span>
-                <input type="text" id="total-cost" readonly
-                    class="w-32 px-2 py-1 text-xs border rounded bg-gray-50 text-right font-medium text-red-600" />
-            </div>
-        </div>
-        <div class="flex gap-2 w-full sm:w-auto">
-            <button type="button" onclick="generatePDF('agrv')"
-                class="flex-1 sm:flex-none px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition">
-                Print
-            </button>
-            <button id="pay"
-                class="flex-1 sm:flex-none px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium shadow transition">
-                Pay Now
-            </button>
-        </div>
-    </div>
-</div>
-    </div>
-    
-</dialog>
-
-{% csrf_token %}
-
 <script>
-    // Function to update the remaining balance after partial payment
     function updateRemainingBalance() {
         let total = parseFloat($("#total").val()) || 0;
         let paid = parseFloat($("#amount_paid").val()) || 0;
@@ -146,9 +7,14 @@
 
         let remaining = total - (paid + payment + discount);
         if (remaining < 0) remaining = 0;
-        $("#total-cost").val(remaining.toFixed(2));
 
-        // Optional: disable Pay button if payment amount is zero or > remaining
+        // Update hidden and displayed values
+        $("#total-cost").val(remaining.toFixed(2));
+        $("#new_balance_display").text("₦" + remaining.toFixed(2));
+        $("#total_display").text("₦" + total.toFixed(2));
+        $("#paid_display").text("₦" + paid.toFixed(2));
+        $("#remaining_display").text("₦" + (total - paid).toFixed(2));
+
         if (payment <= 0 || payment > (total - paid - discount)) {
             $("#pay").prop('disabled', true);
         } else {
@@ -156,15 +22,8 @@
         }
     }
 
-    // Listen to changes on discount and payment amount
-    $("#Discount, #payment_amount").on("input", function() {
-        updateRemainingBalance();
-    });
+    $("#Discount, #payment_amount").on("input", updateRemainingBalance);
 
-    // When modal is opened, ensure payment_amount is reset and recalc
-    // (you may call updateRemainingBalance() after populating the modal fields)
-
-    // Submit the installment payment
     $("#pay").on("click", function() {
         let paymentAmount = parseFloat($("#payment_amount").val()) || 0;
         let discount = parseFloat($("#Discount").val()) || 0;
@@ -178,7 +37,7 @@
 
         let datas = {
             Discount: discount,
-            cost: paymentAmount,          // send only the cash amount paid now
+            cost: paymentAmount,
             customer: customer,
             invoice: invoice,
             csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
@@ -209,13 +68,9 @@
         });
     });
 
-    // Function to refresh modal data after payment (re‑fetch invoice details)
     function refreshInvoiceData(customerId, invoiceId) {
-        // You need an endpoint that returns updated invoice info (total, paid, etc.)
-        // For simplicity, you can reload the page or re‑fetch via AJAX.
-        // Example:
         $.ajax({
-            url: "/get-invoice-details/",   // create this endpoint if not exists
+            url: "/get-invoice-details/",
             data: { customer: customerId, invoice: invoiceId },
             success: function(res) {
                 if (res.success) {
@@ -226,7 +81,7 @@
                     $("#Discount").val(0);
                     updateRemainingBalance();
                 } else {
-                    location.reload(); // fallback
+                    location.reload();
                 }
             },
             error: function() {
@@ -234,5 +89,11 @@
             }
         });
     }
-</script>
 
+    // Update display when modal is populated (called from showModal)
+    function refreshModalDisplay() {
+        let total = parseFloat($("#total").val()) || 0;
+        let paid = parseFloat($("#amount_paid").val()) || 0;
+        updateRemainingBalance();
+    }
+</script>
