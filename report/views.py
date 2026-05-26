@@ -564,7 +564,7 @@ def Receivables(request):
         'debit':debit_total,
         'balance':balance,
         'customers':customers,
-        'company':company
+        'company':company    
     }
     return render(request, 'report/Receivables.html', context)
 
@@ -577,7 +577,8 @@ def AgedReceivables(request):
     aged = receivable.objects.using(db).filter(amount__lt=F('initial_amount')).distinct()
     amount_total = receivable.objects.using(db).aggregate(total_amount=Sum("amount"))['total_amount']
     company = company_table.objects.get(id=request.user.company_id_id)
-    bank_accounts = chart_of_account.objects.using(db).filter(account_type="Bank")  # for frontend dropdown
+    bank_accounts = chart_of_account.objects.using(db).filter(account_type="Bank")  
+    accounts = chart_of_account.objects.using(db).all()
 
     if request.method == "POST":
         discount        = Decimal(request.POST.get("Discount", 0))
@@ -586,7 +587,7 @@ def AgedReceivables(request):
         invoice         = request.POST.get("invoice")
         payment_method  = request.POST.get("payment_method", "Cash")
         account_ID      = request.POST.get("transfer_account")
-        transfer_amount = Decimal(request.POST.get("transfer_amount", 0))  # for Transfer and Cash split
+        transfer_amount = Decimal(request.POST.get("transfer_amount", 0))  
         cash_amount     = Decimal(request.POST.get("cash_amount", 0))
         today           = datetime.now()
 
@@ -720,6 +721,7 @@ def AgedReceivables(request):
         'amount_total': amount_total,
         'company': company,
         'bank_accounts': bank_accounts,
+        'accounts': accounts,
         'payment_methods': ["Cash", "Transfer", "Cheque", "POS"],
     }
     return render(request, 'report/AgedReceivables.html', context)
