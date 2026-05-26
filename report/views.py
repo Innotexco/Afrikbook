@@ -577,7 +577,7 @@ def AgedReceivables(request):
     aged = receivable.objects.using(db).filter(amount__lt=F('initial_amount')).distinct()
     amount_total = receivable.objects.using(db).aggregate(total_amount=Sum("amount"))['total_amount']
     company = company_table.objects.get(id=request.user.company_id_id)
-    bank_accounts = chart_of_account.objects.using(db).filter(account_type="Bank")  
+    bank_accounts = chart_of_account.objects.using(db).filter(account_type="Bank")
     accounts = chart_of_account.objects.using(db).all()
 
     if request.method == "POST":
@@ -587,7 +587,7 @@ def AgedReceivables(request):
         invoice         = request.POST.get("invoice")
         payment_method  = request.POST.get("payment_method", "Cash")
         account_ID      = request.POST.get("transfer_account")
-        transfer_amount = Decimal(request.POST.get("transfer_amount", 0))  
+        transfer_amount = Decimal(request.POST.get("transfer_amount", 0))
         cash_amount     = Decimal(request.POST.get("cash_amount", 0))
         today           = datetime.now()
 
@@ -609,16 +609,7 @@ def AgedReceivables(request):
             current_paid  = Decimal(str(inv.amount_paid))
             Gdescription  = f"Payment Received - Invoice {invoice}"
 
-            # ── Resolve account ───────────────────────────────────────────────────
-            if account_ID:
-                try:
-                    account = chart_of_account.objects.using(db).get(account_id=account_ID)
-                except chart_of_account.DoesNotExist:
-                    return JsonResponse({"success": False, "error": "Selected account not found"}, status=404)
-            else:
-                account = None
-
-            # ── Customer Balance validation ───────────────────────────────────────
+            # ── Customer Balance validation (before any entries) ──────────────────
             if payment_method == "Customer Balance":
                 customer_balance = Decimal(str(getattr(cus, 'balance', getattr(cus, 'Balance', 0))))
                 total_payment = cost + discount
@@ -628,10 +619,29 @@ def AgedReceivables(request):
                         "error": f"Insufficient customer balance. Available: ₦{customer_balance:,.2f}, Required: ₦{total_payment:,.2f}"
                     }, status=400)
 
-            # ── Accounting entries (mirrors add_new_sales logic) ──────────────────
-            if account_ID:
+            # ── Accounting entries ────────────────────────────────────────────────
+            if payment_method == "Customer Balance":
+                sales_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+                CreditReceivable(
+                    request, db, cus, today, Gdescription,
+                    "Customer Balance", sales_account.account_id, cost,
+                    invoice, invoice_total, current_paid
+                )
+                CreateLog(db, sales_account, cost)
+
+            elif account_ID:
+                try:
+                    account = chart_of_account.objects.using(db).get(account_id=account_ID)
+                except chart_of_account.DoesNotExist:
+                    return JsonResponse({"success": False, "error": "Selected account not found"}, status=404)
 
                 if payment_method == "Transfer":
+                    # Debit → bank account (money arrives)
+                    # Credit → receivable (debt reduced)
+                    DebitReceivable(
+                        request, db, cus, today, Gdescription,
+                        "Transfer", account_ID, cost, invoice
+                    )
                     CreditReceivable(
                         request, db, cus, today, Gdescription,
                         "Transfer", account_ID, cost,
@@ -641,6 +651,10 @@ def AgedReceivables(request):
 
                 elif payment_method == "Transfer and Cash":
                     # Transfer leg
+                    DebitReceivable(
+                        request, db, cus, today, Gdescription,
+                        "Transfer", account_ID, transfer_amount, invoice
+                    )
                     CreditReceivable(
                         request, db, cus, today, Gdescription,
                         "Transfer", account_ID, transfer_amount,
@@ -648,8 +662,12 @@ def AgedReceivables(request):
                     )
                     CreateLog(db, account, transfer_amount)
 
-                    # Cash leg — posts to Sales Account just like add_new_sales
+                    # Cash leg → Sales Account
                     cash_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+                    DebitReceivable(
+                        request, db, cus, today, Gdescription,
+                        "Cash", cash_account.account_id, cash_amount, invoice
+                    )
                     CreditReceivable(
                         request, db, cus, today, Gdescription,
                         "Cash", cash_account.account_id, cash_amount,
@@ -658,7 +676,12 @@ def AgedReceivables(request):
                     CreateLog(db, cash_account, cash_amount)
 
                 elif payment_method == "Cheque":
+                    # Cheque always posts to Account Receivable until it clears
                     ar_account = chart_of_account.objects.using(db).get(account_bankname="Account Receivable")
+                    DebitReceivable(
+                        request, db, cus, today, Gdescription,
+                        "Cheque", ar_account.account_id, cost, invoice
+                    )
                     CreditReceivable(
                         request, db, cus, today, Gdescription,
                         "Cheque", ar_account.account_id, cost,
@@ -666,9 +689,27 @@ def AgedReceivables(request):
                     )
                     CreateLog(db, ar_account, cost)
 
-                else:
-                    # Cash and any other method
+                elif payment_method == "Cash":
+                    # Cash always posts to Sales Account
                     sales_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+                    DebitReceivable(
+                        request, db, cus, today, Gdescription,
+                        "Cash", sales_account.account_id, cost, invoice
+                    )
+                    CreditReceivable(
+                        request, db, cus, today, Gdescription,
+                        "Cash", sales_account.account_id, cost,
+                        invoice, invoice_total, current_paid
+                    )
+                    CreateLog(db, sales_account, cost)
+
+                else:
+                    # Any unrecognised method — fall back to Sales Account
+                    sales_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+                    DebitReceivable(
+                        request, db, cus, today, Gdescription,
+                        payment_method, sales_account.account_id, cost, invoice
+                    )
                     CreditReceivable(
                         request, db, cus, today, Gdescription,
                         payment_method, sales_account.account_id, cost,
@@ -677,8 +718,12 @@ def AgedReceivables(request):
                     CreateLog(db, sales_account, cost)
 
             else:
-                # No account selected — fall back to Sales Account (same as add_new_sales fallback)
+                # No account_ID provided — fall back to Sales Account
                 sales_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+                DebitReceivable(
+                    request, db, cus, today, Gdescription,
+                    "Cash", sales_account.account_id, cost, invoice
+                )
                 CreditReceivable(
                     request, db, cus, today, Gdescription,
                     payment_method, sales_account.account_id, cost,
@@ -686,9 +731,17 @@ def AgedReceivables(request):
                 )
                 CreateLog(db, sales_account, cost)
 
-            # ── Discount entry (separate credit, no bank leg) ─────────────────────
             if discount > 0:
-                discount_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+                try:
+                    discount_account = chart_of_account.objects.using(db).get(account_bankname="Discount Allowed")
+                except chart_of_account.DoesNotExist:
+                    # Fall back to Sales Account if Discount Allowed not set up
+                    discount_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+
+                DebitReceivable(
+                    request, db, cus, today, f"Discount Allowed - Invoice {invoice}",
+                    payment_method, discount_account.account_id, discount, invoice
+                )
                 CreditReceivable(
                     request, db, cus, today, f"Discount Allowed - Invoice {invoice}",
                     payment_method, discount_account.account_id, discount,
@@ -696,10 +749,11 @@ def AgedReceivables(request):
                 )
                 inv.amount_paid += discount
 
-            # ── Update invoice and customer balance ───────────────────────────────
+            # ── Update invoice ────────────────────────────────────────────────────
             inv.amount_paid += cost
             inv.save(using=db)
 
+            # ── Deduct customer balance if paying by balance ──────────────────────
             if payment_method == "Customer Balance":
                 total_payment = cost + discount
                 if hasattr(cus, 'balance'):
@@ -722,9 +776,10 @@ def AgedReceivables(request):
         'company': company,
         'bank_accounts': bank_accounts,
         'accounts': accounts,
-        'payment_methods': ["Cash", "Transfer", "Cheque", "POS"],
+        'payment_methods': ["Cash", "Transfer", "Cheque", "Transfer and Cash", "Customer Balance"],
     }
     return render(request, 'report/AgedReceivables.html', context)
+
 
 
 def DebitAccount(request, db, cus, entry_date, description, payment_method, account, amount, invoiceID):
