@@ -167,16 +167,14 @@ def DebitReceivable(request, db, cus, refund_date, Gdescription, p_method, accou
 from decimal import Decimal
 
 def CreditReceivable(request, db, cus, refund_date, Gdescription, p_method, account, amount_paid_now, invoiceID, invoice_total, current_paid_before):
-    
     transaction_id = uuid.uuid4()
-    
+
     new_total_paid = current_paid_before + Decimal(str(amount_paid_now))
-    
+
     balance = Decimal(str(invoice_total)) - new_total_paid
     if balance < 0:
         balance = Decimal('0.00')
-    
-    
+
     create_receivable = receivable(
         date           = refund_date,
         description    = Gdescription,

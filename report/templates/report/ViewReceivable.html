@@ -1,6 +1,4 @@
-
 <dialog id="my_modal_view_receivable" class="modal rounded-2xl shadow-2xl w-full max-w-5xl backdrop:bg-black/40 backdrop:backdrop-blur-sm">
-    <!-- Header with gradient accent -->
     <div class="bg-gradient-to-r from-slate-50 to-white rounded-t-2xl border-b border-slate-200 px-6 py-4 flex justify-between items-center">
         <div class="flex items-center gap-2">
             <div class="p-1.5 bg-indigo-100 rounded-lg">
@@ -19,13 +17,12 @@
 
     <div class="modal-box p-0 overflow-hidden">
         <div class="px-6 py-5 bg-white" id="agrv">
-            <!-- Company header (optional) -->
             <div class="mb-6 flex justify-between items-center">
                 <h3 class="text-lg font-bold text-slate-800">Customer Details</h3>
                 <span class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">Invoice Overview</span>
             </div>
 
-            <!-- Customer Info Card - modern grid with subtle card style -->
+            <!-- Customer Info Card -->
             <div class="bg-slate-50 rounded-xl border border-slate-100 p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                 <div class="space-y-0.5">
                     <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Company</span>
@@ -62,10 +59,11 @@
                 <div class="space-y-0.5">
                     <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Current Balance</span>
                     <p id="balance" class="text-lg font-bold text-emerald-600">—</p>
+                    <input type="hidden" id="customer_balance_val" value="0" />
                 </div>
             </div>
 
-            <!-- Invoice Lines Table - modern minimal -->
+            <!-- Invoice Lines Table -->
             <div class="mt-8">
                 <div class="flex items-center justify-between mb-3">
                     <h4 class="text-sm font-semibold text-slate-700">Invoice Items</h4>
@@ -84,17 +82,17 @@
                                     <th class="px-4 py-2 text-right w-24">Amount</th>
                                 </tr>
                             </thead>
-                            <tbody id="invoiceTable" class="divide-y divide-slate-100 bg-white">
-                                <!-- JS populates -->
-                            </tbody>
+                            <tbody id="invoiceTable" class="divide-y divide-slate-100 bg-white"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Payment Section - modern card with better grouping -->
+            <!-- Payment Section -->
             <div class="mt-8 border-t border-slate-100 pt-6">
                 <div class="flex flex-col md:flex-row gap-6">
+
+                    <!-- Left: Invoice summary -->
                     <div class="flex-1 space-y-4">
                         <div class="flex items-center justify-between border-b border-slate-100 pb-2">
                             <span class="text-sm text-slate-600">Total Invoice</span>
@@ -112,17 +110,72 @@
                         </div>
                     </div>
 
+                    <!-- Right: Payment inputs -->
                     <div class="flex-1 space-y-4 bg-slate-50 rounded-xl p-4">
+
+                        <!-- Payment Amount -->
                         <div class="flex items-center justify-between gap-4">
                             <label class="text-sm font-medium text-slate-700">Payment Amount</label>
                             <input type="number" id="payment_amount" value="0" step="0.01" placeholder="0.00"
                                 class="w-36 px-3 py-1.5 text-right border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-indigo-200 focus:border-indigo-300">
                         </div>
+
+                        <!-- Discount -->
                         <div class="flex items-center justify-between gap-4">
-                            <label class="text-sm font-medium text-slate-700">Discount (this payment)</label>
+                            <label class="text-sm font-medium text-slate-700">Discount</label>
                             <input type="number" id="Discount" value="0" step="0.01" placeholder="0.00"
                                 class="w-36 px-3 py-1.5 text-right border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-indigo-200">
                         </div>
+
+                        <!-- Payment Method -->
+                        <div class="flex items-center justify-between gap-4">
+                            <label class="text-sm font-medium text-slate-700">Payment Method</label>
+                            <select id="payment_method"
+                                class="w-44 px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white focus:ring-1 focus:ring-indigo-200 focus:border-indigo-300 text-slate-700">
+                                <option value="Cash">Cash</option>
+                                <option value="Customer Balance">Customer Balance</option>
+                                <option value="Transfer">Transfer</option>
+                                <option value="Cheque">Cheque</option>
+                                <option value="Transfer and Cash">Transfer and Cash</option>
+                            </select>
+                        </div>
+
+                        <!-- Transfer account (Transfer / Cheque) -->
+                        <div id="transfer_account_div" class="hidden flex items-center justify-between gap-4">
+                            <label class="text-sm font-medium text-slate-700">Account</label>
+                            <select id="transfer_account"
+                                class="w-44 px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white focus:ring-1 focus:ring-indigo-200 text-slate-700">
+                                <option value="" selected disabled>— select —</option>
+                                {% for account in accounts %}
+                                    {% if account.series_name|upper == "ASSETS" %}
+                                    <option value="{{ account.account_id }}">{{ account.account_id }} ({{ account.series_name }})</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Transfer and Cash split -->
+                        <div id="split_div" class="hidden space-y-3 border border-slate-200 rounded-lg p-3 bg-white">
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Split Amount</p>
+                            <div class="flex items-center justify-between gap-4">
+                                <label class="text-sm text-slate-600">Transfer</label>
+                                <input type="number" id="transfer_amount" value="0" step="0.01" placeholder="0.00"
+                                    class="w-36 px-3 py-1.5 text-right border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-indigo-200">
+                            </div>
+                            <div class="flex items-center justify-between gap-4">
+                                <label class="text-sm text-slate-600">Cash</label>
+                                <input type="number" id="cash_amount" value="0" step="0.01" placeholder="0.00"
+                                    class="w-36 px-3 py-1.5 text-right border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-indigo-200">
+                            </div>
+                            <p id="split_error" class="text-xs text-red-500 hidden">Transfer + Cash must equal Payment Amount</p>
+                        </div>
+
+                        <!-- Customer Balance warning -->
+                        <div id="balance_warning" class="hidden text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                            <span id="balance_warning_text"></span>
+                        </div>
+
+                        <!-- New balance after payment -->
                         <div class="flex items-center justify-between gap-4 pt-2 border-t border-slate-200">
                             <span class="text-sm font-semibold text-slate-700">New Balance After</span>
                             <span class="text-lg font-bold text-red-600" id="new_balance_display">₦0.00</span>
@@ -151,47 +204,148 @@
 {% csrf_token %}
 
 <script>
+    // ── Show/hide fields based on payment method ───────────────────────────────
+    $("#payment_method").on("change", function () {
+        const method = $(this).val();
+        const needsAccount  = ["Transfer", "Cheque", "Transfer and Cash"].includes(method);
+        const isTransferCash = method === "Transfer and Cash";
+        const isBalance      = method === "Customer Balance";
+
+        $("#transfer_account_div").toggleClass("hidden", !needsAccount);
+        $("#split_div").toggleClass("hidden", !isTransferCash);
+        $("#balance_warning").addClass("hidden");
+
+        if (isBalance) {
+            checkBalanceSufficiency();
+        }
+
+        updateRemainingBalance();
+    });
+
+    // ── Split amount live sync ─────────────────────────────────────────────────
+    $("#transfer_amount, #cash_amount").on("input", function () {
+        const payment  = parseFloat($("#payment_amount").val()) || 0;
+        const transfer = parseFloat($("#transfer_amount").val()) || 0;
+        const cash     = parseFloat($("#cash_amount").val()) || 0;
+        const valid    = Math.abs((transfer + cash) - payment) < 0.01;
+        $("#split_error").toggleClass("hidden", valid);
+        updatePayButton();
+    });
+
+    // ── Balance sufficiency check ──────────────────────────────────────────────
+    function checkBalanceSufficiency() {
+        const method   = $("#payment_method").val();
+        if (method !== "Customer Balance") {
+            $("#balance_warning").addClass("hidden");
+            return true;
+        }
+        const available = parseFloat($("#customer_balance_val").val()) || 0;
+        const payment   = parseFloat($("#payment_amount").val()) || 0;
+        const discount  = parseFloat($("#Discount").val()) || 0;
+        const required  = payment + discount;
+
+        if (required > available) {
+            $("#balance_warning_text").text(
+                `Insufficient balance. Available: ₦${available.toLocaleString('en-NG', {minimumFractionDigits:2})}, Required: ₦${required.toLocaleString('en-NG', {minimumFractionDigits:2})}`
+            );
+            $("#balance_warning").removeClass("hidden");
+            return false;
+        }
+        $("#balance_warning").addClass("hidden");
+        return true;
+    }
+
+    // ── Main balance recalculator ──────────────────────────────────────────────
     function updateRemainingBalance() {
-        let total = parseFloat($("#total").val()) || 0;
-        let paid = parseFloat($("#amount_paid").val()) || 0;
-        let discount = parseFloat($("#Discount").val()) || 0;
-        let payment = parseFloat($("#payment_amount").val()) || 0;
+        const total   = parseFloat($("#total").val()) || 0;
+        const paid    = parseFloat($("#amount_paid").val()) || 0;
+        const discount = parseFloat($("#Discount").val()) || 0;
+        const payment  = parseFloat($("#payment_amount").val()) || 0;
 
         let remaining = total - (paid + payment + discount);
         if (remaining < 0) remaining = 0;
 
-        // Update hidden and displayed values
         $("#total-cost").val(remaining.toFixed(2));
-        $("#new_balance_display").text("₦" + remaining.toFixed(2));
-        $("#total_display").text("₦" + total.toFixed(2));
-        $("#paid_display").text("₦" + paid.toFixed(2));
-        $("#remaining_display").text("₦" + (total - paid).toFixed(2));
+        $("#new_balance_display").text("₦" + remaining.toLocaleString('en-NG', {minimumFractionDigits:2}));
+        $("#total_display").text("₦" + total.toLocaleString('en-NG', {minimumFractionDigits:2}));
+        $("#paid_display").text("₦" + paid.toLocaleString('en-NG', {minimumFractionDigits:2}));
+        $("#remaining_display").text("₦" + (total - paid).toLocaleString('en-NG', {minimumFractionDigits:2}));
 
-        if (payment <= 0 || payment > (total - paid - discount)) {
-            $("#pay").prop('disabled', true);
-        } else {
-            $("#pay").prop('disabled', false);
-        }
+        updatePayButton();
     }
 
-    $("#Discount, #payment_amount").on("input", updateRemainingBalance);
+    function updatePayButton() {
+        const total    = parseFloat($("#total").val()) || 0;
+        const paid     = parseFloat($("#amount_paid").val()) || 0;
+        const discount = parseFloat($("#Discount").val()) || 0;
+        const payment  = parseFloat($("#payment_amount").val()) || 0;
+        const method   = $("#payment_method").val();
 
-    $("#pay").on("click", function() {
-        let paymentAmount = parseFloat($("#payment_amount").val()) || 0;
-        let discount = parseFloat($("#Discount").val()) || 0;
-        let customer = $("#code").text().trim();
-        let invoice = $("#invoice").text().trim();
+        let valid = payment > 0 && payment <= (total - paid - discount);
+
+        if (["Transfer", "Cheque", "Transfer and Cash"].includes(method)) {
+            valid = valid && !!$("#transfer_account").val();
+        }
+
+        if (method === "Transfer and Cash") {
+            const transfer = parseFloat($("#transfer_amount").val()) || 0;
+            const cash     = parseFloat($("#cash_amount").val()) || 0;
+            valid = valid && Math.abs((transfer + cash) - payment) < 0.01;
+        }
+
+        if (method === "Customer Balance") {
+            valid = valid && checkBalanceSufficiency();
+        }
+
+        $("#pay").prop('disabled', !valid);
+    }
+
+    $("#Discount, #payment_amount").on("input", function () {
+        updateRemainingBalance();
+        if ($("#payment_method").val() === "Customer Balance") checkBalanceSufficiency();
+    });
+
+    $("#transfer_account").on("change", updatePayButton);
+
+    // ── Submit ─────────────────────────────────────────────────────────────────
+    $("#pay").on("click", function () {
+        const paymentAmount = parseFloat($("#payment_amount").val()) || 0;
+        const discount      = parseFloat($("#Discount").val()) || 0;
+        const customer      = $("#code").text().trim();
+        const invoice       = $("#invoice").text().trim();
+        const method        = $("#payment_method").val();
+        const account       = $("#transfer_account").val() || "";
+        const transferAmt   = parseFloat($("#transfer_amount").val()) || 0;
+        const cashAmt       = parseFloat($("#cash_amount").val()) || 0;
 
         if (paymentAmount <= 0) {
             alertify.error("Please enter a valid payment amount.");
             return;
         }
 
-        let datas = {
-            Discount: discount,
-            cost: paymentAmount,
-            customer: customer,
-            invoice: invoice,
+        // Validate split
+        if (method === "Transfer and Cash") {
+            if (Math.abs((transferAmt + cashAmt) - paymentAmount) > 0.01) {
+                alertify.error("Transfer + Cash amounts must equal the payment amount.");
+                return;
+            }
+        }
+
+        // Validate account
+        if (["Transfer", "Cheque", "Transfer and Cash"].includes(method) && !account) {
+            alertify.error("Please select an account for this payment method.");
+            return;
+        }
+
+        const datas = {
+            Discount:          discount,
+            cost:              paymentAmount,
+            customer:          customer,
+            invoice:           invoice,
+            payment_method:    method,
+            transfer_account:  account,
+            transfer_amount:   transferAmt,
+            cash_amount:       cashAmt,
             csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
         };
 
@@ -199,54 +353,47 @@
             url: window.location.href,
             method: "POST",
             data: datas,
-            success: function(data) {
+            success: function (data) {
                 if (data.success === true) {
-                    alertify.success("Installment payment recorded.");
+                    alertify.success("Payment recorded successfully.");
                     refreshInvoiceData(customer, invoice);
                     if (typeof Filter === 'function') Filter();
                 } else {
-                    let errorMsg = data.error || "Transaction unsuccessful.";
-                    alertify.error(errorMsg);
-                    $("#x").click();
+                    alertify.error(data.error || "Transaction unsuccessful.");
                 }
             },
-            error: function(xhr) {
-                let errorMsg = "Server error. Please try again.";
-                if (xhr.responseJSON && xhr.responseJSON.error) {
-                    errorMsg = xhr.responseJSON.error;
-                }
-                alertify.error(errorMsg);
+            error: function (xhr) {
+                const msg = xhr.responseJSON?.error || "Server error. Please try again.";
+                alertify.error(msg);
             }
         });
     });
 
+    // ── Refresh modal after payment ────────────────────────────────────────────
     function refreshInvoiceData(customerId, invoiceId) {
         $.ajax({
             url: "/get-invoice-details/",
             data: { customer: customerId, invoice: invoiceId },
-            success: function(res) {
+            success: function (res) {
                 if (res.success) {
                     $("#total").val(res.total);
                     $("#amount_paid").val(res.amount_paid);
                     $("#total-cost").val(res.balance);
                     $("#payment_amount").val(0);
                     $("#Discount").val(0);
+                    $("#transfer_amount").val(0);
+                    $("#cash_amount").val(0);
+                    $("#payment_method").val("Cash").trigger("change");
                     updateRemainingBalance();
                 } else {
                     location.reload();
                 }
             },
-            error: function() {
-                location.reload();
-            }
+            error: function () { location.reload(); }
         });
     }
 
-    // Update display when modal is populated (called from showModal)
     function refreshModalDisplay() {
-        let total = parseFloat($("#total").val()) || 0;
-        let paid = parseFloat($("#amount_paid").val()) || 0;
         updateRemainingBalance();
     }
 </script>
-

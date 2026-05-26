@@ -577,81 +577,180 @@ def AgedReceivables(request):
     aged = receivable.objects.using(db).filter(amount__lt=F('initial_amount')).distinct()
     amount_total = receivable.objects.using(db).aggregate(total_amount=Sum("amount"))['total_amount']
     company = company_table.objects.get(id=request.user.company_id_id)
-    
+    bank_accounts = chart_of_account.objects.using(db).filter(account_type="Bank")  # for frontend dropdown
+
     if request.method == "POST":
-        discount = Decimal(request.POST.get("Discount", 0))
-        cost = Decimal(request.POST.get("cost", 0))
-        customer = request.POST.get("customer")
-        invoice = request.POST.get("invoice")
-        today = datetime.now()
+        discount        = Decimal(request.POST.get("Discount", 0))
+        cost            = Decimal(request.POST.get("cost", 0))
+        customer        = request.POST.get("customer")
+        invoice         = request.POST.get("invoice")
+        payment_method  = request.POST.get("payment_method", "Cash")
+        account_ID      = request.POST.get("transfer_account")
+        transfer_amount = Decimal(request.POST.get("transfer_amount", 0))  # for Transfer and Cash split
+        cash_amount     = Decimal(request.POST.get("cash_amount", 0))
+        today           = datetime.now()
 
         try:
-            # 1. Validate inputs
             if not customer or not invoice:
                 return JsonResponse({"success": False, "error": "Customer or Invoice missing"}, status=400)
 
-            # 2. Get customer
             try:
                 cus = customer_table.objects.using(db).get(customer_code=customer)
             except customer_table.DoesNotExist:
                 return JsonResponse({"success": False, "error": f"Customer '{customer}' not found"}, status=404)
 
-            # 3. Get invoice
             try:
                 inv = customer_invoice.objects.using(db).get(invoiceID=invoice, cusID=customer)
             except customer_invoice.DoesNotExist:
-                return JsonResponse({"success": False, "error": f"Invoice '{invoice}' for customer '{customer}' not found"}, status=404)
-
-            # 4. Get account
-            try:
-                account_obj = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
-                account = account_obj.account_id
-            except chart_of_account.DoesNotExist:
-                return JsonResponse({"success": False, "error": "Sales Account not found in chart of accounts"}, status=500)
+                return JsonResponse({"success": False, "error": f"Invoice '{invoice}' not found"}, status=404)
 
             invoice_total = Decimal(str(inv.amount_expected))
-            current_paid = Decimal(str(inv.amount_paid))
+            current_paid  = Decimal(str(inv.amount_paid))
+            Gdescription  = f"Payment Received - Invoice {invoice}"
 
-            # 5. Record cash payment
-            if cost > 0:
+            # ── Resolve account ───────────────────────────────────────────────────
+            if account_ID:
+                try:
+                    account = chart_of_account.objects.using(db).get(account_id=account_ID)
+                except chart_of_account.DoesNotExist:
+                    return JsonResponse({"success": False, "error": "Selected account not found"}, status=404)
+            else:
+                account = None
+
+            # ── Customer Balance validation ───────────────────────────────────────
+            if payment_method == "Customer Balance":
+                customer_balance = Decimal(str(getattr(cus, 'balance', getattr(cus, 'Balance', 0))))
+                total_payment = cost + discount
+                if customer_balance < total_payment:
+                    return JsonResponse({
+                        "success": False,
+                        "error": f"Insufficient customer balance. Available: ₦{customer_balance:,.2f}, Required: ₦{total_payment:,.2f}"
+                    }, status=400)
+
+            # ── Accounting entries (mirrors add_new_sales logic) ──────────────────
+            if account_ID:
+
+                if payment_method == "Transfer":
+                    CreditReceivable(
+                        request, db, cus, today, Gdescription,
+                        "Transfer", account_ID, cost,
+                        invoice, invoice_total, current_paid
+                    )
+                    CreateLog(db, account, cost)
+
+                elif payment_method == "Transfer and Cash":
+                    # Transfer leg
+                    CreditReceivable(
+                        request, db, cus, today, Gdescription,
+                        "Transfer", account_ID, transfer_amount,
+                        invoice, invoice_total, current_paid
+                    )
+                    CreateLog(db, account, transfer_amount)
+
+                    # Cash leg — posts to Sales Account just like add_new_sales
+                    cash_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+                    CreditReceivable(
+                        request, db, cus, today, Gdescription,
+                        "Cash", cash_account.account_id, cash_amount,
+                        invoice, invoice_total, current_paid + transfer_amount
+                    )
+                    CreateLog(db, cash_account, cash_amount)
+
+                elif payment_method == "Cheque":
+                    ar_account = chart_of_account.objects.using(db).get(account_bankname="Account Receivable")
+                    CreditReceivable(
+                        request, db, cus, today, Gdescription,
+                        "Cheque", ar_account.account_id, cost,
+                        invoice, invoice_total, current_paid
+                    )
+                    CreateLog(db, ar_account, cost)
+
+                else:
+                    # Cash and any other method
+                    sales_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+                    CreditReceivable(
+                        request, db, cus, today, Gdescription,
+                        payment_method, sales_account.account_id, cost,
+                        invoice, invoice_total, current_paid
+                    )
+                    CreateLog(db, sales_account, cost)
+
+            else:
+                # No account selected — fall back to Sales Account (same as add_new_sales fallback)
+                sales_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
                 CreditReceivable(
-                    request, db, cus, today,
-                    "Payment Received (Installment)",
-                    "Transfer", account, cost, invoice,
-                    invoice_total, current_paid
+                    request, db, cus, today, Gdescription,
+                    payment_method, sales_account.account_id, cost,
+                    invoice, invoice_total, current_paid
                 )
-                inv.amount_paid += cost
-                inv.save(using=db)
+                CreateLog(db, sales_account, cost)
 
-            # 6. Record discount
+            # ── Discount entry (separate credit, no bank leg) ─────────────────────
             if discount > 0:
+                discount_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
                 CreditReceivable(
-                    request, db, cus, today,
-                    "Discount Allowed",
-                    "Transfer", account, discount, invoice,
-                    invoice_total, current_paid + cost
+                    request, db, cus, today, f"Discount Allowed - Invoice {invoice}",
+                    payment_method, discount_account.account_id, discount,
+                    invoice, invoice_total, current_paid + cost
                 )
                 inv.amount_paid += discount
-                inv.save(using=db)
+
+            # ── Update invoice and customer balance ───────────────────────────────
+            inv.amount_paid += cost
+            inv.save(using=db)
+
+            if payment_method == "Customer Balance":
+                total_payment = cost + discount
+                if hasattr(cus, 'balance'):
+                    cus.balance = Decimal(str(cus.balance)) - total_payment
+                else:
+                    cus.Balance = Decimal(str(cus.Balance)) - total_payment
+                cus.save(using=db)
 
             return JsonResponse({"success": True})
 
         except Exception as e:
-            # Log the error for debugging (print to console or use logging)
             import traceback
             traceback.print_exc()
             return JsonResponse({"success": False, "error": str(e)}, status=500)
-  
 
-    context ={
+    context = {
         'customers': customers,
-        'aged_recievable':aged, 
-        'amount_total':amount_total,
-        'company': company
+        'aged_recievable': aged,
+        'amount_total': amount_total,
+        'company': company,
+        'bank_accounts': bank_accounts,
+        'payment_methods': ["Cash", "Transfer", "Cheque", "POS"],
     }
     return render(request, 'report/AgedReceivables.html', context)
 
 
+def DebitAccount(request, db, cus, entry_date, description, payment_method, account, amount, invoiceID):
+    """
+    Records the debit side of a payment — money landing in a bank or cash account.
+    Mirrors CreditReceivable but type = 'Debit'.
+    """
+    transaction_id = uuid.uuid4()
+
+    debit_entry = receivable(
+        date           = entry_date,
+        description    = description,
+        type           = "Debit",
+        amount         = amount,
+        payment_method = payment_method,
+        invoice_status = "Unused",
+        customer_id    = cus.customer_code,
+        customer_name  = cus.name,
+        initial_amount = amount,
+        balance        = Decimal('0.00'),
+        account_posted = account,
+        transaction_id = transaction_id,
+        token_id       = invoiceID,
+        Userlogin      = request.user.username,
+    )
+    debit_entry.save(using=db)
+    
+    
 def get_invoice_details(request):
     customer = request.GET.get('customer')
     invoice = request.GET.get('invoice')
