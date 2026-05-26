@@ -189,19 +189,22 @@
             method: "POST",
             data: datas,
             success: function(data) {
-                if (data === true) {
+                if (data.success === true) {
                     alertify.success("Installment payment recorded.");
-                    // Refresh the modal data to show updated paid amount and balance
                     refreshInvoiceData(customer, invoice);
-                    // Also refresh the parent table (Filter) if needed
                     if (typeof Filter === 'function') Filter();
                 } else {
-                    alertify.error("Transaction unsuccessful.");
+                    let errorMsg = data.error || "Transaction unsuccessful.";
+                    alertify.error(errorMsg);
                     $("#x").click();
                 }
             },
-            error: function() {
-                alertify.error("Server error. Please try again.");
+            error: function(xhr) {
+                let errorMsg = "Server error. Please try again.";
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMsg = xhr.responseJSON.error;
+                }
+                alertify.error(errorMsg);
             }
         });
     });
