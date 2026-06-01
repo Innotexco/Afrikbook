@@ -113,7 +113,8 @@
                 </label>
             </div>
 
-           {# ── Party selector (Customer / Vendor) ── #}
+            {# ── Party selector (Customer / Vendor) ── #}
+            
             <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-3">
 
                 <div class="text-sm">
@@ -133,35 +134,14 @@
 
                 <label class="block text-sm">
                     <span class="text-gray-700">Vendor / Customer Name</span>
-                    <div class="relative mt-1">
-                        
-                        <select id="party_name_select"
-                                class="block w-full px-2 py-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none text-slate-600 mb-1">
-                            <option value="">— Select from list —</option>
-                            <optgroup label="Vendors">
-                                {% for v in vendor %}
-                                <option value="{{ v.name }}" data-phone="{{ v.phone }}" data-type="vendor">
-                                    {{ v.name }}{% if v.phone %} · {{ v.phone }}{% endif %}
-                                </option>
-                                {% endfor %}
-                            </optgroup>
-                            <optgroup label="Customers">
-                                {% for c in customers %}
-                                <option value="{{ c.name }}" data-phone="{{ c.phone }}" data-type="customer">
-                                    {{ c.name }}{% if c.phone %} · {{ c.phone }}{% endif %}
-                                </option>
-                                {% endfor %}
-                            </optgroup>
-                        </select>
-
-                        {# ── Or type a new name ── #}
+                    <div class="relative mt-1" id="party_combobox">
                         <input type="text" id="vendor_name_input" name="vendor_name"
                             autocomplete="off"
-                            placeholder="Or type to search / enter new name..."
+                            placeholder="Search or enter name..."
                             class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input" />
 
                         <ul id="name_suggestions"
-                            class="absolute z-50 w-full bg-white border border-slate-200 rounded-md shadow-lg hidden max-h-48 overflow-y-auto text-sm">
+                            class="absolute z-50 w-full bg-white border border-slate-200 rounded-md shadow-lg hidden max-h-48 overflow-y-auto text-sm mt-0.5">
                         </ul>
                     </div>
                     <p id="name_status" class="text-[10px] mt-0.5 text-slate-400"></p>
@@ -174,24 +154,22 @@
                         placeholder="Auto-filled or enter manually" />
                 </label>
 
-
                 <label class="block text-sm">
                     <span class="text-gray-600">Narration</span>
                     <textarea
-                        class="block w-full mt-1 px-2 text-sm form-textarea border-2 rounded-md focus:border-slate-300  focus:outline-none focus:shadow-outline-green text-slate-600"
+                        class="block w-full mt-1 px-2 text-sm form-textarea border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600"
                         rows="1"
-                        placeholder=""
                         name="narration"
                     ></textarea>
                     <span class="py-2 text-red-500 errors">{{form.narration.errors}}</span>
                 </label>
+
                 <div id="more-fields" class="hidden">
                     <label class="block text-sm">
                         <span class="text-gray-700 dark:text-gray-400">Order Number (Optional)</span>
                         <input 
                             type="text"
                             class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                            placeholder=""
                             name="order_no"
                         />
                     </label>
@@ -349,91 +327,150 @@
 
 
 <script>
-     
-    
-    // ── Journal party name search ─────────────────────────────────────────────
+
+    // ── Pre-load all parties from Django context (instant local filter) ───────
+    var allParties = [
+        {% for v in vendor %}
+        { name: "{{ v.name|escapejs }}", phone: "{{ v.phone|default:''|escapejs }}", type: "vendor" },
+        {% endfor %}
+        {% for c in customers %}
+        { name: "{{ c.name|escapejs }}", phone: "{{ c.phone|default:''|escapejs }}", type: "customer" },
+        {% endfor %}
+    ];
+
     var nameSearchTimer = null;
 
-    $('#vendor_name_input').on('input', function() {
-        var q = $(this).val().trim();
-        clearTimeout(nameSearchTimer);
-        $('#name_suggestions').addClass('hidden').empty();
-        $('#name_status').text('');
+    // ── Shared render function ────────────────────────────────────────────────
+    function renderBadge(type) {
+        return type === 'vendor'
+            ? '<span class="text-[9px] bg-blue-100 text-blue-600 px-1 rounded ml-1">vendor</span>'
+            : '<span class="text-[9px] bg-green-100 text-green-600 px-1 rounded ml-1">customer</span>';
+    }
 
-        if (q.length < 2) return;
+    function showList(results) {
+        var $list = $('#name_suggestions');
+        $list.empty();
+        if (!results.length) { $list.addClass('hidden'); return; }
 
-        nameSearchTimer = setTimeout(function() {
-            $.ajax({
-                url:  '/search-vendor-customer/',
-                data: { q: q },
-                success: function(res) {
-                    var $list = $('#name_suggestions');
-                    $list.empty();
+        results.forEach(function(r) {
+            var $name = $('<span>').text(r.name);
+            if (r.phone) {
+                $name.append($('<span class="text-[10px] text-slate-400 ml-1">').text('· ' + r.phone));
+            }
+            var $li = $('<li class="px-3 py-1.5 hover:bg-slate-100 cursor-pointer flex items-center justify-between">')
+                .append($name)
+                .append($(renderBadge(r.type)));
 
-                    if (res.results && res.results.length > 0) {
-                        res.results.forEach(function(r) {
-                            var badge = r.type === 'vendor'
-                                ? '<span class="text-[9px] bg-blue-100 text-blue-600 px-1 rounded ml-1">vendor</span>'
-                                : '<span class="text-[9px] bg-green-100 text-green-600 px-1 rounded ml-1">customer</span>';
-                            var $li = $('<li class="px-3 py-1.5 hover:bg-slate-100 cursor-pointer flex items-center justify-between">')
-                                .append($('<span>').text(r.name))
-                                .append($(badge));
-
-                            $li.on('click', function() {
-                                $('#vendor_name_input').val(r.name);
-                                $('#party_phone').val(r.phone || '');
-                                $('#name_status').text('Found in ' + r.type + ' records').addClass('text-green-600').removeClass('text-orange-500');
-                                $list.addClass('hidden').empty();
-
-                                // ── Auto-select the radio based on where the name was found ──
-                                if (r.type === 'vendor') {
-                                    $('#partyVendor').prop('checked', true);
-                                } else if (r.type === 'customer') {
-                                    $('#partyCustomer').prop('checked', true);
-                                }
-                            });
-
-                            $list.append($li);
-                        });
-                        $list.removeClass('hidden');
-                    } else {
-                        $('#name_status')
-                            .text('Not found — a new vendor will be created on save.')
-                            .removeClass('text-green-600')
-                            .addClass('text-orange-500');
-                    }
-                }
+            // mousedown instead of click — prevents blur hiding list before pick registers
+            $li.on('mousedown', function(e) {
+                e.preventDefault();
+                $('#vendor_name_input').val(r.name);
+                $('#party_phone').val(r.phone || '');
+                $('#name_status')
+                    .text('Found in ' + r.type + ' records')
+                    .removeClass('text-orange-500').addClass('text-green-600');
+                $list.addClass('hidden').empty();
+                if (r.type === 'vendor')        $('#partyVendor').prop('checked', true);
+                else if (r.type === 'customer') $('#partyCustomer').prop('checked', true);
             });
-        }, 300);
+
+            $list.append($li);
+        });
+        $list.removeClass('hidden');
+    }
+
+    // ── Core filter + render logic (used by both focus and input) ────────────
+    function filterAndShow() {
+        var q = $('#vendor_name_input').val().trim().toLowerCase();
+        $('#name_status').text('').removeClass('text-green-600 text-orange-500');
+        clearTimeout(nameSearchTimer);
+
+        // Local filter — instant
+        var local = q
+            ? allParties.filter(function(p) { return p.name.toLowerCase().indexOf(q) !== -1; })
+            : allParties.slice();
+
+        if (local.length) {
+            showList(local);
+        } else {
+            $('#name_suggestions').addClass('hidden').empty();
+            $('#name_status')
+                .text('Not found — a new vendor will be created on save.')
+                .removeClass('text-green-600').addClass('text-orange-500');
+        }
+
+        // Server AJAX — debounced, only fires when typing (q >= 2)
+        if (q.length >= 2) {
+            nameSearchTimer = setTimeout(function() {
+                $.ajax({
+                    url: '/search-vendor-customer/',
+                    data: { q: q },
+                    success: function(res) {
+                        if (res.results && res.results.length > 0) {
+                            showList(res.results);
+                        }
+                    }
+                });
+            }, 300);
+        }
+    }
+
+    // ── Events ────────────────────────────────────────────────────────────────
+    $('#vendor_name_input').on('focus', filterAndShow);
+    $('#vendor_name_input').on('input', filterAndShow);
+
+    $('#vendor_name_input').on('blur', function() {
+        setTimeout(function() { $('#name_suggestions').addClass('hidden'); }, 150);
     });
 
-    // Close suggestions when clicking outside
+    $('#vendor_name_input').on('change', function() {
+        if (!$(this).val().trim()) {
+            $('#party_phone').val('');
+            $('#name_status').text('').removeClass('text-green-600 text-orange-500');
+        }
+    });
+
+    // ── Keyboard navigation ───────────────────────────────────────────────────
+    $('#vendor_name_input').on('keydown', function(e) {
+        var $items  = $('#name_suggestions').children('li');
+        var $active = $items.filter('.bg-slate-200');
+        if (!$items.length) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            var $next = $active.length ? $active.removeClass('bg-slate-200').next() : $items.first();
+            $next.addClass('bg-slate-200');
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            var $prev = $active.length ? $active.removeClass('bg-slate-200').prev() : $items.last();
+            $prev.addClass('bg-slate-200');
+        } else if (e.key === 'Enter' && $active.length) {
+            e.preventDefault();
+            $active.trigger('mousedown');
+        } else if (e.key === 'Escape') {
+            $('#name_suggestions').addClass('hidden');
+        }
+    });
+
+    // Close when clicking outside
     $(document).on('click', function(e) {
         if (!$(e.target).closest('#vendor_name_input, #name_suggestions').length) {
             $('#name_suggestions').addClass('hidden');
         }
     });
 
-    // Clear phone when name is cleared
-    $('#vendor_name_input').on('change', function() {
-        if (!$(this).val().trim()) {
-            $('#party_phone').val('');
-            $('#name_status').text('');
+    // ── Form submit validation ────────────────────────────────────────────────
+    $("#form").submit(function(e) {
+        const accounts = $("#accounts").val();
+        if (accounts === "") {
+            e.preventDefault();
+            $('.accounts').html('This field is required');
+        } else {
+            $('.accounts').html('');
+            $("#submit").attr('disabled', false);
         }
     });
 
-    $("#form").submit( function(e){
-        const accounts = $("#accounts").val()
-        if(accounts === ""){
-            e.preventDefault()
-            $('.accounts').html('This field is required')
-        }
-        else{
-            $('.accounts').html('')
-           $("#submit").attr('disabled', false)
-        }
-    })
-    
 </script>
 {% include 'journal_grid_table.html' %}
 
