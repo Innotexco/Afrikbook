@@ -15,6 +15,12 @@ from routers.page_permission import  urls_name
 from itertools import groupby
 # Create your views here.
 
+
+SERIES_NAME_CORRECTIONS = {
+    'LIABLITY': 'LIABILITY',
+    # add others here if needed
+}
+
 @login_required(login_url='/')
 @urls_name(name="Add New Journal")
 def NewJournal(request):
@@ -28,7 +34,7 @@ def NewJournal(request):
     
     grouped_accounts = {}
     for account in Accounts:
-        key = account.series_name.upper()
+        key = SERIES_NAME_CORRECTIONS.get(account.series_name.upper(), account.series_name.upper())
         grouped_accounts.setdefault(key, []).append(account)
 
     form = None
