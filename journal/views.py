@@ -12,6 +12,7 @@ from django.db.models import Sum
 from customer.utils import generate_invoice_id
 from django.contrib.auth.decorators import login_required
 from routers.page_permission import  urls_name
+from itertools import groupby
 # Create your views here.
 
 @login_required(login_url='/')
@@ -21,8 +22,14 @@ def NewJournal(request):
     loan     = loan_account.objects.using(db).all()
     vendor   = vendor_table.objects.using(db).all()
     customer = customer_table.objects.using(db).all()
-    Accounts = chart_of_account.objects.using(db).all()
+    # Accounts = chart_of_account.objects.using(db).all()
+    Accounts = chart_of_account.objects.using(db).order_by('series_name', 'account_bankname')
     acc_types = accounts.objects.using(db).all()
+    
+    grouped_accounts = {}
+    for account in Accounts:
+        key = account.series_name.upper()
+        grouped_accounts.setdefault(key, []).append(account)
 
     form = None
     if request.method == "POST":
@@ -32,6 +39,7 @@ def NewJournal(request):
         'vendor':     vendor,
         'customers':  customer,
         'accounts':   Accounts,
+        'grouped_accounts': grouped_accounts,
         'acc_types':  acc_types,
         'invoice':    generate_invoice_id(),
         'form':       form,

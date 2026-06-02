@@ -58,43 +58,13 @@
                     </span>
                     <select required class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" name="category" nchange="fetchAccounts(this)" id="selector">
                         <option selected disabled></option>
-                        <optgroup label="EXPENSES">
-                            {% for account in accounts %}
-                               {% if  account.series_name|upper == "EXPENSES" %}
-                                    <option value="{{account.account_id}}({{account.series_name}})">{{account.account_bankname}}({{account.account_type}})</option>
-                                {% endif %}
-                            {% endfor %}
-                        </optgroup>
-                        <optgroup label="INCOME">
-                            {% for account in accounts %}
-                                {% if  account.series_name|upper == "INCOME" %}
-                                   <option value="{{account.account_id}}({{account.series_name}})">{{account.account_bankname}}({{account.account_type}})</option>
-                                {% endif %}
-                            {% endfor %}
-                        </optgroup>
-                        <optgroup label="ASSETS">
-                            {% for account in accounts %}
-                                {% if  account.series_name|upper == "ASSETS" %}
-                                   <option value="{{account.account_id}}({{account.series_name}})">{{account.account_bankname}}({{account.account_type}})</option>
-                                {% endif %}
-                            {% endfor %}
-                        </optgroup>
-                        <optgroup label="LIABILITY">
-                            {% for account in accounts %}
-                                {% if  account.series_name|upper == "LIABILITY" %}
-                                   <option value="{{account.account_id}}({{account.series_name}})">{{account.account_bankname}}({{account.account_type}})</option>
-                                {% endif %}
-                            {% endfor %}
-                        </optgroup>
-                        
-                        <optgroup label="EQUITY">
-                            {% for account in accounts %}
-                                {% if  account.series_name|upper == "EQUITY" %}
-                                   <option value="{{account.account_id}}({{account.series_name}})">{{account.account_bankname}}({{account.account_type}})</option>
-                                {% endif %}
-                            {% endfor %}
-                        </optgroup> 
-    
+                        {% for group, items in grouped_accounts.items %}
+                            <optgroup label="{{ group }}">
+                                {% for account in items %}
+                                    <option value="{{ account.account_id }}({{ account.series_name }})">{{ account.account_bankname }}({{ account.account_type }})</option>
+                                {% endfor %}
+                            </optgroup>
+                        {% endfor %}
                     </select>
                 </label>
 
