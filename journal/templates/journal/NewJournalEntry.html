@@ -82,14 +82,19 @@
                     <span class="text-gray-700 dark:text-gray-400">
                         Select Account
                     </span>
-                    <select required class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="accounts" name="credit-account" nchange="fetchName(this)">
-                        <option selected disabled></option>
+                    <select required class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="accounts" name="credit-account">
+                        <option selected disabled value=""> select account </option>
                         {% for account in accounts %}
-                            <option value="{{account.account_id}}">{{account.account_id}}({{account.series_name}})</option>
+                            <option value="{{ account.account_id }}"
+                                    data-series="{{ account.series_name }}"
+                                    data-label="{{ account.account_id }} ({{ account.series_name }})">
+                                {{ account.account_bankname }} ({{ account.account_type }})
+                            </option>
                         {% endfor %}
-                       
                     </select>
                     <span class="py-2 text-red-500 accounts"></span>
+                    <span class="py-2 text-red-500 accounts"></span>
+                    <p id="accounts-hint" class="text-[10px] mt-0.5 text-slate-400"></p>
                 </label>
             </div>
 
@@ -451,6 +456,50 @@
         }
     });
 
+
+
+    // ── Store all account options on page load ───────
+    var $accountSelect  = $('#accounts');
+    var allAccountOptions = $accountSelect.find('option').not(':disabled').clone();  // snapshot all
+
+    // ── Filter accounts when operating expense/income group changes ───────────
+    $('#selector').on('change', function () {
+        var val = $(this).val();           
+        if (!val) return;
+
+        var match = val.match(/\(([^)]+)\)$/);
+        if (!match) return;
+        var selectedSeries = match[1].trim();  
+
+        // Rebuild the accounts dropdown with only matching series
+        $accountSelect.find('option').not(':disabled').remove();
+
+        var filtered = allAccountOptions.filter(function () {
+            return $(this).data('series') === selectedSeries;
+        });
+
+        if (filtered.length) {
+            $accountSelect.append(filtered.clone());
+            $('#accounts-hint').text(filtered.length + ' account(s) in ' + selectedSeries).removeClass('text-orange-500').addClass('text-slate-400');
+        } else {
+            // Fallback — show all if nothing matches (graceful degradation)
+            $accountSelect.append(allAccountOptions.clone());
+            $('#accounts-hint').text('No accounts found for "' + selectedSeries + '" — showing all').removeClass('text-slate-400').addClass('text-orange-500');
+        }
+
+        // Reset selection
+        $accountSelect.val('');
+    });
+
+    // ── Reset accounts list if selector is cleared ────────────────────────────
+    $('#selector').on('change', function () {
+        if (!$(this).val()) {
+            $accountSelect.find('option').not(':disabled').remove();
+            $accountSelect.append(allAccountOptions.clone());
+            $accountSelect.val('');
+            $('#accounts-hint').text('');
+        }
+    });
 </script>
 {% include 'journal_grid_table.html' %}
 
