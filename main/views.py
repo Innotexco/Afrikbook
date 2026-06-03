@@ -124,7 +124,6 @@ def Login(request):
                         try:
                             print(f"First-time login for {user.username}, running migrations...")
                             migrate_database_safe(db_name)
-                            default_account(request, company.db_name)
                         except Exception as e:
                             print(f"Migration error for {db_name}: {e}")
                             # Don't block login if migrations fail - they might already be done
