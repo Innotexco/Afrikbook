@@ -124,6 +124,7 @@ def Login(request):
                         try:
                             print(f"First-time login for {user.username}, running migrations...")
                             migrate_database_safe(db_name)
+                            default_account(request, company.db_name)
                         except Exception as e:
                             print(f"Migration error for {db_name}: {e}")
                             # Don't block login if migrations fail - they might already be done
@@ -174,6 +175,7 @@ def Login(request):
     }
     return render(request, 'login.html', context)
 
+
 def VerifyEmail(request):
     email = request.GET.get('email')
     code = request.GET.get('code')
@@ -187,7 +189,7 @@ def VerifyEmail(request):
                                     loading="lazy"
                                     decoding="async"
                                     style="height: 80px; width: 80px; border: 1px solid #e2e8f0; border-radius: 9999px; display: block; margin: auto;"
-                                    src="http://account.afrikbook.com/static/logo/log.png"
+                                    src="https://console.afrikbook.com/static/logo/log.png"
                                 />
                             </div>
                             <div style="text-align: start; color: #e2e8f0;">
@@ -201,7 +203,7 @@ def VerifyEmail(request):
                             </div>
                             <div style="margin-top: 44px; text-align: center; color: #e2e8f0;">
                                 <p>© 2023 Afrikbook™. All Rights Reserved.</p>
-                                <p><a href="account.afrikbook.com" style="color: #007BFF;">Afrikbook.com</a></p>
+                                <p><a href="https://console.afrikbook.com" style="color: #007BFF;">Afrikbook.com</a></p>
                             </div>
                         </div>
                     </div>
@@ -233,7 +235,7 @@ def Forgot_Password(request):
                                     loading="lazy"
                                     decoding="async"
                                     style="height: 80px; width: 80px; border: 1px solid #e2e8f0; border-radius: 9999px; display: block; margin: auto;"
-                                    src="https://acc.afrikbook.com/static/logo/log.png"
+                                    src="https://console.afrikbook.com/static/logo/log.png"
                                 />
                             </div>
                             <div style="text-align: start; color: #e2e8f0;">

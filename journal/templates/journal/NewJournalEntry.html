@@ -66,6 +66,16 @@
                             </optgroup>
                         {% endfor %}
                     </select>
+                    {% comment %} <select required class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" name="category" nchange="fetchAccounts(this)" id="selector">
+                        <option selected disabled></option>
+                        {% for group, items in grouped_accounts.items %}
+                            <optgroup label="{{ group }}">
+                                {% for account in items %}
+                                    <option value="{{ account.account_id }}({{ account.series_name }})">{{ account.account_bankname }}({{ account.account_type }})</option>
+                                {% endfor %}
+                            </optgroup>
+                        {% endfor %}
+                    </select> {% endcomment %}
                 </label>
 
                 <label class="block text-sm">
