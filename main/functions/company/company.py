@@ -393,78 +393,461 @@ def create_profile(request, loginuser):
     #Create default Accounts
     default_account(request, company.db_name)
 
+
 def default_account(request, db):
-   
     accounts = [
+        # ── Income ───────────────────────────────────────────────────────────
         {
-            'account_id': "6001-Salary",
-            'series_name': "Expenses",
-            'account_type': "Payable",
-            'account_bankname': "Salary Account"
-
+            'account_id':      '4001-Sales',
+            'series_name':     'Income',
+            'account_type':    'Cash',
+            'account_bankname': 'Sales Account'
         },
         {
-            'account_id': "2001-ReturnInward",
-            'series_name': "Liability",
-            'account_type': "Cash",
-            'account_bankname': "Return Inward"
-
+            'account_id':      '4012-ShopRent',
+            'series_name':     'Income',
+            'account_type':    'other-income',
+            'account_bankname': 'Shop Rent (Income)'
         },
         {
-            'account_id': "1001-ReturnOutward",
-            'series_name': "Assets",
-            'account_type': "Cash",
-            'account_bankname': "Return Outward"
+            'account_id':      '4001-income',
+            'series_name':     'Income',
+            'account_type':    'other-income',
+            'account_bankname': 'income'
+        },
 
+        # ── Assets — Cash & Bank ──────────────────────────────────────────────
+        {
+            'account_id':      '1010-000000',
+            'series_name':     'Assets',
+            'account_type':    'Cash',
+            'account_bankname': 'Cash on Hand'
         },
         {
-            'account_id': "4001-Sales",
-            'series_name': "Income",
-            'account_type': "Cash",
-            'account_bankname': "Sales Account"
-
+            'account_id':      '1011-UBA',
+            'series_name':     'Assets',
+            'account_type':    'Cash',
+            'account_bankname': 'UBA'
         },
         {
-            'account_id': "2002-Purchase",
-            'series_name': "Liability",
-            'account_type': "Cash",
-            'account_bankname': "Purchase Account"
-
+            'account_id':      '1032-Access',
+            'series_name':     'Assets',
+            'account_type':    'Cash',
+            'account_bankname': 'Access Bank'
         },
         {
-            'account_id': "1002-Receivable",
-            'series_name': "Assets",
-            'account_type': "Receivable",
-            'account_bankname': "Account Receivable"
-
+            'account_id':      '1047-Eco',
+            'series_name':     'Assets',
+            'account_type':    'Cash',
+            'account_bankname': 'Eco Bank'
         },
         {
-            'account_id': "2003-Payable",
-            'series_name': "Liablity",
-            'account_type': "Payable",
-            'account_bankname': "Account Payable"
-
+            'account_id':      '1049-Fidelity',
+            'series_name':     'Assets',
+            'account_type':    'Cash',
+            'account_bankname': 'Fidelity Bank'
         },
         {
-            'account_id': "6002-Vat",
-            'series_name': "Expenses",
-            'account_type': "Payable",
-            'account_bankname': "Vat Account"
+            'account_id':      '1054-Keystone',
+            'series_name':     'Assets',
+            'account_type':    'Cash',
+            'account_bankname': 'Keystone Bank'
+        },
+        {
+            'account_id':      '1056-Sterling',
+            'series_name':     'Assets',
+            'account_type':    'Cash',
+            'account_bankname': 'Sterling Bank'
+        },
+        {
+            'account_id':      '1058-Globus',
+            'series_name':     'Assets',
+            'account_type':    'Cash',
+            'account_bankname': 'Globus Bank'
+        },
+        {
+            'account_id':      '1067-Zenith',
+            'series_name':     'Assets',
+            'account_type':    'Cash',
+            'account_bankname': 'Zenith Bank'
+        },
+        {
+            'account_id':      '1298-FCMB',
+            'series_name':     'Assets',
+            'account_type':    'Cash',
+            'account_bankname': 'FCMB'
+        },
+        {
+            'account_id':      '1304-Stanbic',
+            'series_name':     'Assets',
+            'account_type':    'Cash',
+            'account_bankname': 'Stanbic IBTC Bank'
+        },
 
-        }
-       
+        # ── Assets — Receivables & Other ─────────────────────────────────────
+        {
+            'account_id':      '1002-Receivable',
+            'series_name':     'Assets',
+            'account_type':    'Receivable',
+            'account_bankname': 'Account Receivable'
+        },
+        {
+            'account_id':      '1000-FIDELITY',
+            'series_name':     'Assets',
+            'account_type':    'Accounts Receivable',
+            'account_bankname': 'FIDELITY BANK'
+        },
+        {
+            'account_id':      '1150-DEBTORS',
+            'series_name':     'Assets',
+            'account_type':    'Accounts Receivable',
+            'account_bankname': 'DEBTORS AND OTHER DEBITS BAL'
+        },
+        {
+            'account_id':      '1001-ReturnOutward',
+            'series_name':     'Assets',
+            'account_type':    'Cash',
+            'account_bankname': 'Return Outward'
+        },
+        {
+            'account_id':      '1004-RETURNS',
+            'series_name':     'Assets',
+            'account_type':    'Inventory',
+            'account_bankname': 'RETURN OUTWARDS'
+        },
+        {
+            'account_id':      '1046-Returns',
+            'series_name':     'Assets',
+            'account_type':    'Cash',
+            'account_bankname': 'Return Outwards'
+        },
+
+        # ── Liabilities ───────────────────────────────────────────────────────
+        {
+            'account_id':      '2002-Purchase',
+            'series_name':     'Liability',
+            'account_type':    'Cash',
+            'account_bankname': 'Purchase Account'
+        },
+        {
+            'account_id':      '2003-Payable',
+            'series_name':     'Liability',
+            'account_type':    'Payable',
+            'account_bankname': 'Account Payable'
+        },
+        {
+            'account_id':      '2001-ReturnInward',
+            'series_name':     'Liability',
+            'account_type':    'Cash',
+            'account_bankname': 'Return Inward'
+        },
+        {
+            'account_id':      '2010-Purchased',
+            'series_name':     'Liability',
+            'account_type':    'Accounts Payable',
+            'account_bankname': 'Cost of Goods Purchased'
+        },
+        {
+            'account_id':      '2011-Inwards',
+            'series_name':     'Liability',
+            'account_type':    'Cash',
+            'account_bankname': 'Return Inwards'
+        },
+        {
+            'account_id':      '2021-Discount',
+            'series_name':     'Liability',
+            'account_type':    'Other current liabilities',
+            'account_bankname': 'Discount Account'
+        },
+        {
+            'account_id':      '20PUR-DISCOUNT',
+            'series_name':     'Liability',
+            'account_type':    'Other current liabilities',
+            'account_bankname': 'Purchase Discounts'
+        },
+        {
+            'account_id':      '2001-Inwards',
+            'series_name':     'Liability',
+            'account_type':    'Other current liabilities',
+            'account_bankname': 'Return Inwards'
+        },
+        {
+            'account_id':      '2000-Tax',
+            'series_name':     'Liability',
+            'account_type':    'Tax',
+            'account_bankname': 'tax account'
+        },
+        {
+            'account_id':      '2065-PURCHASE',
+            'series_name':     'Liability',
+            'account_type':    'Cash',
+            'account_bankname': 'PURCHASE ACCOUNT'
+        },
+        {
+            'account_id':      '2067-Purchase',
+            'series_name':     'Liability',
+            'account_type':    'Accounts Payable',
+            'account_bankname': 'Purchase Account'
+        },
+        {
+            'account_id':      '2060-Inwards',
+            'series_name':     'Liability',
+            'account_type':    'Cash',
+            'account_bankname': 'Return Inwards'
+        },
+
+        # ── Expenses ──────────────────────────────────────────────────────────
+        {
+            'account_id':      '6001-Salary',
+            'series_name':     'Expenses',
+            'account_type':    'Payable',
+            'account_bankname': 'Salary Account'
+        },
+        {
+            'account_id':      '6002-Vat',
+            'series_name':     'Expenses',
+            'account_type':    'Payable',
+            'account_bankname': 'Vat Account'
+        },
+        {
+            'account_id':      '6003-Discount',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Discount Allowed'   # used by AgedReceivables discount leg
+        },
+        {
+            'account_id':      '6001-prepaid',
+            'series_name':     'Expenses',
+            'account_type':    'prepaid exp',
+            'account_bankname': 'prepaid'
+        },
+        {
+            'account_id':      '6005-Repairs',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Repairs & Maintenance'
+        },
+        {
+            'account_id':      '6009-GovtLevy',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Govt. Levies'
+        },
+        {
+            'account_id':      '6014-Security',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Security Expenses'
+        },
+        {
+            'account_id':      '6017-Gotv',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Gotv Subscription'
+        },
+        {
+            'account_id':      '6025-Feeding',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Feeding'
+        },
+        {
+            'account_id':      '6031-Sanitation',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Sanitation Expenses'
+        },
+        {
+            'account_id':      '6032-Electric',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Electricity Expenses'
+        },
+        {
+            'account_id':      '6045-Drugs',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Drugs and Medicals'
+        },
+        {
+            'account_id':      '6049-Computer',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Computer & Internet Expenses'
+        },
+        {
+            'account_id':      '6053-Allowance',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Staff Allowance'
+        },
+        {
+            'account_id':      '6056-Refund',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Customers Refund'
+        },
+        {
+            'account_id':      '6094-DirExp',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Directors Expenses'
+        },
+        {
+            'account_id':      '6165-RentExp',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Rent Expenses'
+        },
+        {
+            'account_id':      '6196-Miscellane',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Miscellaneous'
+        },
+        {
+            'account_id':      '6207-Transport',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Transport & Travels'
+        },
+        {
+            'account_id':      '6483-Loading',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Loading & Offloading'
+        },
+        {
+            'account_id':      '6567-Tax',
+            'series_name':     'Expenses',
+            'account_type':    'Tax',
+            'account_bankname': 'Tax'
+        },
+        {
+            'account_id':      '6845-Fuel',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Fuel & Diesel Expenses'
+        },
+        {
+            'account_id':      '6974-Telephone',
+            'series_name':     'Expenses',
+            'account_type':    'Expenses',
+            'account_bankname': 'Telephone & Internet Expenses'
+        },
     ]
-  
+
     for acc in accounts:
-        account_id   = acc['account_id']
-        series_name  = acc['series_name']
-        account_type = acc['account_type']
-        bank         = acc['account_bankname']
-        
         try:
-            account = chart_of_account.objects.using(db).get(account_id=account_id, series_name=series_name, account_type=account_type, account_bankname=bank)
+            chart_of_account.objects.using(db).get(
+                account_id       = acc['account_id'],
+                series_name      = acc['series_name'],
+                account_type     = acc['account_type'],
+                account_bankname = acc['account_bankname']
+            )
         except chart_of_account.DoesNotExist:
-            chart_of_account.objects.using(db).create(account_id=account_id, series_name=series_name, account_type=account_type, account_bankname=bank, status="Active")
+            chart_of_account.objects.using(db).create(
+                account_id       = acc['account_id'],
+                series_name      = acc['series_name'],
+                account_type     = acc['account_type'],
+                account_bankname = acc['account_bankname'],
+                status           = 'Active'
+            )
+
+
+# def default_account(request, db):
+   
+#     accounts = [
+#         {
+#             'account_id': "6001-Salary",
+#             'series_name': "Expenses",
+#             'account_type': "Payable",
+#             'account_bankname': "Salary Account"
+
+#         },
+#         {
+#             'account_id': "6002-Vat",
+#             'series_name': "Expenses",
+#             'account_type': "Payable",
+#             'account_bankname': "Vat Account"
+
+#         },
+#         {
+#             'account_id': "6002-Vat",
+#             'series_name': "Expenses",
+#             'account_type': "Payable",
+#             'account_bankname': "Vat Account"
+
+#         },
+#         {
+#             'account_id': "6002-Vat",
+#             'series_name': "Expenses",
+#             'account_type': "Payable",
+#             'account_bankname': "Vat Account"
+
+#         },
+#         {
+#             'account_id': "2001-ReturnInward",
+#             'series_name': "Liability",
+#             'account_type': "Cash",
+#             'account_bankname': "Return Inward"
+
+#         },
+#         {
+#             'account_id': "2002-Purchase",
+#             'series_name': "Liability",
+#             'account_type': "Cash",
+#             'account_bankname': "Purchase Account"
+
+#         },
+#         {
+#             'account_id': "2003-Payable",
+#             'series_name': "Liability",
+#             'account_type': "Payable",
+#             'account_bankname': "Account Payable"
+
+#         },
+#         {
+#             'account_id': "1001-ReturnOutward",
+#             'series_name': "Assets",
+#             'account_type': "Cash",
+#             'account_bankname': "Return Outward"
+
+#         },
+#         {
+#             'account_id': "1002-Receivable",
+#             'series_name': "Assets",
+#             'account_type': "Receivable",
+#             'account_bankname': "Account Receivable"
+
+#         },
+#         {
+#             'account_id': "4001-Sales",
+#             'series_name': "Income",
+#             'account_type': "Cash",
+#             'account_bankname': "Sales Account"
+
+#         },
+        
+       
+        
+        
+       
+#     ]
+  
+#     for acc in accounts:
+#         account_id   = acc['account_id']
+#         series_name  = acc['series_name']
+#         account_type = acc['account_type']
+#         bank         = acc['account_bankname']
+        
+#         try:
+#             account = chart_of_account.objects.using(db).get(account_id=account_id, series_name=series_name, account_type=account_type, account_bankname=bank)
+#         except chart_of_account.DoesNotExist:
+#             chart_of_account.objects.using(db).create(account_id=account_id, series_name=series_name, account_type=account_type, account_bankname=bank, status="Active")
+
+
+
 
 
 def create_country_currency(request):
