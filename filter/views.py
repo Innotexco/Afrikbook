@@ -162,7 +162,7 @@ def aged_receivable_filter_by_date(request):
                 'cusID':           item.cusID,
                 'customer_name':   item.customer_name,
                 'invoiceID':       item.invoiceID,
-                'Gdescription':    item.Gdescription,
+                'Gdescription':    item.Gdescription or '—',
                 'amount_paid':     str(item.amount_paid),
                 'amount_expected': str(item.amount_expected),
                 'balance':         str(item.amount_expected - item.amount_paid),
