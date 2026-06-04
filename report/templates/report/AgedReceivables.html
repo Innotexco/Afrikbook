@@ -62,16 +62,16 @@
                     {% for aged in aged_recievable %}
                     <tr class="text-gray-700">
                         <td class="text-[10px]">{{ forloop.counter }}</td>
-                        <td class="text-[10px]">{{ aged.invoice_date }}</td>      {# was aged.date #}
-                        <td class="text-[10px]">{{ aged.cusID }}</td>              {# was aged.customer_id #}
+                        <td class="text-[10px]">{{ aged.invoice_date }}</td>
+                        <td class="text-[10px]">{{ aged.cusID }}</td>
                         <td class="text-[10px]">{{ aged.customer_name }}</td>
-                        <td class="text-[10px]">{{ aged.invoiceID }}</td>          {# was aged.transaction_id #}
-                        <td class="text-[10px]">{{ aged.Gdescription }}</td>       {# was aged.description #}
-                        <td class="text-[10px]">{{ aged.amount_paid }}</td>        {# was aged.amount #}
-                        <td class="text-[10px]">{{ aged.amount_expected }}</td>    {# was aged.initial_amount #}
-                        <td class="text-[10px] text-red-600">{{ aged.amount_expected|add:aged.amount_paid }}</td>
+                        <td class="text-[10px]">{{ aged.invoiceID }}</td>
+                        <td class="text-[10px]">{{ aged.Gdescription|default:"—" }}</td>
+                        <td class="text-[10px]">{{ aged.amount_paid }}</td>
+                        <td class="text-[10px]">{{ aged.amount_expected }}</td>
+                        <td class="text-[10px] text-red-600 font-semibold">{{ aged.outstanding }}</td>  {# pre-calculated in view #}
                         <td class="text-[10px]">
-                            <a onclick="showModal('{{ aged.invoiceID }}', '{{ aged.cusID }}')"  {# fixed: was ages.invoiceID #}
+                            <a onclick="showModal('{{ aged.invoiceID }}', '{{ aged.cusID }}')"
                                 class="flex items-center justify-center text-blue-500" aria-label="View">
                                 <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
@@ -82,9 +82,7 @@
                     {% endfor %}
                 </tbody>
                 <tfoot>
-                    <tr>
-                        <td class="py-4"></td>
-                    </tr>
+                    <tr><td class="py-4"></td></tr>
                     <tr class="text-gray-700 text-sm">
                         <td class="pt-6 text-right pr-3" colspan="9">
                             <span>Total Outstanding:</span>
@@ -95,6 +93,7 @@
                         </td>
                     </tr>
                 </tfoot>
+                
             </table>
             <div class="text-center text-gray-500 py-2 font-semibold" id="no-data" style="display:none;">No data found</div>
         </div>

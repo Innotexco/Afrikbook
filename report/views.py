@@ -574,21 +574,24 @@ def Receivables(request):
 def AgedReceivables(request):
     db = AfrikBookDB(request)
     customers = customer_table.objects.using(db).all()
-
-    aged = customer_invoice.objects.using(db).filter(
-        amount_paid__lt=F('amount_expected')
-    ).distinct()
-
-    amount_total = customer_invoice.objects.using(db).filter(
-        amount_paid__lt=F('amount_expected')
-    ).aggregate(
-        total_amount=Sum(F('amount_expected') - F('amount_paid'))
-    )['total_amount'] or Decimal('0.00')
-    # ─────────────────────────────────────────────────────────────────────
-
     company = company_table.objects.get(id=request.user.company_id_id)
     bank_accounts = chart_of_account.objects.using(db).filter(account_type="Bank")
     accounts = chart_of_account.objects.using(db).all()
+
+    # ── Deduplicate by invoiceID and pre-calculate outstanding ───────────
+    raw_aged = customer_invoice.objects.using(db).filter(
+        amount_paid__lt=F('amount_expected')
+    ).order_by('invoiceID', 'id')
+
+    seen = set()
+    aged_list = []
+    for inv in raw_aged:
+        if inv.invoiceID not in seen:
+            seen.add(inv.invoiceID)
+            inv.outstanding = inv.amount_expected - inv.amount_paid
+            aged_list.append(inv)
+
+    amount_total = sum(inv.outstanding for inv in aged_list)
 
     if request.method == "POST":
         discount        = Decimal(request.POST.get("Discount", 0))
@@ -780,12 +783,12 @@ def AgedReceivables(request):
             return JsonResponse({"success": False, "error": str(e)}, status=500)
 
     context = {
-        'customers': customers,
-        'aged_recievable': aged,
-        'amount_total': amount_total,
-        'company': company,
-        'bank_accounts': bank_accounts,
-        'accounts': accounts,
+        'customers':      customers,
+        'aged_recievable': aged_list,
+        'amount_total':   amount_total,
+        'company':        company,
+        'bank_accounts':  bank_accounts,
+        'accounts':       accounts,
         'payment_methods': ["Cash", "Transfer", "Cheque", "Transfer and Cash", "Customer Balance"],
     }
     return render(request, 'report/AgedReceivables.html', context)
