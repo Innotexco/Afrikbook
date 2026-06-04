@@ -6,7 +6,7 @@ from django.db.models import Sum, F, Q
 import decimal
 from Stock.models import Item
 from .function.date import convertDate
-# Create your views here.
+from decimal import Decimal
 
 
 
@@ -130,13 +130,12 @@ def receivable_filter_by_date(request):
     }
     return JsonResponse(response, safe=False)
 
-
 def aged_receivable_filter_by_date(request):
     db = request.user.company_id.db_name
 
     start_date_str = request.GET.get('start_date')
-    end_date_str = request.GET.get('end_date')
-    customer = request.GET.get('customer')
+    end_date_str   = request.GET.get('end_date')
+    customer       = request.GET.get('customer')
 
     filter_conditions = Q()
 
@@ -147,32 +146,51 @@ def aged_receivable_filter_by_date(request):
     if customer:
         filter_conditions &= Q(cusID=customer)
 
-    data = []
-    if filter_conditions:
-        filtered_data = customer_invoice.objects.using(db).filter(
-            Q(amount_paid__lt=F('amount_expected')) & filter_conditions
-        ).values()
-        seen = set()
-        for item in filtered_data:
-            if item['invoiceID'] not in seen:
-                seen.add(item['invoiceID'])
-                data.append(item)
+    # Base queryset — only invoices with outstanding balance
+    base_qs = customer_invoice.objects.using(db).filter(
+        Q(amount_paid__lt=F('amount_expected')) & filter_conditions
+    )
+
+    # ── Deduplicate by invoiceID at query level ───────────────────────────
+    seen        = set()
+    unique_data = []
+    for item in base_qs.order_by('invoiceID', 'id'):
+        if item.invoiceID not in seen:
+            seen.add(item.invoiceID)
+            unique_data.append({
+                'invoice_date':    str(item.invoice_date) if item.invoice_date else '',
+                'cusID':           item.cusID,
+                'customer_name':   item.customer_name,
+                'invoiceID':       item.invoiceID,
+                'Gdescription':    item.Gdescription,
+                'amount_paid':     str(item.amount_paid),
+                'amount_expected': str(item.amount_expected),
+                'balance':         str(item.amount_expected - item.amount_paid),
+            })
+
+    # ── Totals — per unique invoice, not per line ─────────────────────────
+    unique_invoices = base_qs.values('invoiceID').distinct()
 
     amount_total = customer_invoice.objects.using(db).filter(
-        Q(amount_paid__lt=F('amount_expected')) & filter_conditions
-    ).values("invoiceID").distinct().aggregate(total_amount=Sum("amount_expected"))['total_amount'] or 0
+        invoiceID__in=unique_invoices
+    ).values('invoiceID').distinct().aggregate(
+        total=Sum('amount_expected')
+    )['total'] or Decimal('0.00')
 
     amount_paid_total = customer_invoice.objects.using(db).filter(
-        Q(amount_paid__lt=F('amount_expected')) & filter_conditions
-    ).values("invoiceID").distinct().aggregate(total_amount_paid=Sum("amount_paid"))['total_amount_paid'] or 0
+        invoiceID__in=unique_invoices
+    ).values('invoiceID').distinct().aggregate(
+        total=Sum('amount_paid')
+    )['total'] or Decimal('0.00')
 
-    total_amount = amount_total - amount_paid_total
+    total_outstanding = amount_total - amount_paid_total
 
-    response = {
-        "serializer_data": list(data),
-        "total_amount": total_amount,
-    }
-    return JsonResponse(response, safe=False)
+    return JsonResponse({
+        'serializer_data': unique_data,
+        'total_amount':    str(total_outstanding),
+    }, safe=False)
+
+
 
 
 

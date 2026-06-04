@@ -574,8 +574,18 @@ def Receivables(request):
 def AgedReceivables(request):
     db = AfrikBookDB(request)
     customers = customer_table.objects.using(db).all()
-    aged = receivable.objects.using(db).filter(amount__lt=F('initial_amount')).distinct()
-    amount_total = receivable.objects.using(db).aggregate(total_amount=Sum("amount"))['total_amount']
+
+    aged = customer_invoice.objects.using(db).filter(
+        amount_paid__lt=F('amount_expected')
+    ).distinct()
+
+    amount_total = customer_invoice.objects.using(db).filter(
+        amount_paid__lt=F('amount_expected')
+    ).aggregate(
+        total_amount=Sum(F('amount_expected') - F('amount_paid'))
+    )['total_amount'] or Decimal('0.00')
+    # ─────────────────────────────────────────────────────────────────────
+
     company = company_table.objects.get(id=request.user.company_id_id)
     bank_accounts = chart_of_account.objects.using(db).filter(account_type="Bank")
     accounts = chart_of_account.objects.using(db).all()
@@ -779,7 +789,6 @@ def AgedReceivables(request):
         'payment_methods': ["Cash", "Transfer", "Cheque", "Transfer and Cash", "Customer Balance"],
     }
     return render(request, 'report/AgedReceivables.html', context)
-
 
 
 def DebitAccount(request, db, cus, entry_date, description, payment_method, account, amount, invoiceID):
