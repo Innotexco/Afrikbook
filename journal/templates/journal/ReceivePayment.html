@@ -39,7 +39,7 @@
                     <span class="py-2 text-red-500 errors">{{form.date.errors}}</span>
                 </label>
     
-                <label class="block text-sm hidden">
+                <label class="block text-sm">
                     <span class="text-gray-700 dark:text-gray-400">Invoice Number</span>
                     <input 
                         type="text"
@@ -122,13 +122,11 @@
                     <span class="text-gray-700 dark:text-gray-400">
                         Select Account
                     </span>
-                    <select class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="account_id">
-                        
+                    <select class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none text-slate-600 shadow-lg" name="account_id">
                         <option selected disabled></option>
                         {% for account in accounts %}
-                             <option value="{{account.id}}">{{account.account_bankname }}</option>    
+                            <option value="{{ account.id }}">{{ account.account_bankname }} ({{ account.account_id }})</option>
                         {% endfor %}
-                            
                     </select>
                 </label>
     

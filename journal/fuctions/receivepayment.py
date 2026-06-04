@@ -53,7 +53,6 @@ def amount_to_words(amount):
         return ''
 
 
-
 def receive_payment(request, db):
     date           = request.POST['date']
     invoice_no     = request.POST['invoice_no']
@@ -62,7 +61,7 @@ def receive_payment(request, db):
     vendor_id      = request.POST.get('vendor_id')
     accountype     = request.POST.get('accountType')
     payment_method = request.POST['payment_method']
-    account_id     = request.POST.get('account_id')
+    account_id     = request.POST.get('account_id')   
     amount         = request.POST['amount']
 
     receivable_form = ReceivableForm({
@@ -79,33 +78,87 @@ def receive_payment(request, db):
     if conditions:
         if receivable_form.is_valid():
 
+            # ── Resolve account object ────────────────────────────────────
+            try:
+                account = chart_of_account.objects.using(db).get(id=account_id)
+            except chart_of_account.DoesNotExist:
+                messages.error(request, "Selected account not found.")
+                return receivable_form
+
+            amount_decimal = decimal.Decimal(str(amount))
+
             customer_name  = ""
             customer_email = ""
             customer_code  = ""
 
             if accountype == "Customer":
-                customer       = customer_table.objects.using(db).get(id=customer_id)
+                try:
+                    customer = customer_table.objects.using(db).get(id=customer_id)
+                except customer_table.DoesNotExist:
+                    messages.error(request, "Customer not found.")
+                    return receivable_form
+
                 customer_name  = customer.name
                 customer_email = customer.email
                 customer_code  = customer.customer_code
-                CreditReceivable(request, db, customer, date, description, payment_method, account_id, amount)
+
+                # ── Resolve the invoice to get invoice_total and current_paid ─
+                try:
+                    inv = customer_invoice.objects.using(db).filter(
+                        invoiceID=invoice_no, cusID=customer.customer_code
+                    ).first()
+                    invoice_total = decimal.Decimal(str(inv.amount_expected)) if inv else amount_decimal
+                    current_paid  = decimal.Decimal(str(inv.amount_paid))     if inv else decimal.Decimal('0.00')
+                except Exception:
+                    invoice_total = amount_decimal
+                    current_paid  = decimal.Decimal('0.00')
+
+                # Debit → bank/cash account (money arrives)
+                DebitReceivable(
+                    request, db, customer, date, description,
+                    payment_method, account.account_id, amount_decimal,
+                    invoiceID=invoice_no
+                )
+                # Credit → receivable (debt reduced)
+                CreditReceivable(
+                    request, db, customer, date, description,
+                    payment_method, account.account_id, amount_decimal,
+                    invoice_no, invoice_total, current_paid
+                )
+
+                # ── Update invoice amount_paid ────────────────────────────
+                if inv:
+                    inv.amount_paid = min(
+                        current_paid + amount_decimal,
+                        invoice_total
+                    )
+                    inv.save(using=db)
 
             elif accountype == "Vendor":
-                vendor         = vendor_table.objects.using(db).get(id=vendor_id)
+                try:
+                    vendor = vendor_table.objects.using(db).get(id=vendor_id)
+                except vendor_table.DoesNotExist:
+                    messages.error(request, "Vendor not found.")
+                    return receivable_form
+
                 customer_name  = vendor.name
                 customer_email = vendor.email
                 customer_code  = getattr(vendor, 'custID', '')
-                CreditPayable(request, db, vendor, date, description, payment_method, account_id, amount)
 
-            # Update account balance
-            account = chart_of_account.objects.using(db).get(id=account_id)
-            account.actual_balance += decimal.Decimal(amount)
-            CreateLog(db, account, amount)
+                CreditPayable(
+                    request, db, vendor, date, description,
+                    payment_method, account.account_id, amount_decimal
+                )
 
-            # Account log
-            acc_log = account_log(
+            # ── Update account balance and log ────────────────────────────
+            account.actual_balance += amount_decimal
+            account.save(using=db)
+            CreateLog(db, account, amount_decimal)
+
+            # ── Account log ───────────────────────────────────────────────
+            account_log.objects.using(db).create(
                 transaction_source = "Receive Payment",
-                amount             = amount,
+                amount             = amount_decimal,
                 date               = date,
                 account            = account.account_id,
                 account_type       = account.account_type,
@@ -114,7 +167,7 @@ def receive_payment(request, db):
 
             messages.success(request, "Payment received successfully")
 
-            # ── Email receipt ────────────────────────────────────────────────
+            # ── Email receipt ─────────────────────────────────────────────
             if customer_email:
                 try:
                     company = CreateProfile.objects.using(db).first()
@@ -127,32 +180,28 @@ def receive_payment(request, db):
 
                     amount_in_words = amount_to_words(amount)
 
-                    # Render receipt HTML
                     html_content = render_to_string('journal/receipt_email.html', {
-                        'company':        company,
-                        'customer_name':  customer_name,
-                        'invoice_no':     invoice_no,
-                        'customer_code':    customer_code,
-                        'date':           date,
-                        'amount':         amount,
+                        'company':         company,
+                        'customer_name':   customer_name,
+                        'invoice_no':      invoice_no,
+                        'customer_code':   customer_code,
+                        'date':            date,
+                        'amount':          amount,
                         'amount_in_words': amount_in_words,
-                        'description':    description,
-                        'payment_method': payment_method,
+                        'description':     description,
+                        'payment_method':  payment_method,
                     })
 
-                    # Convert to PDF
                     pdf_file = HTML(
                         string=html_content,
                         base_url=request.build_absolute_uri()
                     ).write_pdf()
 
-                    # Footer
                     footer_lines = [company_name]
                     if company_address: footer_lines.append(company_address)
                     if company_email_:  footer_lines.append(company_email_)
                     if company_phone:   footer_lines.append(company_phone)
                     if company_rc:      footer_lines.append(f"RC {company_rc}")
-                    footer = "\n".join(footer_lines)
 
                     email = EmailMessage(
                         subject    = f"Payment Receipt — Invoice {invoice_no}",
@@ -161,7 +210,7 @@ def receive_payment(request, db):
                             f"Thank you for your payment of {amount} for invoice {invoice_no}.\n"
                             f"Please find your receipt attached.\n\n"
                             f"──────────────────────────\n"
-                            f"{footer}\n"
+                            f"{chr(10).join(footer_lines)}\n"
                             f"──────────────────────────"
                         ),
                         from_email = settings.DEFAULT_FROM_EMAIL,
@@ -175,14 +224,11 @@ def receive_payment(request, db):
                 except Exception as e:
                     logger.error(f"[receive_payment] Receipt email failed | invoice_no={invoice_no} | {e}\n{traceback.format_exc()}")
                     messages.warning(request, "Payment recorded but receipt email could not be sent.")
-            else:
-                logger.debug(f"[receive_payment] No email address | skipping receipt | invoice_no={invoice_no}")
 
         else:
             return receivable_form
     else:
         messages.error(request, "All the fields must be filled in to submit")
-
 
 
 # def receive_payment(request, db):
