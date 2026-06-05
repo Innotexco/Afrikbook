@@ -652,7 +652,7 @@ def AgedReceivables(request):
             # ── Accounting entries ────────────────────────────────────────────────
             if payment_method == "Customer Balance":
                 if cost > 0:
-                    sales_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+                    sales_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
                     CreditReceivable(
                         request, db, cus, today, Gdescription,
                         "Customer Balance", sales_account.account_id, cost,
@@ -677,32 +677,32 @@ def AgedReceivables(request):
                         CreditReceivable(request, db, cus, today, Gdescription, "Transfer", account_ID, transfer_amount, invoice, invoice_total, current_paid)
                         CreateLog(db, account, transfer_amount)
 
-                        cash_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+                        cash_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
                         DebitReceivable(request, db, cus, today, Gdescription, "Cash", cash_account.account_id, cash_amount, invoice)
                         CreditReceivable(request, db, cus, today, Gdescription, "Cash", cash_account.account_id, cash_amount, invoice, invoice_total, current_paid + transfer_amount)
                         CreateLog(db, cash_account, cash_amount)
 
                     elif payment_method == "Cheque":
-                        ar_account = chart_of_account.objects.using(db).get(account_bankname="Account Receivable")
+                        ar_account = chart_of_account.objects.using(db).get(account_id='1002-Receivable')
                         DebitReceivable(request, db, cus, today, Gdescription, "Cheque", ar_account.account_id, cost, invoice)
                         CreditReceivable(request, db, cus, today, Gdescription, "Cheque", ar_account.account_id, cost, invoice, invoice_total, current_paid)
                         CreateLog(db, ar_account, cost)
 
                     elif payment_method == "Cash":
-                        sales_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+                        sales_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
                         DebitReceivable(request, db, cus, today, Gdescription, "Cash", sales_account.account_id, cost, invoice)
                         CreditReceivable(request, db, cus, today, Gdescription, "Cash", sales_account.account_id, cost, invoice, invoice_total, current_paid)
                         CreateLog(db, sales_account, cost)
 
                     else:
-                        sales_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+                        sales_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
                         DebitReceivable(request, db, cus, today, Gdescription, "Cash", sales_account.account_id, cost, invoice)
                         CreditReceivable(request, db, cus, today, Gdescription, payment_method, sales_account.account_id, cost, invoice, invoice_total, current_paid)
                         CreateLog(db, sales_account, cost)
 
             else:
                 if cost > 0:
-                    sales_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+                    sales_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
                     DebitReceivable(request, db, cus, today, Gdescription, "Cash", sales_account.account_id, cost, invoice)
                     CreditReceivable(request, db, cus, today, Gdescription, payment_method, sales_account.account_id, cost, invoice, invoice_total, current_paid)
                     CreateLog(db, sales_account, cost)
@@ -710,9 +710,9 @@ def AgedReceivables(request):
             # ── Discount entry — always runs if discount > 0 ─────────────────────
             if discount > 0:
                 try:
-                    discount_account = chart_of_account.objects.using(db).get(account_bankname="Discount Allowed")
+                    discount_account = chart_of_account.objects.using(db).get(account_id='6003-Discount')
                 except chart_of_account.DoesNotExist:
-                    discount_account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+                    discount_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
 
                 DebitReceivable(
                     request, db, cus, today, f"Discount Allowed - Invoice {invoice}",
@@ -845,7 +845,7 @@ def AgedPayable(request):
         today = datetime.now()
         try:
             ven = vendor_table.objects.using(db).get(custID=vendor)
-            account = chart_of_account.objects.using(db).get(account_bankname="Purchase account").account_id
+            account = chart_of_account.objects.using(db).get(account_id='2067-Purchase').account_id
             if discount == "NaN":
                 description = "Payment Received"
                 CreditPayable(request, db, ven, today, description, "Transfer", account, cost)

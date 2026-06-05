@@ -207,9 +207,7 @@ def EditPurchaseInvoice(request, invoice_id):
 
                 # ── Step 3: Undo accounting ───────────────────────────────
                 try:
-                    bank_account = chart_of_account.objects.using(db).get(
-                        account_bankname='Purchase Account'
-                    )
+                    bank_account = chart_of_account.objects.using(db).get(account_id='2067-Purchase')
                     bank_account.actual_balance -= decimal.Decimal(
                         str(first.amount_expected or 0)
                     )

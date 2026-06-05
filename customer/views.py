@@ -325,9 +325,8 @@ def EditSalesInvoice(request, invoice_id):
                 # Reverse by calling CancelSales logic directly
                 accountType = get_customer_or_vendor(db, invoice_id)
                 try:
-                    sales_account = chart_of_account.objects.using(db).get(
-                        account_bankname="Sales account"
-                    )
+                    sales_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
+                    
                     if first.amount_paid == first.amount_expected:
                         if accountType == "Customer":
                             cus = customer_table.objects.using(db).filter(
@@ -1122,7 +1121,7 @@ def CancelSales(request):
                 
                 CreateOutletStockinLog(db, item.invoice_date, item.invoiceID, item.order_ID or "", item.customer_name, " ", outlet, item.Gdescription, item.item_name, item.item_description, item.qty, item.token_id, item.Userlogin,  item.itemcode, item.unit_p, "")
 
-        account = chart_of_account.objects.using(db).get(account_bankname="Sales Account").account_id
+        account = chart_of_account.objects.using(db).get(account_id='4001-Sales').account_id
         if inital_invioice.amount_paid == inital_invioice.amount_expected:
             #Paid
             if accountType == "Customer":
@@ -1156,14 +1155,14 @@ def CancelSales(request):
                 cus = customer_table.objects.using(db).filter(customer_code=cusID).first()
                 if not cus:
                     return JsonResponse({'error': 'Customer not found'}, status=404)
-                debtor_account = chart_of_account.objects.using(db).get(account_bankname="Return Inward")
+                debtor_account = chart_of_account.objects.using(db).get(account_id='2001-ReturnInward')
                 CreditReceivable(request, db, cus, inital_invioice.invoice_date, inital_invioice.Gdescription, "Transfer", debtor_account.account_id, inital_invioice.amount_paid)
                 CreateLog(db, debtor_account, inital_invioice.amount_expected)
             elif accountType == "Vendor":
                 ven = vendor_table.objects.using(db).filter(custID=cusID).first()
                 if not ven:
                     return JsonResponse({'error': 'Vendor not found'}, status=404)
-                debtor_account = chart_of_account.objects.using(db).get(account_bankname="Return Outward")
+                debtor_account = chart_of_account.objects.using(db).get(account_id='1001-ReturnOutward')
                 CreditPayable(request, db, ven, inital_invioice.invoice_date, inital_invioice.Gdescription, "Transfer", debtor_account.account_id, inital_invioice.amount_paid)
                 CreateLog(db, debtor_account, inital_invioice.amount_expected)
 

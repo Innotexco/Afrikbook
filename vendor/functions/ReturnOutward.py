@@ -93,10 +93,9 @@ def add_return_item(request, db):
                             debtor_account.actual_balance += decimal.Decimal(total)
                             # debtor_account.save()
                         except chart_of_account.MultipleObjectsReturned:
-                            debtor_account = chart_of_account.objects.using(db).filter(account_bankname="Return Outward").first()
+                            debtor_account = chart_of_account.objects.using(db).get(account_id='1001-ReturnOutward')
                         except chart_of_account.DoesNotExist:
-                            debtor_account = chart_of_account.objects.using(db).filter(account_bankname="Return Outward").first()
-
+                            debtor_account = chart_of_account.objects.using(db).get(account_id='1001-ReturnOutward')
                         if invoice2.amount_paid < invoice2.amount_expected:
                             
                             CreateLog(db, debtor_account, total)
