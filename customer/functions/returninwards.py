@@ -148,12 +148,12 @@ def new_return_inwards(request, db):
                     
                     if invoice2.amount_paid < invoice2.amount_expected:
                         if accountType == "Customer":
-                            debtor_account = chart_of_account.objects.using(db).get(account_bankname="Return Inward")
+                            debtor_account = chart_of_account.objects.using(db).get(account_id='2001-ReturnInward')
                             debtor_account.actual_balance += decimal.Decimal(total)
                             # debtor_account.save()
                             CreateLog(db, debtor_account, total)
                         elif accountType == "Vendor":
-                            debtor_account = chart_of_account.objects.using(db).get(account_bankname="Return Outward")
+                            debtor_account = chart_of_account.objects.using(db).get(account_id='1001-ReturnOutward')
                             debtor_account.actual_balance += decimal.Decimal(total)
                             # debtor_account.save()
                             CreateLog(db, debtor_account, total)
@@ -170,7 +170,7 @@ def new_return_inwards(request, db):
                         )
                         # acc_log.save(using=db)
                     else:
-                        account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+                        account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
 
                         if accountType == "Customer":
                             CreditReceivable(request, db, cus, refund_date, Gdescription, p_method, account.account_id, initial_total)
@@ -340,18 +340,18 @@ def edit(request, db):
                     
                     if invoice2.amount_paid < invoice2.amount_expected:
                         if accountType == "Customer":
-                            debtor_account = chart_of_account.objects.using(db).get(account_bankname="Return Inward")
+                            debtor_account = chart_of_account.objects.using(db).get(account_id='2001-ReturnInward')
                             debtor_account.actual_balance += decimal.Decimal(total)
                             # debtor_account.save()
                             CreateLog(db, debtor_account, total)
                         elif accountType == "Vendor":
-                            debtor_account = chart_of_account.objects.using(db).get(account_bankname="Return Outward")
+                            debtor_account = chart_of_account.objects.using(db).get(account_id='1001-ReturnOutward')
                             debtor_account.actual_balance += decimal.Decimal(total)
                             # debtor_account.save()
                             CreateLog(db, debtor_account, total)
                         
                     else:
-                        account = chart_of_account.objects.using(db).get(account_bankname="Sales Account")
+                        account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
                         if accountType == "Customer":
                             CreditReceivable(request, db, cus, invoice2.refund_date, "Edited invoice", p_method, account.account_id, initial_total)
                             DebitReceivable(request, db, cus, refund_date, Gdescription, p_method, account.account_id, total)

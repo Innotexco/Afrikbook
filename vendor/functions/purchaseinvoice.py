@@ -51,7 +51,7 @@ def add_purchase_invoice(request, db):
 
   
     # Get Chart Of Account
-    bank_account = chart_of_account.objects.using(db).get(account_bankname='Purchase Account')
+    bank_account = chart_of_account.objects.using(db).get(account_id='2067-Purchase')
     # vendor_name = vendor_name + "("+ bank_account.series_name + ")"
     
     transaction_source = "Purchase"
