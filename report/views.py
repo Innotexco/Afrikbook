@@ -577,23 +577,6 @@ def AgedReceivables(request):
     company = company_table.objects.get(id=request.user.company_id_id)
     bank_accounts = chart_of_account.objects.using(db).filter(account_type="Bank")
     accounts = chart_of_account.objects.using(db).all()
-    
-    # ── Validate payment + discount don't exceed remaining balance ────────
-    remaining = invoice_total - current_paid
-    total_clearing = cost + discount
-
-    if total_clearing > remaining:
-        return JsonResponse({
-            "success": False,
-            "error": f"Payment + Discount (₦{total_clearing:,.2f}) exceeds remaining balance (₦{remaining:,.2f})"
-        }, status=400)
-
-    # ── Allow discount-only clearing (cost can be zero) ──────────────────
-    if cost <= 0 and discount <= 0:
-        return JsonResponse({
-            "success": False,
-            "error": "Enter a payment amount, a discount, or both."
-        }, status=400)
 
     # ── Deduplicate by invoiceID and pre-calculate outstanding ───────────
     raw_aged = customer_invoice.objects.using(db).filter(
@@ -648,6 +631,23 @@ def AgedReceivables(request):
                         "success": False,
                         "error": f"Insufficient customer balance. Available: ₦{customer_balance:,.2f}, Required: ₦{total_payment:,.2f}"
                     }, status=400)
+                    
+            # ── Validate payment + discount don't exceed remaining balance ────────
+            remaining = invoice_total - current_paid
+            total_clearing = cost + discount
+
+            if total_clearing > remaining:
+                return JsonResponse({
+                    "success": False,
+                    "error": f"Payment + Discount (₦{total_clearing:,.2f}) exceeds remaining balance (₦{remaining:,.2f})"
+                }, status=400)
+
+            # ── Allow discount-only clearing (cost can be zero) ──────────────────
+            if cost <= 0 and discount <= 0:
+                return JsonResponse({
+                    "success": False,
+                    "error": "Enter a payment amount, a discount, or both."
+                }, status=400)
 
             # ── Accounting entries ────────────────────────────────────────────────
             if payment_method == "Customer Balance":
