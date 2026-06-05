@@ -592,6 +592,38 @@ def SalesQuote(request):
     }
     return render(request, "customer/SalesQuote.html", context)
 
+
+# @login_required(login_url='/')
+# @urls_name(name="Sales Quotes")
+# def EditSalesQuote(request, quote_id):
+#     db = request.user.company_id.db_name
+#     quote = sales_quote.objects.using(db).filter(quoteID=quote_id)
+#     if not quote.exists():
+#         messages.error(request, "Quote not found")
+#         return redirect('customer:SalesQuote')
+
+#     first = quote.first()
+#     customer = customer_table.objects.using(db).all()
+#     vendor = vendor_table.objects.using(db).all()
+#     item = Item.objects.using(db).all()
+
+#     if request.method == "POST":
+#         form = add_sales_quote(request, db)
+#         return redirect('customer:EditSalesQuote', quote_id=quote_id)
+
+#     context = {
+#         'quote': quote,
+#         'first': first,
+#         'customers': customer,
+#         'vendor': vendor,
+#         'items': item,
+#         'quote_id': quote_id
+#     }
+#     return render(request, "customer/EditSalesQuote.html", context)
+
+
+
+
 @login_required(login_url='/')
 @urls_name(name="Sales Order")
 def AddSalesOrder(request):
