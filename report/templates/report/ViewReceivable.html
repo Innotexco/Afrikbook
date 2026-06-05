@@ -117,7 +117,7 @@
                                 class="w-32 px-2 py-1 text-xs border border-gray-300 rounded text-right bg-white focus:outline-none focus:ring-1 focus:ring-green-400" />
                         </div>
                         <p id="discount_hint" class="text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded px-2 py-1" style="display:none"></p>
-                        
+
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-500">Payment Amount (₦)</span>
                             <input type="number" id="payment_amount" value="0" step="0.01" min="0"
@@ -337,15 +337,19 @@
         const transfer = parseFloat($("#transfer_amount").val()) || 0;
         const cash     = parseFloat($("#cash_amount").val()) || 0;
 
-        if (payment <= 0) {
-            alertify.error("Please enter a valid payment amount.");
+        // ── Was: if (payment <= 0) — blocked discount-only ────────────────
+        if (payment <= 0 && discount <= 0) {
+            alertify.error("Enter a payment amount, a discount, or both.");
             return;
         }
-        if (["Transfer", "Cheque", "Transfer and Cash"].includes(method) && !account) {
+
+        // Account only required when there's an actual payment, not discount-only
+        if (payment > 0 && ["Transfer", "Cheque", "Transfer and Cash"].includes(method) && !account) {
             alertify.error("Please select an account for this payment method.");
             return;
         }
-        if (method === "Transfer and Cash" && Math.abs((transfer + cash) - payment) > 0.01) {
+
+        if (method === "Transfer and Cash" && payment > 0 && Math.abs((transfer + cash) - payment) > 0.01) {
             alertify.error("Transfer + Cash amounts must equal the payment amount.");
             return;
         }
@@ -366,7 +370,11 @@
             },
             success: function (data) {
                 if (data.success === true) {
-                    alertify.success("Payment recorded successfully.");
+                    alertify.success(
+                        payment > 0 && discount > 0 ? "Payment and discount recorded." :
+                        payment > 0                 ? "Payment recorded successfully." :
+                                                    "Discount applied successfully."
+                    );
                     refreshInvoiceData(customer, invoice);
                     if (typeof Filter === 'function') Filter();
                 } else {
