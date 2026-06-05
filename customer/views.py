@@ -601,7 +601,7 @@ def SalesQuote(request):
 @urls_name(name="Sales Quotes")
 def EditSalesQuote(request, quote_id):
     db = request.user.company_id.db_name
-    quotes = sales_quote.objects.using(db).filter(referenceID=quote_id)
+    quotes = sales_quote.objects.using(db).filter(quote_ID=quote_id)
 
     if not quotes.exists():
         messages.error(request, "Quote not found")
