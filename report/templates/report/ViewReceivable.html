@@ -116,6 +116,8 @@
                             <input type="number" id="Discount" value="0" step="0.01" min="0"
                                 class="w-32 px-2 py-1 text-xs border border-gray-300 rounded text-right bg-white focus:outline-none focus:ring-1 focus:ring-green-400" />
                         </div>
+                        <p id="discount_hint" class="text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded px-2 py-1" style="display:none"></p>
+                        
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-500">Payment Amount (₦)</span>
                             <input type="number" id="payment_amount" value="0" step="0.01" min="0"
@@ -272,6 +274,17 @@
         if (remaining < 0) remaining = 0;
 
         $("#total-cost").val(remaining.toFixed(2));
+
+        // ── Hint when discount alone will clear the invoice ──────────────
+        const remaining_before_discount = total - paid - payment;
+        if (discount > 0 && payment === 0 && discount >= remaining_before_discount) {
+            $("#discount_hint").text("This discount will fully clear the invoice.").show();
+        } else if (discount > 0 && payment === 0) {
+            $("#discount_hint").text("Discount only — no cash payment will be recorded.").show();
+        } else {
+            $("#discount_hint").hide();
+        }
+
         updatePayButton();
     }
 
@@ -282,13 +295,19 @@
         const discount = parseFloat($("#Discount").val()) || 0;
         const payment  = parseFloat($("#payment_amount").val()) || 0;
         const method   = $("#payment_method").val();
+        const remaining = total - paid;
 
-        let valid = payment > 0 && payment <= (total - paid - discount);
+        // ── Allow discount-only: payment can be 0 if discount covers something
+        const totalClearing = payment + discount;
+        let valid = totalClearing > 0 && totalClearing <= remaining;
 
         if (["Transfer", "Cheque", "Transfer and Cash"].includes(method)) {
-            valid = valid && !!$("#transfer_account").val();
+            // Account only required if there's an actual payment amount
+            if (payment > 0) {
+                valid = valid && !!$("#transfer_account").val();
+            }
         }
-        if (method === "Transfer and Cash") {
+        if (method === "Transfer and Cash" && payment > 0) {
             const transfer = parseFloat($("#transfer_amount").val()) || 0;
             const cash     = parseFloat($("#cash_amount").val()) || 0;
             valid = valid && Math.abs((transfer + cash) - payment) < 0.01;
