@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple" href="#">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+            </svg>
+            <span>Edit Sales Quote — {{ quote_id }}</span>
+        </div>
+        <a href="{% url 'customer:SalesQuote' %}" class="text-xs text-slate-500 hover:text-slate-700">← Back to Quotes</a>
+    </a>
+
+    <form method="POST" id="edit_quote_form">
+        {% csrf_token %}
+        <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Issue Date</span>
+                    <input type="date" name="quote_date" id="quote_date"
+                        value="{{ first.quote_date|date:'Y-m-d' }}"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input" />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Reference</span>
+                    <input type="text" name="referenceID" value="{{ first.referenceID }}"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input" />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">Description</span>
+                    <input type="text" name="Gdescription" value="{{ first.Gdescription }}"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input" />
+                </label>
+
+                <div class="text-sm">
+                    <label class="inline-flex items-center text-gray-600">
+                        <input type="radio" name="accountType" value="Customer" id="Customer" checked
+                            class="text-slate-600 form-radio focus:outline-none" />
+                        <span class="ml-1">Customer</span>
+                    </label>
+                    <label class="inline-flex items-center ml-6 text-gray-600">
+                        <input type="radio" name="accountType" value="Vendor" id="Vendor"
+                            class="text-slate-600 form-radio focus:outline-none" />
+                        <span class="ml-1">Vendor</span>
+                    </label>
+
+                    <select id="id_customer"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none text-slate-600">
+                        <option selected disabled>Select Customer</option>
+                        {% for customer in customers %}
+                            <option value="{{ customer.id }}" {% if customer.name == first.genby %}selected{% endif %}>{{ customer.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="id_vendor"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none text-slate-600 hidden">
+                        <option selected disabled>Select Vendor</option>
+                        {% for vendor in vendors %}
+                            <option value="{{ vendor.id }}">{{ vendor.name }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <input type="hidden" id="genby" name="genby" value="{{ first.genby }}" />
+                    <input type="hidden" id="cusID" name="cusID" value="{{ first.custID }}" />
+                </div>
+            </div>
+
+            <!-- Line items table -->
+            <div class="w-full my-5 overflow-hidden shadow-xs">
+                <div class="w-full overflow-x-auto">
+                    <table class="border-collapse border border-slate-400 w-full">
+                        <thead>
+                            <tr class="font-medium tracking-wide text-left text-gray-500 border-b bg-gray-200">
+                                <th class="border border-slate-300 px-2 text-[10px]">SN</th>
+                                <th class="border border-slate-300 px-2 text-[10px]">Item</th>
+                                <th class="border border-slate-300 px-2 text-[10px]">Description</th>
+                                <th class="border border-slate-300 px-2 text-[10px]">Qty</th>
+                                <th class="border border-slate-300 px-2 text-[10px]">Unit Price</th>
+                                <th class="border border-slate-300 px-2 text-[10px]">Discount</th>
+                                <th class="border border-slate-300 px-2 text-[10px]">Amount</th>
+                                <th class="border border-slate-300 px-2 text-[10px]">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quote_rows">
+                            {% for line in quotes %}
+                            <tr class="existing-row" data-id="{{ forloop.counter }}">
+                                <td class="border border-slate-300 py-0 px-2 h-4 text-[10px]">{{ forloop.counter }}</td>
+                                <td class="border border-slate-300 py-0 text-[10px]">
+                                    <select name="item[]" class="block w-full px-2 h-4 text-[10px] form-select item-select focus:outline-none text-slate-600">
+                                        <option value="{{ line.itemcode }}" selected>{{ line.item_name }} ({{ line.itemcode }})</option>
+                                        {% for item in items %}
+                                            <option value="{{ item.generated_code }}">{{ item.item_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <input type="hidden" name="item_name" value="{{ line.item_name }}" />
+                                </td>
+                                <td class="border border-slate-300 py-0 text-[10px]">
+                                    <input type="text" name="desc[]" value="{{ line.item_description }}"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none text-slate-600 form-input" />
+                                </td>
+                                <td class="border border-slate-300 py-0 text-[10px]">
+                                    <input type="number" name="qty[]" value="{{ line.qty }}"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none text-slate-600 form-input qty-input" />
+                                </td>
+                                <td class="border border-slate-300 py-0 text-[10px]">
+                                    <input type="text" name="unit[]" value="{{ line.unit_p }}" readonly
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none text-slate-600 form-input unit-input" />
+                                </td>
+                                <td class="border border-slate-300 py-0 text-[10px]">
+                                    <input type="text" name="discount[]" value="{{ line.discount|default:'0' }}"
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none text-slate-600 form-input discount-input" />
+                                </td>
+                                <td class="border border-slate-300 py-0 text-[10px]">
+                                    <input type="text" name="amount[]" value="{{ line.amount }}" readonly
+                                        class="block w-full px-2 h-4 text-[10px] focus:outline-none text-slate-600 form-input amount-input" />
+                                </td>
+                                <td class="border border-slate-300 py-0 text-center">
+                                    <button type="button" class="remove-row text-red-500 px-2 text-[12px]">✕</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Totals -->
+                <div class="flex justify-end mt-4 gap-6 text-[11px]">
+                    <div class="space-y-1 text-right">
+                        <div class="flex justify-end items-center gap-2">
+                            <span class="text-gray-700">Sub Total</span>
+                            <input type="text" id="sub-total" readonly
+                                class="w-[100px] px-2 border-2 rounded-md text-slate-600 form-input text-right" />
+                        </div>
+                        <div class="flex justify-end items-center gap-2">
+                            <span class="text-gray-700">Total</span>
+                            <input type="text" id="total" name="total" readonly
+                                class="w-[100px] px-2 border-2 rounded-md text-slate-600 form-input text-right" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add new item row -->
+            <div class="mt-4">
+                <button type="button" id="add_row"
+                    class="px-4 py-1 text-sm text-gray-600 bg-slate-100 border border-slate-300 rounded-lg hover:bg-slate-200 transition">
+                    + Add Item
+                </button>
+            </div>
+
+            <!-- Submit -->
+            <div class="grid gap-6 md:grid-cols-2 mt-6">
+                <button type="submit"
+                    class="block w-full h-8 px-4 py-1 text-sm font-medium text-center text-gray-600 bg-slate-200 border border-transparent rounded-lg hover:bg-slate-300 focus:outline-none">
+                    Save Changes
+                </button>
+                <a href="{% url 'customer:SalesQuote' %}"
+                    class="block w-full h-8 px-4 py-1 text-sm font-medium text-center text-gray-600 bg-red-100 border border-transparent rounded-lg hover:bg-red-200 focus:outline-none">
+                    Cancel
+                </a>
+            </div>
+        </div>
+    </form>
+
+<script>
+    // ── Recalculate totals ────────────────────────────────────────────────────
+    function recalcTotals() {
+        let total = 0;
+        $('#quote_rows tr').each(function () {
+            const qty      = parseFloat($(this).find('.qty-input').val()) || 0;
+            const unit     = parseFloat($(this).find('.unit-input').val()) || 0;
+            const discount = parseFloat($(this).find('.discount-input').val()) || 0;
+            const amount   = (qty * unit) - discount;
+            $(this).find('.amount-input').val(amount.toFixed(2));
+            total += amount;
+        });
+        $('#sub-total').val(total.toFixed(2));
+        $('#total').val(total.toFixed(2));
+    }
+
+    // Initial calculation on load
+    recalcTotals();
+
+    // Recalc on input change
+    $(document).on('input', '.qty-input, .unit-input, .discount-input', recalcTotals);
+
+    // ── Remove row ────────────────────────────────────────────────────────────
+    $(document).on('click', '.remove-row', function () {
+        $(this).closest('tr').remove();
+        recalcTotals();
+        // Renumber
+        $('#quote_rows tr').each(function (i) {
+            $(this).find('td:first').text(i + 1);
+        });
+    });
+
+    // ── Add new item row ──────────────────────────────────────────────────────
+    let rowCount = {{ quotes|length }};
+    $('#add_row').on('click', function () {
+        rowCount++;
+        const newRow = `
+        <tr>
+            <td class="border border-slate-300 py-0 px-2 h-4 text-[10px]">${rowCount}</td>
+            <td class="border border-slate-300 py-0 text-[10px]">
+                <select name="item[]" class="block w-full px-2 h-4 text-[10px] form-select item-select focus:outline-none text-slate-600">
+                    <option value="0" selected disabled>Select Item</option>
+                    {% for item in items %}
+                        <option value="{{ item.generated_code }}">{{ item.item_name }}</option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="item_name" value="" />
+            </td>
+            <td class="border border-slate-300 py-0 text-[10px]">
+                <input type="text" name="desc[]" value=""
+                    class="block w-full px-2 h-4 text-[10px] focus:outline-none text-slate-600 form-input" />
+            </td>
+            <td class="border border-slate-300 py-0 text-[10px]">
+                <input type="number" name="qty[]" value="1"
+                    class="block w-full px-2 h-4 text-[10px] focus:outline-none text-slate-600 form-input qty-input" />
+            </td>
+            <td class="border border-slate-300 py-0 text-[10px]">
+                <input type="text" name="unit[]" value="0" readonly
+                    class="block w-full px-2 h-4 text-[10px] focus:outline-none text-slate-600 form-input unit-input" />
+            </td>
+            <td class="border border-slate-300 py-0 text-[10px]">
+                <input type="text" name="discount[]" value="0"
+                    class="block w-full px-2 h-4 text-[10px] focus:outline-none text-slate-600 form-input discount-input" />
+            </td>
+            <td class="border border-slate-300 py-0 text-[10px]">
+                <input type="text" name="amount[]" value="0" readonly
+                    class="block w-full px-2 h-4 text-[10px] focus:outline-none text-slate-600 form-input amount-input" />
+            </td>
+            <td class="border border-slate-300 py-0 text-center">
+                <button type="button" class="remove-row text-red-500 px-2 text-[12px]">✕</button>
+            </td>
+        </tr>`;
+        $('#quote_rows').append(newRow);
+    });
+
+    // ── Fetch item details when item is selected ──────────────────────────────
+    $(document).on('change', '.item-select', function () {
+        const code = $(this).val();
+        const row  = $(this).closest('tr');
+        if (!code || code === '0') return;
+
+        // Update hidden item_name
+        $(this).siblings('input[name="item_name"]').val($(this).find('option:selected').text());
+
+        $.ajax({
+            url: '/get-item/' + code + '/',
+            method: 'GET',
+            success: function (data) {
+                row.find('.unit-input').val(data.unit);
+                row.find('.qty-input').val(1);
+                row.find('.discount-input').val(0);
+                recalcTotals();
+            },
+            error: function () {
+                alertify.error("Item details not found");
+            }
+        });
+    });
+</script>
+
+{% endblock content %}

@@ -578,50 +578,117 @@ def AddSalesQuote(request):
 @login_required(login_url='/')
 @urls_name(name="Sales Quotes")
 def SalesQuote(request):
+    db = request.user.company_id.db_name
     company = company_table.objects.get(id=request.user.company_id_id)
-    # customer = customer_table.objects.all()
-    # vendor = vendor_table.objects.all()
-    # item = Item.objects.all()
-    
-    # if request.method == "POST":
-    #     add_sales_quote(request)
-     
+
+    # Deduplicate by referenceID
+    raw = sales_quote.objects.using(db).all().order_by('referenceID', 'id')
+    seen = set()
+    unique_quotes = []
+    for q in raw:
+        if q.referenceID not in seen:
+            seen.add(q.referenceID)
+            unique_quotes.append(q)
+
     context = {
-        
         'company': company,
+        'quotes': unique_quotes,
     }
     return render(request, "customer/SalesQuote.html", context)
 
 
-# @login_required(login_url='/')
-# @urls_name(name="Sales Quotes")
-# def EditSalesQuote(request, quote_id):
-#     db = request.user.company_id.db_name
-#     quote = sales_quote.objects.using(db).filter(quoteID=quote_id)
-#     if not quote.exists():
-#         messages.error(request, "Quote not found")
-#         return redirect('customer:SalesQuote')
+@login_required(login_url='/')
+@urls_name(name="Sales Quotes")
+def EditSalesQuote(request, quote_id):
+    db = request.user.company_id.db_name
+    quotes = sales_quote.objects.using(db).filter(referenceID=quote_id)
 
-#     first = quote.first()
-#     customer = customer_table.objects.using(db).all()
-#     vendor = vendor_table.objects.using(db).all()
-#     item = Item.objects.using(db).all()
+    if not quotes.exists():
+        messages.error(request, "Quote not found")
+        return redirect('customer:SalesQuote')
 
-#     if request.method == "POST":
-#         form = add_sales_quote(request, db)
-#         return redirect('customer:EditSalesQuote', quote_id=quote_id)
+    first     = quotes.first()
+    customers = customer_table.objects.using(db).all()
+    vendors   = vendor_table.objects.using(db).all()
+    items     = Item.objects.using(db).all()
+    company   = company_table.objects.get(id=request.user.company_id_id)
 
-#     context = {
-#         'quote': quote,
-#         'first': first,
-#         'customers': customer,
-#         'vendor': vendor,
-#         'items': item,
-#         'quote_id': quote_id
-#     }
-#     return render(request, "customer/EditSalesQuote.html", context)
+    existing_itemcodes = set(quotes.values_list('itemcode', flat=True))
 
+    if request.method == 'POST':
+        try:
+            # ── Step 1: Delete existing quote lines ───────────────────────
+            quotes.delete()
 
+            # ── Step 2: Rebuild from submitted data ───────────────────────
+            item_list     = request.POST.getlist('item[]')
+            qty_list      = request.POST.getlist('qty[]')
+            unit_list     = request.POST.getlist('unit[]')
+            desc_list     = request.POST.getlist('desc[]')
+            discount_list = request.POST.getlist('discount[]')
+            amount_list   = request.POST.getlist('amount[]')
+            name_list     = request.POST.getlist('item_name')
+
+            quote_date   = request.POST.get('quote_date')
+            referenceID  = request.POST.get('referenceID', quote_id)
+            Gdescription = request.POST.get('Gdescription', '')
+            genby        = request.POST.get('genby', first.genby)
+            cusID        = request.POST.get('cusID', first.custID)
+            total        = request.POST.get('total', '0')
+
+            message_displayed = False
+
+            for i in range(len(item_list)):
+                if not item_list[i] or item_list[i] == '0':
+                    continue
+
+                qty = qty_list[i] if qty_list[i] else '1'
+                if int(float(qty)) == 0:
+                    qty = '1'
+
+                form_data = {
+                    'genby':            genby,
+                    'quote_date':       quote_date,
+                    'referenceID':      referenceID,
+                    'Gdescription':     Gdescription,
+                    'item_name':        name_list[i] if i < len(name_list) else '',
+                    'itemcode':         item_list[i],
+                    'item_description': desc_list[i] if i < len(desc_list) else '',
+                    'qty':              qty,
+                    'unit_p':           unit_list[i] if i < len(unit_list) else '0',
+                    'discount':         discount_list[i] if i < len(discount_list) else '0',
+                    'amount':           amount_list[i] if i < len(amount_list) else '0',
+                    'total':            total,
+                    'custID':           cusID,
+                }
+
+                form = SalesQuoteForm(form_data)
+                if form.is_valid():
+                    instance = form.save(commit=False)
+                    instance.Userlogin = request.user.username
+                    instance.save(using=db)
+                    if not message_displayed:
+                        messages.success(request, "Sales Quote updated successfully")
+                        message_displayed = True
+                else:
+                    messages.error(request, f"Invalid data on item {i + 1}: {form.errors}")
+
+        except Exception as e:
+            messages.error(request, f"Update failed: {e}")
+
+        return redirect('customer:EditSalesQuote', quote_id=quote_id)
+
+    context = {
+        'quotes':           quotes,
+        'first':            first,
+        'customers':        customers,
+        'vendors':          vendors,
+        'items':            items,
+        'quote_id':         quote_id,
+        'company':          company,
+        'existing_itemcodes': list(existing_itemcodes),
+    }
+    return render(request, 'customer/EditSalesQuote.html', context)
 
 
 @login_required(login_url='/')
