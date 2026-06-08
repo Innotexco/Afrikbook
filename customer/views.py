@@ -32,6 +32,8 @@ from vendor.functions.purchasequote import add_purchase_quote
 from vendor.functions.purchaseorder import add_purchase_order
 # import requests
 
+
+
 # Create your views here.
 @login_required(login_url='/')
 @urls_name(name = "Customer")
@@ -581,13 +583,13 @@ def SalesQuote(request):
     db = request.user.company_id.db_name
     company = company_table.objects.get(id=request.user.company_id_id)
 
-    # Deduplicate by quote_ID
-    raw = sales_quote.objects.using(db).all().order_by('quote_ID', 'id')
+    # Deduplicate by referenceID
+    raw = sales_quote.objects.using(db).all().order_by('referenceID', 'id')
     seen = set()
     unique_quotes = []
     for q in raw:
-        if q.quote_ID not in seen:
-            seen.add(q.quote_ID)
+        if q.referenceID not in seen:
+            seen.add(q.referenceID)
             unique_quotes.append(q)
 
     context = {
@@ -601,8 +603,7 @@ def SalesQuote(request):
 @urls_name(name="Sales Quotes")
 def EditSalesQuote(request, quote_id):
     db = request.user.company_id.db_name
-    # quotes = sales_quote.objects.using(db).filter(quote_ID=quote_id)
-    quotes = sales_quote.objects.using(db).filter(quote_ID=quote_id).order_by('id') 
+    quotes = sales_quote.objects.using(db).filter(referenceID=quote_id)
 
     if not quotes.exists():
         messages.error(request, "Quote not found")
@@ -618,10 +619,32 @@ def EditSalesQuote(request, quote_id):
 
     if request.method == 'POST':
         try:
-            # ── Step 1: Delete existing quote lines ───────────────────────
+            quote_date   = request.POST.get('quote_date', first.quote_date)
+            referenceID  = request.POST.get('referenceID', '').strip()
+            Gdescription = request.POST.get('Gdescription', first.Gdescription)
+            genby        = request.POST.get('genby', first.genby)
+            cusID        = request.POST.get('cusID', first.custID)
+            total        = request.POST.get('total', '0')
+
+            #Auto‑generate unique referenceID if blank
+            if not referenceID:
+                # date_part = datetime.now().strftime('%Y%m%d')
+                random_part = uuid.uuid4().hex[:6].upper()
+                new_ref = f"Quote-{random_part}"
+                while sales_quote.objects.using(db).filter(referenceID=new_ref).exclude(referenceID=quote_id).exists():
+                    random_part = uuid.uuid4().hex[:6].upper()
+                    new_ref = f"Quote-{random_part}"
+                referenceID = new_ref
+            else:
+                if referenceID != quote_id:
+                    if sales_quote.objects.using(db).filter(referenceID=referenceID).exists():
+                        messages.error(request, "Reference ID already exists. Please use a different one.")
+                        return redirect('customer:EditSalesQuote', quote_id=quote_id)
+
+            # Step 1: Delete existing quote lines
             quotes.delete()
 
-            # ── Step 2: Rebuild from submitted data ───────────────────────
+            #Step 2: Rebuild from submitted line items 
             item_list     = request.POST.getlist('item[]')
             qty_list      = request.POST.getlist('qty[]')
             unit_list     = request.POST.getlist('unit[]')
@@ -629,13 +652,6 @@ def EditSalesQuote(request, quote_id):
             discount_list = request.POST.getlist('discount[]')
             amount_list   = request.POST.getlist('amount[]')
             name_list     = request.POST.getlist('item_name')
-
-            quote_date   = request.POST.get('quote_date')
-            quote_ID     = request.POST.get('quote_ID', quote_id)
-            Gdescription = request.POST.get('Gdescription', '')
-            genby        = request.POST.get('genby', first.genby)
-            cusID        = request.POST.get('cusID', first.custID)
-            total        = request.POST.get('total', '0')
 
             message_displayed = False
 
@@ -650,7 +666,7 @@ def EditSalesQuote(request, quote_id):
                 form_data = {
                     'genby':            genby,
                     'quote_date':       quote_date,
-                    'quote_ID':         quote_ID,
+                    'referenceID':      referenceID,
                     'Gdescription':     Gdescription,
                     'item_name':        name_list[i] if i < len(name_list) else '',
                     'itemcode':         item_list[i],
@@ -674,11 +690,12 @@ def EditSalesQuote(request, quote_id):
                 else:
                     messages.error(request, f"Invalid data on item {i + 1}: {form.errors}")
 
+            return redirect('customer:EditSalesQuote', quote_id=referenceID)
+
         except Exception as e:
             messages.error(request, f"Update failed: {e}")
-
-        return redirect('customer:EditSalesQuote', quote_id=quote_id)
-
+            return redirect('customer:EditSalesQuote', quote_id=quote_id)
+        
     context = {
         'quotes':           quotes,
         'first':            first,
