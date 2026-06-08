@@ -581,13 +581,13 @@ def SalesQuote(request):
     db = request.user.company_id.db_name
     company = company_table.objects.get(id=request.user.company_id_id)
 
-    # Deduplicate by referenceID
-    raw = sales_quote.objects.using(db).all().order_by('referenceID', 'id')
+    # Deduplicate by quote_ID
+    raw = sales_quote.objects.using(db).all().order_by('quote_ID', 'id')
     seen = set()
     unique_quotes = []
     for q in raw:
-        if q.referenceID not in seen:
-            seen.add(q.referenceID)
+        if q.quote_ID not in seen:
+            seen.add(q.quote_ID)
             unique_quotes.append(q)
 
     context = {
@@ -601,7 +601,8 @@ def SalesQuote(request):
 @urls_name(name="Sales Quotes")
 def EditSalesQuote(request, quote_id):
     db = request.user.company_id.db_name
-    quotes = sales_quote.objects.using(db).filter(quote_ID=quote_id)
+    # quotes = sales_quote.objects.using(db).filter(quote_ID=quote_id)
+    quotes = sales_quote.objects.using(db).filter(quote_ID=quote_id).order_by('id') 
 
     if not quotes.exists():
         messages.error(request, "Quote not found")
@@ -630,7 +631,7 @@ def EditSalesQuote(request, quote_id):
             name_list     = request.POST.getlist('item_name')
 
             quote_date   = request.POST.get('quote_date')
-            referenceID  = request.POST.get('referenceID', quote_id)
+            quote_ID     = request.POST.get('quote_ID', quote_id)
             Gdescription = request.POST.get('Gdescription', '')
             genby        = request.POST.get('genby', first.genby)
             cusID        = request.POST.get('cusID', first.custID)
@@ -649,7 +650,7 @@ def EditSalesQuote(request, quote_id):
                 form_data = {
                     'genby':            genby,
                     'quote_date':       quote_date,
-                    'referenceID':      referenceID,
+                    'quote_ID':         quote_ID,
                     'Gdescription':     Gdescription,
                     'item_name':        name_list[i] if i < len(name_list) else '',
                     'itemcode':         item_list[i],
