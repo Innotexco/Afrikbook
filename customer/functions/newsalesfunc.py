@@ -402,7 +402,7 @@ def add_new_sales(request, db):
                         logger.warning(f"[add_new_sales] No item selected | invoiceID={invoiceID}")
                         messages.error(request, "Select at least one item")
                         executed = True
-                    raise ValueError("No item selected")  # triggers rollback
+                    raise ValueError("No item selected")  
 
                 if str(itemcode[i]) == "0":
                     logger.debug(f"[add_new_sales] Skipping itemcode=0 at index {i}")
@@ -430,7 +430,7 @@ def add_new_sales(request, db):
                         f"invoiceID={invoiceID} | {e}\n{traceback.format_exc()}"
                     )
                     messages.error(request, f"Invalid amount on item {i + 1}.")
-                    raise  # triggers rollback
+                    raise  
 
                 form_data = {
                     'cusID':               customer_code,
@@ -502,7 +502,7 @@ def add_new_sales(request, db):
                             f"invoiceID={invoiceID} | {e}\n{traceback.format_exc()}"
                         )
                         messages.error(request, "New Sales Invoice was not added successfully")
-                        raise  # triggers rollback
+                        raise  
 
                     # ── Reduce stock ─────────────────────────────────────────
                     if invoice_state == "Supplied":
@@ -518,7 +518,7 @@ def add_new_sales(request, db):
                                 f"[add_new_sales] Stock reduction failed | "
                                 f"itemcode={itemcode[i]} | {e}\n{traceback.format_exc()}"
                             )
-                            raise  # triggers rollback — don't allow invoice without stock deduction
+                            raise   
 
                     if not message_displayed:
 
@@ -541,7 +541,7 @@ def add_new_sales(request, db):
                                 f"[add_new_sales] Failed to increment invoice count | "
                                 f"invoiceID={invoiceID} | {e}\n{traceback.format_exc()}"
                             )
-                            raise  # triggers rollback
+                            raise  
 
                         # ── Accounting entries ───────────────────────────────
                         try:
@@ -675,7 +675,7 @@ def add_new_sales(request, db):
                                 f"invoiceID={invoiceID} | {e}\n{traceback.format_exc()}"
                             )
                             messages.error(request, "Accounting entry failed.")
-                            raise  # triggers rollback
+                            raise  
 
                         except Exception as e:
                             logger.error(
@@ -683,7 +683,7 @@ def add_new_sales(request, db):
                                 f"invoiceID={invoiceID} | {e}\n{traceback.format_exc()}"
                             )
                             messages.error(request, "Accounting entry failed.")
-                            raise  # triggers rollback
+                            raise  
 
                         # ── Shipping reference ───────────────────────────────
                         try:
@@ -695,7 +695,7 @@ def add_new_sales(request, db):
                                 f"[add_new_sales] Shipping reference failed | "
                                 f"invoiceID={invoiceID} | {e}\n{traceback.format_exc()}"
                             )
-                            raise  # triggers rollback
+                            raise  
 
                         # ── VAT ──────────────────────────────────────────────
                         try:
@@ -706,7 +706,7 @@ def add_new_sales(request, db):
                                 f"[add_new_sales] VAT creation failed | "
                                 f"invoiceID={invoiceID} | {e}\n{traceback.format_exc()}"
                             )
-                            raise  # triggers rollback
+                            raise  
 
                         messages.success(request, "New Sales Invoice was added successfully")
                         message_displayed = True
@@ -720,15 +720,13 @@ def add_new_sales(request, db):
                         f"receivable_form_errors={receivable_form.errors.as_json()}"
                     )
                     messages.error(request, "New Sales Invoice was not added successfully")
-                    raise ValueError("Form validation failed")  # triggers rollback
+                    raise ValueError("Form validation failed")  
 
     except Exception as e:
-        # Atomic block rolled back everything — log and return
         logger.error(
             f"[add_new_sales] Transaction rolled back | invoiceID={invoiceID} | "
             f"{e}\n{traceback.format_exc()}"
         )
-        # messages.error already set inside — don't double-message unless it's unexpected
         if not message_displayed:
             if not messages.get_messages(request):
                 messages.error(request, "Invoice could not be saved. All changes have been rolled back.")
@@ -798,6 +796,8 @@ def add_new_sales(request, db):
                 f"[add_new_sales] Notification step failed | invoiceID={invoiceID} | {e}\n{traceback.format_exc()}"
             )
             
+
+
             
 def create_add_vat(db, invoiceID, vat):
    
