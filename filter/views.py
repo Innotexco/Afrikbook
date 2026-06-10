@@ -468,7 +468,7 @@ def journal_entry_filter_by_date(request):
     # Perform filtering based on the date range
     filtered_data = new_journal_entry.objects.using(db).filter(date__range=(convertDate(start_date_str, end_date_str))).values()
     for item in filtered_data:
-        if item['invoiceID'] not in [d['invoiceID'] for d in data]:
+        if item['invoice_no'] not in [d['invoice_no'] for d in data]:
             data.append(item)
 
    
