@@ -9,204 +9,194 @@ from vendor.models import vendor_table
 from customer.functions.generalFunction import *
 from customer.functions.newsalesfunc import *
 import decimal
+from django.db import transaction
+
 
 
 def add_purchase_invoice(request, db):
-    
-    message_displayed = False  # Initialize the message_displayed variable
-   
-    invoice_id = request.POST.get('invoiceID')
-    order_id = request.POST.get('orderID')
 
-    account_id = request.POST.get('account_id')
-    warehouse = request.POST.get('warehouse')
-    p_method = request.POST.get('source')
-    outlet = request.POST.get('outlet')
-    vendor_name = request.POST.get('vendor_name')
+    message_displayed = False
+
+    invoice_id   = request.POST.get('invoiceID')
+    order_id     = request.POST.get('orderID')
+    account_id   = request.POST.get('account_id')
+    warehouse    = request.POST.get('warehouse')
+    p_method     = request.POST.get('source')
+    outlet       = request.POST.get('outlet')
+    vendor_name  = request.POST.get('vendor_name')
     Gdescription = request.POST.get('Gdescription')
     invoice_date = request.POST.get('invoice_date')
-    due_date = request.POST.get('due_date')
-    item_name = request.POST.getlist('item_name')
-    itemcode = request.POST.getlist('item[]')
+    due_date     = request.POST.get('due_date')
+    item_name         = request.POST.getlist('item_name')
+    itemcode          = request.POST.getlist('item[]')
     item_descriptions = request.POST.getlist('desc[]')
-    quantities = request.POST.getlist('qty[]')
-    unit = request.POST.getlist('unit[]')
-    discount = request.POST.getlist('discount[]')
-    amount = request.POST.getlist('amount[]')
-    total = request.POST.get('total')
-    vat = request.POST.get('vat')
-    amount_paid = request.POST.get('amount_paid')
+    quantities        = request.POST.getlist('qty[]')
+    unit              = request.POST.getlist('unit[]')
+    discount          = request.POST.getlist('discount[]')
+    amount            = request.POST.getlist('amount[]')
+    total        = request.POST.get('total')
+    vat          = request.POST.get('vat')
+    amount_paid  = request.POST.get('amount_paid')
     amount_expected = request.POST.get('amount_expected')
-    
 
-
-    # total = float(request.POST['total'])
-  
     if p_method == "Cash":
-        amount_paid = total
+        amount_paid     = total
         amount_expected = total
     else:
-        amount_paid = 0.00
+        amount_paid     = 0.00
         amount_expected = total
 
-  
-    # Get Chart Of Account
-    bank_account = chart_of_account.objects.using(db).get(account_id='2067-Purchase')
-    # vendor_name = vendor_name + "("+ bank_account.series_name + ")"
-    
-    transaction_source = "Purchase"
-    source = "New Stock"
+    # ── Resolve account and vendor before entering the transaction ────────────
+    try:
+        bank_account = chart_of_account.objects.using(db).get(account_id='2067-Purchase')
+    except chart_of_account.DoesNotExist:
+        messages.error(request, "Purchase Account not found in chart of accounts.")
+        return None
 
-    if vendor_name:
+    if not vendor_name:
+        messages.error(request, "Vendor is required.")
+        return None
+
+    try:
         ven = vendor_table.objects.using(db).get(id=vendor_name)
-       
+    except vendor_table.DoesNotExist:
+        messages.error(request, "Vendor not found.")
+        return None
 
-    
-    # Count the number of records in the Sales_Outlet model
-    # outlet_count = sales_outlet.objects.count()
-    check_outlet = User.objects.get(id = request.user.id).outlet
+    transaction_source = "Purchase"
+    check_outlet = User.objects.get(id=request.user.id).outlet
 
-    stock_in = CreateStockIn.objects.using(db).all()
-    
+    try:
+        with transaction.atomic(using=db):
 
-    for i in range(len(itemcode)):
+            for i in range(len(itemcode)):
 
-            # Check if the itemcode (value) is equal to 0
+                if str(itemcode[i]) != "0":
+                    if not quantities[i] or int(quantities[i]) == 0:
+                        quantities[i] = 1
 
-        if str(itemcode[i]) != "0":
-             # Check if quantity (value) is equal to 0 or empty 
-            if not quantities[i] or int(quantities[i]) == 0:
-                #Automatically change the quantity to 1
-                quantities[i] = 1
-        
-            vendor_invoice_form_data = {
-                'cusID': ven.custID,
-                'vendor_name': ven.name,
-                'invoiceID': invoice_id,
-                'orderID': order_id,
-                'Gdescription': Gdescription,
-                'invoice_date': invoice_date,
-                'due_date' : due_date,
-                'amount_paid' : amount_paid,
-                'amount_expected': amount_expected,
-                'item_name': item_name[i],
-                'itemcode': itemcode[i],
-                'item_descriptions': item_descriptions[i],
-                'qty': quantities[i],
-                'unit_p': unit[i],
-                'discount': discount[i],
-                'amount': amount[i],
-                'total': total
-            }
-            
-            vendor_form = VendorInovoiceForm(vendor_invoice_form_data)
-            
-            
-            if vendor_form.is_valid():
-                
-                form_i = vendor_form.save(commit=False)
-                form_i.Userlogin = request.user.username
-                form_i.save(using=db)
+                    vendor_invoice_form_data = {
+                        'cusID':             ven.custID,
+                        'vendor_name':       ven.name,
+                        'invoiceID':         invoice_id,
+                        'orderID':           order_id,
+                        'Gdescription':      Gdescription,
+                        'invoice_date':      invoice_date,
+                        'due_date':          due_date,
+                        'amount_paid':       amount_paid,
+                        'amount_expected':   amount_expected,
+                        'item_name':         item_name[i],
+                        'itemcode':          itemcode[i],
+                        'item_descriptions': item_descriptions[i],
+                        'qty':               quantities[i],
+                        'unit_p':            unit[i],
+                        'discount':          discount[i],
+                        'amount':            amount[i],
+                        'total':             total,
+                    }
 
-                
-                # stock_in = Stock_In.objects.filter(warehouse=warehouse, item_code=itemcode).first()
-                
-                ## INSTANT TRANSFER
-                if warehouse and outlet:
-                    # save Item In Stockin table first
+                    vendor_form = VendorInovoiceForm(vendor_invoice_form_data)
+
+                    if not vendor_form.is_valid():
+                        messages.error(request, f"Invalid data on item {i + 1}: {vendor_form.errors}")
+                        raise ValueError(f"Form invalid on item {i + 1}")
+
+                    # ── Save invoice line ─────────────────────────────────────
+                    form_i = vendor_form.save(commit=False)
+                    form_i.Userlogin = request.user.username
+                    form_i.save(using=db)
+
+                    # ── Stock updates ─────────────────────────────────────────
                     try:
-                        stock_in_query = CreateStockIn.objects.using(db).get(warehouse=warehouse, item_code=itemcode[i])
-                        saveStockinLog(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
-                    except CreateStockIn.DoesNotExist:
-                        pass
+                        if warehouse and outlet:
+                            try:
+                                CreateStockIn.objects.using(db).get(warehouse=warehouse, item_code=itemcode[i])
+                                saveStockinLog(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
+                            except CreateStockIn.DoesNotExist:
+                                pass
 
-                    try:
-                        stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=outlet, item_code=itemcode[i])
-                        stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
-                        stock_in_outlet_query.save(using=db)
-                    except CreateOutletStockIn.DoesNotExist:
-                        saveOutlet(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
-                    saveOutletLog(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i, warehouse)
-                ## INSERT TO DEFAULT OUTLET IN USER TABLE
-                elif not warehouse and not outlet:
-                    if check_outlet:
+                            try:
+                                stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=outlet, item_code=itemcode[i])
+                                stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
+                                stock_in_outlet_query.save(using=db)
+                            except CreateOutletStockIn.DoesNotExist:
+                                saveOutlet(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
+                            saveOutletLog(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i, warehouse)
+
+                        elif not warehouse and not outlet:
+                            if check_outlet:
+                                try:
+                                    stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=check_outlet, item_code=itemcode[i])
+                                    stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
+                                    stock_in_outlet_query.save(using=db)
+                                except CreateOutletStockIn.DoesNotExist:
+                                    saveOutlet(invoice_date, vendor_name, invoice_id, order_id, check_outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
+                                saveOutletLog(invoice_date, vendor_name, invoice_id, order_id, check_outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i, None)
+
+                        else:
+                            if warehouse:
+                                try:
+                                    stock_in_query = CreateStockIn.objects.using(db).get(warehouse=warehouse, item_code=itemcode[i])
+                                    stock_in_query.quantity += int(quantities[i])
+                                    stock_in_query.save(using=db)
+                                except CreateStockIn.DoesNotExist:
+                                    saveStockin(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
+                                saveStockinLog(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
+
+                            if outlet:
+                                try:
+                                    stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=outlet, item_code=itemcode[i])
+                                    stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
+                                    stock_in_outlet_query.save(using=db)
+                                except CreateOutletStockIn.DoesNotExist:
+                                    saveOutlet(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
+                                saveOutletLog(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i, None)
+
+                    except Exception as e:
+                        messages.error(request, f"Stock update failed for item {i + 1}: {e}")
+                        raise  # triggers rollback
+
+                    # ── Accounting — runs once per invoice, not per line ──────
+                    if not message_displayed:
                         try:
-                            stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=check_outlet, item_code=itemcode[i])
-                            stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
-                            stock_in_outlet_query.save(using=db)
-                        except CreateOutletStockIn.DoesNotExist:
-                            saveOutlet(invoice_date, vendor_name, invoice_id, order_id, check_outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
-                        saveOutletLog(invoice_date, vendor_name, invoice_id, order_id, check_outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i, None)
+                            if p_method == "Cash":
+                                DebitPayable(request, db, ven, invoice_date, Gdescription, p_method, bank_account.account_id, total)
+                                account_log.objects.using(db).create(
+                                    transaction_source = transaction_source,
+                                    amount             = total,
+                                    date               = invoice_date,
+                                    account            = bank_account.account_id,
+                                    account_type       = bank_account.account_type,
+                                    Userlogin          = request.user.username,
+                                )
+                                CreateLog(db, bank_account, total)
+                            else:
+                                bank_account.actual_balance += decimal.Decimal(total)
+                                bank_account.save(using=db)
+                                CreateLog(db, bank_account, total)
+                                account_log.objects.using(db).create(
+                                    transaction_source = transaction_source,
+                                    amount             = total,
+                                    date               = invoice_date,
+                                    account            = bank_account.account_id,
+                                    account_type       = bank_account.account_type,
+                                    Userlogin          = request.user.username,
+                                )
 
-                else:
-                    # STOCK IN WAREHOUSE
-                    if warehouse:
-                        try:
-                            stock_in_query = CreateStockIn.objects.using(db).get(warehouse=warehouse, item_code=itemcode[i])
-                            stock_in_query.quantity += int(quantities[i])
-                            stock_in_query.save(using=db)
-                        except CreateStockIn.DoesNotExist:
-                            saveStockin(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
-                        saveStockinLog(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
+                            create_add_vat(db, invoice_id, vat)
+                            messages.success(request, "Purchase Invoice was added successfully")
+                            message_displayed = True
 
+                        except Exception as e:
+                            messages.error(request, f"Accounting entry failed: {e}")
+                            raise  # triggers rollback
 
-                    # STOCK IN OUTLET
-                    if outlet:
-                        try:
-                            stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=outlet, item_code=itemcode[i])
-                            stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
-                            stock_in_outlet_query.save(using=db)
-                        except CreateOutletStockIn.DoesNotExist:
-                            saveOutlet(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
-                        saveOutletLog(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i, None)
-
-
-
-                
-
-
-
-                if not message_displayed:
-                    if p_method == "Cash":
-                 
-                        DebitPayable(request, db, ven, invoice_date, Gdescription, p_method, bank_account.account_id,  total)
-                        
-                        acct_log = account_log(
-                        transaction_source  = transaction_source,
-                        amount              = total,
-                        date                = invoice_date,
-                        account             = bank_account.account_id,
-                        account_type        = bank_account.account_type,
-                        Userlogin = request.user.username
-                        )
-                        # acct_log.save(using=db)
-                        CreateLog(db, bank_account, total)
-                    
-                    else:
-                        
-
-                        bank_account.actual_balance += decimal.Decimal(total)
-                        # bank_account.save()
-
-                        CreateLog(db, bank_account, total)
-
-                        acct_log = account_log(
-                            transaction_source  = transaction_source,
-                            amount              = total,
-                            date                = invoice_date,
-                            account             = bank_account.account_id,
-                            account_type        = bank_account.account_type,
-                            Userlogin = request.user.username
-                        )
-                        # acct_log.save(using=db)
-                    create_add_vat(db, invoice_id, vat)
-                    messages.success(request, "Purchase Invoice was added successfully")
-                    message_displayed = True  # Update the message_displayed variable
-            else:
-                print(vendor_form.errors)
-                return HttpResponse('error')
-            
-
+    except Exception as e:
+        # Atomic block rolled back — log and return
+        if not message_displayed:
+            if not any(m for m in messages.get_messages(request)):
+                messages.error(request, "Purchase Invoice could not be saved. All changes have been rolled back.")
+        return None
 
 
 
