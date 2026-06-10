@@ -21,6 +21,7 @@ from account.models import Expenses_account, Income_account, Assets_account, Lia
 from main.models import company_table
 from django.contrib.auth.decorators import login_required
 from routers.page_permission import  urls_name
+from datetime import date
 
 import logging
 
@@ -751,6 +752,7 @@ def AgedReceivables(request):
         'company':        company,
         'bank_accounts':  bank_accounts,
         'accounts':       accounts,
+        'today': date.today(),
         'payment_methods': ["Cash", "Transfer", "Cheque", "Transfer and Cash", "Customer Balance"],
     }
     return render(request, 'report/AgedReceivables.html', context)
@@ -842,25 +844,32 @@ def AgedPayable(request):
         cost = request.POST.get("cost")
         vendor = request.POST.get("vendor")
         invoice = request.POST.get("invoice")
-        today = datetime.now()
+        payment_date_str = request.POST.get("payment_date")
+        if payment_date_str:
+            try:
+                payment_date = datetime.strptime(payment_date_str, "%Y-%m-%d")
+            except ValueError:
+                payment_date = datetime.now()
+        else:
+            payment_date = datetime.now()
         try:
             ven = vendor_table.objects.using(db).get(custID=vendor)
             account = chart_of_account.objects.using(db).get(account_id='2067-Purchase').account_id
             if discount == "NaN":
                 description = "Payment Received"
-                CreditPayable(request, db, ven, today, description, "Transfer", account, cost)
+                CreditPayable(request, db, ven, payment_date, description, "Transfer", account, cost)
                 Vendor_invoice.objects.using(db).filter(invoiceID=invoice, cusID=vendor).update(amount_paid=F('amount_paid')+cost)
             else:
                 description = "Payment Received"
-                CreditPayable(request, db, ven, today, description, "Transfer", account, cost)
+                CreditPayable(request, db, ven, payment_date, description, "Transfer", account, cost)
                 description = "Discount Allowed"
-                CreditPayable(request, db, ven, today, description, "Transfer", account, discount)
+                CreditPayable(request, db, ven, payment_date, description, "Transfer", account, discount)
                 # acc = Income_account.objects.using(db).get(account_bankname="Discount Received").actual_balance += discount
                 # acc.save()
                 total = int(cost) + int(discount)
                 Vendor_invoice.objects.using(db).filter(invoiceID=invoice, cusID=vendor).update(amount_paid=F('amount_paid')+total)
                 
-            # DebitPayable(request, db, ven, today, description, "Transfer", cost)    
+            # DebitPayable(request, db, ven, payment_date, description, "Transfer", cost)    
             return JsonResponse(True, safe=False)
         except vendor_table.DoesNotExist:
             return JsonResponse(False, safe=False)
