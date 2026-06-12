@@ -1310,18 +1310,23 @@ def item_detail(request, item_id):
 def DeleteItem(request, id):
     db = request.user.company_id.db_name
     
-    # Check if item has stock or accounting records
-    item_in_stock = CreateStockIn.objects.using(db).filter(item_code=id).exists()
-    item_in_outlets = CreateOutletStockIn.objects.using(db).filter(item_code=id).exists()
-    item_in_invoices = customer_invoice.objects.using(db).filter(itemcode=id).exists()
-    
-    if item_in_stock or item_in_outlets or item_in_invoices:
-        messages.warning(request, "Cannot delete item. It has existing stock or sales records. Mark as inactive instead.")
+    try:
+        item = Item.objects.using(db).get(id=id)
+    except Item.DoesNotExist:
+        messages.error(request, "Item not found.")
         return redirect('Stock:NewItem')
     
-    # If no related records, safe to delete
-    delete_item = Item.objects.using(db).get(id=id)
-    delete_item.delete()
+    item_code_value = item.generated_code   
+    
+    item_in_stock = CreateStockIn.objects.using(db).filter(item_code=item_code_value).exists()
+    item_in_outlets = CreateOutletStockIn.objects.using(db).filter(item_code=item_code_value).exists()
+    item_in_invoices = customer_invoice.objects.using(db).filter(itemcode=item_code_value).exists()
+    
+    if item_in_stock or item_in_outlets or item_in_invoices:
+        messages.warning(request, "Cannot delete item. It has existing stock or sales records.")
+        return redirect('Stock:NewItem')
+    
+    item.delete()
     messages.success(request, "Item deleted successfully")
     return redirect('Stock:NewItem')
 
