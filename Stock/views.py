@@ -1392,21 +1392,21 @@ def EditItemCategory(request, id):
 #     return render(request, 'stock/StockLevelComparison.html')
 
 
-def category_details(request, category_id):
-    db = request.user.company_id.db_name
-    category = Category.objects.using(db).get(id=category_id)
-    subcategories = Sub_Category.objects.using(db).filter(main_category=category).values('name')
+# def category_details(request, category_id):
+#     db = request.user.company_id.db_name
+#     category = Category.objects.using(db).get(id=category_id)
+#     subcategories = Sub_Category.objects.using(db).filter(main_category=category).values('name')
 
-    category_data = {
-        'id': category.id,
-        'category_name': category.category_name,
-        'description': category.description,
-        'cat_img': category.cat_img.url if category.cat_img else None,
-        'subcategories': list(subcategories),
-    }
+#     category_data = {
+#         'id': category.id,
+#         'category_name': category.category_name,
+#         'description': category.description,
+#         'cat_img': category.cat_img.url if category.cat_img else None,
+#         'subcategories': list(subcategories),
+#     }
 
 
-    return JsonResponse({'category': category_data})
+#     return JsonResponse({'category': category_data})
 
 
 import json
