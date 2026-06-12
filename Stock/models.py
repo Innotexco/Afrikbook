@@ -375,76 +375,85 @@ class Attribute(models.Model):
 
 
 class Item(models.Model):
-    category = models.ForeignKey(
-            Category, on_delete=models.CASCADE, null=True, 
-        blank=True)
-
-    sub_category = models.ForeignKey(
-        Sub_Category, on_delete=models.CASCADE, null=True, 
-        blank=True)
-    item_name               = models.CharField(max_length = 255)
-    generated_code          = models.CharField(max_length = 255)
-    purchase_price          = models.CharField(max_length = 255, blank=True)
-    selling_price           = models.CharField(max_length = 255, blank=True)
-    retailer_price          = models.CharField(max_length = 255, blank=True)
-    description             = models.TextField(blank=True)
-    wholesale_price         = models.CharField(max_length = 255, blank=True)
-    size                    = models.CharField(max_length = 255, blank=True)
-    # attribute               = models.CharField(max_length = 255, null=True, blank=True)
-    attribute               = models.ManyToManyField(Attribute, related_name="items", blank=True)
-    image                   = models.ImageField(null=True, blank=True, upload_to="item_img/")
-    availability            = models.IntegerField(default=1)
-    likes                   = models.ManyToManyField(customer_table, related_name='customer_likes', blank=True)
-    tags                    = models.ManyToManyField(ItemTags, related_name='tag_items', blank=True)
-    state                   = models.CharField(max_length=255, null=True, blank=True)
-    discount_price          = models.DecimalField(max_digits=65, decimal_places=2, default=0.00)
-    discount_percentage     = models.DecimalField(max_digits=65, decimal_places=2, default=0.00, blank=True)
-    token_id                = models.CharField(max_length = 255, default=generate_unique_id)
-    Userlogin               = models.CharField(max_length = 255, blank=True, null=True)
-    slug                    = models.SlugField(unique=True, max_length=100, null=True, blank=True)
-    qty_state               = models.CharField(max_length=255, default="Quantify")
-
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
+    sub_category = models.ForeignKey(Sub_Category, on_delete=models.CASCADE, null=True, blank=True)
     
+    item_name = models.CharField(max_length=255)
+    generated_code = models.CharField(max_length=255)
+    
+    purchase_price = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    selling_price = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    retailer_price = models.DecimalField(max_digits=15, decimal_places=2, default=0.00, blank=True)
+    wholesale_price = models.DecimalField(max_digits=15, decimal_places=2, default=0.00, blank=True)
+    
+    description = models.TextField(blank=True)
+    size = models.CharField(max_length=255, blank=True)
+    attribute = models.ManyToManyField(Attribute, related_name="items", blank=True)
+    image = models.ImageField(null=True, blank=True, upload_to="item_img/")
+    availability = models.IntegerField(default=1)
+    likes = models.ManyToManyField(customer_table, related_name='customer_likes', blank=True)
+    tags = models.ManyToManyField(ItemTags, related_name='tag_items', blank=True)
+    state = models.CharField(max_length=255, null=True, blank=True)
+    discount_price = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    discount_percentage = models.DecimalField(max_digits=15, decimal_places=2, default=0.00, blank=True)
+    token_id = models.CharField(max_length=255, default=generate_unique_id)
+    Userlogin = models.CharField(max_length=255, blank=True, null=True)
+    slug = models.SlugField(unique=True, max_length=100, null=True, blank=True)
+    qty_state = models.CharField(max_length=255, default="Quantify")
 
     def generate_unique_filename(self):
+        import uuid
+        import os
+        from django.utils.text import slugify
+        
         unique_key = uuid.uuid4().hex[:4]
         filename = f"{slugify(self.description)}_{unique_key}"
         if self.image:
             _, extension = os.path.splitext(self.image.name)
-            filename += extension.lower()  
+            filename += extension.lower()
         else:
-            filename += ".jpg" 
+            filename += ".jpg"
         return filename
 
     def save(self, *args, **kwargs):
-        
+        # Set image filename
         if self.image and self.description:
             filename = self.generate_unique_filename()
             self.image.name = os.path.join("", filename)
 
+        # Ensure all prices are valid Decimal values, default to 0
+        if not self.purchase_price or self.purchase_price is None:
+            self.purchase_price = 0.00
+        if not self.selling_price or self.selling_price is None:
+            self.selling_price = 0.00
+        if not self.retailer_price or self.retailer_price is None:
+            self.retailer_price = 0.00
+        if not self.wholesale_price or self.wholesale_price is None:
+            self.wholesale_price = 0.00
+
+        # Calculate discount percentage
+        self.discount_percentage = self.calculate_discount_percentage()
+        
         super().save(*args, **kwargs)
 
     def calculate_discount_percentage(self):
-        if self.selling_price and self.discount_price:
-            selling_price = float(self.selling_price)
-            discount_price = float(self.discount_price)
-            if selling_price != 0:
-                discount_price = ((selling_price - discount_price) / selling_price) * 100 
-                if discount_price > 100:
-                    return discount_price - 100
-                return  100 - discount_price
-        return 0.00  # Default value if prices are not provided
-
-    def save(self, *args, **kwargs):
-        self.discount_percentage = self.calculate_discount_percentage()
-        super().save(*args, **kwargs)
-
-    # def save(self, *args, **kwargs):
-    #     self.slug = slugify(self.item_name)
-    #     return super(Item, self).save(*args, **kwargs) 
+        from decimal import Decimal
         
+        if self.selling_price and self.discount_price:
+            selling_price = Decimal(str(self.selling_price))
+            discount_price = Decimal(str(self.discount_price))
+            
+            if selling_price != 0:
+                discount_pct = ((selling_price - discount_price) / selling_price) * 100
+                if discount_pct > 100:
+                    return discount_pct - 100
+                return 100 - discount_pct
+        
+        return Decimal('0.00')
+
     class Meta:
         db_table = "Item"
+        
 
 class  fre_item_table(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)

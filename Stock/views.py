@@ -1044,69 +1044,92 @@ def GetItemCode(request, code_id):
 
 
 
+from decimal import Decimal
+
 def clean_amount(value):
-   return value.replace(',', '') if value else value
+    if not value or value.strip() == '':
+        return Decimal('0.00')
+    try:
+        cleaned = value.replace(',', '').strip()
+        return Decimal(cleaned)
+    except:
+        return Decimal('0.00')
+    
+    
+    
 
 @login_required(login_url='/')
 @urls_name(name="Item")
 def NewItem(request):
     db = request.user.company_id.db_name
-    form = ItemForm(request.POST, request.FILES)
-
+    
     item = Item.objects.using(db).all()
     item_category = Category.objects.using(db).all()
     sub_category = Sub_Category.objects.using(db).all()
     set_current_user(request.user)
-  
+
     if request.method == 'POST':
         data = request.POST.copy()
 
-        data['selling_price'] = clean_amount(data.get('selling_price'))
-        data['retailer_price'] = clean_amount(data.get('retailer_price'))
-        data['wholesale_price'] = clean_amount(data.get('wholesale_price'))
-        data['purchase_price'] = clean_amount(data.get('purchase_price'))
+        # Clean and convert all prices, empty values become 0.00
+        data['selling_price'] = clean_amount(data.get('selling_price', '0'))
+        data['retailer_price'] = clean_amount(data.get('retailer_price', '0'))
+        data['wholesale_price'] = clean_amount(data.get('wholesale_price', '0'))
+        data['purchase_price'] = clean_amount(data.get('purchase_price', '0'))
 
         form = ItemForm(data, request.FILES)
         choice = data.get('category')
         choice2 = data.get('sub_category')
-        # choice = request.POST.get('category')
-        # choice2 = request.POST.get('sub_category')
         
         if form.is_valid():
-            item_inst = form.save(commit=False) 
+            item_inst = form.save(commit=False)
             item_inst.category_id = choice
             item_inst.sub_category_id = choice2
             item_inst.Userlogin = request.user.username
-            item_inst.save(using=db) 
+            
+            # Ensure prices are Decimal and not empty
+            item_inst.selling_price = item_inst.selling_price or Decimal('0.00')
+            item_inst.purchase_price = item_inst.purchase_price or Decimal('0.00')
+            item_inst.retailer_price = item_inst.retailer_price or Decimal('0.00')
+            item_inst.wholesale_price = item_inst.wholesale_price or Decimal('0.00')
+            
+            item_inst.save(using=db)
 
-
-            attribute_names = request.POST.getlist("name[]")   
+            # Handle attributes
+            attribute_names = request.POST.getlist("name[]")
             attribute_values = request.POST.getlist("value[]")
+            
             for name, value in zip(attribute_names, attribute_values):
-                if name.strip() and value.strip():  
+                if name.strip() and value.strip():
                     attr, created = Attribute.objects.using(db).get_or_create(
                         name=name.strip(),
                         value=value.strip()
                     )
-                    item_inst.attribute.add(attr)  
+                    item_inst.attribute.add(attr)
 
-            item_id = item_inst.id 
-            items = Item.objects.using(db).get(id=item_id) 
-            notify = SetItemNotification(item=items, Userlogin=request.user.username)
-
+            # Create notification
+            items = Item.objects.using(db).get(id=item_inst.id)
+            notify = SetItemNotification(
+                item=items, 
+                Userlogin=request.user.username
+            )
             notify.save(using=db)
-            messages.success(request,"Item was Created successfully")
+            
+            messages.success(request, "Item was created successfully")
+            return redirect('Stock:NewItem')
         else:
             messages.error(request, "Please correct the errors below.")
+            print(form.errors)  # Debug: print form errors
     else:
         form = ItemForm()
+
     context = {
         'form': form,
         'item': item,
         'item_category': item_category,
         'sub_category': sub_category,
     }
-   
+
     return render(request, 'stock/NewItem.html', context)
 
 

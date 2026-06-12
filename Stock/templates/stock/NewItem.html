@@ -449,97 +449,99 @@
 
 
 <script>
-    // Helper: remove commas from formatted price and convert to float
     function getNumericPrice(value) {
         if (!value) return 0;
         return parseFloat(value.replace(/,/g, '')) || 0;
     }
 
-    // Main validation function for New Item form
     function validateItemForm() {
-        // 1. Category
         const category = $('#category').val();
         if (!category || category === "--Choose An Option--") {
-            alert("Please select a Category.");
+            alertify.error("Please select a Category.");
             $('#category').focus();
             return false;
         }
 
-        // 2. Sub-category (if present and not the placeholder)
         const subCategory = $('#sub-category').val();
-        if (subCategory && subCategory === "Select Sub Category") {
-            alert("Please select a valid Sub-category.");
+        if (subCategory && subCategory === "---------") {
+            alertify.error("Please select a valid Sub-category.");
             $('#sub-category').focus();
             return false;
         }
 
-        // 3. Item Name
         const itemName = $("input[name='item_name']").val().trim();
         if (!itemName) {
-            alert("Item Name is required.");
+            alertify.error("Item Name is required.");
             $("input[name='item_name']").focus();
             return false;
         }
 
-        // 4. Generated Code (Item Code)
         const generatedCode = $("#randomNumber").val().trim();
         if (!generatedCode) {
-            alert("Item Code is required. Click 'Generate' or enter a value.");
+            alertify.error("Item Code is required. Click 'Generate' or enter a value.");
             $("#randomNumber").focus();
             return false;
         }
 
-        // 5. Selling Price
         const sellingPrice = $("input[name='selling_price']").val();
         const sellingNumeric = getNumericPrice(sellingPrice);
-        if (!sellingPrice || sellingNumeric <= 0) {
-            alert("Selling Price must be a positive number.");
+        if (!sellingPrice) {
+            alertify.error("Selling Price is required.");
             $("input[name='selling_price']").focus();
             return false;
         }
+        // Optional: if you want to enforce selling_price > 0, uncomment below
+        // if (sellingNumeric <= 0) {
+        //     alertify.error("Selling Price must be greater than 0.");
+        //     return false;
+        // }
 
-        // 6. Purchase Price
         const purchasePrice = $("input[name='purchase_price']").val();
         const purchaseNumeric = getNumericPrice(purchasePrice);
-        if (!purchasePrice || purchaseNumeric <= 0) {
-            alert("Purchase Price must be a positive number.");
+        if (!purchasePrice) {
+            alertify.error("Purchase Price is required.");
             $("input[name='purchase_price']").focus();
             return false;
         }
+        // Optional: if you want to enforce purchase_price > 0, uncomment below
+        // if (purchaseNumeric < 0) {
+        //     alertify.error("Purchase Price cannot be negative.");
+        //     return false;
+        // }
 
-        // 7. Quantity Type (Quantify/Unquantify) – required
         const qtyState = $("#qty_state").val();
         if (!qtyState || qtyState === "--Choose An Option--") {
-            alert("Please select Quantity Type (Quantify or Unquantify).");
+            alertify.error("Please select Quantity Type (Quantify or Unquantify).");
             $("#qty_state").focus();
             return false;
         }
 
-        // Optional: check that at least one attribute pair has both name and value if the user added any
         let hasIncompleteAttr = false;
         $("input[name='name[]']").each(function(idx) {
             const nameVal = $(this).val().trim();
             const valueVal = $("input[name='value[]']").eq(idx).val().trim();
+            
             if (nameVal && !valueVal) {
                 hasIncompleteAttr = true;
+                alertify.error("Please complete both Name and Value for each attribute.");
                 $(this).focus();
-                return false; // break
+                return false;
             }
             if (!nameVal && valueVal) {
                 hasIncompleteAttr = true;
+                alertify.error("Please complete both Name and Value for each attribute.");
                 $("input[name='value[]']").eq(idx).focus();
                 return false;
             }
         });
+        
         if (hasIncompleteAttr) {
-            alert("Please complete both Name and Value for each attribute, or remove the incomplete row.");
             return false;
         }
 
         return true;
     }
 
-    // Attach validation to form submit
     $(document).ready(function() {
         $('#itemForm').on('submit', function(e) {
             if (!validateItemForm()) {
