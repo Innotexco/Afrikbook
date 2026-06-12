@@ -36,16 +36,16 @@ class SubCategoryForm(forms.ModelForm):
 
 
 
-class ItemForm(forms.ModelForm):
+# class ItemForm(forms.ModelForm):
 
-    class Meta:
-        model = Item
-        fields = ( "item_name", "generated_code", "purchase_price", "selling_price", "retailer_price", "description", "wholesale_price", "size", "attribute", "image", "qty_state")
+#     class Meta:
+#         model = Item
+#         fields = ( "item_name", "generated_code", "purchase_price", "selling_price", "retailer_price", "description", "wholesale_price", "size", "attribute", "image", "qty_state")
     
-    images = forms.ImageField(widget=forms.ClearableFileInput(attrs={"allow_multiple_selected": True}), required=False)
-    attribute = forms.CharField(required=False)
-    size = forms.CharField(required=False)
-    qty_state = forms.CharField(required=False)
+#     images = forms.ImageField(widget=forms.ClearableFileInput(attrs={"allow_multiple_selected": True}), required=False)
+#     attribute = forms.CharField(required=False)
+#     size = forms.CharField(required=False)
+#     qty_state = forms.CharField(required=False)
 
     
     # def save(self, commit=True):
@@ -60,6 +60,57 @@ class ItemForm(forms.ModelForm):
     #     return product
     
 
+
+class ItemForm(forms.ModelForm):
+    class Meta:
+        model = Item
+        fields = (
+            "item_name", "generated_code", "purchase_price", "selling_price",
+            "retailer_price", "description", "wholesale_price", "size",
+            "attribute", "image", "qty_state"
+        )
+
+    # Optional: Override widgets for better display
+    purchase_price = forms.DecimalField(
+        required=True,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={
+            'class': 'block w-full px-2 mt-1 text-sm border-2 rounded-md',
+            'placeholder': '0.00',
+            'step': '0.01'
+        })
+    )
+    selling_price = forms.DecimalField(
+        required=True,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={
+            'class': 'block w-full px-2 mt-1 text-sm border-2 rounded-md',
+            'placeholder': '0.00',
+            'step': '0.01'
+        })
+    )
+    retailer_price = forms.DecimalField(
+        required=False,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={
+            'class': 'block w-full px-2 mt-1 text-sm border-2 rounded-md',
+            'placeholder': '0.00 (Optional)',
+            'step': '0.01'
+        })
+    )
+    wholesale_price = forms.DecimalField(
+        required=False,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={
+            'class': 'block w-full px-2 mt-1 text-sm border-2 rounded-md',
+            'placeholder': '0.00 (Optional)',
+            'step': '0.01'
+        })
+    )
+    
+    attribute = forms.CharField(required=False)
+    size = forms.CharField(required=False)
+    qty_state = forms.CharField(required=False)
 
 
 class EditItemForm(forms.ModelForm):
