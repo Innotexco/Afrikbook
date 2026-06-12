@@ -1392,44 +1392,44 @@ def EditItemCategory(request, id):
 #     return render(request, 'stock/StockLevelComparison.html')
 
 
-# def category_details(request, category_id):
-#     db = request.user.company_id.db_name
-#     category = Category.objects.using(db).get(id=category_id)
-#     subcategories = Sub_Category.objects.using(db).filter(main_category=category).values('name')
+def category_details(request, category_id):
+    db = request.user.company_id.db_name
+    category = Category.objects.using(db).get(id=category_id)
+    subcategories = Sub_Category.objects.using(db).filter(main_category=category).values('name')
 
-#     category_data = {
-#         'id': category.id,
-#         'category_name': category.category_name,
-#         'description': category.description,
-#         'cat_img': category.cat_img.url if category.cat_img else None,
-#         'subcategories': list(subcategories),
-#     }
+    category_data = {
+        'id': category.id,
+        'category_name': category.category_name,
+        'description': category.description,
+        'cat_img': category.cat_img.url if category.cat_img else None,
+        'subcategories': list(subcategories),
+    }
 
 
-#     return JsonResponse({'category': category_data})
+    return JsonResponse({'category': category_data})
 
 
 import json
 
-# def update_item_category(request):
-#     db = request.user.company_id.db_name
-#     if request.method == 'POST':
-#         main_category_name = request.POST.get('main_category')
-#         sub_category_name = request.POST.get('name')
+def update_item_category(request):
+    db = request.user.company_id.db_name
+    if request.method == 'POST':
+        main_category_name = request.POST.get('main_category')
+        sub_category_name = request.POST.get('name')
 
       
-#         # Update the Category description
-#         category = Category.objects.using(db).get(category_name=main_category_name)
+        # Update the Category description
+        category = Category.objects.using(db).get(category_name=main_category_name)
        
-#         # Insert multiple subcategories
-#         sub_categories = sub_category_name.split(',')
+        # Insert multiple subcategories
+        sub_categories = sub_category_name.split(',')
 
-#         for sub_category in sub_categories:
-#             Sub_Category.objects.using(db).create(main_category=category, name=sub_category)
+        for sub_category in sub_categories:
+            Sub_Category.objects.using(db).create(main_category=category, name=sub_category)
 
-#         return JsonResponse({'status': 'success'})
+        return JsonResponse({'status': 'success'})
 
-#     return JsonResponse({'status': 'error'})
+    return JsonResponse({'status': 'error'})
 
 def get_sub_category(request, category_id):
     db = request.user.company_id.db_name
