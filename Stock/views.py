@@ -1109,6 +1109,8 @@ def NewItem(request):
    
     return render(request, 'stock/NewItem.html', context)
 
+
+
 @login_required(login_url='/')
 @urls_name(name="Item")
 def Update_Item(request, item_id):
