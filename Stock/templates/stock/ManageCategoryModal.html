@@ -138,7 +138,6 @@ function fetchSubcategories(id) {
                     subDiv.innerHTML = `
                         <div>
                             <p class="font-medium text-gray-900">${sub.name}</p>
-                            ${sub.description ? `<p class="text-xs text-gray-500 mt-1">${sub.description}</p>` : ''}
                         </div>
                         <div class="flex gap-2">
                             <button onclick="editSubcategory(${sub.id})" 
