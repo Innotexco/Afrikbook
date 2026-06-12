@@ -51,16 +51,8 @@ urlpatterns = [
 
     path('update-item-category/', views.update_item_category, name='SubCategory'),
     path('fetch-subcategories/<int:category_id>/', views.fetch_subcategories, name='fetch_subcategories'),
-    # path('category-details/<int:category_id>/', views.category_details, name='category_details'),
+    path('category-details/<int:category_id>/', views.category_details, name='category_details'),
     path('get_sub_category/<str:category_id>/', views.get_sub_category, name='get_sub_category'),
-    
-    path('category-details/<int:id>/', views.category_details, name='category_details'),
-    path('subcategory-edit/<int:id>/', views.subcategory_edit, name='subcategory_edit'),
-    path('subcategory-create/', views.subcategory_create, name='subcategory_create'),
-    path('subcategory-update/<int:id>/', views.subcategory_update, name='subcategory_update'),
-    path('subcategory-delete/<int:id>/', views.subcategory_delete, name='subcategory_delete'),
-    path('category-delete/<int:id>/', views.category_delete, name='category_delete'),
-
 
     # # Customer
     # path('StockCustomers', views.Customers, name='StockCustomers'),
