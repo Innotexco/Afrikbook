@@ -75,47 +75,49 @@
 
     </div>
 
-    <!-- Add this script in your HTML template -->
+    
     <script>
-        function updateItemCategoryInfo() {
-            var mainCategory = document.querySelector('[name="main_category"]').value;
-            var subCategory = document.querySelector('[name="name"]').value;
-            const main_Category = document.getElementById('cat_name');
-            const sub_Category = document.getElementById('sub_name')
+    function updateItemCategoryInfo() {
+        var mainCategory = document.querySelector('[name="main_category"]').value;
+        var subCategory = document.querySelector('[name="name"]').value;
+        const main_Category = document.getElementById('cat_name');
+        const sub_Category = document.getElementById('sub_name');
 
-            // Create a FormData object to send form data
-            var formData = new FormData(document.getElementById('updateItemCatForm'));
-
-            // Append the main_category and name values to FormData
-            formData.append('main_category', mainCategory);
-            formData.append('name', subCategory);
-
-            // Make an AJAX request to the Django view
-            fetch('update-item-category/', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
-                }
-            })
-            //console.log(formData);
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert('Form submitted successfully');
-                    // Add any additional logic or UI updates here
-                    // main_Category.value = '';
-                    sub_Category.value = '';
-                } else {
-                    alert('Form submission failed');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while submitting the form');
-            });
+        if (!mainCategory) {
+            alert('Category is required.');
+            return;
         }
-    </script>
+        if (!subCategory.trim()) {
+            alert('Subcategory name is required.');
+            return;
+        }
+
+        var formData = new FormData(document.getElementById('updateItemCatForm'));
+        formData.append('main_category', mainCategory);
+        formData.append('name', subCategory);
+
+        fetch('update-item-category/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('Subcategory added successfully!');
+                sub_Category.value = '';  
+            } else {
+                alert('Error: ' + (data.message || 'Form submission failed'));
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            alert('Network error: Could not connect to the server.');
+        });
+    }
+</script>
 
     
 </dialog>
