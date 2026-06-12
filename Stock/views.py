@@ -1392,44 +1392,44 @@ def EditItemCategory(request, id):
 #     return render(request, 'stock/StockLevelComparison.html')
 
 
-def category_details(request, category_id):
-    db = request.user.company_id.db_name
-    category = Category.objects.using(db).get(id=category_id)
-    subcategories = Sub_Category.objects.using(db).filter(main_category=category).values('name')
+# def category_details(request, category_id):
+#     db = request.user.company_id.db_name
+#     category = Category.objects.using(db).get(id=category_id)
+#     subcategories = Sub_Category.objects.using(db).filter(main_category=category).values('name')
 
-    category_data = {
-        'id': category.id,
-        'category_name': category.category_name,
-        'description': category.description,
-        'cat_img': category.cat_img.url if category.cat_img else None,
-        'subcategories': list(subcategories),
-    }
+#     category_data = {
+#         'id': category.id,
+#         'category_name': category.category_name,
+#         'description': category.description,
+#         'cat_img': category.cat_img.url if category.cat_img else None,
+#         'subcategories': list(subcategories),
+#     }
 
 
-    return JsonResponse({'category': category_data})
+#     return JsonResponse({'category': category_data})
 
 
 import json
 
-def update_item_category(request):
-    db = request.user.company_id.db_name
-    if request.method == 'POST':
-        main_category_name = request.POST.get('main_category')
-        sub_category_name = request.POST.get('name')
+# def update_item_category(request):
+#     db = request.user.company_id.db_name
+#     if request.method == 'POST':
+#         main_category_name = request.POST.get('main_category')
+#         sub_category_name = request.POST.get('name')
 
       
-        # Update the Category description
-        category = Category.objects.using(db).get(category_name=main_category_name)
+#         # Update the Category description
+#         category = Category.objects.using(db).get(category_name=main_category_name)
        
-        # Insert multiple subcategories
-        sub_categories = sub_category_name.split(',')
+#         # Insert multiple subcategories
+#         sub_categories = sub_category_name.split(',')
 
-        for sub_category in sub_categories:
-            Sub_Category.objects.using(db).create(main_category=category, name=sub_category)
+#         for sub_category in sub_categories:
+#             Sub_Category.objects.using(db).create(main_category=category, name=sub_category)
 
-        return JsonResponse({'status': 'success'})
+#         return JsonResponse({'status': 'success'})
 
-    return JsonResponse({'status': 'error'})
+#     return JsonResponse({'status': 'error'})
 
 def get_sub_category(request, category_id):
     db = request.user.company_id.db_name
@@ -1456,6 +1456,159 @@ def fetch_subcategories(request, category_id):
 
     # return JsonResponse({'subcategories': subcategory_list})
     return render(request, 'stock/ItemCategory.html', {'subcategories': subcategories})
+
+
+
+
+from django.views.decorators.http import require_http_methods
+
+@require_http_methods(["GET"])
+def category_details(request, id):
+    """Fetch category and subcategories"""
+    db = request.user.company_id.db_name
+    
+    try:
+        category = Category.objects.using(db).get(id=id)
+        subcategories = Sub_Category.objects.using(db).filter(
+            main_category=category
+        ).values('id', 'name', 'description')
+        
+        return JsonResponse({
+            'category': {
+                'id': category.id,
+                'category_name': category.category_name,
+                'description': category.description,
+                'cat_img': category.cat_img.url if category.cat_img else None,
+                'subcategories': list(subcategories)
+            }
+        })
+    except Category.DoesNotExist:
+        return JsonResponse({'error': 'Category not found'}, status=404)
+
+
+@require_http_methods(["GET"])
+def subcategory_edit(request, id):
+    """Get subcategory for editing"""
+    db = request.user.company_id.db_name
+    
+    try:
+        sub = Sub_Category.objects.using(db).get(id=id)
+        return JsonResponse({
+            'id': sub.id,
+            'name': sub.name,
+            'description': sub.description
+        })
+    except Sub_Category.DoesNotExist:
+        return JsonResponse({'error': 'Subcategory not found'}, status=404)
+
+
+@require_http_methods(["POST"])
+def subcategory_create(request):
+    """Create new subcategory"""
+    db = request.user.company_id.db_name
+    data = json.loads(request.body)
+    
+    try:
+        category = Category.objects.using(db).get(id=data['category_id'])
+        
+        # Check for duplicates
+        if Sub_Category.objects.using(db).filter(
+            main_category=category, 
+            name__iexact=data['name']
+        ).exists():
+            return JsonResponse({
+                'success': False,
+                'message': 'Subcategory with this name already exists'
+            })
+        
+        sub = Sub_Category.objects.using(db).create(
+            main_category=category,
+            name=data['name'],
+            description=data.get('description', '')
+        )
+        
+        return JsonResponse({'success': True, 'id': sub.id})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+
+@require_http_methods(["POST"])
+def subcategory_update(request, id):
+    """Update subcategory"""
+    db = request.user.company_id.db_name
+    data = json.loads(request.body)
+    
+    try:
+        sub = Sub_Category.objects.using(db).get(id=id)
+        sub.name = data['name']
+        sub.description = data.get('description', '')
+        sub.save(using=db)
+        
+        return JsonResponse({'success': True})
+    except Sub_Category.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Subcategory not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+
+@require_http_methods(["POST"])
+def subcategory_delete(request, id):
+    """Delete subcategory with validation"""
+    db = request.user.company_id.db_name
+    
+    try:
+        sub = Sub_Category.objects.using(db).get(id=id)
+        
+        # Check if any items are linked to this subcategory
+        items_count = Item.objects.using(db).filter(
+            sub_category=sub
+        ).count()
+        
+        if items_count > 0:
+            return JsonResponse({
+                'success': False,
+                'message': f'Cannot delete. {items_count} item(s) are linked to this subcategory.'
+            })
+        
+        sub.delete(using=db)
+        return JsonResponse({'success': True})
+    except Sub_Category.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Subcategory not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+
+@require_http_methods(["POST"])
+def category_delete(request, id):
+    """Delete category with validation"""
+    db = request.user.company_id.db_name
+    
+    try:
+        category = Category.objects.using(db).get(id=id)
+        
+        # Check if category has any subcategories with items
+        subcategories = Sub_Category.objects.using(db).filter(
+            main_category=category
+        )
+        
+        items_count = Item.objects.using(db).filter(
+            sub_category__in=subcategories
+        ).count()
+        
+        if items_count > 0:
+            return JsonResponse({
+                'success': False,
+                'message': f'Cannot delete. {items_count} item(s) are linked to subcategories in this category.'
+            })
+        
+        category.delete(using=db)
+        return JsonResponse({'success': True})
+    except Category.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Category not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+
 
 
 
