@@ -1471,7 +1471,7 @@ def category_details(request, id):
         category = Category.objects.using(db).get(id=id)
         subcategories = Sub_Category.objects.using(db).filter(
             main_category=category
-        ).values('id', 'name', 'description')
+        ).values('id', 'name')
         
         return JsonResponse({
             'category': {
