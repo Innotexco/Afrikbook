@@ -1089,7 +1089,6 @@ def NewItem(request):
             
             # Ensure prices are Decimal and not empty
             item_inst.selling_price = item_inst.selling_price or Decimal('0.00')
-            item_inst.purchase_price = item_inst.purchase_price or Decimal('0.00')
             item_inst.retailer_price = item_inst.retailer_price or Decimal('0.00')
             item_inst.wholesale_price = item_inst.wholesale_price or Decimal('0.00')
             

@@ -121,7 +121,7 @@
                 </label>
 
                 <label class="block text-sm">
-                    <span class="text-gray-700">Purchase Price (Optional)</span>
+                    <span class="text-gray-700">Purchase Price</span>
                     <input 
                         type="text"
                         name="purchase_price"
@@ -490,24 +490,22 @@
             $("input[name='selling_price']").focus();
             return false;
         }*/
-        // Optional: if you want to enforce selling_price > 0, uncomment below
-        // if (sellingNumeric <= 0) {
-        //     alertify.error("Selling Price must be greater than 0.");
-        //     return false;
-        // }
+         if (sellingNumeric <= 0) {
+             alertify.error("Selling Price must be greater than 0.");
+             return false;
+         }
 
-        /*const purchasePrice = $("input[name='purchase_price']").val();
+        const purchasePrice = $("input[name='purchase_price']").val();
         const purchaseNumeric = getNumericPrice(purchasePrice);
         if (!purchasePrice) {
             alertify.error("Purchase Price is required.");
             $("input[name='purchase_price']").focus();
-            return false;*/
+            return false;
         }
-        // Optional: if you want to enforce purchase_price > 0, uncomment below
-        // if (purchaseNumeric < 0) {
-        //     alertify.error("Purchase Price cannot be negative.");
-        //     return false;
-        // }
+         if (purchaseNumeric < 0) {
+             alertify.error("Purchase Price cannot be negative.");
+             return false;
+         }
 
         const qtyState = $("#qty_state").val();
         if (!qtyState || qtyState === "--Choose An Option--") {

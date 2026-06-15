@@ -81,7 +81,7 @@ class ItemForm(forms.ModelForm):
         })
     )
     selling_price = forms.DecimalField(
-        required=True,
+        required=False,
         decimal_places=2,
         widget=forms.NumberInput(attrs={
             'class': 'block w-full px-2 mt-1 text-sm border-2 rounded-md',
