@@ -201,7 +201,7 @@
     });
 
     // Handle quantity and discount changes to recalculate amounts
-    $(document).on('input', 'input[name="qty[]"], input[name="discount[]"]', function() {
+    /*$(document).on('input', 'input[name="qty[]"], input[name="discount[]"]', function() {
         const row = $(this).closest('tr');
         const qty = parseFloat(row.find('input[name="qty[]"]').val()) || 0;
         const unit = parseFloat(row.find('input[name="unit[]"]').val()) || 0;
@@ -212,6 +212,19 @@
         amount.val(calculatedAmount.toFixed(2));
         
         sun_T();
+    });*/
+
+    $(document).on('input', 'input[name="qty[]"], input[name="discount[]"], input[name="unit[]"]', function() {
+        const row = $(this).closest('tr');
+        const qty = parseFloat(row.find('input[name="qty[]"]').val()) || 0;
+        const unit = parseFloat(row.find('input[name="unit[]"]').val()) || 0;
+        const discount = parseFloat(row.find('input[name="discount[]"]').val()) || 0;
+        const amount = row.find('input[name="amount[]"]');
+        
+        const calculatedAmount = (qty * unit) - discount;
+        amount.val(calculatedAmount.toFixed(2));
+        
+        sun_T();   
     });
 
     function sun_T(){
