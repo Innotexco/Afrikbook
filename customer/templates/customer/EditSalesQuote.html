@@ -127,20 +127,33 @@
                     </table>
                 </div>
 
+                
                 <!-- Totals -->
-                <div class="flex justify-end mt-4 gap-6 text-[11px]">
-                    <div class="space-y-1 text-right">
-                        <div class="flex justify-end items-center gap-2">
-                            <span class="text-gray-700">Sub Total</span>
-                            <input type="text" id="sub-total" readonly
-                                class="w-[100px] px-2 border-2 rounded-md text-slate-600 form-input text-right" />
+                <div class="block justify-end items-center my-6 w-full">
+                    <label class="flex justify-end items-center gap-2 text-[11px] w-full">
+                        <span class="text-gray-700">Sub Total</span>
+                        <input type="text" id="sub-total" readonly
+                            class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input text-right" />
+                    </label>
+
+                    <label class="flex justify-end items-center gap-2 text-[11px] w-full mt-1">
+                        <div class="flex justify-center items-center gap-6">
+                            <span class="text-gray-700">Discount</span>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="discountcheck"
+                                    class="text-gray-700 form-checkbox focus:border-slate-200 focus:outline-none" />
+                                <span class="ml-2 text-gray-700">Include VAT 7.5%</span>
+                            </label>
                         </div>
-                        <div class="flex justify-end items-center gap-2">
-                            <span class="text-gray-700">Total</span>
-                            <input type="text" id="total" name="total" readonly
-                                class="w-[100px] px-2 border-2 rounded-md text-slate-600 form-input text-right" />
-                        </div>
-                    </div>
+                        <input type="text" id="discount2" readonly
+                            class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input text-right" />
+                    </label>
+
+                    <label class="flex justify-end items-center gap-2 text-[11px] w-full mt-1">
+                        <span class="text-gray-700">Total</span>
+                        <input type="text" id="total" name="total" readonly
+                            class="block w-[100px] px-2 text-[10px] border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input text-right" />
+                    </label>
                 </div>
             </div>
 
@@ -167,26 +180,37 @@
     </form>
 
 <script>
-    // ── Recalculate totals ────────────────────────────────────────────────────
-    function recalcTotals() {
-        let total = 0;
-        $('#quote_rows tr').each(function () {
-            const qty      = parseFloat($(this).find('.qty-input').val()) || 0;
-            const unit     = parseFloat($(this).find('.unit-input').val()) || 0;
-            const discount = parseFloat($(this).find('.discount-input').val()) || 0;
-            const amount   = (qty * unit) - discount;
-            $(this).find('.amount-input').val(amount.toFixed(2));
-            total += amount;
-        });
-        $('#sub-total').val(total.toFixed(2));
-        $('#total').val(total.toFixed(2));
-    }
+// ── Recalculate totals ────────────────────────────────────────────────────
+function recalcTotals() {
+    let subTotal = 0;
+    $('#quote_rows tr').each(function () {
+        const qty      = parseFloat($(this).find('.qty-input').val()) || 0;
+        const unit     = parseFloat($(this).find('.unit-input').val()) || 0;
+        const discount = parseFloat($(this).find('.discount-input').val()) || 0;
+        const amount   = (qty * unit) - discount;
+        $(this).find('.amount-input').val(amount.toFixed(2));
+        subTotal += amount;
+    });
 
-    // Initial calculation on load
-    recalcTotals();
+    $('#sub-total').val(subTotal.toFixed(2));
 
-    // Recalc on input change
-    $(document).on('input', '.qty-input, .unit-input, .discount-input', recalcTotals);
+    // ── VAT calculation ──────────────────────────────────────────────────
+    const vatIncluded = $('#discountcheck').is(':checked');
+    const vatAmount   = vatIncluded ? subTotal * 0.075 : 0;
+    $('#discount2').val(vatAmount.toFixed(2));
+
+    const grandTotal = subTotal + vatAmount;
+    $('#total').val(grandTotal.toFixed(2));
+}
+
+// Initial calculation on load
+recalcTotals();
+
+// Recalc on input change
+$(document).on('input', '.qty-input, .unit-input, .discount-input', recalcTotals);
+
+// Recalc when VAT checkbox toggled
+$('#discountcheck').on('change', recalcTotals);
 
     // ── Remove row ────────────────────────────────────────────────────────────
     $(document).on('click', '.remove-row', function () {
