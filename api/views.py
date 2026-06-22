@@ -1786,7 +1786,7 @@ def create_customer_api(request):
             client = create_client_dtails(request, db, name, email, fallback_token)
             
             if client:
-                customer = serializer.save()
+                customer = customer_table(**serializer.validated_data)
                 customer.save(using=db)
                 
                 logger.info(f"Customer created successfully: {email}")
