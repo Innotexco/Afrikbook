@@ -727,8 +727,8 @@ def OutletStockLevel(request):
 
         if searchItem:
             # Also filter log tables by item name where available
-            filter_conditions       &= Q(item__icontains=searchItem)
-            filter_sales_conditions &= Q(item__icontains=searchItem)
+            filter_conditions       &= Q(item_name__icontains=searchItem)
+            filter_sales_conditions &= Q(item_name__icontains=searchItem)
 
         if Itemcode:
             filter_conditions       &= Q(item_code=Itemcode)
