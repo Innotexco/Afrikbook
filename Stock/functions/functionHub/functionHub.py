@@ -364,17 +364,17 @@ def get_grand_total_from_outlet_stockin(item, table, outlet, db, filter1):
    return qty
 
 
-def get_grand_total_from_stock_log(item, table1, table2, storeData, db, filter1, filter2):
+def get_grand_total_from_stock_log(itemcode, table1, table2, storeData, db, filter1, filter2):
      
       # WHEN INSTANT STOCKLEVEL IS SET TO NO
-      transfer_to_outlet = table1.objects.using(db).filter(filter1, item_code=item).aggregate(total=Sum('quantity'))['total'] or 0.00
+      transfer_to_outlet = table1.objects.using(db).filter(filter1, item_code=itemcode).aggregate(total=Sum('quantity'))['total'] or 0.00
       # transfer_to_outlet = table1.objects.using(db).filter(Q(outlet=storeData) & Q(item_code=item)).aggregate(total=Sum('quantity'))['total'] or 0.00
 
       # this represents the minuses in qty the shop/warehouse get
-      transfer_from_outlet_to_oulet = table1.objects.using(db).filter(filter1, Q(warehouse=storeData) & Q(item_code=item)).aggregate(total=Sum('quantity'))['total'] or 0.00
-      transfer_to_warehouse = table2.objects.using(db).filter(filter1, Q(warehouse=storeData) & Q(item_code=item)).aggregate(total=Sum('quantity'))['total'] or 0.00
+      transfer_from_outlet_to_oulet = table1.objects.using(db).filter(filter1, Q(warehouse=storeData) & Q(item_code=itemcode)).aggregate(total=Sum('quantity'))['total'] or 0.00
+      transfer_to_warehouse = table2.objects.using(db).filter(filter1, Q(warehouse=storeData) & Q(item_code=itemcode)).aggregate(total=Sum('quantity'))['total'] or 0.00
       
-      salesQty = customer_invoice.objects.using(db).filter(filter2,itemcode=item,  cancellation_status="0", status="1").aggregate(total=Sum('qty'))['total'] or 0.00
+      salesQty = customer_invoice.objects.using(db).filter(filter2, itemcode=itemcode,  cancellation_status="0", status="1").aggregate(total=Sum('qty'))['total'] or 0.00
       # salesQty = customer_invoice.objects.using(db).filter(itemcode=item, outlet="", cancellation_status="0", status="1").aggregate(total=Sum('qty'))['total'] or 0.00
       
       
