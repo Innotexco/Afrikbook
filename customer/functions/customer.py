@@ -21,33 +21,40 @@ def add_customer(request, db):
     db = AfrikBookDB(request)
     email = request.POST.get('email')
     csrftoken = request.POST.get('csrfmiddlewaretoken')
-  
+
     if form.is_valid():
         form_i = form.save(commit=False)
         form_i.email = email
         form_i.Userlogin = request.user.username
-        
-        try:
-            user = User.objects.using("afrikbook_client").get(Q(username=form.cleaned_data.get('name')) | Q(email=email))
-           
-            messages.error(request, "Customer already exist")
-        except User.DoesNotExist:
-            if customer_table.objects.using(db).filter(phone=form.cleaned_data.get('phone')).exists():
-               messages.error(request, "Customer with p"+form.cleaned_data.get('phone')+" already exist")
-            elif email and customer_table.objects.using(db).filter(email=email).exists():
-               messages.error(request, "Customer with e"+form.cleaned_data.get('email')+" already exist")
-            else:
-                
-                client = create_client_dtails(request, db, form.cleaned_data.get('name'), email, csrftoken)
-               
-                if client:  
-                    form_i.save(using=db)
-                    messages.success(request, "Customer  Created successfully")
-                else:
-                    messages.error(request, "An error occur while creating  customer")
 
+        if customer_table.objects.using(db).filter(
+            phone=form.cleaned_data.get('phone')
+        ).exists():
+            messages.error(request, f"Customer with phone {form.cleaned_data.get('phone')} already exists in this company")
+            return form
+
+        if email and customer_table.objects.using(db).filter(email=email).exists():
+            messages.error(request, f"Customer with email {email} already exists in this company")
+            return form
+
+        global_user_exists = User.objects.using("afrikbook_client").filter(
+            Q(username=form.cleaned_data.get('name')) | Q(email=email)
+        ).exists()
+
+        if global_user_exists:
+            form_i.save(using=db)
+            messages.success(request, "Customer added to this company successfully")
+        else:
+            client = create_client_dtails(request, db, form.cleaned_data.get('name'), email, csrftoken)
+            if client:
+                form_i.save(using=db)
+                messages.success(request, "Customer created successfully")
+            else:
+                messages.error(request, "An error occurred while creating customer")
     else:
         return form
+    
+    
     
  #Endpoint api 
 def create_client_dtails(request, db, username, email, fallback_token):
