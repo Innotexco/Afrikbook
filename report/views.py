@@ -354,20 +354,21 @@ def getStockAdjustmentDate(request, db, value):
 def StockAdjustmentHistory(request):
     db = request.user.company_id.db_name
 
+    is_ajax = request.GET.get('ajax') == '1'  
+
+    if is_ajax:
+        filtered_data = getStockAdjustmentDate(request, db, 'stock')
+        return JsonResponse({
+            'data': filtered_data if filtered_data is not None else [],
+            'found': bool(filtered_data)
+        })
+
     filtered_data = getStockAdjustmentDate(request, db, 'stock')
-
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        if filtered_data is not None:
-            return JsonResponse({'data': filtered_data})
-        else:
-            return JsonResponse({'failed': 'No Data Found'}, status=404)
-
     if filtered_data is not None:
         context = {'stockinadjustmentlog': filtered_data}
     else:
         all_logs = StockAdjustmentLog.objects.using(db).filter(type='stock')
         context = {'stockinadjustmentlog': all_logs}
-
     return render(request, 'report/StockAdjustmentHistory.html', context)
 
 
