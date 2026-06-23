@@ -382,6 +382,23 @@ def getStockAdjustmentHistoryData(request, db, log_type):
 def StockAdjustmentHistory(request):
    db = request.user.company_id.db_name
    stockinadjustmentlog = StockAdjustmentLog.objects.using(db).filter(type='stock')
+   
+   if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        data = getStockAdjustmentHistoryData(request, db, 'stock')
+        
+        if data is None:
+            data = [
+                {
+                    'datetx': str(row.datetx),
+                    'invoice_no': row.invoice_no or '',
+                    'item_code': row.item_code or '',
+                    'initial_qty': row.initial_qty or 0,
+                    'new_qty': row.new_qty or 0,
+                    'Userlogin': str(row.Userlogin),
+                }
+                for row in stockinadjustmentlog
+            ]
+        return JsonResponse({'data': data})
 
    context = {
       'stockinadjustmentlog': stockinadjustmentlog,
@@ -389,9 +406,9 @@ def StockAdjustmentHistory(request):
 
  
    # get function
-   stockadjustmentdata =getStockAdjustmentHistoryData(request, db, 'stock')
-   if stockadjustmentdata:
-     return JsonResponse({'data':stockadjustmentdata})
+#    stockadjustmentdata =getStockAdjustmentHistoryData(request, db, 'stock')
+#    if stockadjustmentdata:
+#      return JsonResponse({'data':stockadjustmentdata})
 
    return render(request, 'report/StockAdjustmentHistory.html', context)
 
