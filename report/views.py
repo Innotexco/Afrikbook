@@ -389,7 +389,7 @@ def StockAdjustmentHistory(request):
 
  
    # get function
-   stockadjustmentdata =getStockAdjustmentHistoryData(request, db, 'stock')
+   stockadjustmentdata =getStockAdjustmentHistoryData(request, db, stockinadjustmentlog)
    if stockadjustmentdata:
      return JsonResponse({'data':stockadjustmentdata})
 
