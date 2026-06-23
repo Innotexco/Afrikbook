@@ -160,8 +160,8 @@
         <label class="flex items-center gap-2 text-sm font-medium text-gray-700">
             Total Outlet Quantity:
             <input type="text" id="totalqty" readonly
-                   value="{{ default_data|length }}"
-                   class="block w-28 px-2 py-1 text-sm border-2 rounded-md bg-gray-100 text-gray-700 text-right"/>
+                value="{{ default_total|floatformat:2 }}"
+                class="block w-28 px-2 py-1 text-sm border-2 rounded-md bg-gray-100 text-gray-700 text-right"/>
         </label>
     </div>
 </div>
