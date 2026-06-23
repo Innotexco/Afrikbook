@@ -307,43 +307,48 @@ def ProfitLossStatement(request):
 
 def getStockAdjustmentDate(request, db, value):
     if request.method != 'GET':
-        return None
+        return {'failed': "Invalid request method"}
 
     getfromdate = request.GET.get('fromdate')
     gettodate = request.GET.get('todate')
     invoiceid = request.GET.get('invoiceid')
 
-    queryset = StockAdjustmentLog.objects.using(db).filter(type=value)
+    failed = {'failed': "No Data Found"}
 
-    filters = Q()
-
-    if getfromdate and gettodate:
-        from_date, to_date = getdateReport(getfromdate, gettodate)
-        filters &= Q(datetx__range=(from_date, to_date))
-
-    if invoiceid:   
-        filters &= Q(invoice_no=invoiceid)
-
-    if filters:
-        queryset = queryset.filter(filters)
+    if invoiceid:
+        getstock = StockAdjustmentLog.objects.using(db).filter(
+            Q(invoice_no=invoiceid) & Q(type=value)
+        )
+        getstock = getstock.order_by('-datetx')
+    elif getfromdate and gettodate:
+        try:
+            from_date, to_date = getdateReport(getfromdate, gettodate)
+            getstock = StockAdjustmentLog.objects.using(db).filter(
+                Q(datetx__range=(from_date, to_date)) & Q(type=value)
+            )
+        except Exception:
+            return failed
     else:
-        return None
+        return failed
 
-    if not queryset.exists():
-        return None   
-
-    result = [{
-        'id': data.id,
-        'datetx': data.datetx,
-        'invoice_no': data.invoice_no,
-        'item_code': data.item_code,
-        'initial_qty': data.initial_qty,
-        'new_qty': data.new_qty,
-        'Userlogin': data.Userlogin,
-    } for data in queryset]
-
-    return result   
+    if getstock.exists():
+        result = [
+            {
+                'id': data.id,
+                'datetx': data.datetx,
+                'invoice_no': data.invoice_no,
+                'item_code': data.item_code,
+                'initial_qty': data.initial_qty,
+                'new_qty': data.new_qty,
+                'Userlogin': data.Userlogin,
+            }
+            for data in getstock
+        ]
+        return result
+    else:
+        return failed
             
+
 
 
 
@@ -353,22 +358,22 @@ def getStockAdjustmentDate(request, db, value):
 @urls_name(name="Stock Adjustment")
 def StockAdjustmentHistory(request):
     db = request.user.company_id.db_name
+    value = 'stock' 
 
-    is_ajax = request.GET.get('ajax') == '1'  
+    stockadjustmentdata = getStockAdjustmentDate(request, db, value)
 
-    if is_ajax:
-        filtered_data = getStockAdjustmentDate(request, db, 'stock')
-        return JsonResponse({
-            'data': filtered_data if filtered_data is not None else [],
-            'found': bool(filtered_data)
-        })
+    if isinstance(stockadjustmentdata, dict) and 'failed' in stockadjustmentdata:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.GET:
+            return JsonResponse(stockadjustmentdata)
+        else:
+            context = {'stockinadjustmentlog': []}
+            return render(request, 'report/StockAdjustmentHistory.html', context)
 
-    filtered_data = getStockAdjustmentDate(request, db, 'stock')
-    if filtered_data is not None:
-        context = {'stockinadjustmentlog': filtered_data}
-    else:
-        all_logs = StockAdjustmentLog.objects.using(db).filter(type='stock')
-        context = {'stockinadjustmentlog': all_logs}
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.GET.get('fromdate') or request.GET.get('invoiceid'):
+        return JsonResponse({'data': stockadjustmentdata})
+
+    stockinadjustmentlog = StockAdjustmentLog.objects.using(db).filter(type=value)
+    context = {'stockinadjustmentlog': stockinadjustmentlog}
     return render(request, 'report/StockAdjustmentHistory.html', context)
 
 
