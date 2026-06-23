@@ -334,6 +334,43 @@ def getStockAdjustmentDate(request, db, value):
                 return result
             else:
                 return failed
+            
+            
+            
+            
+def getStockAdjustmentHistoryData(request, db, log_type):
+    if request.method == 'GET':
+        getfromdate = request.GET.get('fromdate')
+        gettodate   = request.GET.get('todate')
+        invoiceid   = request.GET.get('invoiceid')
+
+        if not getfromdate and not invoiceid:
+            return None  # no search triggered
+
+        qs = StockAdjustmentLog.objects.using(db).filter(type=log_type)
+
+        if getfromdate and gettodate:
+            from_date, to_date = getdateReport(getfromdate, gettodate)  # fixed
+            qs = qs.filter(datetx__range=(from_date, to_date))
+
+        if invoiceid and invoiceid not in ('', '_ _Choose Option_ _'):
+            qs = qs.filter(invoice_no=invoiceid)
+
+        if not qs.exists():
+            return {'failed': 'No Data Found'}
+
+        return [
+            {
+                'datetx':      str(row.datetx),
+                'invoice_no':  row.invoice_no  or '',
+                'item_code':   row.item_code   or '',
+                'initial_qty': row.initial_qty or 0,
+                'new_qty':     row.new_qty     or 0,
+                'Userlogin':   str(row.Userlogin),
+            }
+            for row in qs
+        ]
+    return None
 
 
 
@@ -352,7 +389,7 @@ def StockAdjustmentHistory(request):
 
  
    # get function
-   stockadjustmentdata =getStockAdjustmentDate(request, db, 'stock')
+   stockadjustmentdata =getStockAdjustmentHistoryData(request, db, 'stock')
    if stockadjustmentdata:
      return JsonResponse({'data':stockadjustmentdata})
 
