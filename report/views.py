@@ -1873,6 +1873,7 @@ def WarehouseStockLevelReport(request):
         'items':        items,
         'warehouses':   warehouses,
         'default_data': default_data,
+        'default_total': sum(row['qtyLevel'] for row in default_data),
         'start_year':   2020,
     }
     return render(request, 'report/WarehouseStockLevelReport.html', context)
