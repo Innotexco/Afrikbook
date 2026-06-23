@@ -149,29 +149,29 @@
     </div>
 
     <script>
-        function resultFunction(res){
-            if(res.data.failed){
-                alert(res.data.failed)
-            }else{
-                $('#adjuststore .default').remove();
+        function resultFunction(res) {
+            if (!res.found) {
+                alert('No data found for the selected criteria.');
+                // Optionally clear the table or show a message
+                $('#adjuststore .default').show();   // show original rows if any
                 $('#adjuststore .result').empty();
-                res.data.forEach(function(item, index) {
-                    let newRow = $('<tr class="text-gray-700" >');
-                    // Add data to the row
-                    newRow.append('<td class="text-[10px]">' + (index + 1) + '</td>');
-                    newRow.append('<td class="text-[10px]">' + item.datetx + '</td>');
-                    newRow.append('<td class="text-[10px]">' + item.invoice_no + '</td>');
-                    newRow.append('<td class="text-[10px]">' + item.item_code + '</td>');
-                    newRow.append('<td class="text-[10px]">' + item.initial_qty + '</td>');
-                    newRow.append('<td class="text-[10px]">' + item.new_qty + '</td>');
-                    newRow.append('<td class="text-[10px]"> ' + item.Userlogin + ' </td>');
-
-                    
-                    // Add more columns as needed
-                    $('#adjuststore .result').append(newRow);
-                });
-                }
+                return;
+            }
+            $('#adjuststore .default').remove();
+            $('#adjuststore .result').empty();
+            res.data.forEach(function(item, index) {
+                let newRow = $('<tr class="text-gray-700">');
+                newRow.append('<td class="text-[10px]">' + (index + 1) + '</td>');
+                newRow.append('<td class="text-[10px]">' + item.datetx + '</td>');
+                newRow.append('<td class="text-[10px]">' + item.invoice_no + '</td>');
+                newRow.append('<td class="text-[10px]">' + item.item_code + '</td>');
+                newRow.append('<td class="text-[10px]">' + item.initial_qty + '</td>');
+                newRow.append('<td class="text-[10px]">' + item.new_qty + '</td>');
+                newRow.append('<td class="text-[10px]">' + item.Userlogin + '</td>');
+                $('#adjuststore .result').append(newRow);
+            });
         }
+        
         $(document).ready(function() {
 
             $(document).on('click', '#getDate', function(){
@@ -184,6 +184,7 @@
                     data: {
                         fromdate: fromdate,
                         todate: todate,
+                        ajax: 1 
                     },
                     success: function(res){
                         resultFunction(res)
@@ -197,6 +198,7 @@
                     url: "{% url 'report:StockAdjustmentHistory' %}",
                     data: {
                         invoiceid: invoiceid,
+                        ajax: 1
                     },
                     success: function(res){
                         resultFunction(res)
