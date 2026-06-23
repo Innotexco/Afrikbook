@@ -305,48 +305,39 @@ def ProfitLossStatement(request):
          
 
 
-def getStockAdjustmentDate(request, db, value):
-    if request.method != 'GET':
-        return {'failed': "Invalid request method"}
+def getStockAdjustmentDate(request, db, log_type):
+     if request.method == 'GET':
+        getfromdate = request.GET.get('fromdate')
+        gettodate   = request.GET.get('todate')
+        invoiceid   = request.GET.get('invoiceid')
 
-    getfromdate = request.GET.get('fromdate')
-    gettodate = request.GET.get('todate')
-    invoiceid = request.GET.get('invoiceid')
+        if not getfromdate and not invoiceid:
+            return None  
 
-    failed = {'failed': "No Data Found"}
+        qs = StockAdjustmentLog.objects.using(db).filter(type=log_type)
 
-    if invoiceid:
-        getstock = StockAdjustmentLog.objects.using(db).filter(
-            Q(invoice_no=invoiceid) & Q(type=value)
-        )
-        getstock = getstock.order_by('-datetx')
-    elif getfromdate and gettodate:
-        try:
-            from_date, to_date = getdateReport(getfromdate, gettodate)
-            getstock = StockAdjustmentLog.objects.using(db).filter(
-                Q(datetx__range=(from_date, to_date)) & Q(type=value)
-            )
-        except Exception:
-            return failed
-    else:
-        return failed
+        if getfromdate and gettodate:
+            from_date, to_date = getdateReport(getfromdate, gettodate)  # fixed
+            qs = qs.filter(datetx__range=(from_date, to_date))
 
-    if getstock.exists():
-        result = [
+        if invoiceid and invoiceid not in ('', '_ _Choose Option_ _'):
+            qs = qs.filter(invoice_no=invoiceid)
+
+        if not qs.exists():
+            return {'failed': 'No Data Found'}
+
+        return [
             {
-                'id': data.id,
-                'datetx': data.datetx,
-                'invoice_no': data.invoice_no,
-                'item_code': data.item_code,
-                'initial_qty': data.initial_qty,
-                'new_qty': data.new_qty,
-                'Userlogin': data.Userlogin,
+                'datetx':      str(row.datetx),
+                'invoice_no':  row.invoice_no  or '',
+                'item_code':   row.item_code   or '',
+                'initial_qty': row.initial_qty or 0,
+                'new_qty':     row.new_qty     or 0,
+                'Userlogin':   str(row.Userlogin),
             }
-            for data in getstock
+            for row in qs
         ]
-        return result
-    else:
-        return failed
+     return None
             
 
 
