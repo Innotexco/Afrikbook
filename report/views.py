@@ -313,7 +313,7 @@ def getStockAdjustmentDate(request, db, value):
         #   sortbyItem = request.GET.get('sortbyItem')
         failed = {'failed': "No Data Found"}
         if getfromdate and gettodate:
-                from_date, to_date =getdate(getfromdate, gettodate)
+                from_date, to_date = getdateReport(getfromdate, gettodate)
                 getstock = StockAdjustmentLog.objects.using(db).filter(Q(datetx__range=(from_date, to_date)) & Q(type=value))
             
         if invoiceid  is not None or getfromdate and gettodate is not None:
