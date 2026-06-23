@@ -1383,7 +1383,7 @@ def OutletStockLevelReport(request):
     outlets = sales_outlet.objects.using(db).all()
     items   = Item.objects.using(db).all()
 
-    # ── Default display: 5 latest log entries ────────────────────────────
+    # ── Default display: 5 latest log entries 
     latest = (
         CreateOutletStockInLog.objects.using(db)
         .order_by('-datetx')[:5]
@@ -1606,38 +1606,50 @@ def levelReportOutlet(
 
 
 def currentStockLevel_Outlet(db, item_, outlet_filter=None):
-    all_qty_sent_to_store       = 0.00
-    all_qty_sent_from_store     = 0.00
-    all_qty_sent_within_store   = 0.00
-    all_qty_sold_from_outlet    = 0.00
+    outlet = outlet_filter if outlet_filter and outlet_filter not in ('', '_ _Choose Outlet_ _') else ''
 
-    qs_in = CreateStockInLog.objects.using(db).filter(Q(item_code=item_))
+    all_qty_sent_to_outlet           = 0.00
+    all_qty_sent_within_outlet_table = 0.00
+    all_qty_sent_from_outlet         = 0.00
+    all_qty_sold_from_outlet         = 0.00
+
+    qs_in = CreateOutletStockInLog.objects.using(db).filter(
+        ~Q(outlet=None) & Q(item_code=item_)
+    )
+    if outlet:
+        qs_in = qs_in.filter(outlet=outlet)
     for row in qs_in:
-        all_qty_sent_to_store += float(row.quantity)
+        all_qty_sent_to_outlet += float(row.quantity)
 
     qs_from = CreateStockInLog.objects.using(db).filter(
-        Q(warehouse__icontains='warehouse') & Q(item_code=item_)
+        Q(item_code=item_)
     )
+    if outlet:
+        qs_from = qs_from.filter(warehouse=outlet)
     for row in qs_from:
-        all_qty_sent_from_store += float(row.quantity)
+        all_qty_sent_from_outlet += float(row.quantity)
 
     qs_within = CreateOutletStockInLog.objects.using(db).filter(
-        Q(warehouse__icontains='warehouse') & Q(item_code=item_)
+        Q(item_code=item_)
     )
+    if outlet:
+        qs_within = qs_within.filter(warehouse=outlet)
     for row in qs_within:
-        all_qty_sent_within_store += float(row.quantity)
+        all_qty_sent_within_outlet_table += float(row.quantity)
 
     sold_qs = customer_invoice.objects.using(db).filter(
-        ~Q(cancellation_status=1) & Q(itemcode=item_)
+        itemcode=item_,
+        cancellation_status="0",
+        status="1"
     )
-    if outlet_filter and outlet_filter not in ('', '_ _Choose Outlet_ _'):
-        sold_qs = sold_qs.filter(outlet=outlet_filter)
+    if outlet:
+        sold_qs = sold_qs.filter(outlet=outlet)
     for row in sold_qs:
         all_qty_sold_from_outlet += float(row.qty)
 
-    total = all_qty_sent_to_store - (
-        all_qty_sent_from_store +
-        all_qty_sent_within_store +
+    total = all_qty_sent_to_outlet - (
+        all_qty_sent_from_outlet +
+        all_qty_sent_within_outlet_table +
         all_qty_sold_from_outlet
     )
     return total
