@@ -222,36 +222,46 @@ def getStockAdjustmentData(request, model, db):
          
 
 
-def getStockAdjustmentDate(request, model, context, db):
-   if request.method == 'GET':
-      getfromdate = request.GET.get('fromdate')
-      gettodate = request.GET.get('todate')
-      sortbyWareHh = request.GET.get('sortbyWareHh')
-      sortbyItem = request.GET.get('sortbyItem')
-      failed = {'failed': "No Data Found"}
-      if getfromdate and gettodate:
-         from_date, to_date =getdate(getfromdate, gettodate)
-         getstockdata = model.objects.using(db).filter(Q(datetx__range=(from_date, to_date)) & ~Q(status='Cancelled'))
-         if getstockdata:
-            getstock = getstockdata
-      if sortbyItem or sortbyWareHh is not None:
-         # whatever is in outlet is what i have in stock(installed) so i sort by outlet, that is == warehouse(sortby)
-         getstock = model.objects.using(db).filter(Q(outlet=sortbyWareHh) | Q(item_code=sortbyItem) & ~Q(status='Cancelled'))
-         if getstock:
-            result = [({
-                  'id': data.id if data and data.id is not None else None,
-                  'datetx': data.datetx if data and data.datetx is not None else None,
-                  'invoice_no': data.invoice_no if data and data.invoice_no is not None else None,
-                  'item': data.item if data and data.item is not None else None,
-                  'quantity': data.quantity if data and data.quantity is not None else None,
-                  'item_decription': data.item_decription if data and data.item_decription is not None else None,
-                  'token_id': data.token_id if data and data.token_id is not None else None,
-                  })
-                  for data in getstock
-               ]
-            return result
-         else:
-            return failed
+def getStockAdjustmentDate(request, model, db):
+    if request.method != 'GET':
+        return None
+
+    getfromdate  = request.GET.get('fromdate', '').strip()
+    gettodate    = request.GET.get('todate', '').strip()
+    sortbyWareHh = request.GET.get('sortbyWareHh', '').strip()
+    sortbyItem   = request.GET.get('sortbyItem', '').strip()
+
+    # Nothing to search
+    if not getfromdate and not sortbyWareHh and not sortbyItem:
+        return None
+
+    qs = model.objects.using(db).filter(~Q(status='Cancelled'))
+
+    if getfromdate and gettodate:
+        from_date, to_date = getdate(getfromdate, gettodate)
+        qs = qs.filter(datetx__range=(from_date, to_date))
+
+    if sortbyWareHh and sortbyWareHh not in ('', '_ _Choose Option_ _'):
+        qs = qs.filter(outlet=sortbyWareHh)
+
+    if sortbyItem and sortbyItem not in ('', '_ _Choose Item_ _'):
+        qs = qs.filter(item_code=sortbyItem)
+
+    if not qs.exists():
+        return {'failed': 'No Data Found'}
+
+    return [
+        {
+            'id':             data.id,
+            'datetx':         str(data.datetx) if data.datetx else '',
+            'invoice_no':     data.invoice_no or '',
+            'item':           data.item or '',
+            'quantity':       data.quantity or 0,
+            'item_decription': data.item_decription or '',
+            'token_id':       data.token_id or '',
+        }
+        for data in qs
+    ]
 
 
 
