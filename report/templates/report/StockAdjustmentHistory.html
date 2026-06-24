@@ -174,35 +174,35 @@
         }
         $(document).ready(function() {
 
-            $(document).on('click', '#getDate', function(){
-                let fromdate    =  $('#fromdate').val();
-                let todate   =  $('#todate').val();
+            $(document).on('click', '#getDate', function() {
+                let fromdate = $('#fromdate').val();
+                let todate   = $('#todate').val();
+
+                if (!fromdate || !todate) {
+                    alert('Please select both dates.');
+                    return;
+                }
 
                 $.ajax({
                     type: 'GET',
                     url: "{% url 'report:StockAdjustmentHistory' %}",
-                    data: {
-                        fromdate: fromdate,
-                        todate: todate,
-                    },
-                    success: function(res){
-                        resultFunction(res)
-                    }
-                })
-            })
-            $(document).on('change', '.commonClass', function(){
-                let invoiceid    =  $('#invoiceid').val();
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },  // add this
+                    data: { fromdate: fromdate, todate: todate },
+                    success: function(res) { resultFunction(res); }
+                });
+            });
+
+            $(document).on('change', '.commonClass', function() {
+                let invoiceid = $('#invoiceid').val();
+
                 $.ajax({
                     type: 'GET',
                     url: "{% url 'report:StockAdjustmentHistory' %}",
-                    data: {
-                        invoiceid: invoiceid,
-                    },
-                    success: function(res){
-                        resultFunction(res)
-                    }
-                })
-            }) 
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },  // add this
+                    data: { invoiceid: invoiceid },
+                    success: function(res) { resultFunction(res); }
+                });
+            });
         }) 
     </script>
 
