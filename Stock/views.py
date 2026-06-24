@@ -561,31 +561,33 @@ def StockAdjustment(request):
 @login_required(login_url='/')
 @urls_name(name = "Stock Adjustment Outlet")
 def StockAdjustmentOutlet(request):
-   db = request.user.company_id.db_name
-   # allinvoice = customer_invoice.objects.filter(invoiceID='11971')
-   stockinlog = CreateOutletStockInLog.objects.using(db).filter(~Q(status='Cancelled'))
-   outlet = sales_outlet.objects.using(db).all()
-   getitem = Item.objects.using(db).all();
+    db = request.user.company_id.db_name
+    stockinlog = CreateOutletStockInLog.objects.using(db).filter(~Q(status='Cancelled'))
+    outlet     = sales_outlet.objects.using(db).all()
+    getitem    = Item.objects.using(db).all()
 
-   context = {
-      'allinvoice': stockinlog,
-      'items': getitem,
-      'store': outlet,
-   }
-   # function to fetch data for update(when edit btn is clicked)
-   data = getStockAdjustmentData(request, CreateOutletStockInLog, db)
-   if data:
-      return JsonResponse({'data': data})
-   
-   # update function
-   updateStockAdjustmentData(request, CreateOutletStockInLog, CreateOutletStockIn, 'outlet', context, db)
+    context = {
+        'allinvoice': stockinlog,
+        'items':      getitem,
+        'store':      outlet,
+        'type':       'outlet',
+    }
 
-   # get function
-   stockadjustmentdata =getStockAdjustmentDate(request, CreateOutletStockInLog, context, db)
-   if stockadjustmentdata:
-     return JsonResponse({'data':stockadjustmentdata})
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
-   return render(request, 'StockAdjustment_Outlet.html', context)
+    data = getStockAdjustmentData(request, CreateOutletStockInLog, db)
+    if data:
+        return JsonResponse({'data': data})
+
+    updateStockAdjustmentData(request, CreateOutletStockInLog, CreateOutletStockIn, 'outlet', context, db)
+
+    if is_ajax:
+        stockadjustmentdata = getStockAdjustmentDate(request, CreateOutletStockInLog, db)
+        if stockadjustmentdata:
+            return JsonResponse({'data': stockadjustmentdata})
+        return JsonResponse({'data': {'failed': 'No Data Found'}})
+
+    return render(request, 'StockAdjustment_Outlet.html', context)
 
 # ********************************************************************************************************
 

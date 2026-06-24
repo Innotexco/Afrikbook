@@ -213,8 +213,7 @@
 
         $(document).ready(function() {
 
-            // ── Date search ──────────────────────────────────────────────────
-            $(document).on('click', '#getDate', function() {
+           $(document).on('click', '#getDate', function() {
                 var fromdate = $('#fromdate').val();
                 var todate   = $('#todate').val();
 
@@ -228,33 +227,26 @@
                 $.ajax({
                     type: 'GET',
                     url: url,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },  // add
                     data: { fromdate: fromdate, todate: todate },
-                    success: function(res) {
-                        resultFunction(res);
-                    },
+                    success: function(res) { resultFunction(res); },
                     error: function(xhr, status, error) {
-                        console.error('Search error:', xhr.status, status, error);
-                        console.error('Response:', xhr.responseText);
-                        alert('Request failed (' + xhr.status + '). Check the console for details.');
+                        alert('Request failed (' + xhr.status + ').');
                     },
-                    complete: function() {
-                        // Guaranteed to run after success OR error — always restores button
-                        setSearchLoading(false);
-                    }
+                    complete: function() { setSearchLoading(false); }
                 });
             });
 
-            // ── Dropdown filters ─────────────────────────────────────────────
             $(document).on('change', '.commonClass', function() {
                 var sortbyWareHh = $('#sortbywarehouse').val();
                 var sortbyItem   = $('#sortbyItem').val();
+
                 $.ajax({
                     type: 'GET',
                     url: url,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },  // add
                     data: { sortbyWareHh: sortbyWareHh, sortbyItem: sortbyItem },
-                    success: function(res) {
-                        resultFunction(res);
-                    },
+                    success: function(res) { resultFunction(res); },
                     error: function(xhr, status, error) {
                         console.error('Filter error:', xhr.status, status, error);
                     }
