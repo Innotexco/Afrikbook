@@ -186,7 +186,7 @@
                 $.ajax({
                     type: 'GET',
                     url: "{% url 'report:StockAdjustmentHistory' %}",
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' },  // add this
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
                     data: { fromdate: fromdate, todate: todate },
                     success: function(res) { resultFunction(res); }
                 });
@@ -198,7 +198,7 @@
                 $.ajax({
                     type: 'GET',
                     url: "{% url 'report:StockAdjustmentHistory' %}",
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' },  // add this
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
                     data: { invoiceid: invoiceid },
                     success: function(res) { resultFunction(res); }
                 });
