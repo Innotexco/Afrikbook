@@ -20,7 +20,7 @@ OPERATING_ACCOUNT = (
 
 class customer_table(models.Model):
     name           = models.CharField(max_length=100)
-    customer_code  = models.CharField(max_length=50, unique=True)
+    customer_code  = models.CharField(max_length=50)
     phone          = models.CharField(max_length=100)
     instant_email  = models.CharField(max_length=10, default=1)
     email          = models.EmailField(max_length=100, blank=True)

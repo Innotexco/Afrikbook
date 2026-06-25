@@ -58,9 +58,8 @@ def add_customer(request, db):
 
             if existing_user and not existing_user.company_id_id:
                 company = company_table.objects.get(db_name=db)
-                existing_user.company_id = company
+                existing_user.company_id_id = company.id  
                 existing_user.save(using="afrikbook_client")
-
             form_i.save(using=db)
             messages.success(request, "Customer added to this company successfully")
         else:
