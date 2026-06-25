@@ -3,21 +3,28 @@ from .models import *
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import requests, json
-from django.db.models import Value
+from django.db.models import F, Value
 
 
 def shipping_address_api(request):
-    
-    ship = shipping_addr.objects.using('afrikbook_client').values()
+    company_id = request.GET.get('company_id')
 
-    # for i in ship:
-    #     username = User.objects.using("afrikbook_client").get(id=i["addr_id_id"]).username
-    #     # i.annotate(username='username')
-    #    
-    #     ship.annotate(username=Value(username))
-    
-   
-    return JsonResponse({'ship':list(ship)})
+    if not company_id:
+        return JsonResponse({'ship': []})
+
+    company_user_ids = User.objects.using('afrikbook_client').filter(
+        company_id=company_id
+    ).values_list('id', flat=True)
+
+    ship = shipping_addr.objects.using('afrikbook_client').filter(
+        addr_id_id__in=company_user_ids
+    ).annotate(
+        username=F('addr_id__username'),
+        email=F('addr_id__email'),        
+    ).values()
+
+    return JsonResponse({'ship': list(ship)})
+
 
 def get_shipping_address(request, customer_id):
     db = request.user.company_id.db_name

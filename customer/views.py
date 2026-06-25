@@ -96,37 +96,47 @@ def ViewCustomerDetails(request, id):
 def AddCustomer(request):
     db = request.user.company_id.db_name
     customer_code = generate_customer_id()
-
-
     customer = customer_table.objects.using(db).all()
-    
-    #Endpoint api 
+
     try:
-        response = requests.get('https://console.afrikbook.com/address', timeout=10)
+        response = requests.get(
+            'https://console.afrikbook.com/address',
+            params={'company_id': request.user.company_id.id},
+            timeout=10
+        )
         if response.status_code == 200:
             data = response.json()
+            ship_list = data.get('ship', [])
 
-            for cus in customer:  
-                ship_count = sum(0 for ship in data['ship'] if ship['addr_id_id'] == cus.id)
-                cus.ship = ship_count
+            from collections import defaultdict
+            ship_count_by_email = defaultdict(int)
+            for ship in ship_list:
+                email = ship.get('email', '')
+                if email:
+                    ship_count_by_email[email] += 1
+
+            for cus in customer:
+                cus.ship = ship_count_by_email.get(cus.email, 0)
         else:
             for cus in customer:
                 cus.ship = 0
+
     except requests.RequestException:
         messages.error(request, "Endpoint not available")
-        #pass
-    
+        for cus in customer:
+            cus.ship = 0
+
     form = None
     if request.method == 'POST':
-        # add_customer(request, db)
         form = add_customer(request, db)
-     
+
     context = {
-        'customers': customer,
+        'customers':     customer,
         'customer_code': customer_code,
-        'form': form
+        'form':          form,
     }
     return render(request, "customer/NewCustomer.html", context)
+
 
 @login_required(login_url='/')
 @urls_name(name="Customer")
