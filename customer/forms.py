@@ -22,21 +22,11 @@ OPERATING_ACCOUNT = (
 
 class CustomerForm(forms.ModelForm):
     class Meta:
-        model  = customer_table
+        model = customer_table
         fields = ['name', 'phone', 'email', 'customer_code', 'category', 'company_name']
 
-    email = forms.CharField(required=False)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field_name in ['phone', 'customer_code']:
-            self.fields[field_name].validators = [
-                v for v in self.fields[field_name].validators
-                if not hasattr(v, 'code') or v.code != 'unique'
-            ]
-
-    def validate_unique(self):
-        pass
+    email = forms.CharField(required=True)
+        # REQUIREDFIELD =  ['name', 'phone', 'category', 'email', 'company_name', 'address']
 
 
     
