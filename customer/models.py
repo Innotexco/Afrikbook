@@ -20,30 +20,27 @@ OPERATING_ACCOUNT = (
 
 class customer_table(models.Model):
     name           = models.CharField(max_length=100)
-    customer_code  = models.CharField(max_length=50)   
-    phone          = models.CharField(max_length=100)   
+    customer_code  = models.CharField(max_length=50, unique=True)
+    phone          = models.CharField(max_length=100)
     instant_email  = models.CharField(max_length=10, default=1)
     email          = models.EmailField(max_length=100, blank=True)
-    token_id       = models.IntegerField(blank=True, null=True)
+    token_id       = models.IntegerField( blank=True, null=True)
     Balance        = models.DecimalField(decimal_places=2, max_digits=65, default=0.00)
     invoice        = models.IntegerField(blank=True, default=0)
     company_name   = models.CharField(max_length=100)
-    category       = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='RETAIL')
-    refund_invoice = models.IntegerField(blank=True, default=0)
+    category       = models.CharField(max_length=20, choices = CATEGORY_CHOICES, default='RETAIL')
+    refund_invoice = models.IntegerField( blank=True, default=0)
     Userlogin      = models.CharField(max_length=60, blank=True, null=True)
 
     class Meta:
         db_table = "customer_table"
-        # Enforce uniqueness at DB level per tenant instead
-        constraints = [
-            models.UniqueConstraint(fields=['phone'], name='unique_phone_per_tenant'),
-            models.UniqueConstraint(fields=['customer_code'], name='unique_code_per_tenant'),
-        ]
 
+    # Generate customer code
     def save(self, *args, **kwargs):
         if self.customer_code == "":
             self.customer_code = generate_customer_id()
         return super().save(*args, **kwargs)
+    
 
 
 
