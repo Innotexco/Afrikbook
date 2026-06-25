@@ -221,10 +221,10 @@ def Shipping_Address(request):
     db = request.user.company_id.db_name
 
     # db = AfrikBookDB(request)
-    customer = User.objects.using("afrikbook_client").all()
-    #Endpoint api 
+    customer = User.objects.using("afrikbook_client").filter(company_id=request.user.company_id)
+    
     try:
-        response = requests.get('https://console.afrikbook.com/address', timeout=10)
+        response = requests.get('https://console.afrikbook.com/address', params={'company_id': request.user.company_id.id}, timeout=10)
         if response.status_code == 200:
             data = response.json()
             shipping_address = data['ship']
