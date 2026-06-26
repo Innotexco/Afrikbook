@@ -33,38 +33,54 @@ def get_shipping_address(request, customer_id):
   
     return JsonResponse({'data': list(data)}, safe=False)
 
+
 @csrf_exempt
 def create_new_customer(request):
     if request.method == "POST":
-         data = json.loads(request.body.decode('utf-8'))
-        
+        try:
+            data = json.loads(request.body.decode('utf-8'))
 
-         username = data['username']
-         email = data['email']
-         company_id = data['company_id']
-         company_name  = data['company_name']                  
-         company_db  = data['company_db']
-         company_db_pass  = "",
-         company_db_user =  "root",
-         phone = data['phone']
-        
+            username        = data.get('username')
+            email           = data.get('email')
+            password        = data.get('password')
+            company_id      = data.get('company_id')
+            company_name    = data.get('company_name')
+            company_db      = data.get('company_db')
+            company_db_pass = data.get('company_db_pass', '')
+            company_db_user = data.get('company_db_user', 'root')
+            phone           = data.get('phone')
+            
+            company_table.objects.using("afrikbook_client").get_or_create(
+                id=company_id,
+                defaults={
+                    'company_name':    company_name,
+                    'db_name':         company_db,
+                    'phone':           phone,
+                }
+            )
 
-         user = User.objects.using("afrikbook_client").create(username=username, email=email)
-         company = client_companies.objects.using("afrikbook_client").create(
-                company_id   = company_id,
-                company_name   = company_name,                  
-                company_db  = company_db,
-                company_db_pass  = company_db_pass,
-                company_db_user  = company_db_user,
-                client_id  = user,
-                phone  = phone,
-                email  = email,
-         )
-       
-         if user and company:
+            user = User(username=username, email=email)
+            user.set_password(password)
+            user.company_id_id = company_id
+            user.save(using="afrikbook_client")
+
+            company = client_companies.objects.using("afrikbook_client").create(
+                company_id      = company_id,
+                company_name    = company_name,
+                company_db      = company_db,
+                company_db_pass = company_db_pass,
+                company_db_user = company_db_user,
+                client_id       = user,
+                phone           = phone,
+                email           = email,
+            )
+
             return JsonResponse({'user': username})
-         else:
-             return JsonResponse({'user': False})
+
+        except Exception as e:
+            return JsonResponse({'user': False, 'error': str(e)})
+
+    return JsonResponse({'user': False, 'error': 'Invalid request method'})
 
 
 @csrf_exempt
