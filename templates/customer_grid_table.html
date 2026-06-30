@@ -549,7 +549,7 @@ $(document).on("input", "#total-discount", function (e) {
 
 $(document).on('click', '.remove_row', function(e) {
     e.preventDefault();
-    const $row = $(this).closest('tr');               // get the row directly
+    const $row = $(this).closest('tr');
     const amount = $row.find('input[name="amount[]"]').val();
 
     const subTotal = document.getElementById("sub-total");
@@ -560,8 +560,16 @@ $(document).on('click', '.remove_row', function(e) {
         total.value = parseFloat(total.value) - parseFloat(amount);
     }
 
-    $row.remove();   // removes the whole row cleanly
+    $row.remove();
+    renumberRows();   // re-sequence SN after removal
 });
+
+function renumberRows() {
+    $('#dynamic_row_add tr').each(function(index) {
+        // First cell in each row is the SN column
+        $(this).find('td').first().text(index + 1);
+    });
+}
 
 //<!---  DISCOUNT CHECK ---->
 const checkbox = document.getElementById("discountcheck")
