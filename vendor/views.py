@@ -1020,9 +1020,17 @@ def delete_PurchaseQuote(request, id):
 @urls_name(name = "Purchase Quotes")
 def ViewPurchaseQuote(request):
     db = request.user.company_id.db_name
-    purchase_quote = Vendor_Quote.objects.using(db).all()
-   
-    return render(request, 'vendor/ViewPurchaseQuote.html', {'purchase_quote': purchase_quote})
+
+    # Deduplicate by quote_ID — one row per quote (like sales quotes by referenceID)
+    raw = Vendor_Quote.objects.using(db).all().order_by('quote_ID', 'id')
+    seen = set()
+    unique_quotes = []
+    for q in raw:
+        if q.quote_ID not in seen:
+            seen.add(q.quote_ID)
+            unique_quotes.append(q)
+
+    return render(request, 'vendor/ViewPurchaseQuote.html', {'quotes': unique_quotes})
 
 
 
