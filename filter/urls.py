@@ -45,7 +45,8 @@ urlpatterns = [
     path('aged-payables-date/', vendor_views.aged_payables_filter_by_date, name='aged-payables-date'), #ajax
     path('aged-payables/<str:value>/', vendor_views.aged_payables_filter, name='aged-payables'), #ajax
    
-    path('purchase-report-date/', vendor_views.purchase_report_filter_by_date, name='purchase-report-date'), 
+    path('purchase-report-date/', vendor_views.purchase_report_filter_by_date, name='purchase-report-date'),
+    path('purchase-quote-date/', vendor_views.purchase_quote_filter_by_date, name='purchase-quote-date'), #ajax 
     # path('purchase-report/<str:value>/', vendor_views.purchase_report_filter, name='purchase-report'), #ajax
     #ajpurchaseath('sales-order-date/', views.sales_order_filter_by_date, name='sales-order-date'), #ajax
 

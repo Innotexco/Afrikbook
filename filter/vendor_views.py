@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from customer.models import  sales_order, sales_quote, payable
-from vendor.models import Vendor_invoice
+from vendor.models import Vendor_invoice, Vendor_Quote
 from django.db.models import Sum, F, Q
 import decimal
 from Stock.models import Item
@@ -416,11 +416,17 @@ def purchase_quote_filter_by_date(request):
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
 
+    raw = Vendor_Quote.objects.using(db).filter(
+        quote_date__range=convertDate(start_date_str, end_date_str)
+    ).order_by('quote_ID', 'id').values()
 
-    # Perform filtering based on the date range
-    filtered_data = sales_quote.objects.using(db).filter(quote_date__range=convertDate(start_date_str, end_date_str)).values()
-    
-    serializer_data = list(filtered_data)
+    seen = set()
+    serializer_data = []
+    for row in raw:
+        quote_id = row.get('quote_ID')
+        if quote_id not in seen:
+            seen.add(quote_id)
+            serializer_data.append(row)
 
     return JsonResponse(serializer_data, safe=False)
 
