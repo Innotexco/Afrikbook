@@ -549,6 +549,14 @@ $(document).on("input", "#total-discount", function (e) {
 
 $(document).on('click', '.remove_row', function(e) {
     e.preventDefault();
+    
+    // Prevent deleting the last remaining row
+    if ($('#dynamic_row_add tr').length <= 1) {
+        alertify.defaults.glossary.title = "Alert";
+        alertify.alert("You cannot delete the last row.");
+        return;
+    }
+
     const $row = $(this).closest('tr');
     const amount = $row.find('input[name="amount[]"]').val();
 
@@ -561,7 +569,7 @@ $(document).on('click', '.remove_row', function(e) {
     }
 
     $row.remove();
-    renumberRows();   // re-sequence SN after removal
+    renumberRows();
 });
 
 function renumberRows() {
