@@ -99,106 +99,100 @@
         });
     }
 
-    // Modified item selection handler
-    $(document).on('change', '#select-item', function(event) {
-        const itemId = $(this).val();
-        const desc = $(this).closest('tr').find('input[name="desc[]"]');
-        const name = $(this).closest('tr').find('input[name=item_name]');
-        const purchaseP = $(this).closest('tr').find('input[name=purchaseP]');
-        const qty = $(this).closest('tr').find('input[name="qty[]"]');
-        const unit = $(this).closest('tr').find('input[name="unit[]"]');
-        const amount = $(this).closest('tr').find('input[name="amount[]"]');
-        const id_vendor = $('#id_vendor').val();
-        
-        // Check if customer is selected
-        /*if (!currentCustomerCategory && itemId !== '0') {
-            alertify.defaults.glossary.title = "Alert";
-            alertify.alert("Please select a customer first before adding items.");
-            event.target.value = "0";
-            return;
-        }*/
-        
-        if (!currentCustomerCategory && itemId !== '0' && !id_vendor) {
-            alertify.defaults.glossary.title = "Alert";
-            alertify.alert("Please select a customer first before adding items.");
-            event.target.value = "0";
-            return;
-        }
 
-        // Find all select elements with the class 'item-select'
-        const selectElements = document.querySelectorAll('.item-select');
-        let isValueExists = false;
-        
-        // Loop through the select elements
-        for (let i = 0; i < selectElements.length; i++) {
-            const select = selectElements[i];
-            if (select !== event.target) {
-                // Check if the selected value matches the value of other selects
-                if (select.value === itemId) {
-                    isValueExists = true;
-                    alertify.defaults.glossary.title = "Oops";
-                    alertify.confirm("Selected item already exists, add quantity instead.");
-                    event.target.value = "0";
-                    break;
-                }
+ // Modified item selection handler
+$(document).on('change', '#select-item', function(event) {
+    const itemId = $(this).val();
+    const $currentRow = $(this).closest('tr');
+    const desc = $currentRow.find('input[name="desc[]"]');
+    const name = $currentRow.find('input[name=item_name]');
+    const purchaseP = $currentRow.find('input[name=purchaseP]');
+    const qty = $currentRow.find('input[name="qty[]"]');
+    const unit = $currentRow.find('input[name="unit[]"]');
+    const amount = $currentRow.find('input[name="amount[]"]');
+    const id_vendor = $('#id_vendor').val();
+
+    if (!currentCustomerCategory && itemId !== '0' && !id_vendor) {
+        alertify.defaults.glossary.title = "Alert";
+        alertify.alert("Please select a customer first before adding items.");
+        event.target.value = "0";
+        return;
+    }
+
+    const selectElements = document.querySelectorAll('.item-select');
+    let isValueExists = false;
+
+    for (let i = 0; i < selectElements.length; i++) {
+        const select = selectElements[i];
+        if (select !== event.target) {
+            if (select.value === itemId) {
+                isValueExists = true;
+                alertify.defaults.glossary.title = "Oops";
+                alertify.confirm("Selected item already exists, add quantity instead.");
+                event.target.value = "0";
+                break;
             }
         }
-        
-        if (isValueExists) {
-            // Value already exists
-        } else {
-            // Value is unique in the table
-            if (itemId != 0) {
-                $.ajax({
-                    url: '/get_items/' + itemId + '/',
-                    method: 'GET',
-                    data: {
-                        type: $("#type").val(),
-                        customer_category: currentCustomerCategory
-                    },
-                    success: function(data) {
-                        // Determine price based on customer category
-                        let price = data.unit; // default
-                        
-                        if (currentCustomerCategory === 'Whole Sale') {
-                            price = data.wholesale_price || data.unit;
-                        } else if (currentCustomerCategory === 'Retail') {
-                            price = data.retailer_price || data.unit;
-                        } else if (currentCustomerCategory === 'End User') {
-                            price = data.selling_price || data.unit;
-                        }
-                        
-                        desc.val(data.desc);
-                        name.val(data.name);
-                        purchaseP.val(data.purchase);
-                        qty.val(1);
-                        unit.val(price);
-                        amount.val(price);
-                        
-                        sun_T();
-                        addRow();
-                        if_shipping_method(itemId, qty.val());
-                    },
-                    error: function(error) {
-                        alertify.error(error.responseJSON.error);
-                        desc.val("");
-                        name.val("");
-                        qty.val("");
-                        unit.val("");
-                        amount.val("");
-                        sun_T();
+    }
+
+    if (!isValueExists) {
+        if (itemId != 0) {
+            $.ajax({
+                url: '/get_items/' + itemId + '/',
+                method: 'GET',
+                data: {
+                    type: $("#type").val(),
+                    customer_category: currentCustomerCategory
+                },
+                success: function(data) {
+                    let price = data.unit;
+
+                    if (currentCustomerCategory === 'Whole Sale') {
+                        price = data.wholesale_price || data.unit;
+                    } else if (currentCustomerCategory === 'Retail') {
+                        price = data.retailer_price || data.unit;
+                    } else if (currentCustomerCategory === 'End User') {
+                        price = data.selling_price || data.unit;
                     }
-                });
-            } else {
-                desc.val("");
-                name.val("");
-                qty.val("");
-                unit.val("");
-                amount.val("");
-                sun_T();
-            }
+
+                    desc.val(data.desc);
+                    name.val(data.name);
+                    purchaseP.val(data.purchase);
+                    qty.val(1);
+                    unit.val(price);
+                    amount.val(price);
+
+                    sun_T();
+
+                    // ── Only add a new row if this is the LAST row ──────────
+                    const allRows = $('#dynamic_row_add tr');
+                    const isLastRow = $currentRow.is(allRows.last());
+                    if (isLastRow) {
+                        addRow();
+                    }
+
+                    if_shipping_method(itemId, qty.val());
+                },
+                error: function(error) {
+                    alertify.error(error.responseJSON.error);
+                    desc.val("");
+                    name.val("");
+                    qty.val("");
+                    unit.val("");
+                    amount.val("");
+                    sun_T();
+                }
+            });
+        } else {
+            desc.val("");
+            name.val("");
+            qty.val("");
+            unit.val("");
+            amount.val("");
+            sun_T();
         }
-    });
+    }
+});
 
     // Handle quantity and discount changes to recalculate amounts
     /*$(document).on('input', 'input[name="qty[]"], input[name="discount[]"]', function() {
@@ -547,19 +541,20 @@ $(document).on("input", "#total-discount", function (e) {
 }); {% endcomment %}
 
 
+// ── Remove row — protect the FIRST (default) row ────────────────────────────
 $(document).on('click', '.remove_row', function(e) {
     e.preventDefault();
-    
-    // Prevent deleting the last remaining row
-    if ($('#dynamic_row_add tr').length <= 1) {
+
+    const $row = $(this).closest('tr');
+    const isFirstRow = $row.is('#dynamic_row_add tr:last');
+
+    if (isFirstRow) {
         alertify.defaults.glossary.title = "Alert";
-        alertify.alert("You cannot delete the last row.");
+        alertify.alert("You cannot delete the default row.");
         return;
     }
 
-    const $row = $(this).closest('tr');
     const amount = $row.find('input[name="amount[]"]').val();
-
     const subTotal = document.getElementById("sub-total");
     const total = document.getElementById("total");
 
