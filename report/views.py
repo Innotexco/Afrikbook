@@ -1265,7 +1265,7 @@ def ViewVendorLedger(request, code, invoice):
     company = company_table.objects.get(id=request.user.company_id_id)
     db = AfrikBookDB(request)
     if code:
-        lookups = Q(cusID__iexact=code) | Q(invoiceID__iexact=invoice)
+        lookups = Q(cusID__iexact=str(code)) | Q(invoiceID__iexact=str(invoice))
 
         invoice1 = Vendor_invoice.objects.using(db).filter(lookups).first()
         invoices = Vendor_invoice.objects.using(db).filter(lookups)
