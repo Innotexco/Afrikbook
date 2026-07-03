@@ -9,7 +9,7 @@ class VendorInovoiceForm(forms.ModelForm):
     class Meta:
         model = Vendor_invoice
         fields = ('__all__')
-        exclude = ['item_descriptions',]
+        # exclude = ['item_descriptions',]
 
 
 class VendorQuoteForm(forms.ModelForm):
