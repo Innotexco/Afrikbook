@@ -325,9 +325,9 @@ from datetime import datetime
 def getdate(request):
     from_date = None
     to_date = None
-    toDate = request.GET.get('start_date')
-    fromDate = request.GET.get('end_date')
-    if toDate and fromDate is not None:
+    fromDate = request.GET.get('start_date')
+    toDate = request.GET.get('end_date')
+    if fromDate and toDate is not None:
         from_date = datetime.strptime(fromDate, '%Y-%m-%d').date()
         to_date = datetime.strptime(toDate, '%Y-%m-%d').date()
     return from_date, to_date
@@ -335,16 +335,11 @@ def getdate(request):
 def vendors_ledger_filter_by_date(request):
     db = request.user.company_id.db_name
 
+    # start_date_str = request.GET.get('start_date')
+    # end_date_str = request.GET.get('end_date')
     start_date_str, end_date_str = getdate(request)
-    
-    print("DEBUG start:", start_date_str, type(start_date_str))
-    print("DEBUG end:", end_date_str, type(end_date_str))
-
-    filtered_data = Vendor_invoice.objects.using(db).filter(
-        invoice_date__range=(start_date_str, end_date_str)
-    ).values()
-    
-    print("DEBUG count:", filtered_data.count())
+    # Perform filtering based on the date range
+    filtered_data = Vendor_invoice.objects.using(db).filter(invoice_date__range=(start_date_str, end_date_str)).values()
 
     data = []
 
