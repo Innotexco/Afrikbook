@@ -216,84 +216,66 @@
         {% include 'modalBoxx/printbtn.html' with container="vl" table="example" table_no="" %}
     </div>
     <script>
-        $(document).on('change', function(){
-            const from = $('#from').val()
-            const to = $('#to').val()
-            setTimeout(function() {
-                if(from != '' && to != ''){
-                    Filter()
-                }
-            }, 500)
-          }
-        )
         function Filter(){
-            //e.preventDefault()
-            const from = $('#from').val()
-            const to = $('#to').val()
-            //console.log(from)
-            //console.log(to)
-            if(from && to){
-            $.ajax({
-                url: '{% url "filter:vendors-ledger" %}',
-                method: 'GET',
-                data: {
-                    'start_date': from,
-                    'end_date': to,
-                    // Other parameters if needed
-                },
-                success: function(data) {
-                    console.log(data)
-                    if(data.serializer_data && data.serializer_data.length > 0){
-                        // Handle the response data
-                        const table = $('#example tbody')
-                        table.empty()
-                        let num = 0;
-                        data.serializer_data.forEach(item => {
-                            num++ 
-                            const uniqueInvoiceIDs = []; // To store unique invoice IDs
-                            //console.log(item.invoiceID)
-                            if (!uniqueInvoiceIDs.includes(item.invoiceID)) {
-                                uniqueInvoiceIDs.push(item.invoiceID);
-    
-                                const row = $('<tr id="row">').append(
-                                    $('<td class="text-[10px]">').html(num),
-                                    $('<td class="text-[10px]">').text(item.cusID),
-                                    $('<td class="text-[10px]">').text(item.vendor_name),
-                                    $('<td class="text-[10px]">').text(item.amount_paid),
-                                    $('<td class="text-[10px]">').text(item.amount_expected - item.amount_paid ),
-                                    //$('<td class="text-[10px]">').text(item.Gdescription)
-                                    $('<td class="text-[10px] bg-gray-50 w-3 text-center">').append('<a href="/view-vendor-ledger/'+item.cusID+'/'+item.invoiceID+'" class="text-blue-500 border px-4"  aria-label="Edit">View</a>'),
-                                   
-                                   
-                                );
-                               // table.animate({left:"100px"}, "slow");
-                                table.append(row);
-                            };
-                            $("#no-data").css('display', 'none');
-                        });
-                        $("#total-amount").val(NCFormat(data.amount_total));
-                        $("#amount-paid").val(NCFormat(data.amount_paid_total));
-                        $("#balance").val(NCFormat(data.balance));
-                    }else{
-                        $('#example tbody').empty();
-                        $("#no-data").css('display', 'block');
-                        $("#total-amount").val("0.00");
-                        $("#amount-paid").val("0.00");
-                        $("#balance").val("0.00");
-                        alertify.error("No Return data between selected date")
-                        //alertify.error("Select start_date and end_date")
-                    }
-                },
-                error: function(error) {
-                    // Handle the error
-                    console.log('error')
-                }
-            });
-            }else{
-                alertify.error("Select start_date and end_date")
-            }
+            const from = $('#from').val();
+            const to   = $('#to').val();
 
-            
+            if(from && to){
+                $.ajax({
+                    url: '{% url "filter:vendors-ledger" %}',
+                    method: 'GET',
+                    data: {
+                        'start_date': from,
+                        'end_date':   to,
+                    },
+                    success: function(data) {
+                        if(data.serializer_data && data.serializer_data.length > 0){
+                            const table = $('#example tbody');
+                            table.empty();
+                            $("#no-data").css('display', 'none');  // ← before loop
+
+                            let num = 0;
+                            const seenInvoices = [];
+
+                            data.serializer_data.forEach(function(item) {
+                                if(!seenInvoices.includes(item.invoiceID)){
+                                    seenInvoices.push(item.invoiceID);
+                                    num++;
+                                    const row = $('<tr>').append(
+                                        $('<td class="text-[10px]">').html(num),
+                                        $('<td class="text-[10px]">').text(item.cusID),
+                                        $('<td class="text-[10px]">').text(item.vendor_name),
+                                        $('<td class="text-[10px]">').text(item.amount_paid),
+                                        $('<td class="text-[10px]">').text(item.amount_expected - item.amount_paid),
+                                        $('<td class="text-[10px] bg-gray-50 text-center">').append(
+                                            '<a href="/view-vendor-ledger/' + item.cusID + '/' + item.invoiceID + '" class="text-blue-500 border px-4" aria-label="View">View</a>'
+                                        )
+                                    );
+                                    table.append(row);
+                                }
+                            });
+
+                            // ← html() not val() for span elements
+                            $("#total-amount").html(NCFormat(data.amount_total));
+                            $("#amount-paid").html(NCFormat(data.amount_paid_total));
+                            $("#balance").html(NCFormat(data.balance));
+
+                        } else {
+                            $('#example tbody').empty();
+                            $("#no-data").css('display', 'block');
+                            $("#total-amount").html("0.00");
+                            $("#amount-paid").html("0.00");
+                            $("#balance").html("0.00");
+                            alertify.error("No data between selected date");
+                        }
+                    },
+                    error: function(error) {
+                        console.log('error', error);
+                    }
+                });
+            } else {
+                alertify.error("Select start and end date");
+            }
         }
     </script>
 
