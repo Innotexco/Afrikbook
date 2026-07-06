@@ -122,7 +122,7 @@
                 <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="id_customer" required name="cusID">
                     <option selected disabled>Select Customer</option>
                     {% for customer in customers%}
-                       <option value="{{customer.customer_code}}">{{customer.customer_name}}</option>   
+                       <option value="{{customer.customer_code}}">{{customer.name}}</option>   
                     {% endfor %}
                 </select>
                 <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none  focus:shadow-outline-green text-slate-600" id="id_vendor" required name="venID">
