@@ -363,50 +363,46 @@ def getStockAdjustmentData(request, db):
 
 
 def getStockAdjustmentDate2(request, context, db, con):
-   if request.method == 'GET':
-        getfromdate = request.GET.get('fromdate')
-        gettodate = request.GET.get('todate')
-        invoice = request.GET.get('invoice')
-        sortbyItem = request.GET.get('sortbyItem')
-        failed = {'failed': "No Data Found"}
-        if getfromdate and gettodate:
-            from_date, to_date =getdate(getfromdate, gettodate)
-            try:
-                getstockin_log = Vendor_invoice.objects.using(db).filter(Q(invoice_date__range=(from_date, to_date)) & con)
-            except Vendor_invoice.DoesNotExist:
-                return failed
-            
-        if sortbyItem is not None:
-            try:
-                getstockin_log = Vendor_invoice.objects.using(db).filter(Q(itemcode=sortbyItem) & con)
-            except Vendor_invoice.DoesNotExist:
-                return failed
-          
-        if invoice is not None and invoice != '_ _Choose Item_ _':
-            try:
-                getstockin_log = Vendor_invoice.objects.using(db).filter(Q(invoiceID=invoice) & con)
-            except Vendor_invoice.DoesNotExist:
-                return failed
-          
-        if sortbyItem or invoice or getfromdate and gettodate is not None:
-        
-            if getstockin_log:
-                # Vendor_invoice
-                result_stockinlog = [({
-                    'id': stockinlog.id if stockinlog and stockinlog.id is not None else None,
-                    'datetx': stockinlog.invoice_date if stockinlog and stockinlog.invoice_date is not None else None,
-                    'invoice_no': stockinlog.invoiceID if stockinlog and stockinlog.invoiceID is not None else None,
-                    'item': stockinlog.item_name if stockinlog and stockinlog.item_name is not None else None,
-                    'quantity': stockinlog.qty if stockinlog and stockinlog.qty is not None else None,
-                    'item_decription': stockinlog.item_descriptions if stockinlog and stockinlog.item_descriptions is not None else None,
-                    'token_id': stockinlog.token_id if stockinlog and stockinlog.token_id is not None else None,
-                    })
-                    for stockinlog in getstockin_log
-                ]
-                return result_stockinlog
-            else:
-                return failed
+    if request.method != 'GET':
+        return None
 
+    getfromdate = request.GET.get('fromdate', '').strip()
+    gettodate   = request.GET.get('todate', '').strip()
+    invoice     = request.GET.get('invoice', '').strip()
+    sortbyItem  = request.GET.get('sortbyItem', '').strip()
+
+    if not getfromdate and not sortbyItem and not invoice:
+        return None
+
+    qs = Vendor_invoice.objects.using(db).filter(con)
+
+    if getfromdate and gettodate:
+        from_date, to_date = getdate(getfromdate, gettodate)
+        if from_date > to_date:
+            from_date, to_date = to_date, from_date
+        qs = qs.filter(invoice_date__range=(from_date, to_date))
+
+    if sortbyItem and sortbyItem not in ('', '_ _Choose Item_ _'):
+        qs = qs.filter(itemcode=sortbyItem)
+
+    if invoice and invoice not in ('', '_ _Choose Item_ _'):
+        qs = qs.filter(invoiceID=invoice)
+
+    if not qs.exists():
+        return {'failed': 'No Data Found'}
+
+    return [
+        {
+            'id':              row.id,
+            'datetx':          str(row.invoice_date) if row.invoice_date else '',
+            'invoice_no':      row.invoiceID         or '',
+            'item':            row.item_name         or '',
+            'quantity':        row.qty               or 0,
+            'item_decription': row.item_descriptions or '',
+            'token_id':        row.token_id          or '',
+        }
+        for row in qs.order_by('-invoice_date')
+    ]
 
 def stock_adjustment_arithmetic_logic(stockinQty, form_qty, getqty):
     if float(form_qty) > float(getqty.qty):
@@ -643,40 +639,64 @@ def updateStockAdjustmentData(request, context, db):
 
 
 # ********************************************************************************************************
+from django.core.paginator import Paginator
+
+ITEMS_PER_PAGE = 20
+
 
 @login_required(login_url="/")
 @urls_name(name = "Purchase Adjustment")
 def PurchaseAdjustment(request):
     db = request.user.company_id.db_name
-    # allinvoice = customer_invoice.objects.filter(invoiceID='11971')
-    vendorInvoice = Vendor_invoice.objects.using(db).filter(~Q(cancellation=1))
-    # outlet_stockin_log = CreateStockInLog.objects.using(db).all()
-    # outlet_stockin_log = CreateOutletStockInLog.objects.using(db).all()
     warehouse = Warehouse.objects.using(db).all()
-    outlet = sales_outlet.objects.using(db).all()
-    getitem = Item.objects.using(db).all();
-    context = {
-      'allinvoice': vendorInvoice,
-      'items': getitem,
-      'warehouse': warehouse,
-      'outlet': outlet,
-    }
- 
-   # function to fetch data for update(when edit btn is clicked)
+    outlet    = sales_outlet.objects.using(db).all()
+    getitem   = Item.objects.using(db).all()
+
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    # Modal fetch (edit button)
     data = getStockAdjustmentData(request, db)
     if data:
-        # do not assign a key to data
         return JsonResponse(data)
-    # update function
+
+    # POST (update/cancel)
+    vendorInvoice = Vendor_invoice.objects.using(db).filter(~Q(cancellation=1))
+    context = {
+        'allinvoice': vendorInvoice,
+        'items':      getitem,
+        'warehouse':  warehouse,
+        'outlet':     outlet,
+    }
     updateStockAdjustmentData(request, context, db)
 
-   # get function
-    stockinlog=getStockAdjustmentDate2(request, context, db, ~Q(cancellation=1))
-    if stockinlog:
-        return JsonResponse({'stockin':stockinlog})
+    # AJAX search/filter
+    if is_ajax:
+        page_number = request.GET.get('page', 1)
+        stockinlog  = getStockAdjustmentDate2(request, context, db, ~Q(cancellation=1))
+        if stockinlog:
+            if isinstance(stockinlog, dict) and stockinlog.get('failed'):
+                return JsonResponse({'failed': stockinlog['failed']})
+            paginator   = Paginator(stockinlog, ITEMS_PER_PAGE)
+            page_obj    = paginator.get_page(page_number)
+            return JsonResponse({
+                'stockin':      list(page_obj),
+                'total_pages':  paginator.num_pages,
+                'current_page': page_obj.number,
+                'has_next':     page_obj.has_next(),
+                'has_prev':     page_obj.has_previous(),
+                'total_count':  paginator.count,
+            })
+        return JsonResponse({'failed': 'No data found'})
 
-
+    # Default page load — paginate queryset
+    page_number   = request.GET.get('page', 1)
+    paginator     = Paginator(vendorInvoice.order_by('-invoice_date'), ITEMS_PER_PAGE)
+    page_obj      = paginator.get_page(page_number)
+    context['allinvoice']    = page_obj
+    context['paginator']     = paginator
+    context['page_obj']      = page_obj
     return render(request, 'vendor/PurchaseAdjustment.html', context)
+
 
 # ********************************************************************************************************
 

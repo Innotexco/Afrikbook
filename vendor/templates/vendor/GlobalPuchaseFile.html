@@ -144,6 +144,41 @@
                 </tbody>
                 <tbody class="bg-white divide-y result"></tbody>
             </table>
+
+            {# ── Default page load pagination ── #}
+            {% if page_obj.paginator.num_pages > 1 %}
+            <div class="flex items-center justify-between px-4 py-3 bg-white border-t" id="default-pagination">
+                <span class="text-xs text-gray-500">
+                    Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} records
+                </span>
+                <div class="flex gap-1">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}"
+                    class="px-3 py-1 text-xs bg-slate-200 rounded hover:bg-slate-300">Prev</a>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="px-3 py-1 text-xs bg-slate-600 text-white rounded">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?page={{ num }}"
+                            class="px-3 py-1 text-xs bg-slate-200 rounded hover:bg-slate-300">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}"
+                    class="px-3 py-1 text-xs bg-slate-200 rounded hover:bg-slate-300">Next</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {# ── AJAX results pagination ── #}
+            <div id="ajax-pagination" class="hidden flex items-center justify-between px-4 py-3 bg-white border-t">
+                <span class="text-xs text-gray-500" id="ajax-count-label"></span>
+                <div class="flex gap-1" id="ajax-page-buttons"></div>
+            </div>
         </div>
     </div>
 
