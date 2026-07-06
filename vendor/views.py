@@ -36,7 +36,15 @@ logger = logging.getLogger(__name__)
 
 
 
-
+def generate_next_invoice_id(db):
+    invoices = Vendor_invoice.objects.using(db).all()
+    if not invoices.exists():
+        return 1000001
+    latest = max(
+        invoices.values_list('invoiceID', flat=True),
+        key=lambda x: int(x) if str(x).isdigit() else 0
+    )
+    return int(latest) + 1
 
 
 @login_required(login_url="/")
@@ -51,18 +59,10 @@ def NewPurchase(request):
     item      = Item.objects.using(db).all()
     invoices  = Vendor_invoice.objects.using(db).all()
 
-    if invoices.exists():
-        # Get the numerically highest invoiceID, not the latest by date
-        latest_invoice = max(
-            invoices.values_list('invoiceID', flat=True),
-            key=lambda x: int(x) if str(x).isdigit() else 0
-        )
-        invoiceID = int(latest_invoice) + 1
-    else:
-        invoiceID = 1000001
-
     if request.method == "POST":
         add_purchase_invoice(request, db)
+        
+    invoiceID = generate_next_invoice_id(db)
 
     context = {
         'account':   account,
