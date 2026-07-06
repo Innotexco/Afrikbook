@@ -147,4 +147,154 @@
         }) 
     }) 
    
+
+
+
+    var currentFilters = {};
+        var currentPage    = 1;
+
+        function setSearchLoading(isLoading) {
+            var btn     = $('#getDate');
+            var spinner = $('#searchSpinner');
+            var label   = $('#searchBtnText');
+            if (isLoading) {
+                btn.prop('disabled', true).addClass('opacity-60 cursor-not-allowed');
+                spinner.removeClass('hidden');
+                label.text('Searching...');
+            } else {
+                btn.prop('disabled', false).removeClass('opacity-60 cursor-not-allowed');
+                spinner.addClass('hidden');
+                label.text('Search');
+            }
+        }
+
+        function fetchPage(page) {
+            currentPage = page;
+            var params  = $.extend({}, currentFilters, { page: page });
+
+            $.ajax({
+                type:    'GET',
+                url:     window.location.pathname,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                data:    params,
+                beforeSend: function() { setSearchLoading(true); },
+                success: function(res) {
+                    setSearchLoading(false);
+
+                    if (res.failed) {
+                        $('#adjuststore .result').html(
+                            '<tr><td colspan="8" class="text-center py-4 text-sm text-gray-400">' + res.failed + '</td></tr>'
+                        );
+                        $('#ajax-pagination').addClass('hidden');
+                        $('#default-pagination').removeClass('hidden');
+                        return;
+                    }
+
+                    // Hide default pagination, show AJAX pagination
+                    $('#default-pagination').addClass('hidden');
+                    $('#ajax-pagination').removeClass('hidden');
+
+                    // Populate table
+                    $('#adjuststore .default').addClass('hidden');
+                    $('#adjuststore .result').empty();
+
+                    if (!res.stockin || res.stockin.length === 0) {
+                        $('#adjuststore .result').html(
+                            '<tr><td colspan="8" class="text-center py-4 text-sm text-gray-400">No records found.</td></tr>'
+                        );
+                        $('#ajax-pagination').addClass('hidden');
+                        return;
+                    }
+
+                    var startIndex = (res.current_page - 1) * 20;
+                    res.stockin.forEach(function(item, index) {
+                        var sn  = startIndex + index + 1;
+                        var row = $('<tr class="text-gray-700">');
+                        row.append('<td class="text-[10px]">' + sn + '</td>');
+                        row.append('<td class="text-[10px]">' + (item.datetx || '') + '</td>');
+                        row.append(
+                            '<td class="text-[10px]">' + (item.invoice_no || '') +
+                            '<input type="hidden" value="' + (item.invoice_no || '') + '" name="invoiceID" id="invoiceID' + item.id + '">' +
+                            '<input type="hidden" value="' + item.id + '" name="id" id="idcode' + item.id + '"></td>'
+                        );
+                        row.append('<td class="text-[10px]">' + (item.item || '') + '</td>');
+                        row.append('<td class="text-[10px]">' + (item.quantity || '') + '</td>');
+                        row.append('<td class="text-[10px]">' + (item.item_decription || '') + '</td>');
+                        row.append('<td class="text-[10px]">' + (item.token_id || '') + '</td>');
+
+                        var editBtn = '<button onclick="my_modal_edit_stock_details.showModal(), onclickme(' + item.id + ')" ' +
+                            'class="flex items-center justify-center text-blue-500"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">' +
+                            '<path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>' +
+                            '</svg></button>';
+                        row.append('<td class="text-[10px]">' + editBtn + '</td>');
+
+                        $('#adjuststore .result').append(row);
+                    });
+
+                    // Build pagination buttons
+                    $('#ajax-count-label').text(
+                        'Showing page ' + res.current_page + ' of ' + res.total_pages +
+                        ' (' + res.total_count + ' records)'
+                    );
+                    var $buttons = $('#ajax-page-buttons').empty();
+
+                    if (res.has_prev) {
+                        $buttons.append(
+                            $('<button class="px-3 py-1 text-xs bg-slate-200 rounded hover:bg-slate-300">')
+                                .text('Prev')
+                                .on('click', function() { fetchPage(res.current_page - 1); })
+                        );
+                    }
+
+                    // Show up to 5 page numbers around current
+                    var start = Math.max(1, res.current_page - 2);
+                    var end   = Math.min(res.total_pages, res.current_page + 2);
+                    for (var p = start; p <= end; p++) {
+                        var $btn = $('<button class="px-3 py-1 text-xs rounded">')
+                            .text(p)
+                            .data('page', p);
+                        if (p === res.current_page) {
+                            $btn.addClass('bg-slate-600 text-white');
+                        } else {
+                            $btn.addClass('bg-slate-200 hover:bg-slate-300');
+                            $btn.on('click', function() { fetchPage($(this).data('page')); });
+                        }
+                        $buttons.append($btn);
+                    }
+
+                    if (res.has_next) {
+                        $buttons.append(
+                            $('<button class="px-3 py-1 text-xs bg-slate-200 rounded hover:bg-slate-300">')
+                                .text('Next')
+                                .on('click', function() { fetchPage(res.current_page + 1); })
+                        );
+                    }
+                },
+                error: function() {
+                    setSearchLoading(false);
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        }
+
+    // Date search
+    $(document).on('click', '#getDate', function() {
+        var fromdate = $('#fromdate').val();
+        var todate   = $('#todate').val();
+        if (!fromdate || !todate) {
+            alert('Please select both dates.');
+            return;
+        }
+        currentFilters = { fromdate: fromdate, todate: todate };
+        fetchPage(1);
+    });
+
+    // Dropdown filters
+    $(document).on('change', '.commonClass', function() {
+        currentFilters = {
+            sortbyItem: $('#sortbyItem').val(),
+            invoice:    $('#invoice').val(),
+        };
+        fetchPage(1);
+    });
 </script>
