@@ -43,36 +43,35 @@ logger = logging.getLogger(__name__)
 @urls_name(name="Purchase Invoices")
 def NewPurchase(request):
     db = request.user.company_id.db_name
-    account = chart_of_account.objects.using(db).filter(account_id__startswith='2')
-    supplier = vendor_table.objects.using(db).all()
+    account   = chart_of_account.objects.using(db).filter(account_id__startswith='2')
+    supplier  = vendor_table.objects.using(db).all()
     warehouse = Warehouse.objects.using(db).all()
-    payment = Payment_method.objects.using(db).all()
-    outlet = sales_outlet.objects.using(db).all()
-    item = Item.objects.using(db).all()
-    invoices = Vendor_invoice.objects.using(db).all()
+    payment   = Payment_method.objects.using(db).all()
+    outlet    = sales_outlet.objects.using(db).all()
+    item      = Item.objects.using(db).all()
+    invoices  = Vendor_invoice.objects.using(db).all()
 
-
-    old_invoiceID =  invoices.latest('invoice_date').invoiceID if invoices.exists() else '1000000'
-    invoiceID = int(old_invoiceID) + 1
+    if invoices.exists():
+        # Get the numerically highest invoiceID, not the latest by date
+        latest_invoice = max(
+            invoices.values_list('invoiceID', flat=True),
+            key=lambda x: int(x) if str(x).isdigit() else 0
+        )
+        invoiceID = int(latest_invoice) + 1
+    else:
+        invoiceID = 1000001
 
     if request.method == "POST":
-           
-        # outlet = User.objects.get(id = request.user.id).outlet
-        # if outlet:
-           add_purchase_invoice(request, db)
-        # else:
-        #     messages.error(request, "Assign outlet to logged in user")
-     
-   
-    context = {
-        'account': account,
-        'supplier': supplier,
-        'warehouse': warehouse,
-        'payment': payment,
-        'outlet': outlet,
-        'item': item,
-       'invoiceID': invoiceID,
+        add_purchase_invoice(request, db)
 
+    context = {
+        'account':   account,
+        'supplier':  supplier,
+        'warehouse': warehouse,
+        'payment':   payment,
+        'outlet':    outlet,
+        'item':      item,
+        'invoiceID': invoiceID,
     }
     return render(request, 'vendor/NewPurchase.html', context)
 
