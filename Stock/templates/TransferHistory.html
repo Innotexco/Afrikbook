@@ -156,7 +156,7 @@
 
     <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs" id="printContent">
         {% include 'components/Periodheader.html' %}
-        <div class="w-full overflow-x-auto table-responsive">
+        {% comment %} <div class="w-full overflow-x-auto table-responsive"> {% endcomment %}
           <table id="historyTable" class="display py-3 border-collapse border border-slate-400 w-full" style="width:100%">
               
                 <thead>
@@ -178,7 +178,7 @@
                 <tbody class="bg-white divide-y">
 
             </table>
-        </div>
+        {% comment %} </div> {% endcomment %}
     </div>
 
     {% comment %} <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
