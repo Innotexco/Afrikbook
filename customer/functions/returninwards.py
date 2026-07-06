@@ -150,12 +150,12 @@ def new_return_inwards(request, db):
                         if accountType == "Customer":
                             debtor_account = chart_of_account.objects.using(db).get(account_id='2001-ReturnInward')
                             debtor_account.actual_balance += decimal.Decimal(total)
-                            # debtor_account.save()
+                            debtor_account.save()
                             CreateLog(db, debtor_account, total)
                         elif accountType == "Vendor":
                             debtor_account = chart_of_account.objects.using(db).get(account_id='1001-ReturnOutward')
                             debtor_account.actual_balance += decimal.Decimal(total)
-                            # debtor_account.save()
+                            debtor_account.save()
                             CreateLog(db, debtor_account, total)
                         
 
@@ -168,7 +168,7 @@ def new_return_inwards(request, db):
                             account_type        = debtor_account.account_type,
                             Userlogin           = request.user.username
                         )
-                        # acc_log.save(using=db)
+                        acc_log.save(using=db)
                     else:
                         account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
 
