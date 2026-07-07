@@ -109,6 +109,7 @@ class customer_invoice(models.Model):
     amount_paid	        = models.DecimalField(decimal_places=2, max_digits=12)
     amount_expected	    = models.DecimalField(decimal_places=2, max_digits=12)
     cancellation_status = models.CharField(max_length=50, default="0")	
+    payment_account = models.CharField(max_length=100, blank=True, null=True) 
     status              = models.CharField(max_length=50, default="0")	
     Userlogin           = models.CharField(max_length=50, blank=True)	
     payment_method      = models.CharField(max_length=50, blank=True)	
