@@ -155,10 +155,10 @@
     </div>
 
     <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs" id="printContent">
-        {% include 'components/Periodheader.html' %}
-        {% comment %} <div class="w-full overflow-x-auto table-responsive"> {% endcomment %}
-          <table id="historyTable" class="display py-3 border-collapse border border-slate-400 w-full" style="width:100%">
-              
+        <div class="w-full overflow-x-auto table-responsive"> 
+                {% include 'components/Periodheader.html' %}
+            <table id="historyTable" class="display py-3 border-collapse border border-slate-400 w-full" style="width:100%">
+                
                 <thead>
                     <tr class="font-medium tracking-wide text-left  px-4 text-gray-500 border-b bg-gray-200">
                         <th class="border border-slate-300 px-4 py-3 text-[10px] ...">SN</th>
@@ -178,7 +178,7 @@
                 <tbody class="bg-white divide-y">
 
             </table>
-        {% comment %} </div> {% endcomment %}
+        </div> 
     </div>
 
     {% comment %} <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
