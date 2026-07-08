@@ -918,15 +918,14 @@ function getPdfOptions(template) {
             filename: 'invoice.pdf',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { 
-                scale:  1.5,
-                width: 600,
+                scale:  2,
                 useCORS: true,
                 logging: false
             },
             jsPDF: { 
                 unit: 'mm', 
                 format: 'a4', 
-                orientation: 'portrait'
+                orientation: 'landscape'
             }
         };
     } else {
@@ -936,14 +935,13 @@ function getPdfOptions(template) {
             filename: 'report.pdf',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { 
-                scale:  1.5,
-                width: 600,
+                scale:  2,
                 useCORS: true 
             },
             jsPDF: { 
                 unit: 'mm', 
                 format: 'a4', 
-                orientation: 'portrait'
+                orientation: 'landscape'
             }
         };
     }
