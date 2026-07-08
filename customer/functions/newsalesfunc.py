@@ -383,8 +383,15 @@ def add_new_sales(request, db):
         messages.error(request, f"Invalid date format: {invoice_date}")
         return None
 
+    payment_account_used = None
     # ── 6. Main transaction block ──────────────────────────────────
     try:
+        form           = cus_form.save(commit=False)
+        form.Userlogin = request.user.username
+        if payment_account_used:
+            form.payment_account = payment_account_used
+        form.save(using=db)
+        
         with transaction.atomic(using=db):
 
             logger.debug(f"[add_new_sales] Processing {len(itemcode)} item(s) | invoiceID={invoiceID}")
@@ -559,6 +566,7 @@ def add_new_sales(request, db):
                                         DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account_ID, total_decimal, invoiceID=invoiceID)
 
                                     if payment_method == "Transfer":
+                                        payment_account_used = account_ID
                                         if acountType == "Customer":
                                             CreditReceivable(
                                                 request, db, cus, invoice_date, Gdescription,
@@ -571,6 +579,7 @@ def add_new_sales(request, db):
                                         logger.debug(f"[add_new_sales] Transfer posted | total={total_decimal}")
 
                                     elif payment_method == "Transfer and Cash":
+                                        payment_account_used = account_ID
                                         if acountType == "Customer":
                                             CreditReceivable(
                                                 request, db, cus, invoice_date, Gdescription,
@@ -597,12 +606,14 @@ def add_new_sales(request, db):
                                         )
 
                                     elif payment_method == "Cheque":
+                                        payment_account_used = '1002-Receivable'
                                         account = chart_of_account.objects.using(db).get(account_id='1002-Receivable')
                                         CreateLog(db, account, total_decimal)
                                         logger.debug(f"[add_new_sales] Cheque posted | total={total_decimal}")
 
                                     else:
                                         account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
+                                        payment_account_used = account.account_id
                                         if acountType == "Customer":
                                             CreditReceivable(
                                                 request, db, cus, invoice_date, Gdescription,
@@ -621,6 +632,7 @@ def add_new_sales(request, db):
                                         f"invoiceID={invoiceID}"
                                     )
                                     account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
+                                    payment_account_used = account.account_id
                                     if acountType == "Customer":
                                         DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total_decimal, invoiceID=invoiceID)
                                         CreditReceivable(
@@ -641,12 +653,14 @@ def add_new_sales(request, db):
                                 )
                                 if acountType == "Customer":
                                     account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
+                                    payment_account_used = account.account_id
                                     account.actual_balance += total_decimal
                                     DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total_decimal, invoiceID=invoiceID)
                                     CreateLog(db, account, total_decimal)
 
                                 elif acountType == "Vendor":
                                     account = chart_of_account.objects.using(db).get(account_id='2067-Purchase')
+                                    payment_account_used = account.account_id
                                     account.actual_balance += total_decimal
                                     DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total_decimal, invoiceID=invoiceID)
                                     CreateLog(db, account, total_decimal)

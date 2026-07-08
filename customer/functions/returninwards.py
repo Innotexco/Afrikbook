@@ -35,6 +35,7 @@ def new_return_inwards(request, db):
 
     message_displayed = False
 
+    # ── 1. Parse POST data ────────────────────────────────────────────────────
     try:
         refund_date       = request.POST['refund_date']
         order_no          = request.POST.get('order_no', '')
@@ -61,6 +62,7 @@ def new_return_inwards(request, db):
         messages.error(request, f"Missing required field: {e}")
         return None
 
+    # ── 2. Compute purchase price total ───────────────────────────────────────
     try:
         total_purchaseP = sum(
             float(p) if p and str(p).strip() not in ('', '0') else 0
@@ -69,6 +71,7 @@ def new_return_inwards(request, db):
     except Exception:
         total_purchaseP = 0
 
+    # ── 3. Resolve customer / vendor ──────────────────────────────────────────
     try:
         if accountType == "Customer":
             cus           = customer_table.objects.using(db).get(customer_code=cusID)
@@ -85,13 +88,13 @@ def new_return_inwards(request, db):
         messages.error(request, f"Customer/Vendor not found: {e}")
         return None
 
-    
+    # ── 4. Fetch original invoice ─────────────────────────────────────────────
     invoice2 = customer_invoice.objects.using(db).filter(invoiceID=invoiceID).first()
     if not invoice2:
         messages.error(request, f"Invoice {invoiceID} not found.")
         return None
 
-    
+    # ── 5. Clean monetary values ──────────────────────────────────────────────
     try:
         total_decimal         = clean_decimal(total)
         initial_total_decimal = clean_decimal(initial_total)
@@ -101,7 +104,12 @@ def new_return_inwards(request, db):
 
     returned_invoiceID = invoiceID + "_returned"
 
-   
+    # ── 6. Get the payment account used at sale time ──────────────────────────
+    # This was stored on the invoice when the sale was created.
+    # Falls back to '4001-Sales' for old invoices created before this field existed.
+    original_payment_account = invoice2.payment_account or '4001-Sales'
+
+    # ── 7. Main transaction block ─────────────────────────────────────────────
     try:
         with transaction.atomic(using=db):
 
@@ -151,9 +159,10 @@ def new_return_inwards(request, db):
                     'purchaseP':           clean_purchase,
                     'total_purchaseP':     total_purchaseP,
                     'outlet':              invoice2.outlet,
+                    'payment_account':     original_payment_account,
                 }
 
-                invoice_form   = CustomerSalesForm(form_data)
+                invoice_form    = CustomerSalesForm(form_data)
                 receivable_form = ReceivableForm({
                     "date":           refund_date,
                     "description":    Gdescription,
@@ -167,16 +176,19 @@ def new_return_inwards(request, db):
                     messages.error(request, f"Invalid form data on item {i + 1}: {invoice_form.errors}")
                     raise ValueError("Form validation failed")
 
-                form_instance            = invoice_form.save(commit=False)
-                form_instance.Userlogin  = request.user.username
-                form_instance.save(using=db)  # was commented out — now saved
+                # ── Save return invoice line ───────────────────────────────────
+                form_instance           = invoice_form.save(commit=False)
+                form_instance.Userlogin = request.user.username
+                form_instance.save(using=db)
 
+                # ── Return stock to outlet ─────────────────────────────────────
                 try:
                     IncreaseOutletStockinItemQuantity(db, invoice2.outlet, itemcode[i], quantities[i])
                 except Exception as e:
                     messages.error(request, f"Stock update failed for item {i + 1}: {e}")
                     raise
 
+                # ── Create outlet stock log ────────────────────────────────────
                 CreateOutletStockinLog(
                     db, refund_date, returned_invoiceID, order_no,
                     customer_name, " ", invoice2.outlet, Gdescription,
@@ -185,16 +197,17 @@ def new_return_inwards(request, db):
                     clean_unit_p, ""
                 )
 
+                # ── Once-per-invoice operations ────────────────────────────────
                 if not message_displayed:
 
                     # Cancel original invoice
                     customer_invoice.objects.using(db).filter(
                         invoiceID=invoiceID, cusID=customer_id
                     ).update(
-                        invoiceID          = returned_invoiceID,
-                        invoice_state      = "Cancelled",
-                        cancellation_status= "1",
-                        payment_method     = p_method,
+                        invoiceID           = returned_invoiceID,
+                        invoice_state       = "Cancelled",
+                        cancellation_status = "1",
+                        payment_method      = p_method,
                     )
 
                     # Increment refund counter
@@ -209,6 +222,7 @@ def new_return_inwards(request, db):
                         messages.error(request, f"Failed to update refund counter: {e}")
                         raise
 
+                    # ── Accounting ─────────────────────────────────────────────
                     try:
                         was_fully_paid = invoice2.amount_paid >= invoice2.amount_expected
 
@@ -223,7 +237,7 @@ def new_return_inwards(request, db):
                                     account_id='1001-ReturnOutward'
                                 )
                             debtor_account.actual_balance += total_decimal
-                            debtor_account.save(using=db)  
+                            debtor_account.save(using=db)
                             CreateLog(db, debtor_account, total_decimal)
 
                             account_log.objects.using(db).create(
@@ -236,57 +250,49 @@ def new_return_inwards(request, db):
                             )
 
                         else:
-                            # Fully paid — reverse the payment via CreditReceivable/Payable
-                            # and debit the payment method account used
-                            sales_account = chart_of_account.objects.using(db).get(
-                                account_id='4001-Sales'
-                            )
+                            # Fully paid — reverse using the exact account from the original sale
+                            try:
+                                pay_account = chart_of_account.objects.using(db).get(
+                                    account_id=original_payment_account
+                                )
+                            except chart_of_account.DoesNotExist:
+                                # Fallback if stored account no longer exists
+                                pay_account = chart_of_account.objects.using(db).get(
+                                    account_id='4001-Sales'
+                                )
 
                             if accountType == "Customer":
                                 CreditReceivable(
                                     request, db, cus, refund_date,
                                     Gdescription, p_method,
-                                    sales_account.account_id, initial_total_decimal
+                                    pay_account.account_id,
+                                    initial_total_decimal,
+                                    returned_invoiceID,
+                                    initial_total_decimal,
+                                    decimal.Decimal('0.00'),
                                 )
                             elif accountType == "Vendor":
                                 CreditPayable(
                                     request, db, ven, refund_date,
                                     Gdescription, p_method,
-                                    sales_account.account_id, initial_total_decimal
+                                    pay_account.account_id,
+                                    initial_total_decimal,
+                                    returned_invoiceID,
+                                    initial_total_decimal,
+                                    decimal.Decimal('0.00'),
                                 )
 
-                            # Reverse the payment account balance
-                            payment_account_map = {
-                                'Cash':     'Cash',
-                                'Transfer': 'Transfer',
-                                'POS':      'POS',
-                                'Cheque':   '1002-Receivable',
-                            }
-                            account_key = payment_account_map.get(p_method)
-                            if account_key:
-                                try:
-                                    if account_key.startswith(('1', '2', '3', '4')):
-                                        pay_account = chart_of_account.objects.using(db).get(
-                                            account_id=account_key
-                                        )
-                                    else:
-                                        pay_account = chart_of_account.objects.using(db).get(
-                                            account_id__icontains=account_key
-                                        )
-                                    pay_account.actual_balance -= total_decimal
-                                    pay_account.save(using=db)
-                                    CreateLog(db, pay_account, total_decimal)
-                                except chart_of_account.DoesNotExist:
-                                    pass  
-
-                            CreateLog(db, sales_account, total_decimal)
+                            # Reverse the balance on the original payment account
+                            pay_account.actual_balance -= total_decimal
+                            pay_account.save(using=db)
+                            CreateLog(db, pay_account, total_decimal)
 
                             account_log.objects.using(db).create(
                                 transaction_source = "Return Inward",
                                 amount             = total_decimal,
                                 date               = refund_date,
-                                account            = sales_account.account_id,
-                                account_type       = sales_account.account_type,
+                                account            = pay_account.account_id,
+                                account_type       = pay_account.account_type,
                                 Userlogin          = request.user.username,
                             )
 
@@ -297,6 +303,7 @@ def new_return_inwards(request, db):
                         messages.error(request, f"Accounting entry failed: {e}")
                         raise
 
+                    # ── VAT reversal ───────────────────────────────────────────
                     try:
                         create_minus_vat(db, returned_invoiceID, vat)
                     except Exception as e:
@@ -311,7 +318,6 @@ def new_return_inwards(request, db):
             if not any(messages.get_messages(request)):
                 messages.error(request, "Return could not be saved. All changes have been rolled back.")
         return None
-
 
 
 def edit(request, db):
