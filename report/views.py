@@ -963,7 +963,7 @@ def ViewSalesLadger(request, code):
        invoice = customer_invoice.objects.using(db).filter(invoiceID=code).values()
        serialized_data = list(invoice)
 
-       amount_total = customer_invoice.objects.using(db).filter(invoiceID=code).values("invoiceID").distinct().aggregate(total_amount=Sum("amount"))['total_amount']
+       amount_total = customer_invoice.objects.using(db).filter(invoiceID=code).values("invoiceID").aggregate(total_amount=Sum("amount"))['total_amount']
        data={
            'serialized_data':serialized_data,
            'amount_total':amount_total
