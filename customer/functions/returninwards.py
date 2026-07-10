@@ -31,11 +31,13 @@ def clean_decimal(value):
         logger.error(f"[clean_decimal] Failed to convert value={value!r} | {e}")
         return decimal.Decimal('0.00')
 
+
+
+
 def new_return_inwards(request, db):
 
     message_displayed = False
 
-    # ── 1. Parse POST data ────────────────────────────────────────────────────
     try:
         refund_date       = request.POST['refund_date']
         order_no          = request.POST.get('order_no', '')
@@ -62,7 +64,7 @@ def new_return_inwards(request, db):
         messages.error(request, f"Missing required field: {e}")
         return None
 
-    # ── 2. Compute purchase price total ───────────────────────────────────────
+    
     try:
         total_purchaseP = sum(
             float(p) if p and str(p).strip() not in ('', '0') else 0
@@ -71,7 +73,7 @@ def new_return_inwards(request, db):
     except Exception:
         total_purchaseP = 0
 
-    # ── 3. Resolve customer / vendor ──────────────────────────────────────────
+    
     try:
         if accountType == "Customer":
             cus           = customer_table.objects.using(db).get(customer_code=cusID)
@@ -88,13 +90,13 @@ def new_return_inwards(request, db):
         messages.error(request, f"Customer/Vendor not found: {e}")
         return None
 
-    # ── 4. Fetch original invoice ─────────────────────────────────────────────
+    
     invoice2 = customer_invoice.objects.using(db).filter(invoiceID=invoiceID).first()
     if not invoice2:
         messages.error(request, f"Invoice {invoiceID} not found.")
         return None
 
-    # ── 5. Clean monetary values ──────────────────────────────────────────────
+
     try:
         total_decimal         = clean_decimal(total)
         initial_total_decimal = clean_decimal(initial_total)

@@ -386,11 +386,6 @@ def add_new_sales(request, db):
     payment_account_used = None
     # ── 6. Main transaction block ──────────────────────────────────
     try:
-        form           = cus_form.save(commit=False)
-        form.Userlogin = request.user.username
-        if payment_account_used:
-            form.payment_account = payment_account_used
-        form.save(using=db)
         
         with transaction.atomic(using=db):
 
@@ -498,6 +493,8 @@ def add_new_sales(request, db):
                     try:
                         form           = cus_form.save(commit=False)
                         form.Userlogin = request.user.username
+                        if payment_account_used:                         
+                            form.payment_account = payment_account_used   
                         form.save(using=db)
                         logger.info(
                             f"[add_new_sales] Line saved | item [{i}] | "
