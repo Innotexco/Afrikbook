@@ -244,73 +244,73 @@
         )
         //serach by date
         function Fetch(){
-            
-            //e.preventDefault()
             const datas = {
                 start_date: $('#from').val(),
-                end_date: $('#to').val(),
-                item: $('#item').val(),
-                customer: $('#customer_id').val(),
-            }
-             console.log(datas)
-            if(datas.start_date || datas.end_date || datas.item || datas.customer){
+                end_date:   $('#to').val(),
+                item:       $('#item').val(),
+                customer:   $('#customer_id').val(),
+            };
+
+            if (datas.start_date || datas.end_date || datas.item || datas.customer) {
                 $.ajax({
-                    url: '{% url "filter:sales-ladger-date" %}',
+                    url:    '{% url "filter:sales-ladger-date" %}',
                     method: 'GET',
-                    data: datas,
+                    data:   datas,
                     success: function(response) {
                         $("#amount_total").html(NCFormat(response.amount_total));
-                        //console.log(response.amount_total);
-                        response.serializer_data.forEach(item => {
-                            num++;
-                            const editUrl = "{% url 'customer:EditSalesInvoice' 0 %}".replace('0', item.invoiceID);
-                            const row = $('<tr id="row">').append(
-                                $('<td class="text-[10px]">').html(num),
-                                $('<td class="text-[10px]">').text(item.invoice_date),
-                                $('<td class="text-[10px]">').text(item.invoiceID),
-                                $('<td class="text-[10px]">').text(item.customer_name),
-                                $('<td class="text-[10px]">').text(item.item_name),
-                                $('<td class="text-[10px]">').text(item.amount_expected),
-                                // ---- VIEW button (green eye) ----
-                                $('<td class="text-[10px]">').append(`
-                                    <a onclick="showModal('${item.invoiceID}')"
-                                    class="flex items-center justify-center text-green-600 cursor-pointer"
-                                    aria-label="View">
-                                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7zm0 11a4 4 0 110-8 4 4 0 010 8zm0-2.5A1.5 1.5 0 1010 8a1.5 1.5 0 000 3.5z"/>
-                                        </svg>
-                                    </a>
-                                `),
-                                // ---- EDIT button (blue pencil) ----
-                                $('<td class="text-[10px]">').append(`
-                                    <a href="${editUrl}"
-                                    class="flex items-center justify-center text-blue-500 cursor-pointer"
-                                    aria-label="Edit">
-                                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                                        </svg>
-                                    </a>
-                                `)
-                            );
-                            table.append(row);
-                        });
-                                $("#no-data").css('display', 'none');
+
+                        const table = $('#example tbody');  // ← declared here
+                        table.empty();                      // ← clear before appending
+
+                        if (response.serializer_data && response.serializer_data.length > 0) {
+                            $("#no-data").css('display', 'none');
+                            let num = 0;  // ← declared here
+
+                            response.serializer_data.forEach(function(item) {
+                                num++;
+                                const editUrl = "{% url 'customer:EditSalesInvoice' 0 %}".replace('0', item.invoiceID);
+                                const row = $('<tr>').append(
+                                    $('<td class="text-[10px]">').html(num),
+                                    $('<td class="text-[10px]">').text(item.invoice_date),
+                                    $('<td class="text-[10px]">').text(item.invoiceID),
+                                    $('<td class="text-[10px]">').text(item.customer_name),
+                                    $('<td class="text-[10px]">').text(item.item_name),
+                                    $('<td class="text-[10px]">').text(item.amount_expected),
+                                    $('<td class="text-[10px]">').append(`
+                                        <a onclick="showModal('${item.invoiceID}')"
+                                        class="flex items-center justify-center text-green-600 cursor-pointer"
+                                        aria-label="View">
+                                            <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7zm0 11a4 4 0 110-8 4 4 0 010 8zm0-2.5A1.5 1.5 0 1010 8a1.5 1.5 0 000 3.5z"/>
+                                            </svg>
+                                        </a>
+                                    `),
+                                    $('<td class="text-[10px]">').append(`
+                                        <a href="${editUrl}"
+                                        class="flex items-center justify-center text-blue-500 cursor-pointer"
+                                        aria-label="Edit">
+                                            <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                                            </svg>
+                                        </a>
+                                    `)
+                                );
+                                table.append(row);
                             });
-                        }else{
-                            $("#example2 tbody").empty();
+
+                        } else {
                             $("#no-data").css('display', 'block');
-                            alertify.error("No Return data between selected category")
-                            //alertify.error("Select start_date and end_date")
+                            alertify.error("No data found for selected filters");
                         }
                     },
                     error: function(error) {
-                        // Handle the error
-                        console.log('error')
+                        console.log('error', error);
+                        alertify.error("An error occurred while fetching data");
                     }
                 });
-            }else{
-                alertify.error("Select category to fetch data from")
-            }  
+            } else {
+                alertify.error("Select at least one filter to search");
+            }
         }
 
     
