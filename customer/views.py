@@ -333,35 +333,62 @@ def EditSalesInvoice(request, invoice_id):
                             db, line.outlet, line.itemcode, line.qty
                         )
 
-                # ── Step 3: Undo accounting entries ──────────────────────
-                # Reverse by calling CancelSales logic directly
+                # ── Step 3: Undo accounting entries 
                 accountType = get_customer_or_vendor(db, invoice_id)
                 try:
-                    sales_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
-                    
+                    # Use the stored payment account from the original invoice
+                    original_payment_account = first.payment_account or '4001-Sales'
+
+                    try:
+                        pay_account = chart_of_account.objects.using(db).get(
+                            account_id=original_payment_account
+                        )
+                    except chart_of_account.DoesNotExist:
+                        pay_account = chart_of_account.objects.using(db).get(
+                            account_id='4001-Sales'
+                        )
+
                     if first.amount_paid == first.amount_expected:
                         if accountType == "Customer":
-                            cus = customer_table.objects.using(db).filter(
+                            cus = customer_table.objects.using(db).get(
                                 customer_code=first.cusID
                             )
                             CreditReceivable(
-                                request, db, cus, first.invoice_date,
-                                first.Gdescription, "Transfer",
-                                sales_account.account_id, first.amount_paid
+                                request, db, cus,
+                                first.invoice_date,
+                                first.Gdescription,
+                                first.payment_method,       
+                                pay_account.account_id,
+                                first.amount_paid,
+                                invoice_id,                 
+                                first.amount_expected,      
+                                decimal.Decimal('0.00'),    
                             )
                         elif accountType == "Vendor":
-                            ven = vendor_table.objects.using(db).filter(
+                            ven = vendor_table.objects.using(db).get(
                                 custID=first.cusID
                             )
                             CreditPayable(
-                                request, db, ven, first.invoice_date,
-                                first.Gdescription, "Transfer",
-                                sales_account.account_id, first.amount_paid
+                                request, db, ven,
+                                first.invoice_date,
+                                first.Gdescription,
+                                first.payment_method,
+                                pay_account.account_id,
+                                first.amount_paid,
+                                invoice_id,
+                                first.amount_expected,
+                                decimal.Decimal('0.00'),
                             )
+
+                        # Reverse the account balance
+                        pay_account.actual_balance -= decimal.Decimal(first.amount_paid)
+                        pay_account.save(using=db)
+                        CreateLog(db, pay_account, first.amount_paid)
+
                 except chart_of_account.DoesNotExist:
                     logger.warning(
-                        f"[EditSalesInvoice] Sales account not found for reversal | "
-                        f"invoiceID={invoice_id}"
+                        f"[EditSalesInvoice] Payment account not found for reversal | "
+                        f"invoiceID={invoice_id} | account={original_payment_account}"
                     )
 
                 # ── Step 4: Delete original invoice lines ─────────────────
