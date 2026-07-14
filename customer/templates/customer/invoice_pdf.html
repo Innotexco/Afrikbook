@@ -231,7 +231,7 @@
                     <div style="font-size: 18px; font-weight: 700; color: #2F4F4F; line-height: 1.2;">
                         {{ company.CompanyName|upper }}
                     </div>
-                    {% if company.services and not hide_services %}
+                    {% if company.services %}
                     <div style="font-size: 10px; color: #6b7280; margin-top: 2px;">{{ company.services }}</div>
                     {% endif %}
                 </div>
