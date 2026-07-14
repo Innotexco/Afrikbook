@@ -1,8 +1,10 @@
-from django.shortcuts import render, redirect, render_to_string
+from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
 from django.db.models import Sum, F, Q
 from customer.models import *
 from vendor.models import *
+from django.template.loader import render_to_string
+from weasyprint import HTML
 from django.contrib import messages
 from employee.models import payroll, employee
 from datetime import datetime, timedelta, time, date
@@ -19,7 +21,6 @@ from customer.functions.generalFunction import *
 from account.models import Expenses_account, Income_account, Assets_account, Liability_account
 
 from main.models import company_table
-from weasyprint import HTML
 from django.contrib.auth.decorators import login_required
 from routers.page_permission import  urls_name
 from datetime import date
@@ -29,6 +30,7 @@ import logging
 import traceback
 
 logger = logging.getLogger(__name__)
+
 
 
 def getdateReport(fromDate, toDate):
@@ -1157,6 +1159,7 @@ def SalesLedger(request):
    
    
     return render(request, 'report/SalesLedger.html', context)
+
 
 
 @login_required(login_url='/')
