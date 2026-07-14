@@ -1,5 +1,5 @@
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
+from django.shortcuts import render, redirect, render_to_string
+from django.http import JsonResponse, HttpResponse
 from django.db.models import Sum, F, Q
 from customer.models import *
 from vendor.models import *
@@ -19,6 +19,7 @@ from customer.functions.generalFunction import *
 from account.models import Expenses_account, Income_account, Assets_account, Liability_account
 
 from main.models import company_table
+from weasyprint import HTML
 from django.contrib.auth.decorators import login_required
 from routers.page_permission import  urls_name
 from datetime import date
@@ -1177,7 +1178,7 @@ def PrintSalesInvoice(request, invoice_id):
     grand_total = subtotal + vat_total
     balance_due = grand_total - (invoice.amount_paid or 0)
 
-    context = {
+    html_content = render_to_string('customer/invoice_pdf.html', {
         'invoice':       invoice,
         'invoice_items': invoice_items,
         'company':       company,
@@ -1186,9 +1187,17 @@ def PrintSalesInvoice(request, invoice_id):
         'vat_total':     vat_total,
         'grand_total':   grand_total,
         'balance_due':   balance_due,
-    }
-    return render(request, 'customer/invoice_pdf.html', context)
+    })
 
+    pdf_file = HTML(
+        string=html_content,
+        base_url=request.build_absolute_uri()
+    ).write_pdf()
+
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    # inline — opens PDF viewer in browser tab, no print dialog
+    response['Content-Disposition'] = f'inline; filename="Invoice_{invoice_id}.pdf"'
+    return response
 
 from datetime import datetime
 
