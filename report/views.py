@@ -1213,6 +1213,8 @@ def PrintSalesInvoice(request, invoice_id):
         'vat_total': vat_total,
         'grand_total': grand_total,
         'balance_due': balance_due,
+        # Sales Ledger PDF: hide company services tagline
+        'hide_services': True,
     })
 
     pdf_file = HTML(
