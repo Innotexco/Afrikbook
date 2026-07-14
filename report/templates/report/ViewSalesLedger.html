@@ -18,12 +18,12 @@
         <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
 
             <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
-                <div class="w-full overflow-x-auto table-responsive" id="vsl">
+                <div class="w-full overflow-x-auto table-responsive pdf-page-a4" id="vsl" data-pdf-layout="a4" style="max-width: 210mm; margin: 0 auto;">
                     {% include 'components/Periodheader.html' %}
 
                     <div id="invoiceHeader"></div>
 
-                    <table id="salesLadgerView" class="display" style="width:100%">
+                    <table id="salesLadgerView" class="display" style="width:100%; max-width:100%; table-layout: fixed;">
                         <thead>
                             <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 bg-gray-50">
                                 <th class="px-4 py-3">SN</th>
