@@ -1,10 +1,8 @@
 from django.shortcuts import render, redirect
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.db.models import Sum, F, Q
 from customer.models import *
 from vendor.models import *
-from django.template.loader import render_to_string
-from weasyprint import HTML
 from django.contrib import messages
 from employee.models import payroll, employee
 from datetime import datetime, timedelta, time, date
@@ -30,7 +28,6 @@ import logging
 import traceback
 
 logger = logging.getLogger(__name__)
-
 
 
 def getdateReport(fromDate, toDate):
@@ -963,17 +960,35 @@ def GetCustomerDetailsAndInvoice(request, code, cusID):
 def ViewSalesLadger(request, code):
     db = AfrikBookDB(request)
     try:
-       invoice = customer_invoice.objects.using(db).filter(invoiceID=code).values()
-       serialized_data = list(invoice)
+        invoice_items = customer_invoice.objects.using(db).filter(invoiceID=code)
 
-       amount_total = customer_invoice.objects.using(db).filter(invoiceID=code).values("invoiceID").aggregate(total_amount=Sum("amount"))['total_amount']
-       data={
-           'serialized_data':serialized_data,
-           'amount_total':amount_total
-       }
-       return JsonResponse(data, safe=False)
-    except customer_invoice.DoesNotExist: 
-        return JsonResponse({'error': 'Item not found'}, status=404)
+        if not invoice_items.exists():
+            return JsonResponse({'error': 'Invoice not found'}, status=404)
+
+        serialized_data = list(invoice_items.values())
+
+        amount_total = invoice_items.aggregate(
+            total_amount=Sum("amount")
+        )['total_amount'] or 0
+
+        company = CreateProfile.objects.using(db).first()
+
+        data = {
+            'serialized_data': serialized_data,
+            'amount_total':    str(amount_total),
+            'company_name':    company.CompanyName if company else '',
+            'company_address': company.address     if company else '',
+            'company_phone':   company.phone       if company else '',
+            'company_email':   company.email       if company else '',
+            'company_rc':      company.Rc          if company else '',
+        }
+        return JsonResponse(data, safe=False)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=404)
+    
+    
+    
     
 def ViewSales(request, code):
     db = AfrikBookDB(request)
@@ -1159,48 +1174,6 @@ def SalesLedger(request):
    
    
     return render(request, 'report/SalesLedger.html', context)
-
-
-
-@login_required(login_url='/')
-@urls_name(name="Sales Ledger")
-def PrintSalesInvoice(request, invoice_id):
-    db = request.user.company_id.db_name
-
-    invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoice_id)
-    if not invoice_items.exists():
-        messages.error(request, "Invoice not found")
-        return redirect('customer:SalesLedger')
-
-    invoice  = invoice_items.first()
-    company  = CreateProfile.objects.using(db).first()
-
-    subtotal    = sum(item.amount for item in invoice_items)
-    vat_items   = Vat.objects.using(db).filter(source=invoice_id)
-    vat_total   = sum(v.amount for v in vat_items)
-    grand_total = subtotal + vat_total
-    balance_due = grand_total - (invoice.amount_paid or 0)
-
-    html_content = render_to_string('customer/invoice_pdf.html', {
-        'invoice':       invoice,
-        'invoice_items': invoice_items,
-        'company':       company,
-        'subtotal':      subtotal,
-        'vat_items':     vat_items,
-        'vat_total':     vat_total,
-        'grand_total':   grand_total,
-        'balance_due':   balance_due,
-    })
-
-    pdf_file = HTML(
-        string=html_content,
-        base_url=request.build_absolute_uri()
-    ).write_pdf()
-
-    response = HttpResponse(pdf_file, content_type='application/pdf')
-    # inline — opens PDF viewer in browser tab, no print dialog
-    response['Content-Disposition'] = f'inline; filename="Invoice_{invoice_id}.pdf"'
-    return response
 
 from datetime import datetime
 
