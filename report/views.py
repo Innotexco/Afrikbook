@@ -1,11 +1,9 @@
 from django.shortcuts import render, redirect
-from django.http import JsonResponse, HttpResponse
-from django.template.loader import render_to_string
+from django.http import JsonResponse
 from django.db.models import Sum, F, Q
 from customer.models import *
 from vendor.models import *
 from django.contrib import messages
-from weasyprint import HTML
 from employee.models import payroll, employee
 from datetime import datetime, timedelta, time, date
 import decimal
@@ -1176,54 +1174,6 @@ def SalesLedger(request):
    
    
     return render(request, 'report/SalesLedger.html', context)
-
-
-@login_required(login_url='/')
-@urls_name(name="Sales Ledger")
-def PrintSalesInvoice(request, invoice_id):
-    """
-    Generate the same invoice PDF used by new-sales email
-    (customer/invoice_pdf.html via WeasyPrint).
-    """
-    db = AfrikBookDB(request)
-
-    invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoice_id)
-    if not invoice_items.exists():
-        messages.error(request, "Invoice not found")
-        return redirect('report:SalesLedger')
-
-    invoice = invoice_items.first()
-    try:
-        company = CreateProfile.objects.using(db).first()
-    except Exception:
-        company = None
-
-    subtotal = sum(item.amount for item in invoice_items)
-    vat_items = Vat.objects.using(db).filter(source=invoice_id)
-    vat_total = sum(v.amount for v in vat_items)
-    grand_total = subtotal + vat_total
-    balance_due = grand_total - (invoice.amount_paid or 0)
-
-    html_content = render_to_string('customer/invoice_pdf.html', {
-        'invoice': invoice,
-        'invoice_items': invoice_items,
-        'company': company,
-        'subtotal': subtotal,
-        'vat_items': vat_items,
-        'vat_total': vat_total,
-        'grand_total': grand_total,
-        'balance_due': balance_due,
-    })
-
-    pdf_file = HTML(
-        string=html_content,
-        base_url=request.build_absolute_uri('/')
-    ).write_pdf()
-
-    response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = f'inline; filename="Invoice_{invoice_id}.pdf"'
-    return response
-
 
 from datetime import datetime
 
