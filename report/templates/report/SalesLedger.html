@@ -120,7 +120,7 @@
                             {{forloop.counter}}
                         </td>
                         <td class="px-4 text-[10px]">
-                            {{display.invoice_date}}
+                            {{display.invoice_date|date:"d/m/Y"}}
                         </td>
                         <td class="px-4 text-[10px]">
                             {{display.invoiceID}}
@@ -231,7 +231,7 @@
                                 const editUrl = "{% url 'customer:EditSalesInvoice' 0 %}".replace('0', item.invoiceID);
                                 const row = $('<tr>').append(
                                     $('<td class="text-[10px]">').html(num),
-                                    $('<td class="text-[10px]">').text(item.invoice_date),
+                                    $('<td class="text-[10px]">').text(formatInvoiceDate(item.invoice_date)),
                                     $('<td class="text-[10px]">').text(item.invoiceID),
                                     $('<td class="text-[10px]">').text(item.customer_name),
                                     $('<td class="text-[10px]">').text(item.item_name),
@@ -346,7 +346,21 @@
     </script>
 
     <script>
-        
+        // Format API date/datetime values as dd/mm/yyyy (avoids ISO strings & timezone day-shift)
+        function formatInvoiceDate(value) {
+            if (value === null || value === undefined || value === '') return '';
+            const s = String(value);
+            const match = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (match) {
+                return match[3] + '/' + match[2] + '/' + match[1];
+            }
+            const d = new Date(value);
+            if (isNaN(d.getTime())) return s;
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            return day + '/' + month + '/' + d.getFullYear();
+        }
+
        function showModal(invoiceId) {
             if (!invoiceId) return;
 
@@ -358,23 +372,37 @@
 
                     const invoice = data.serialized_data[0];
                     const items   = data.serialized_data;
+                    const invoiceDate = formatInvoiceDate(invoice.invoice_date);
+                    const dueDate = formatInvoiceDate(invoice.due_date);
 
-                    // ── Company header ────────────────────────────────────────────
+                    // ── Invoice meta (table layout keeps columns side-by-side reliably) ──
                     $('#invoiceHeader').html(`
-                        <div style="display:flex;justify-content:space-between;padding:12px 24px;background:#f9fafb;border-bottom:1px solid #e5e7eb;margin-bottom:8px;">
-                            <div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;">Invoice ID</div><div style="font-weight:600;color:#2F4F4F;">${invoice.invoiceID}</div></div>
-                            <div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;">Date</div><div style="font-weight:600;color:#2F4F4F;">${invoice.invoice_date}</div></div>
-                            <div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;">Due Date</div><div style="font-weight:600;color:#2F4F4F;">${invoice.due_date || ''}</div></div>
-                            <div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;">Status</div>
-                                <span style="padding:2px 8px;border-radius:9999px;font-size:9px;font-weight:600;text-transform:uppercase;background:#d1fae5;color:#065f46;">
-                                    ${invoice.invoice_state || 'Supplied'}
-                                </span>
-                            </div>
-                        </div>
-                        <div style="padding:10px 24px;margin-bottom:8px;">
+                        <table style="width:100%;border-collapse:collapse;margin-bottom:8px;background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+                            <tr>
+                                <td style="padding:12px 16px;vertical-align:top;width:25%;">
+                                    <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-bottom:4px;">Invoice ID</div>
+                                    <div style="font-weight:600;color:#2F4F4F;font-size:12px;">${invoice.invoiceID || ''}</div>
+                                </td>
+                                <td style="padding:12px 16px;vertical-align:top;width:25%;">
+                                    <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-bottom:4px;">Date</div>
+                                    <div style="font-weight:600;color:#2F4F4F;font-size:12px;">${invoiceDate}</div>
+                                </td>
+                                <td style="padding:12px 16px;vertical-align:top;width:25%;">
+                                    <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-bottom:4px;">Due Date</div>
+                                    <div style="font-weight:600;color:#2F4F4F;font-size:12px;">${dueDate}</div>
+                                </td>
+                                <td style="padding:12px 16px;vertical-align:top;width:25%;">
+                                    <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-bottom:4px;">Status</div>
+                                    <span style="display:inline-block;padding:2px 8px;border-radius:9999px;font-size:9px;font-weight:600;text-transform:uppercase;background:#d1fae5;color:#065f46;">
+                                        ${invoice.invoice_state || 'Supplied'}
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                        <div style="padding:10px 16px;margin-bottom:8px;">
                             <div style="font-size:10px;text-transform:uppercase;color:#9ca3af;margin-bottom:4px;">Bill To</div>
-                            <div style="font-size:12px;font-weight:500;color:#111827;">${invoice.customer_name}</div>
-                            <div style="font-size:11px;color:#6b7280;">ID: ${invoice.cusID}</div>
+                            <div style="font-size:12px;font-weight:500;color:#111827;">${invoice.customer_name || ''}</div>
+                            <div style="font-size:11px;color:#6b7280;">ID: ${invoice.cusID || ''}</div>
                         </div>
                     `);
 
