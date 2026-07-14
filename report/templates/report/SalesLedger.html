@@ -435,13 +435,13 @@
                     $('#modal_subtotal').html(NCFormat(subtotal));
                     $('#amount_').html(NCFormat(grandTotal));
 
-                    if (amountPaid > 0 && amountPaid !== grandTotal) {
+                    /**if (amountPaid > 0 && amountPaid !== grandTotal) {
                         $('#modal_paid').html(NCFormat(amountPaid));
                         $('#modal_balance').html(NCFormat(balanceDue));
                         $('#modal_paid_row, #modal_balance_row').show();
                     } else {
                         $('#modal_paid_row, #modal_balance_row').hide();
-                    }
+                    }*/
 
                     // ── Footer ────────────────────────────────────────────────────
                     $('#modal_footer').text('Prepared by: ' + (invoice.Userlogin || ''));
