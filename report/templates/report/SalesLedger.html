@@ -361,8 +361,25 @@
             return day + '/' + month + '/' + d.getFullYear();
         }
 
+        // Invoice currently open in the view modal (used for PDF print)
+        let currentViewInvoiceId = null;
+
+        // Same WeasyPrint invoice_pdf.html PDF as new-sales email
+        function openSalesInvoicePdf() {
+            if (!currentViewInvoiceId) {
+                alertify.error('No invoice selected');
+                return;
+            }
+            const url = "{% url 'report:PrintSalesInvoice' 'INVOICE_ID' %}".replace(
+                'INVOICE_ID',
+                encodeURIComponent(currentViewInvoiceId)
+            );
+            window.open(url, '_blank');
+        }
+
        function showModal(invoiceId) {
             if (!invoiceId) return;
+            currentViewInvoiceId = invoiceId;
 
             $.ajax({
                 url: '/view-sales-ledger/' + invoiceId + '/',
