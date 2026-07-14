@@ -21,7 +21,6 @@ urlpatterns = [
     path('customer-ledger', views.CustomerLedger, name='CustomerLedger'),
     path('view-customer-ledger/<str:code>/<str:invoice>', views.ViewCustomerLedger, name='ViewCustomerLedger'),
     path('sales-ledger', views.SalesLedger, name='SalesLedger'),
-    path('invoice/print/<str:invoice_id>/', views.PrintSalesInvoice, name='PrintSalesInvoice'),
     path('edit-sales-ledger-date', views.EditSalesLedgerDate, name='EditSalesLedgerDate'),
     path('purchase-ledger', views.PurchaseLedger, name='PurchaseLedger'),
     path('edit-purchase-ledger-date', views.EditPurchaseLedgerDate, name='EditPurchaseLedgerDate'),
