@@ -1157,6 +1157,39 @@ def SalesLedger(request):
    
     return render(request, 'report/SalesLedger.html', context)
 
+
+@login_required(login_url='/')
+@urls_name(name="Sales Ledger")
+def PrintSalesInvoice(request, invoice_id):
+    db = request.user.company_id.db_name
+
+    invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoice_id)
+    if not invoice_items.exists():
+        messages.error(request, "Invoice not found")
+        return redirect('customer:SalesLedger')
+
+    invoice  = invoice_items.first()
+    company  = CreateProfile.objects.using(db).first()
+
+    subtotal    = sum(item.amount for item in invoice_items)
+    vat_items   = Vat.objects.using(db).filter(source=invoice_id)
+    vat_total   = sum(v.amount for v in vat_items)
+    grand_total = subtotal + vat_total
+    balance_due = grand_total - (invoice.amount_paid or 0)
+
+    context = {
+        'invoice':       invoice,
+        'invoice_items': invoice_items,
+        'company':       company,
+        'subtotal':      subtotal,
+        'vat_items':     vat_items,
+        'vat_total':     vat_total,
+        'grand_total':   grand_total,
+        'balance_due':   balance_due,
+    }
+    return render(request, 'customer/invoice_pdf.html', context)
+
+
 from datetime import datetime
 
 def EditSalesLedgerDate(request):

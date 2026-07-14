@@ -135,15 +135,11 @@
                             {{display.amount_expected}}
                         </td>
                         <td class="text-[10px]">
-                            <a onclick="showModal('{{display.invoiceID}}')" 
-                                class="flex items-center justify-center text-green-600 cursor-pointer"
-                                aria-label="View">
-                                <svg
-                                    class="w-5 h-5"
-                                    aria-hidden="true"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                >
+                            <a href="{% url 'customer:PrintSalesInvoice' display.invoiceID %}"
+                            target="_blank"
+                            class="flex items-center justify-center text-green-600 cursor-pointer"
+                            aria-label="View">
+                                <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7zm0 11a4 4 0 110-8 4 4 0 010 8zm0-2.5A1.5 1.5 0 1010 8a1.5 1.5 0 000 3.5z"/>
                                 </svg>
                             </a>
@@ -269,6 +265,7 @@
                             response.serializer_data.forEach(function(item) {
                                 num++;
                                 const editUrl = "{% url 'customer:EditSalesInvoice' 0 %}".replace('0', item.invoiceID);
+                                const printUrl = "{% url 'customer:PrintSalesInvoice' '0' %}".replace('0', item.invoiceID);
                                 const row = $('<tr>').append(
                                     $('<td class="text-[10px]">').html(num),
                                     $('<td class="text-[10px]">').text(item.invoice_date),
@@ -277,7 +274,8 @@
                                     $('<td class="text-[10px]">').text(item.item_name),
                                     $('<td class="text-[10px]">').text(item.amount_expected),
                                     $('<td class="text-[10px]">').append(`
-                                        <a onclick="showModal('${item.invoiceID}')"
+                                        <a href="${printUrl}"
+                                        target="_blank"
                                         class="flex items-center justify-center text-green-600 cursor-pointer"
                                         aria-label="View">
                                             <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
