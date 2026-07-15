@@ -17,7 +17,7 @@
     <div class="modal-box">
         <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
 
-            <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
+            {% comment %} <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs"> {% endcomment %}
                 <div class="w-full overflow-x-auto table-responsive pdf-page-a4" id="vsl" data-pdf-layout="a4" style="max-width: 210mm; margin: 0 auto;">
                     {% include 'components/Periodheader.html' %}
 
@@ -63,7 +63,7 @@
                     <p id="modal_footer" style="font-size:10px;color:#6b7280;padding:0 24px 8px;"></p>
 
                 </div>
-            </div>
+            {% comment %} </div> {% endcomment %}
 
             <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
                 {% include 'modalBoxx/printbtn.html' with container="vsl" table="salesLadgerView" table_no="" %}
