@@ -409,9 +409,9 @@
                                 <td style="padding:8px 12px;font-size:10px;">${index + 1}</td>
                                 <td style="padding:8px 12px;font-size:10px;">${item.item_name || ''}</td>
                                 <td style="padding:8px 12px;font-size:10px;">${item.qty || ''}</td>
-                                <td style="padding:8px 12px;font-size:10px;">${currencySymbol}${NCFormat(item.unit_p)}</td>
-                                <td style="padding:8px 12px;font-size:10px;">${currencySymbol}${item.discount ? NCFormat(item.discount) : '—'}</td>
-                                <td style="padding:8px 12px;font-size:10px;text-align:right;">${currencySymbol}${NCFormat(amount)}</td>
+                                <td style="padding:8px 12px;font-size:10px;">${NCFormat(item.unit_p)}</td>
+                                <td style="padding:8px 12px;font-size:10px;">${item.discount ? NCFormat(item.discount) : '—'}</td>
+                                <td style="padding:8px 12px;font-size:10px;text-align:right;">${NCFormat(amount)}</td>
                             </tr>
                         `);
                     });
