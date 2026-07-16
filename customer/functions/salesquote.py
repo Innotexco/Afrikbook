@@ -3,9 +3,27 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.shortcuts import redirect
 import uuid
+import decimal
 from datetime import datetime
-from customer.models import sales_quote
+from customer.models import sales_quote, Vat
 
+
+def save_quote_vat(db, reference_id, vat_amount):
+    """
+    Store VAT against the quote referenceID (no GL posting — quotes are not invoices).
+    Replaces any previous VAT rows for this source.
+    """
+    if not reference_id:
+        return
+    Vat.objects.using(db).filter(source=reference_id).delete()
+    if vat_amount is None or str(vat_amount).strip() in ('', '0', '0.0', '0.00'):
+        return
+    try:
+        amount = decimal.Decimal(str(vat_amount).replace(',', ''))
+    except (decimal.InvalidOperation, TypeError, ValueError):
+        return
+    if amount > 0:
+        Vat.objects.using(db).create(source=reference_id, amount=amount)
 
 
 def add_sales_quote(request, db):
@@ -24,6 +42,7 @@ def add_sales_quote(request, db):
     discounts         = request.POST.getlist('discount[]')
     amounts           = request.POST.getlist('amount[]')
     total             = request.POST.get('total', '0')
+    vat               = request.POST.get('vat', '0')
 
     # ── Auto‑generate unique referenceID if blank
     if not referenceID:
@@ -38,6 +57,8 @@ def add_sales_quote(request, db):
         if sales_quote.objects.using(db).filter(referenceID=referenceID).exists():
             messages.error(request, "Reference ID already exists. Please use a different one.")
             return redirect('customer:salesquote')  # or return redirect('...')
+
+    saved_any = False
 
     # ── Process each item row 
     for i in range(len(itemcodes)):
@@ -67,6 +88,7 @@ def add_sales_quote(request, db):
                 instance = form.save(commit=False)
                 instance.Userlogin = request.user.username
                 instance.save(using=db)
+                saved_any = True
 
                 if not message_displayed:
                     messages.success(request, "Sales Quote was added successfully")
@@ -76,5 +98,8 @@ def add_sales_quote(request, db):
             
     if len(itemcodes) == 1 and itemcodes[0] == "0":
         messages.error(request, "Select at least one item")
+    elif saved_any:
+        # Persist VAT against quote reference (view modal reads Vat by source=referenceID)
+        save_quote_vat(db, referenceID, vat)
 
     return None

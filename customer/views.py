@@ -645,8 +645,9 @@ def SalesQuote(request):
 @login_required(login_url='/')
 @urls_name(name="Sales Quotes")
 def ViewSalesQuote(request, quote_id):
-    """AJAX: line items + totals for one sales quote (view/print modal)."""
+    """AJAX: line items + VAT + totals for one sales quote (view/print modal)."""
     from django.db.models import Sum
+    from customer.models import Vat as VatModel
 
     db = request.user.company_id.db_name
     try:
@@ -656,8 +657,13 @@ def ViewSalesQuote(request, quote_id):
 
         quote = quote_items.first()
         subtotal = quote_items.aggregate(total=Sum('amount'))['total'] or 0
-        # Prefer stored quote total when present
-        grand_total = quote.total if quote.total is not None else subtotal
+
+        # VAT by quote reference (same pattern as invoice source=invoiceID)
+        vat_qs = VatModel.objects.using(db).filter(source=quote_id)
+        if not vat_qs.exists() and quote.quote_ID:
+            vat_qs = VatModel.objects.using(db).filter(source=quote.quote_ID)
+        vat_total = vat_qs.aggregate(total=Sum('amount'))['total'] or 0
+        grand_total = subtotal + vat_total
 
         company = CreateProfile.objects.using(db).first()
         company_name = company.CompanyName if company and company.CompanyName else ''
@@ -684,6 +690,8 @@ def ViewSalesQuote(request, quote_id):
                 'Userlogin': quote.Userlogin or '',
             },
             'subtotal': str(subtotal),
+            'vat_items': list(vat_qs.values()) if vat_qs.exists() else [],
+            'vat_total': str(vat_total),
             'grand_total': str(grand_total),
             'serialized_data': serialized_items,
             'amount_total': str(grand_total),
@@ -724,6 +732,7 @@ def EditSalesQuote(request, quote_id):
             genby        = request.POST.get('genby', first.genby)
             cusID        = request.POST.get('cusID', first.custID)
             total        = request.POST.get('total', '0')
+            vat          = request.POST.get('vat', '0')
 
             #Auto‑generate unique referenceID if blank
             if not referenceID:
@@ -740,8 +749,13 @@ def EditSalesQuote(request, quote_id):
                         messages.error(request, "Reference ID already exists. Please use a different one.")
                         return redirect('customer:EditSalesQuote', quote_id=quote_id)
 
-            # Step 1: Delete existing quote lines
+            # Step 1: Delete existing quote lines + VAT for old reference
+            from customer.functions.salesquote import save_quote_vat
+            from customer.models import Vat as VatModel
             quotes.delete()
+            VatModel.objects.using(db).filter(source=quote_id).delete()
+            if referenceID != quote_id:
+                VatModel.objects.using(db).filter(source=referenceID).delete()
 
             #Step 2: Rebuild from submitted line items 
             item_list     = request.POST.getlist('item[]')
@@ -753,6 +767,7 @@ def EditSalesQuote(request, quote_id):
             name_list     = request.POST.getlist('item_name')
 
             message_displayed = False
+            saved_any = False
 
             for i in range(len(item_list)):
                 if not item_list[i] or item_list[i] == '0':
@@ -783,11 +798,15 @@ def EditSalesQuote(request, quote_id):
                     instance = form.save(commit=False)
                     instance.Userlogin = request.user.username
                     instance.save(using=db)
+                    saved_any = True
                     if not message_displayed:
                         messages.success(request, "Sales Quote updated successfully")
                         message_displayed = True
                 else:
                     messages.error(request, f"Invalid data on item {i + 1}: {form.errors}")
+
+            if saved_any:
+                save_quote_vat(db, referenceID, vat)
 
             return redirect('customer:EditSalesQuote', quote_id=referenceID)
 
@@ -795,6 +814,15 @@ def EditSalesQuote(request, quote_id):
             messages.error(request, f"Update failed: {e}")
             return redirect('customer:EditSalesQuote', quote_id=quote_id)
         
+    from customer.models import Vat as VatModel
+    from django.db.models import Sum
+    quote_vat = (
+        VatModel.objects.using(db)
+        .filter(source=quote_id)
+        .aggregate(total=Sum('amount'))['total']
+        or 0
+    )
+
     context = {
         'quotes':           quotes,
         'first':            first,
@@ -804,6 +832,7 @@ def EditSalesQuote(request, quote_id):
         'quote_id':         quote_id,
         'company':          company,
         'existing_itemcodes': list(existing_itemcodes),
+        'quote_vat':        quote_vat,
     }
     return render(request, 'customer/EditSalesQuote.html', context)
 

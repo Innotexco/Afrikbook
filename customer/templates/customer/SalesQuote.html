@@ -223,8 +223,11 @@
 
                 const subtotalVal = parseFloat(data.subtotal);
                 const subtotal = !isNaN(subtotalVal) ? subtotalVal : linesSubtotal;
+                const vatItems = Array.isArray(data.vat_items) ? data.vat_items : [];
+                const vatTotalVal = parseFloat(data.vat_total);
+                const vatTotal = !isNaN(vatTotalVal) ? vatTotalVal : 0;
                 const grandTotalVal = parseFloat(data.grand_total);
-                const grandTotal = !isNaN(grandTotalVal) ? grandTotalVal : subtotal;
+                const grandTotal = !isNaN(grandTotalVal) ? grandTotalVal : (subtotal + vatTotal);
 
                 const tfootColor = '#6b7280';
                 const cellLabel = `padding:8px 12px; text-align:right; font-size:11px; color:${tfootColor}; font-weight:700;`;
@@ -239,6 +242,27 @@
                         <td colspan="5" style="${cellLabel}">Subtotal</td>
                         <td colspan="2" style="${cellValue}">${fmt(subtotal)}</td>
                     </tr>
+                `;
+
+                vatItems.forEach(function(vat) {
+                    totalsHtml += `
+                        <tr style="background:#f9fafb;">
+                            <td colspan="5" style="${cellLabel}">VAT</td>
+                            <td colspan="2" style="${cellValue}">${fmt(vat.amount)}</td>
+                        </tr>
+                    `;
+                });
+
+                if (vatItems.length > 1) {
+                    totalsHtml += `
+                        <tr style="background:#f9fafb; border-top:1px solid #e5e7eb;">
+                            <td colspan="5" style="${cellLabel}">VAT Total</td>
+                            <td colspan="2" style="${cellValue}">${fmt(vatTotal)}</td>
+                        </tr>
+                    `;
+                }
+
+                totalsHtml += `
                     <tr style="background:#f9fafb; border-top:2px solid #2F4F4F;">
                         <td colspan="5" style="padding:10px 12px; text-align:right; font-size:12px; font-weight:700; color:${tfootColor};">Total Amount</td>
                         <td colspan="2" style="padding:10px 12px; font-size:12px; font-weight:700; color:${tfootColor}; text-align:right;">${fmt(grandTotal)}</td>
