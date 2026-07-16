@@ -1015,7 +1015,7 @@ def ViewSalesLadger(request, code):
 
             # Legacy fields (keep for backward compatibility)
             'serialized_data': serialized_items,
-            'amount_total':    str(subtotal),
+            'amount_total':    str(grand_total),
             'company_name':    company_name,
             'company_address': company_address,
             'company_phone':   company_phone,
