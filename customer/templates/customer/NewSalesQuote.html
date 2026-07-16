@@ -296,36 +296,48 @@
 
     {% include 'customer_grid_table.html' %}
     <script>
-        function Email(div){
-            var value = $("#email").val();
-            var customer = $("#Casual_Customer").prop('checked');
-        
-            alertify.defaults.glossary.title = "{{request.user.username}}";
-            alertify.confirm("Would you like to send quote as PDF",
-            function(){
-                if(value && customer == false){
-                    Email_PDF(div);  
-                    $(this).submit();  
-                    $('#form_id').submit(); 
-                }else{
-                    $("#div").val(div);
-                    email_modal.showModal();
-                }
-            }).set('labels',{ok:'Yes', cancel:'No'});
+        function submitQuoteForm() {
+            var form = document.getElementById('form_id');
+            if (form) {
+                form.submit();
+            }
         }
 
-
-          function customer_exists(){
+        function Email(div) {
+            var value = $("#email").val();
             var customer = $("#Casual_Customer").prop('checked');
-            
-            if(customer == false){
-                $('#form_id').submit(); 
-            }else{
+
+            alertify.defaults.glossary.title = "{{request.user.username}}";
+            // Yes → save + email PDF | No → save only
+            alertify.confirm(
+                "Would you like to send quote as PDF?",
+                function onYes() {
+                    if (value && customer == false) {
+                        Email_PDF(div);
+                        submitQuoteForm();
+                    } else {
+                        // Need an address first — open email modal, then save from there if applicable
+                        $("#div").val(div);
+                        email_modal.showModal();
+                    }
+                },
+                function onNo() {
+                    submitQuoteForm();
+                }
+            ).set('labels', { ok: 'Yes', cancel: 'No' });
+        }
+
+        function customer_exists() {
+            var customer = $("#Casual_Customer").prop('checked');
+            if (customer == false) {
+                submitQuoteForm();
+            } else {
                 $('#close').click();
             }
         }
-        $("#Casual_Customer").on('click', function(){
+
+        $("#Casual_Customer").on('click', function () {
             $("#div").val("");
-        })
-      </script> 
+        });
+    </script> 
 {% endblock content %}
