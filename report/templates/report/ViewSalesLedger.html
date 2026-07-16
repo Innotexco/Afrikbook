@@ -23,12 +23,11 @@
 
                     <div id="invoiceHeader"></div>
 
-                    <table id="salesLadgerView" class="display" style="width:100%; max-width:100%; table-layout: fixed;">
+                    <table id="salesLadgerView" class="display" style="width:100%; max-width:100%; table-layout: fixed; margin: 0 auto;">
                         <thead>
                             <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 bg-gray-50">
                                 <th class="px-4 py-3">SN</th>
                                 <th class="px-4 py-3">Item</th>
-                                {% comment %} <th class="px-4 py-3">Description</th> {% endcomment %}
                                 <th class="px-4 py-3">Qty</th>
                                 <th class="px-4 py-3">Unit Price</th>
                                 <th class="px-4 py-3">Discount</th>
@@ -36,7 +35,6 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y"></tbody>
-                        {# Totals filled by showModal() from /view-sales-ledger/ AJAX #}
                         <tfoot id="modal_invoice_totals"></tfoot>
                     </table>
 
