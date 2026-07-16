@@ -53,18 +53,20 @@
                         <td class="text-[10px] px-4 py-2">{{ quote.genby }}</td>
                         <td class="text-[10px] px-4 py-2">{{ quote.Gdescription|default:"—" }}</td>
                         <td class="text-[10px] px-4 py-2">{{ quote.total }}</td>
-                        <td class="text-[10px] px-4 py-2 text-center items-center">
+                        <!-- View button cell – centered -->
+                        <td class="text-[10px] px-4 py-2 text-center">
                             <a onclick="showQuoteModal('{{ quote.referenceID }}')"
-                               class="flex items-center justify-center text-green-600 cursor-pointer"
-                               aria-label="View">
+                            class="inline-flex items-center justify-center text-green-600 cursor-pointer"
+                            aria-label="View">
                                 <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7zm0 11a4 4 0 110-8 4 4 0 010 8zm0-2.5A1.5 1.5 0 1010 8a1.5 1.5 0 000 3.5z"/>
                                 </svg>
                             </a>
                         </td>
-                        <td class="text-[10px] px-4 py-2 text-center items-center">
+                        <!-- Edit button cell – centered -->
+                        <td class="text-[10px] px-4 py-2 text-center">
                             <a href="{% url 'customer:EditSalesQuote' quote.referenceID %}"
-                                class="flex items-center justify-center text-blue-500" aria-label="Edit">
+                            class="inline-flex items-center justify-center text-blue-500" aria-label="Edit">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
                                 </svg>
