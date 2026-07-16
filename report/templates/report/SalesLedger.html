@@ -370,18 +370,24 @@
                 success: function(data) {
                     if (!data.serialized_data || data.serialized_data.length === 0) return;
 
-                    const invoice = data.serialized_data[0];
-                    const items   = data.serialized_data;
-                    const invoiceDate = formatInvoiceDate(invoice.invoice_date);
-                    const dueDate = formatInvoiceDate(invoice.due_date);
+                    const items = data.serialized_data;
+                    const line = items[0];
+                    const inv = data.invoice || {};
 
-                    // ── Invoice meta (table layout keeps columns side-by-side reliably) ──
+                    const invoiceIdVal = inv.invoiceID || line.invoiceID || '';
+                    const invoiceDate = formatInvoiceDate(inv.invoice_date || line.invoice_date);
+                    const dueDate = formatInvoiceDate(inv.due_date || line.due_date);
+                    const customerName = inv.customer_name || line.customer_name || '';
+                    const customerId = inv.customer_id || line.cusID || '';
+                    const invoiceState = inv.invoice_state || line.invoice_state || 'Supplied';
+
+                    // ── Invoice meta ──────────────────────────────────────────────
                     $('#invoiceHeader').html(`
                         <table style="width:100%;border-collapse:collapse;margin-bottom:8px;background:#f9fafb;border-bottom:1px solid #e5e7eb;">
                             <tr>
                                 <td style="padding:12px 16px;vertical-align:top;width:25%;text-align:center;">
                                     <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-bottom:4px;">Invoice ID</div>
-                                    <div style="font-weight:600;color:#2F4F4F;font-size:12px;">${invoice.invoiceID || ''}</div>
+                                    <div style="font-weight:600;color:#2F4F4F;font-size:12px;">${invoiceIdVal}</div>
                                 </td>
                                 <td style="padding:12px 16px;vertical-align:top;width:25%;text-align:center;">
                                     <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-bottom:4px;">Date</div>
@@ -394,26 +400,26 @@
                                 <td style="padding:12px 16px;vertical-align:top;width:25%;text-align:center;">
                                     <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-bottom:4px;">Status</div>
                                     <span style="display:inline-block;padding:2px 8px;border-radius:9999px;font-size:9px;font-weight:600;text-transform:uppercase;background:#d1fae5;color:#065f46;">
-                                        ${invoice.invoice_state || 'Supplied'}
+                                        ${invoiceState}
                                     </span>
                                 </td>
                             </tr>
                         </table>
                         <div style="padding:10px 16px;margin-bottom:8px;">
                             <div style="font-size:10px;text-transform:uppercase;color:#9ca3af;margin-bottom:4px;">Bill To</div>
-                            <div style="font-size:12px;font-weight:500;color:#111827;">${invoice.customer_name || ''}</div>
-                            <div style="font-size:11px;color:#6b7280;">ID: ${invoice.cusID || ''}</div>
+                            <div style="font-size:12px;font-weight:500;color:#111827;">${customerName}</div>
+                            <div style="font-size:11px;color:#6b7280;">ID: ${customerId}</div>
                         </div>
                     `);
 
-                    // ── Table rows ────────────────────────────────────────────────
+                    // ── Line items ────────────────────────────────────────────────
                     const tbody = $('#salesLadgerView tbody');
                     tbody.empty();
-                    let subtotal = 0;
+                    let linesSubtotal = 0;
 
                     items.forEach(function(item, index) {
                         const amount = parseFloat(item.amount) || 0;
-                        subtotal += amount;
+                        linesSubtotal += amount;
                         tbody.append(`
                             <tr style="border-bottom:1px solid #f3f4f6;">
                                 <td style="padding:8px 12px;font-size:10px;">${index + 1}</td>
@@ -427,24 +433,71 @@
                         `);
                     });
 
-                    // ── Totals ────────────────────────────────────────────────────
-                    const grandTotal = parseFloat(data.amount_total) || subtotal;
-                    const amountPaid = parseFloat(invoice.amount_paid) || 0;
-                    const balanceDue = grandTotal - amountPaid;
+                    // ── Totals (from API: subtotal, VAT, grand total, paid, balance) ──
+                    const subtotalVal = parseFloat(data.subtotal);
+                    const subtotal = !isNaN(subtotalVal) ? subtotalVal : linesSubtotal;
+                    const vatItems = Array.isArray(data.vat_items) ? data.vat_items : [];
+                    const vatTotalVal = parseFloat(data.vat_total);
+                    const vatTotal = !isNaN(vatTotalVal) ? vatTotalVal : 0;
+                    const grandTotalVal = parseFloat(data.grand_total);
+                    const grandTotal = !isNaN(grandTotalVal) ? grandTotalVal : (subtotal + vatTotal);
+                    const amountPaidVal = parseFloat(inv.amount_paid != null ? inv.amount_paid : line.amount_paid);
+                    const amountPaid = !isNaN(amountPaidVal) ? amountPaidVal : 0;
+                    const balanceDueVal = parseFloat(data.balance_due);
+                    const balanceDue = !isNaN(balanceDueVal) ? balanceDueVal : (grandTotal - amountPaid);
 
-                    $('#modal_subtotal').html(NCFormat(subtotal));
-                    $('#amount_').html(NCFormat(grandTotal));
+                    const cellLabel = 'padding:8px 12px; text-align:right; font-size:11px; color:#6b7280;';
+                    const cellValue = 'padding:8px 12px; font-size:11px; color:#6b7280; text-align:right;';
+                    let totalsHtml = `
+                        <tr><td colspan="7" style="padding:4px;"></td></tr>
+                        <tr style="background:#f9fafb;">
+                            <td colspan="5" style="${cellLabel}">Subtotal</td>
+                            <td colspan="2" style="${cellValue}">${NCFormat(subtotal)}</td>
+                        </tr>
+                    `;
 
-                    /**if (amountPaid > 0 && amountPaid !== grandTotal) {
-                        $('#modal_paid').html(NCFormat(amountPaid));
-                        $('#modal_balance').html(NCFormat(balanceDue));
-                        $('#modal_paid_row, #modal_balance_row').show();
-                    } else {
-                        $('#modal_paid_row, #modal_balance_row').hide();
-                    }*/
+                    vatItems.forEach(function(vat) {
+                        totalsHtml += `
+                            <tr style="background:#f9fafb;">
+                                <td colspan="5" style="${cellLabel}">VAT</td>
+                                <td colspan="2" style="${cellValue}">${NCFormat(vat.amount)}</td>
+                            </tr>
+                        `;
+                    });
+
+                    if (vatItems.length > 1) {
+                        totalsHtml += `
+                            <tr style="background:#f9fafb; border-top:1px solid #e5e7eb;">
+                                <td colspan="5" style="padding:8px 12px; text-align:right; font-size:11px; font-weight:600; color:#374151;">VAT Total</td>
+                                <td colspan="2" style="padding:8px 12px; font-size:11px; font-weight:600; color:#374151; text-align:right;">${NCFormat(vatTotal)}</td>
+                            </tr>
+                        `;
+                    }
+
+                    totalsHtml += `
+                        <tr style="background:#f9fafb; border-top:2px solid #2F4F4F;">
+                            <td colspan="5" style="padding:10px 12px; text-align:right; font-size:12px; font-weight:700; color:#2F4F4F;">Total Amount</td>
+                            <td colspan="2" style="padding:10px 12px; font-size:12px; font-weight:700; color:#2F4F4F; text-align:right;">${NCFormat(grandTotal)}</td>
+                        </tr>
+                    `;
+
+                    if (amountPaid > 0 && Math.abs(amountPaid - grandTotal) > 0.001) {
+                        totalsHtml += `
+                            <tr style="background:#fff;">
+                                <td colspan="5" style="${cellLabel}">Amount Paid</td>
+                                <td colspan="2" style="padding:8px 12px; font-size:11px; color:#059669; font-weight:600; text-align:right;">${NCFormat(amountPaid)}</td>
+                            </tr>
+                            <tr style="background:#fff; border-bottom:1px solid #e5e7eb;">
+                                <td colspan="5" style="${cellLabel}">Balance Due</td>
+                                <td colspan="2" style="padding:8px 12px; font-size:11px; color:#dc2626; font-weight:600; text-align:right;">${NCFormat(balanceDue)}</td>
+                            </tr>
+                        `;
+                    }
+
+                    $('#modal_invoice_totals').html(totalsHtml);
 
                     // ── Footer ────────────────────────────────────────────────────
-                    $('#modal_footer').text('Prepared by: ' + (invoice.Userlogin || ''));
+                    $('#modal_footer').text('Prepared by: ' + (line.Userlogin || ''));
 
                     my_modal_view_sales_ledger.showModal();
                 },

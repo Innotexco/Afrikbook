@@ -36,63 +36,8 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y"></tbody>
-                        
-                        <tfoot>
-                            <!-- Spacer row -->
-                            <tr><td colspan="7" style="padding:4px;"></td></tr>
-
-                            <!-- Subtotal -->
-                            <tr style="background:#f9fafb;">
-                                <td colspan="5" style="padding:8px 12px; text-align:right; font-size:11px; color:#6b7280;">Subtotal</td>
-                                <td colspan="2" style="padding:8px 12px; font-size:11px; color:#6b7280; text-align:right;">
-                                    {{ subtotal|floatformat:2|intcomma }}
-                                </td>
-                            </tr>
-
-                            <!-- VAT lines -->
-                            {% for vat in vat_items %}
-                            <tr style="background:#f9fafb;">
-                                <td colspan="5" style="padding:8px 12px; text-align:right; font-size:11px; color:#6b7280;">VAT</td>
-                                <td colspan="2" style="padding:8px 12px; font-size:11px; color:#6b7280; text-align:right;">
-                                    {{ vat.amount|floatformat:2|intcomma }}
-                                </td>
-                            </tr>
-                            {% endfor %}
-
-                            <!-- VAT Total (only if more than one VAT line) -->
-                            {% if vat_items|length > 1 %}
-                            <tr style="background:#f9fafb; border-top:1px solid #e5e7eb;">
-                                <td colspan="5" style="padding:8px 12px; text-align:right; font-size:11px; font-weight:600; color:#374151;">VAT Total</td>
-                                <td colspan="2" style="padding:8px 12px; font-size:11px; font-weight:600; color:#374151; text-align:right;">
-                                    {{ vat_total|floatformat:2|intcomma }}
-                                </td>
-                            </tr>
-                            {% endif %}
-
-                            <!-- Grand Total (Total Amount) -->
-                            <tr style="background:#f9fafb; border-top:2px solid #2F4F4F;">
-                                <td colspan="5" style="padding:10px 12px; text-align:right; font-size:12px; font-weight:700; color:#2F4F4F;">Total Amount</td>
-                                <td colspan="2" style="padding:10px 12px; font-size:12px; font-weight:700; color:#2F4F4F; text-align:right;">
-                                    {{ grand_total|floatformat:2|intcomma }}
-                                </td>
-                            </tr>
-
-                            <!-- Amount Paid & Balance Due (conditional) -->
-                            {% if invoice.amount_paid and invoice.amount_paid != grand_total %}
-                            <tr style="background:#fff;">
-                                <td colspan="5" style="padding:8px 12px; text-align:right; font-size:11px; color:#6b7280;">Amount Paid</td>
-                                <td colspan="2" style="padding:8px 12px; font-size:11px; color:#059669; font-weight:600; text-align:right;">
-                                    {{ invoice.amount_paid|floatformat:2|intcomma }}
-                                </td>
-                            </tr>
-                            <tr style="background:#fff; border-bottom:1px solid #e5e7eb;">
-                                <td colspan="5" style="padding:8px 12px; text-align:right; font-size:11px; color:#6b7280;">Balance Due</td>
-                                <td colspan="2" style="padding:8px 12px; font-size:11px; color:#dc2626; font-weight:600; text-align:right;">
-                                    {{ balance_due|floatformat:2|intcomma }}
-                                </td>
-                            </tr>
-                            {% endif %}
-                        </tfoot>
+                        {# Totals filled by showModal() from /view-sales-ledger/ AJAX #}
+                        <tfoot id="modal_invoice_totals"></tfoot>
                     </table>
 
                     <hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;">
