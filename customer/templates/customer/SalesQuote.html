@@ -53,7 +53,7 @@
                         <td class="text-[10px] px-4 py-2">{{ quote.genby }}</td>
                         <td class="text-[10px] px-4 py-2">{{ quote.Gdescription|default:"—" }}</td>
                         <td class="text-[10px] px-4 py-2">{{ quote.total }}</td>
-                        <td class="text-[10px] px-4 py-2">
+                        <td class="text-[10px] px-4 py-2 text-center items-center">
                             <a onclick="showQuoteModal('{{ quote.referenceID }}')"
                                class="flex items-center justify-center text-green-600 cursor-pointer"
                                aria-label="View">
@@ -62,7 +62,7 @@
                                 </svg>
                             </a>
                         </td>
-                        <td class="text-[10px] px-4 py-2">
+                        <td class="text-[10px] px-4 py-2 text-center items-center">
                             <a href="{% url 'customer:EditSalesQuote' quote.referenceID %}"
                                 class="flex items-center justify-center text-blue-500" aria-label="Edit">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
