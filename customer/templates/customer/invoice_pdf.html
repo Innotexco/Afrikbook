@@ -142,13 +142,14 @@
             padding: 8px 12px;
             font-size: 11px;
             color: #6b7280; /* same gray as Amount Paid labels */
+            font-weight: 700;
         }
         .total-row {
             background: #f9fafb;
             border-top: 2px solid #2F4F4F;
         }
         .total-row td {
-            font-weight: 400;
+            font-weight: 700;
             font-size: 12px;
             color: #6b7280;
         }
@@ -156,11 +157,13 @@
             background: #f9fafb;
             color: #6b7280;
             font-size: 11px;
+            font-weight: 700;
         }
         .divider-row td {
             border-top: 1px solid #e5e7eb;
             padding-top: 4px;
             color: #6b7280;
+            font-weight: 700;
         }
 
         /* Footer */
@@ -354,26 +357,26 @@
                 <!-- VAT Total (only if more than one VAT line) -->
                 {% if vat_items|length > 1 %}
                 <tr class="summary-row divider-row">
-                    <td colspan="5" style="text-align:right; padding-right:12px; color:#6b7280;">VAT Total</td>
-                    <td colspan="2" style="color:#6b7280;">{{ vat_total|floatformat:2|intcomma }}</td>
+                    <td colspan="5" style="text-align:right; padding-right:12px; color:#6b7280; font-weight:700;">VAT Total</td>
+                    <td colspan="2" style="color:#6b7280; font-weight:700;">{{ vat_total|floatformat:2|intcomma }}</td>
                 </tr>
                 {% endif %}
 
                 <!-- Grand Total -->
                 <tr class="total-row">
-                    <td colspan="5" style="text-align:right; padding-right:12px; color:#6b7280;">Total Amount</td>
-                    <td colspan="2" style="color:#6b7280;">{{ grand_total|floatformat:2|intcomma }}</td>
+                    <td colspan="5" style="text-align:right; padding-right:12px; color:#6b7280; font-weight:700;">Total Amount</td>
+                    <td colspan="2" style="color:#6b7280; font-weight:700;">{{ grand_total|floatformat:2|intcomma }}</td>
                 </tr>
 
                 <!-- Amount Paid / Balance Due -->
                 {% if invoice.amount_paid and invoice.amount_paid != grand_total %}
                 <tr style="background:#fff;">
-                    <td colspan="5" style="text-align:right; padding-right:12px; color:#6b7280;">Amount Paid</td>
-                    <td colspan="2" style="color:#6b7280;">{{ invoice.amount_paid|floatformat:2|intcomma }}</td>
+                    <td colspan="5" style="text-align:right; padding-right:12px; color:#6b7280; font-weight:700;">Amount Paid</td>
+                    <td colspan="2" style="color:#6b7280; font-weight:700;">{{ invoice.amount_paid|floatformat:2|intcomma }}</td>
                 </tr>
                 <tr style="background:#fff;">
-                    <td colspan="5" style="text-align:right; padding-right:12px; color:#6b7280;">Balance Due</td>
-                    <td colspan="2" style="color:#6b7280;">{{ balance_due|floatformat:2|intcomma }}</td>
+                    <td colspan="5" style="text-align:right; padding-right:12px; color:#6b7280; font-weight:700;">Balance Due</td>
+                    <td colspan="2" style="color:#6b7280; font-weight:700;">{{ balance_due|floatformat:2|intcomma }}</td>
                 </tr>
                 {% endif %}
 
