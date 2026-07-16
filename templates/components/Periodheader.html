@@ -35,26 +35,30 @@
 
 <section class="hidden template-invoice font-sans px-5 pt-0.5 pb-5">
     
-    <!-- Logo + Company Name (flex row with circle) -->
+    <!-- Logo + Company Name -->
     <div class="flex items-center gap-4 mx-20 my-2">
         {% if profile.logo %}
             <img src="{{ profile.logo.url }}" 
                  alt="{{ profile.CompanyName }}" 
-                 class="w-32 h-32 rounded-full object-cover border-2 border-gray-200">
+                 class="w-20 h-20 rounded-full object-cover object-left flex-shrink-0 border-2 border-gray-200">
         {% else %}
-            <div class="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs">
+            <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs flex-shrink-0">
                 No Logo
             </div>
         {% endif %}
-        <p class="text-xl font-extrabold text-[#2F4F4F]">{{ profile.CompanyName|upper }}</p>
+
+        <p class="font-extrabold text-[#2F4F4F] leading-tight break-words"
+           style="font-size: clamp(14px, 3vw, 26px); word-break: break-word; overflow-wrap: break-word; max-width: 100%;">
+            {{ profile.CompanyName|upper }}
+        </p>
     </div>
     
-    <!-- Address Line (unchanged) -->
+    <!-- Address Line -->
     <address class="text-center text-[11px] pl-32 -mt-6 not-italic whitespace-nowrap text-gray-700">
         {{ profile.address }}
     </address>
     
-    <!-- Contact Bar (unchanged) -->
+    <!-- Contact Bar -->
     <div class="flex ml-16 justify-center items-center gap-6 text-[11px] font-light whitespace-nowrap text-gray-700 mt-1.5">
         <div class="flex items-center gap-1.5">
             <svg class="w-4 h-4 inline-block text-gray-700" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
