@@ -961,26 +961,66 @@ def ViewSalesLadger(request, code):
     db = AfrikBookDB(request)
     try:
         invoice_items = customer_invoice.objects.using(db).filter(invoiceID=code)
-
         if not invoice_items.exists():
             return JsonResponse({'error': 'Invoice not found'}, status=404)
 
-        serialized_data = list(invoice_items.values())
+        invoice = invoice_items.first()
 
-        amount_total = invoice_items.aggregate(
-            total_amount=Sum("amount")
-        )['total_amount'] or 0
+        # ── Totals ──────────────────────────────────────────────────────────
+        subtotal = invoice_items.aggregate(total=Sum('amount'))['total'] or 0
+        vat_items = Vat.objects.using(db).filter(source=code)
+        vat_total = vat_items.aggregate(total=Sum('amount'))['total'] or 0
+        grand_total = subtotal + vat_total
+        amount_paid = invoice.amount_paid or 0
+        balance_due = grand_total - amount_paid
 
+        # ── Company details ──────────────────────────────────────────────
         company = CreateProfile.objects.using(db).first()
+        company_name    = company.CompanyName if company and company.CompanyName else ''
+        company_address = company.address     if company and company.address else ''
+        company_phone   = company.phone       if company and company.phone else ''
+        company_email   = company.email       if company and company.email else ''
+        company_rc      = company.Rc          if company and company.Rc else ''
 
+        # ── Serialize items ──────────────────────────────────────────────
+        serialized_items = list(invoice_items.values())
+
+        # ── Build response (includes all missing fields) ────────────────
         data = {
-            'serialized_data': serialized_data,
-            'amount_total':    str(amount_total),
-            'company_name':    company.CompanyName if company else '',
-            'company_address': company.address     if company else '',
-            'company_phone':   company.phone       if company else '',
-            'company_email':   company.email       if company else '',
-            'company_rc':      company.Rc          if company else '',
+            # Invoice header (new)
+            'invoice': {
+                'invoiceID':      invoice.invoiceID,
+                'invoice_date':   invoice.invoice_date.strftime('%Y-%m-%d') if invoice.invoice_date else '',
+                'due_date':       invoice.due_date.strftime('%Y-%m-%d') if invoice.due_date else '',
+                'customer_name':  invoice.customer_name or '',
+                'customer_id':    invoice.cusID or '',
+                'amount_paid':    str(amount_paid),
+                'invoice_state':  invoice.invoice_state or '',
+            },
+            # Financial summary (new)
+            'subtotal':    str(subtotal),
+            'vat_items':   list(vat_items.values()) if vat_items.exists() else [],
+            'vat_total':   str(vat_total),
+            'grand_total': str(grand_total),
+            'balance_due': str(balance_due),
+
+            # Company info (new structure)
+            'company': {
+                'name':    company_name,
+                'address': company_address,
+                'phone':   company_phone,
+                'email':   company_email,
+                'rc':      company_rc,
+            },
+
+            # Legacy fields (keep for backward compatibility)
+            'serialized_data': serialized_items,
+            'amount_total':    str(subtotal),
+            'company_name':    company_name,
+            'company_address': company_address,
+            'company_phone':   company_phone,
+            'company_email':   company_email,
+            'company_rc':      company_rc,
         }
         return JsonResponse(data, safe=False)
 
