@@ -619,6 +619,11 @@ def AddSalesQuote(request):
 def SalesQuote(request):
     db = request.user.company_id.db_name
     company = company_table.objects.get(id=request.user.company_id_id)
+    profile = CreateProfile.objects.using(db).filter(
+        CompanyName=request.user.company_id.company_name
+    ).first()
+    if profile is None:
+        profile = CreateProfile.objects.using(db).first()
 
     # Deduplicate by referenceID
     raw = sales_quote.objects.using(db).all().order_by('referenceID', 'id')
@@ -631,9 +636,66 @@ def SalesQuote(request):
 
     context = {
         'company': company,
+        'profile': profile,
         'quotes': unique_quotes,
     }
     return render(request, "customer/SalesQuote.html", context)
+
+
+@login_required(login_url='/')
+@urls_name(name="Sales Quotes")
+def ViewSalesQuote(request, quote_id):
+    """AJAX: line items + totals for one sales quote (view/print modal)."""
+    from django.db.models import Sum
+
+    db = request.user.company_id.db_name
+    try:
+        quote_items = sales_quote.objects.using(db).filter(referenceID=quote_id)
+        if not quote_items.exists():
+            return JsonResponse({'error': 'Quote not found'}, status=404)
+
+        quote = quote_items.first()
+        subtotal = quote_items.aggregate(total=Sum('amount'))['total'] or 0
+        # Prefer stored quote total when present
+        grand_total = quote.total if quote.total is not None else subtotal
+
+        company = CreateProfile.objects.using(db).first()
+        company_name = company.CompanyName if company and company.CompanyName else ''
+        company_address = company.address if company and company.address else ''
+        company_phone = company.phone if company and company.phone else ''
+        company_email = company.email if company and company.email else ''
+        company_rc = company.Rc if company and company.Rc else ''
+
+        serialized_items = list(quote_items.values())
+        for row in serialized_items:
+            if row.get('quote_date'):
+                try:
+                    row['quote_date'] = row['quote_date'].strftime('%Y-%m-%d')
+                except Exception:
+                    row['quote_date'] = str(row['quote_date'])
+
+        data = {
+            'quote': {
+                'referenceID': quote.referenceID or '',
+                'quote_date': quote.quote_date.strftime('%Y-%m-%d') if quote.quote_date else '',
+                'customer_name': quote.genby or '',
+                'customer_id': quote.custID or '',
+                'description': quote.Gdescription or '',
+                'Userlogin': quote.Userlogin or '',
+            },
+            'subtotal': str(subtotal),
+            'grand_total': str(grand_total),
+            'serialized_data': serialized_items,
+            'amount_total': str(grand_total),
+            'company_name': company_name,
+            'company_address': company_address,
+            'company_phone': company_phone,
+            'company_email': company_email,
+            'company_rc': company_rc,
+        }
+        return JsonResponse(data, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=404)
 
 
 @login_required(login_url='/')
