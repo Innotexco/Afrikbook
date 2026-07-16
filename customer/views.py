@@ -211,14 +211,14 @@ def SalesInvoice(request):
     method   = shipping_method.objects.using(db).all()
     invoices = customer_invoice.objects.using(db).all()
 
-    # ── Shipping address ─────────────────────────────────────────────────────
+    #  Shipping address 
     try:
         response = requests.get('https://console.afrikbook.com/address', timeout=10)
         shipping_address = response.json() if response.status_code == 200 else []
     except requests.RequestException:
         shipping_address = []
 
-    # ── Auto invoice ID (outside the try/except above) ───────────────────────
+    # ── Auto invoice ID
     next_invoice = 1000000
 
     if invoices.exists():
