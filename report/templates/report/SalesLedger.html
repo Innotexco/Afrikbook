@@ -428,7 +428,7 @@
                                 <td style="padding:8px 12px;font-size:10px;">${item.qty || ''}</td>
                                 <td style="padding:8px 12px;font-size:10px;">${NCFormat(item.unit_p)}</td>
                                 <td style="padding:8px 12px;font-size:10px;">${item.discount ? NCFormat(item.discount) : '—'}</td>
-                                <td style="padding:8px 12px;font-size:10px;text-align:right;"><b>${NCFormat(amount)}</b></td>
+                                <td style="padding:8px 12px;font-size:10px;text-align:right;">${NCFormat(amount)}</td>
                             </tr>
                         `);
                     });
@@ -446,8 +446,10 @@
                     const balanceDueVal = parseFloat(data.balance_due);
                     const balanceDue = !isNaN(balanceDueVal) ? balanceDueVal : (grandTotal - amountPaid);
 
-                    const cellLabel = 'padding:8px 12px; text-align:right; font-size:11px; color:#6b7280;';
-                    const cellValue = 'padding:8px 12px; font-size:11px; color:#6b7280; text-align:right;';
+                    // tfoot: same gray as Amount Paid labels (#6b7280)
+                    const tfootColor = '#6b7280';
+                    const cellLabel = `padding:8px 12px; text-align:right; font-size:11px; color:${tfootColor}; font-weight:400;`;
+                    const cellValue = `padding:8px 12px; font-size:11px; color:${tfootColor}; text-align:right; font-weight:400;`;
                     let totalsHtml = `
                         <tr><td colspan="7" style="padding:4px;"></td></tr>
                         <tr style="background:#f9fafb;">
@@ -468,16 +470,16 @@
                     if (vatItems.length > 1) {
                         totalsHtml += `
                             <tr style="background:#f9fafb; border-top:1px solid #e5e7eb;">
-                                <td colspan="5" style="padding:8px 12px; text-align:right; font-size:11px; font-weight:600; color:#374151;">VAT Total</td>
-                                <td colspan="2" style="padding:8px 12px; font-size:11px; font-weight:600; color:#374151; text-align:right;">${NCFormat(vatTotal)}</td>
+                                <td colspan="5" style="${cellLabel}">VAT Total</td>
+                                <td colspan="2" style="${cellValue}">${NCFormat(vatTotal)}</td>
                             </tr>
                         `;
                     }
 
                     totalsHtml += `
                         <tr style="background:#f9fafb; border-top:2px solid #2F4F4F;">
-                            <td colspan="5" style="padding:10px 12px; text-align:right; font-size:12px; font-weight:700; color:#2F4F4F;">Total Amount</td>
-                            <td colspan="2" style="padding:10px 12px; font-size:12px; font-weight:700; color:#2F4F4F; text-align:right;">${NCFormat(grandTotal)}</td>
+                            <td colspan="5" style="padding:10px 12px; text-align:right; font-size:12px; font-weight:400; color:${tfootColor};">Total Amount</td>
+                            <td colspan="2" style="padding:10px 12px; font-size:12px; font-weight:400; color:${tfootColor}; text-align:right;">${NCFormat(grandTotal)}</td>
                         </tr>
                     `;
 
@@ -485,18 +487,18 @@
                         totalsHtml += `
                             <tr style="background:#fff;">
                                 <td colspan="5" style="${cellLabel}">Amount Paid</td>
-                                <td colspan="2" style="padding:8px 12px; font-size:11px; color:#059669; font-weight:600; text-align:right;">${NCFormat(amountPaid)}</td>
+                                <td colspan="2" style="${cellValue}">${NCFormat(amountPaid)}</td>
                             </tr>
                             <tr style="background:#fff; border-bottom:1px solid #e5e7eb;">
                                 <td colspan="5" style="${cellLabel}">Balance Due</td>
-                                <td colspan="2" style="padding:8px 12px; font-size:11px; color:#dc2626; font-weight:600; text-align:right;">${NCFormat(balanceDue)}</td>
+                                <td colspan="2" style="${cellValue}">${NCFormat(balanceDue)}</td>
                             </tr>
                         `;
                     }
 
                     $('#modal_invoice_totals').html(totalsHtml);
 
-                    // ── Footer ────────────────────────────────────────────────────
+                    // ── Text footer ───────────────────────────────────────────────
                     $('#modal_footer').text('Prepared by: ' + (line.Userlogin || ''));
 
                     my_modal_view_sales_ledger.showModal();
