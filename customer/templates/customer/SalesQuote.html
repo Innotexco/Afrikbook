@@ -2,6 +2,8 @@
 
 {% block content %}
 
+    {% include "customer/ViewSalesQuote.html" %}
+
     <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple" href="#">
         <div class="flex items-center">
             <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -38,7 +40,8 @@
                         <th class="px-4 py-3">Customer</th>
                         <th class="px-4 py-3">Description</th>
                         <th class="px-4 py-3">Total</th>
-                        <th class="px-4 py-3">Action</th>
+                        <th class="px-4 py-3">View</th>
+                        <th class="px-4 py-3">Edit</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y">
@@ -51,19 +54,26 @@
                         <td class="text-[10px] px-4 py-2">{{ quote.Gdescription|default:"—" }}</td>
                         <td class="text-[10px] px-4 py-2">{{ quote.total }}</td>
                         <td class="text-[10px] px-4 py-2">
-                            <div class="flex items-center gap-3">
-                                <a href="{% url 'customer:EditSalesQuote' quote.referenceID %}"
-                                    class="flex items-center text-blue-500" aria-label="Edit">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
-                                    </svg>
-                                </a>
-                            </div>
+                            <a onclick="showQuoteModal('{{ quote.referenceID }}')"
+                               class="flex items-center justify-center text-green-600 cursor-pointer"
+                               aria-label="View">
+                                <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7zm0 11a4 4 0 110-8 4 4 0 010 8zm0-2.5A1.5 1.5 0 1010 8a1.5 1.5 0 000 3.5z"/>
+                                </svg>
+                            </a>
+                        </td>
+                        <td class="text-[10px] px-4 py-2">
+                            <a href="{% url 'customer:EditSalesQuote' quote.referenceID %}"
+                                class="flex items-center justify-center text-blue-500" aria-label="Edit">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                                </svg>
+                            </a>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="text-center text-gray-400 py-4 text-sm">No quotes found</td>
+                        <td colspan="8" class="text-center text-gray-400 py-4 text-sm">No quotes found</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -77,6 +87,20 @@
     </div>
 
 <script>
+    function formatQuoteDate(value) {
+        if (value === null || value === undefined || value === '') return '';
+        const s = String(value);
+        const match = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (match) {
+            return match[3] + '/' + match[2] + '/' + match[1];
+        }
+        const d = new Date(value);
+        if (isNaN(d.getTime())) return s;
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        return day + '/' + month + '/' + d.getFullYear();
+    }
+
     function Filter() {
         const from = $('#from').val();
         const to   = $('#to').val();
@@ -93,15 +117,24 @@
                     let num = 0;
                     response.forEach(function(item) {
                         num++;
+                        const ref = item.referenceID || '';
+                        const editUrl = "{% url 'customer:EditSalesQuote' 'REF_ID' %}".replace('REF_ID', encodeURIComponent(ref));
                         table.append($('<tr>').append(
                             $('<td class="text-[10px] px-4 py-2">').text(num),
                             $('<td class="text-[10px] px-4 py-2">').text(item.quote_date),
-                            $('<td class="text-[10px] px-4 py-2 font-mono">').text(item.referenceID || '—'),
+                            $('<td class="text-[10px] px-4 py-2 font-mono">').text(ref || '—'),
                             $('<td class="text-[10px] px-4 py-2">').text(item.genby),
                             $('<td class="text-[10px] px-4 py-2">').text(item.Gdescription || '—'),
                             $('<td class="text-[10px] px-4 py-2">').text(item.amount),
                             $('<td class="text-[10px] px-4 py-2">').append(
-                                '<a href="/edit-sales-quote/' + item.referenceID + '/" class="text-blue-500 flex items-center"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path></svg></a>'
+                                `<a onclick="showQuoteModal('${ref}')" class="flex items-center justify-center text-green-600 cursor-pointer" aria-label="View">
+                                    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7zm0 11a4 4 0 110-8 4 4 0 010 8zm0-2.5A1.5 1.5 0 1010 8a1.5 1.5 0 000 3.5z"/>
+                                    </svg>
+                                </a>`
+                            ),
+                            $('<td class="text-[10px] px-4 py-2">').append(
+                                '<a href="' + editUrl + '" class="text-blue-500 flex items-center justify-center"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path></svg></a>'
                             )
                         ));
                     });
@@ -110,6 +143,118 @@
                 }
             },
             error: function() { alertify.error("Filter request failed"); }
+        });
+    }
+
+    function showQuoteModal(quoteId) {
+        if (!quoteId) return;
+
+        $.ajax({
+            url: "{% url 'customer:ViewSalesQuote' 'QUOTE_ID' %}".replace('QUOTE_ID', encodeURIComponent(quoteId)),
+            method: 'GET',
+            success: function(data) {
+                if (!data.serialized_data || data.serialized_data.length === 0) {
+                    alertify.error('No quote lines found');
+                    return;
+                }
+
+                const items = data.serialized_data;
+                const line = items[0];
+                const q = data.quote || {};
+
+                const referenceID = q.referenceID || line.referenceID || '';
+                const quoteDate = formatQuoteDate(q.quote_date || line.quote_date);
+                const customerName = q.customer_name || line.genby || '';
+                const customerId = q.customer_id || line.custID || '';
+                const description = q.description || line.Gdescription || '';
+
+                $('#quoteHeader').html(`
+                    <table style="width:100%;border-collapse:collapse;margin-bottom:8px;background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+                        <tr>
+                            <td style="padding:12px 16px;vertical-align:top;width:33%;text-align:center;">
+                                <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-bottom:4px;">Quote Ref</div>
+                                <div style="font-weight:600;color:#2F4F4F;font-size:12px;">${referenceID}</div>
+                            </td>
+                            <td style="padding:12px 16px;vertical-align:top;width:33%;text-align:center;">
+                                <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-bottom:4px;">Date</div>
+                                <div style="font-weight:600;color:#2F4F4F;font-size:12px;">${quoteDate}</div>
+                            </td>
+                            <td style="padding:12px 16px;vertical-align:top;width:33%;text-align:center;">
+                                <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-bottom:4px;">Document</div>
+                                <span style="display:inline-block;padding:2px 8px;border-radius:9999px;font-size:9px;font-weight:600;text-transform:uppercase;background:#dbeafe;color:#1e40af;">
+                                    Quote
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                    <div style="padding:10px 16px;margin-bottom:8px;display:flex;justify-content:space-between;">
+                        <div>
+                            <div style="font-size:10px;text-transform:uppercase;color:#9ca3af;margin-bottom:4px;">Bill To</div>
+                            <div style="font-size:12px;font-weight:500;color:#111827;">${customerName}</div>
+                            <div style="font-size:11px;color:#6b7280;">ID: ${customerId}</div>
+                        </div>
+                        ${description ? `
+                        <div style="text-align:right;">
+                            <div style="font-size:10px;text-transform:uppercase;color:#9ca3af;margin-bottom:4px;">Description</div>
+                            <div style="font-size:12px;font-weight:500;color:#111827;">${description}</div>
+                        </div>` : ''}
+                    </div>
+                `);
+
+                const tbody = $('#salesQuoteView tbody');
+                tbody.empty();
+                let linesSubtotal = 0;
+
+                items.forEach(function(item, index) {
+                    const amount = parseFloat(item.amount) || 0;
+                    linesSubtotal += amount;
+                    tbody.append(`
+                        <tr style="border-bottom:1px solid #f3f4f6;">
+                            <td style="padding:8px 12px;font-size:10px;">${index + 1}</td>
+                            <td style="padding:8px 12px;font-size:10px;">${item.item_name || ''}</td>
+                            <td style="padding:8px 12px;font-size:10px;">${item.item_description || ''}</td>
+                            <td style="padding:8px 12px;font-size:10px;">${item.qty != null ? item.qty : ''}</td>
+                            <td style="padding:8px 12px;font-size:10px;">${typeof NCFormat === 'function' ? NCFormat(item.unit_p) : item.unit_p}</td>
+                            <td style="padding:8px 12px;font-size:10px;">${item.discount ? (typeof NCFormat === 'function' ? NCFormat(item.discount) : item.discount) : '—'}</td>
+                            <td style="padding:8px 12px;font-size:10px;text-align:right;">${typeof NCFormat === 'function' ? NCFormat(amount) : amount}</td>
+                        </tr>
+                    `);
+                });
+
+                const subtotalVal = parseFloat(data.subtotal);
+                const subtotal = !isNaN(subtotalVal) ? subtotalVal : linesSubtotal;
+                const grandTotalVal = parseFloat(data.grand_total);
+                const grandTotal = !isNaN(grandTotalVal) ? grandTotalVal : subtotal;
+
+                const tfootColor = '#6b7280';
+                const cellLabel = `padding:8px 12px; text-align:right; font-size:11px; color:${tfootColor}; font-weight:700;`;
+                const cellValue = `padding:8px 12px; font-size:11px; color:${tfootColor}; text-align:right; font-weight:700;`;
+                const fmt = function(n) {
+                    return typeof NCFormat === 'function' ? NCFormat(n) : n;
+                };
+
+                let totalsHtml = `
+                    <tr><td colspan="7" style="padding:4px;"></td></tr>
+                    <tr style="background:#f9fafb;">
+                        <td colspan="5" style="${cellLabel}">Subtotal</td>
+                        <td colspan="2" style="${cellValue}">${fmt(subtotal)}</td>
+                    </tr>
+                    <tr style="background:#f9fafb; border-top:2px solid #2F4F4F;">
+                        <td colspan="5" style="padding:10px 12px; text-align:right; font-size:12px; font-weight:700; color:${tfootColor};">Total Amount</td>
+                        <td colspan="2" style="padding:10px 12px; font-size:12px; font-weight:700; color:${tfootColor}; text-align:right;">${fmt(grandTotal)}</td>
+                    </tr>
+                `;
+                $('#modal_quote_totals').html(totalsHtml);
+
+                $('#modal_quote_footer').text(
+                    'Prepared by: ' + (q.Userlogin || line.Userlogin || '')
+                );
+
+                my_modal_view_sales_quote.showModal();
+            },
+            error: function() {
+                alertify.error('Quote retrieval failed');
+            }
         });
     }
 </script>

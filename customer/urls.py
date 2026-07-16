@@ -32,6 +32,7 @@ urlpatterns = [
     #sales quote urls
     path('NewSalesQuote', views.AddSalesQuote, name='NewSalesQuote'),
     path('SalesQuote', views.SalesQuote, name='SalesQuote'),
+    path('view-sales-quote/<str:quote_id>/', views.ViewSalesQuote, name='ViewSalesQuote'),  # ajax
     path('edit-sales-quote/<str:quote_id>/', views.EditSalesQuote, name='EditSalesQuote'),
     # path('Update/<int:id>/', views.UpdateCustomer, name='updateCustomer'),
     # path('Delete/<int:id>/', views.delete_customer, name='delete-customer'),
