@@ -14,53 +14,7 @@
             font-size: 12px;
         }
 
-        /* Header */
-        .header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 8px 0 4px;
-            color: #2F4F4F;
-        }
-        .header img {
-            width: 590px;
-            max-width: 100%;
-            padding-top: 0px;
-            height: auto;
-        }
-        .address {
-            text-align: center;
-            font-size: 11px;
-            padding-left: 128px;
-            margin-top: -24px;
-            font-style: normal;
-            white-space: nowrap;
-            color: #374151;
-        }
-        .contact-bar {
-            display: flex;
-            margin-left: 64px;
-            justify-content: center;
-            align-items: center;
-            gap: 24px;
-            font-size: 11px;
-            font-weight: 300;
-            white-space: nowrap;
-            color: #374151;
-            margin-top: 6px;
-        }
-        .contact-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .contact-item svg {
-            width: 16px;
-            height: 16px;
-        }
-        .rc { font-weight: 500; }
-
-        /* Invoice Meta */
+        /* Invoice Meta – unchanged */
         .invoice-meta {
             display: flex;
             justify-content: space-between;
@@ -83,7 +37,7 @@
             margin-top: 2px;
         }
 
-        /* Customer Info */
+        /* Customer Info – unchanged */
         .customer-section {
             padding: 10px 24px;
             display: flex;
@@ -106,7 +60,7 @@
             color: #6b7280;
         }
 
-        /* Table */
+        /* Table – unchanged */
         .table-wrap {
             width: 100%;
             overflow-x: auto;
@@ -141,7 +95,6 @@
         tfoot td {
             padding: 8px 12px;
             font-size: 11px;
-            color: #6b7280; /* same gray as Amount Paid labels */
             font-weight: 700;
         }
         .total-row {
@@ -166,7 +119,7 @@
             font-weight: 700;
         }
 
-        /* Footer */
+        /* Footer – unchanged */
         hr { border: none; border-top: 1px solid #e5e7eb; margin: 16px 0; }
         .footer {
             font-size: 10px;
@@ -190,87 +143,51 @@
 </head>
 <body>
 
-    {% if company.pdf_template_preference == invoice %}
-    <!-- Header -->
-    <div style="padding: 16px 24px; border-bottom: 2px solid #2F4F4F; display: flex; justify-content: space-between; align-items: center;">
-
-        <!-- Far left: circular logo -->
+    <div style="display: flex; align-items: center; gap: 16px; padding: 12px 24px 0; justify-content: center;">
         {% if company.logo %}
-        <div style="width:70px; height:70px; border-radius:50%; overflow:hidden; flex-shrink:0; border:2px solid #e5e7eb;">
             <img src="{{ company.logo.url }}"
-                alt="{{ company.CompanyName }}"
-                style="width:100%; height:100%; object-fit:cover; object-position:left center;">
-        </div>
-        {% endif %}
-
-        <!-- Far right: company name + contact -->
-        <div style="text-align:right; font-size:10px; color:#6b7280; line-height:1.8; max-width:60%;">
-            <div style="
-                font-weight:700;
-                color:#2F4F4F;
-                line-height:1.2;
-                margin-bottom:4px;
-                word-break:break-word;
-                overflow-wrap:break-word;
-                font-size: clamp(13px, 2.5vw, 22px);
-            ">
-                {{ company.CompanyName|upper }}
+                 alt="{{ company.CompanyName }}"
+                 style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid #e5e7eb; flex-shrink: 0;">
+        {% else %}
+            <div style="width: 64px; height: 64px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 10px; flex-shrink: 0;">
+                No Logo
             </div>
-            {% if company.services %}
-                <div style="font-size:10px; color:#6b7280; margin-bottom:4px;">{{ company.services }}</div>
-            {% endif %}
-            {% if company.address %}
-                <div>{{ company.address }}</div>
-            {% endif %}
-            {% if company.phone %}
-                <div>{{ company.phone }}{% if company.phone2 %} / {{ company.phone2 }}{% endif %}</div>
-            {% endif %}
-            {% if company.email %}
-                <div>{{ company.email }}</div>
-            {% endif %}
-            {% if company.Rc %}
-                <div style="font-weight:600; color:#2F4F4F;">RC {{ company.Rc }}</div>
-            {% endif %}
-        </div>
-
+        {% endif %}
+        <p style="font-weight: 700; color: #2F4F4F; font-size: clamp(14px, 3vw, 26px); line-height: 1.2; word-break: break-word;">
+            {{ company.CompanyName|upper }}
+        </p>
     </div>
 
+    <!-- Address Line  -->
+    <address style="text-align: center; font-size: 11px; padding: 4px 24px 0; font-style: normal; white-space: nowrap; color: #374151;">
+        {{ company.address }}
+    </address>
 
-    {% else %}
-
-        <!-- Default: clean header for all other companies -->
-        <div style="padding: 16px 24px; border-bottom: 2px solid #2F4F4F; display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 14px;">
-                {% if company.logo %}
-                    <img src="{{ company.logo.url }}" alt="{{ company.CompanyName }}"
-                        style="height: 56px; width: auto; object-fit: contain;">
-                {% endif %}
-                <div>
-                    <div style="font-size: 18px; font-weight: 700; color: #2F4F4F; line-height: 1.2;">
-                        {{ company.CompanyName|upper }}
-                    </div>
-                    {% if company.services %}
-                    <div style="font-size: 10px; color: #6b7280; margin-top: 2px;">{{ company.services }}</div>
-                    {% endif %}
-                </div>
-            </div>
-            <div style="text-align: right; font-size: 10px; color: #6b7280; line-height: 1.8;">
-                {% if company.address %}
-                    <div>{{ company.address }}</div>
-                {% endif %}
-                {% if company.phone %}
-                    <div>{{ company.phone }}{% if company.phone2 %} / {{ company.phone2 }}{% endif %}</div>
-                {% endif %}
-                {% if company.email %}
-                    <div>{{ company.email }}</div>
-                {% endif %}
-                {% if company.Rc %}
-                    <div style="font-weight: 600; color: #2F4F4F;">RC {{ company.Rc }}</div>
-                {% endif %}
-            </div>
+    <!-- Contact Bar  -->
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 20px; font-size: 11px; font-weight: 300; white-space: nowrap; color: #374151; padding: 6px 24px 12px;">
+        <!-- Email -->
+        <div style="display: flex; align-items: center; gap: 6px;">
+            <svg style="width: 16px; height: 16px; display: inline-block;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v.01L12 13 2 6.01V6z"/>
+                <path d="M2 8.5V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8.5l-9.4 6.27a1 1 0 0 1-1.2 0L2 8.5z"/>
+            </svg>
+            <span>{{ company.email }}</span>
         </div>
+        <!-- Phone -->
+        <div style="display: flex; align-items: center; gap: 6px;">
+            <svg style="width: 16px; height: 16px; display: inline-block;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2.01 5.87a2 2 0 0 1 2-2h3.2a1 1 0 0 1 .96.73l1.1 3.86a1 1 0 0 1-.45 1.14l-1.7 1.02a15.05 15.05 0 0 0 6.59 6.59l1.02-1.7a1 1 0 0 1 1.14-.45l3.86 1.1a1 1 0 0 1 .73.96v3.2a2 2 0 0 1-2 2A18 18 0 0 1 2.01 5.87z"/>
+            </svg>
+            <span>{{ company.phone }}{% if company.phone2 %}, {{ company.phone2 }}{% endif %}</span>
+        </div>
+        <!-- RC -->
+        {% if company.Rc %}
+            <span style="font-weight: 500;">RC {{ company.Rc }}</span>
+        {% endif %}
+    </div>
 
-    {% endif %}
+    <hr style="margin: 8px 24px 0; border: none; border-top: 1px solid #e5e7eb;">
+
 
     <!-- Invoice Meta -->
     <div class="invoice-meta">
@@ -324,11 +241,10 @@
                 <tr>
                     <th>SN</th>
                     <th>Item</th>
-                    {% comment %} <th>Description</th> {% endcomment %}
                     <th>Qty</th>
-                    <th>Unit Price({{ company.currency }})</th>
-                    <th>Discount({{ company.currency }})</th>
-                    <th>Amount({{ company.currency }})</th>
+                    <th>Unit Price ({{ company.currency }})</th>
+                    <th>Discount ({{ company.currency }})</th>
+                    <th>Amount ({{ company.currency }})</th>
                 </tr>
             </thead>
             <tbody>
@@ -336,7 +252,6 @@
                 <tr>
                     <td>{{ forloop.counter }}</td>
                     <td>{{ item.item_name }}</td>
-                    {% comment %} <td>{{ item.item_description }}</td> {% endcomment %}
                     <td>{{ item.qty }}</td>
                     <td>{{ item.unit_p|floatformat:2|intcomma }}</td>
                     <td>{% if item.discount %}{{ item.discount|floatformat:2|intcomma }}{% else %}—{% endif %}</td>
@@ -344,25 +259,23 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" style="text-align:center; color:#9ca3af; padding:16px;">No items found</td>
+                    <td colspan="6" style="text-align:center; color:#9ca3af; padding:16px;">No items found</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tfoot>
-                <tr><td colspan="7" style="padding:4px;"></td></tr>
+                <tr><td colspan="6" style="padding:4px;"></td></tr>
 
                 <!-- Subtotal -->
                 <tr class="summary-row">
-                    <td colspan="5" style="text-align:right; padding-right:12px;">Subtotal</td>
+                    <td colspan="4" style="text-align:right; padding-right:12px;">Subtotal</td>
                     <td colspan="2">{{ company.currency }} {{ subtotal|floatformat:2|intcomma }}</td>
                 </tr>
 
                 <!-- VAT lines -->
                 {% for vat in vat_items %}
                 <tr class="summary-row">
-                    <td colspan="5" style="text-align:right; padding-right:12px;">
-                        VAT
-                    </td>
+                    <td colspan="4" style="text-align:right; padding-right:12px;">VAT</td>
                     <td colspan="2">{{ company.currency }} {{ vat.amount|floatformat:2|intcomma }}</td>
                 </tr>
                 {% endfor %}
@@ -370,25 +283,25 @@
                 <!-- VAT Total (only if more than one VAT line) -->
                 {% if vat_items|length > 1 %}
                 <tr class="summary-row divider-row">
-                    <td colspan="5" style="text-align:right; padding-right:12px; color:#6b7280; font-weight:700;">VAT Total</td>
+                    <td colspan="4" style="text-align:right; padding-right:12px; color:#6b7280; font-weight:700;">VAT Total</td>
                     <td colspan="2" style="color:#6b7280; font-weight:700;">{{ company.currency }} {{ vat_total|floatformat:2|intcomma }}</td>
                 </tr>
                 {% endif %}
 
                 <!-- Grand Total -->
                 <tr class="total-row">
-                    <td colspan="5" style="text-align:right; padding-right:12px; color:#6b7280; font-weight:700;">Total Amount</td>
+                    <td colspan="4" style="text-align:right; padding-right:12px; color:#6b7280; font-weight:700;">Total Amount</td>
                     <td colspan="2" style="color:#6b7280; font-weight:700;">{{ company.currency }} {{ grand_total|floatformat:2|intcomma }}</td>
                 </tr>
 
                 <!-- Amount Paid / Balance Due -->
                 {% if invoice.amount_paid and invoice.amount_paid != grand_total %}
                 <tr style="background:#fff;">
-                    <td colspan="5" style="text-align:right; padding-right:12px; color:#6b7280; font-weight:700;">Amount Paid</td>
+                    <td colspan="4" style="text-align:right; padding-right:12px; color:#6b7280; font-weight:700;">Amount Paid</td>
                     <td colspan="2" style="color:#6b7280; font-weight:700;">{{ company.currency }} {{ invoice.amount_paid|floatformat:2|intcomma }}</td>
                 </tr>
                 <tr style="background:#fff;">
-                    <td colspan="5" style="text-align:right; padding-right:12px; color:#6b7280; font-weight:700;">Balance Due</td>
+                    <td colspan="4" style="text-align:right; padding-right:12px; color:#6b7280; font-weight:700;">Balance Due</td>
                     <td colspan="2" style="color:#6b7280; font-weight:700;">{{ company.currency }} {{ balance_due|floatformat:2|intcomma }}</td>
                 </tr>
                 {% endif %}
@@ -405,21 +318,3 @@
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
