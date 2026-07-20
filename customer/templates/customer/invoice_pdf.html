@@ -147,9 +147,9 @@
         {% if company.logo %}
             <img src="{{ company.logo.url }}"
                 alt="{{ company.CompanyName }}"
-                style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; object-position: left center; flex-shrink: 0; border: 2px solid #e5e7eb;">
+                style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; object-position: left center; flex-shrink: 0; border: 2px solid #e5e7eb;">
         {% else %}
-            <div style="width: 80px; height: 80px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 10px; flex-shrink: 0;">
+            <div style="width: 72px; height: 72px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 10px; flex-shrink: 0;">
                 No Logo
             </div>
         {% endif %}
@@ -173,7 +173,7 @@
         </div>
         <!-- Phone -->
         <div style="display: flex; align-items: center; gap: 6px;">
-            <svg style="width: 16px; height: 16px; display: inline-block; color: #6b7280;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <svg style="width: 16px; height: 16px; display: inline-block; text-gray-700;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M2.01 5.87a2 2 0 0 1 2-2h3.2a1 1 0 0 1 .96.73l1.1 3.86a1 1 0 0 1-.45 1.14l-1.7 1.02a15.05 15.05 0 0 0 6.59 6.59l1.02-1.7a1 1 0 0 1 1.14-.45l3.86 1.1a1 1 0 0 1 .73.96v3.2a2 2 0 0 1-2 2A18 18 0 0 1 2.01 5.87z"/>
             </svg>
             <span>{{ company.phone }}{% if company.phone2 %}, {{ company.phone2 }}{% endif %}</span>
