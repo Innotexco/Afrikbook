@@ -61,15 +61,6 @@ from django.db import connection
 from customer.models import Vat
 # from django.db.models import Sum
 
-import threading
-
-def _send_async(email_message):
-    try:
-        email_message.send()
-    except Exception as e:
-        logger.error(f"[email_invoice_to_customer] Async send failed: {e}")
-        
-
 def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_name):
     try:
         invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoiceID)
@@ -134,9 +125,7 @@ def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_n
             to         = [customer_email],
         )
         email.attach(f"Invoice_{invoiceID}.pdf", pdf_file, 'application/pdf')
-        thread = threading.Thread(target=_send_async, args=(email,))
-        thread.daemon = True
-        thread.start()
+        email.send()
 
         logger.info(f"[email_invoice_to_customer] Sent | invoiceID={invoiceID} | to={customer_email}")
         return True, "Invoice emailed successfully"
