@@ -43,23 +43,18 @@
                     />
                 </label>
 
-                <label class="block text-sm">
+                <label class="block text-sm relative">
                     <span class="text-gray-700 dark:text-gray-400">Invoice Number</span>
-                    <div style="position: relative;">
+                    <div class="ac-wrapper">
                         <input type="text"
                             name="invoiceID"
                             id="invoiceID"
                             class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
                             placeholder="Type or select invoice"
                             autocomplete="off">
-                        <!-- Custom suggestions list -->
-                        <ul id="invoiceSuggestions"
-                            style="display:none; position:absolute; top:100%; left:0; right:0; z-index:1000;
-                                max-height:200px; overflow-y:auto; background:white; border:1px solid #ccc;
-                                border-radius:4px; margin-top:2px; padding:0; list-style:none;">
-                        </ul>
+                        <ul id="invoiceDropdown" class="ac-dropdown hidden"></ul>
                     </div>
-                    <input type="hidden" name="initial_total" id="initial_total">
+                    <input type="hidden" name="initial_total" id="initial_total" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input">
                 </label>
 
                 <label class="block text-sm">
@@ -319,68 +314,138 @@
 
     </div>
 
+
     <script>
-        (function() {
-            // ── Gather invoice IDs from Django ──────────────────────────
-            const invoiceOptions = [
-                {% for inv in invoices %}
-                    '{{ inv.invoiceID }}',
-                {% endfor %}
-            ];
+        // Data source — replaces {% for inv in invoices %} datalist loop
+        const invoiceList = [
+            {% for inv in invoices %}"{{ inv.invoiceID }}"{% if not forloop.last %},{% endif %}{% endfor %}
+        ];
 
+        (function () {
             const input = document.getElementById('invoiceID');
-            const suggestions = document.getElementById('invoiceSuggestions');
+            const dropdown = document.getElementById('invoiceDropdown');
+            let activeIndex = -1;
+            let currentMatches = [];
 
-            // ── Show suggestions on input ──────────────────────────────
-            input.addEventListener('input', function() {
-                const val = this.value.toLowerCase().trim();
-                const matches = invoiceOptions.filter(id => id.toLowerCase().includes(val));
+            function escapeRegExp(str) {
+                return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
 
-                if (matches.length && val.length > 0) {
-                    suggestions.style.display = 'block';
-                    suggestions.innerHTML = matches.map(id =>
-                        `<li style="padding:8px 12px; cursor:pointer; border-bottom:1px solid #f0f0f0;"
-                            data-value="${id}"
-                            onmouseover="this.style.background='#f3f4f6'"
-                            onmouseout="this.style.background=''"
-                            onclick="selectInvoice('${id}')">
-                            ${id}
-                        </li>`
-                    ).join('');
-                } else {
-                    suggestions.style.display = 'none';
+            function highlight(text, query) {
+                if (!query) return text;
+                const re = new RegExp('(' + escapeRegExp(query) + ')', 'ig');
+                return text.replace(re, '<mark>$1</mark>');
+            }
+
+            function renderDropdown(matches, query) {
+                dropdown.innerHTML = '';
+                activeIndex = -1;
+                currentMatches = matches;
+
+                if (matches.length === 0) {
+                    const li = document.createElement('li');
+                    li.className = 'ac-empty';
+                    li.textContent = 'No matching invoices';
+                    dropdown.appendChild(li);
+                    dropdown.classList.remove('hidden');
+                    return;
                 }
-            });
 
-            // ── Hide on blur (with short delay to allow click) ────────
-            input.addEventListener('blur', function() {
-                setTimeout(() => { suggestions.style.display = 'none'; }, 200);
-            });
-
-            // ── Select function (global) ────────────────────────────────
-            window.selectInvoice = function(id) {
-                input.value = id;
-                suggestions.style.display = 'none';
-                // Trigger the existing jQuery change/input handler
-                $(input).trigger('input');
-            };
-
-            // ── Keyboard: Enter to select first match ──────────────────
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && suggestions.style.display === 'block') {
-                    const first = suggestions.querySelector('li');
-                    if (first) {
+                matches.forEach((value, idx) => {
+                    const li = document.createElement('li');
+                    li.className = 'ac-item';
+                    li.innerHTML = highlight(value, query);
+                    li.dataset.value = value;
+                    li.addEventListener('mousedown', (e) => {
+                        // mousedown fires before input's blur, so selection isn't lost
                         e.preventDefault();
-                        selectInvoice(first.dataset.value);
-                    }
+                        selectValue(value);
+                    });
+                    dropdown.appendChild(li);
+                });
+
+                dropdown.classList.remove('hidden');
+            }
+
+            function selectValue(value) {
+                input.value = value;
+                closeDropdown();
+                // keep existing AJAX invoice-detail fetch working
+                input.dispatchEvent(new Event('input'));
+            }
+
+            function closeDropdown() {
+                dropdown.classList.add('hidden');
+                dropdown.innerHTML = '';
+                activeIndex = -1;
+            }
+
+            function updateActive(items) {
+                items.forEach((el, idx) => {
+                    el.classList.toggle('ac-active', idx === activeIndex);
+                });
+                if (activeIndex >= 0 && items[activeIndex]) {
+                    items[activeIndex].scrollIntoView({ block: 'nearest' });
                 }
-                if (e.key === 'Escape') {
-                    suggestions.style.display = 'none';
+            }
+
+            input.addEventListener('keyup', function (e) {
+                // Ignore navigation/control keys here — handled in keydown
+                if (['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(e.key)) return;
+
+                const query = this.value.trim();
+                if (query === '') {
+                    closeDropdown();
+                    return;
+                }
+
+                const matches = invoiceList.filter(v =>
+                    v.toLowerCase().includes(query.toLowerCase())
+                );
+                renderDropdown(matches, query);
+            });
+
+            input.addEventListener('keydown', function (e) {
+                const items = Array.from(dropdown.querySelectorAll('.ac-item'));
+                if (dropdown.classList.contains('hidden') || items.length === 0) return;
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    activeIndex = (activeIndex + 1) % items.length;
+                    updateActive(items);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    activeIndex = (activeIndex - 1 + items.length) % items.length;
+                    updateActive(items);
+                } else if (e.key === 'Enter') {
+                    if (activeIndex >= 0 && items[activeIndex]) {
+                        e.preventDefault();
+                        selectValue(items[activeIndex].dataset.value);
+                    }
+                } else if (e.key === 'Escape') {
+                    closeDropdown();
+                }
+            });
+
+            input.addEventListener('focus', function () {
+                const query = this.value.trim();
+                if (query !== '') {
+                    const matches = invoiceList.filter(v =>
+                        v.toLowerCase().includes(query.toLowerCase())
+                    );
+                    renderDropdown(matches, query);
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.ac-wrapper')) {
+                    closeDropdown();
                 }
             });
         })();
     </script>
 
+    
     <script>
         var row = null
         function addRow2(i) {
@@ -643,6 +708,57 @@
 
         $('#p-method').on('change', function(){check();})
     </script>
+
+
+    <style>
+        .ac-wrapper { position: relative; }
+
+        .ac-dropdown {
+            position: absolute;
+            top: calc(100% + 2px);
+            left: 0;
+            right: 0;
+            z-index: 50;
+            max-height: 220px;
+            overflow-y: auto;
+            background: #fff;
+            border: 2px solid #cbd5e1; /* slate-300 */
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            margin: 0;
+            padding: 4px 0;
+            list-style: none;
+            font-size: 0.8rem;
+        }
+
+        .ac-dropdown.hidden { display: none; }
+
+        .ac-item {
+            padding: 6px 10px;
+            cursor: pointer;
+            color: #475569; /* slate-600 */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ac-item mark {
+            background: transparent;
+            color: #0f766e; /* teal-700 */
+            font-weight: 600;
+        }
+
+        .ac-item:hover,
+        .ac-item.ac-active {
+            background: #f1f5f9; /* slate-100 */
+        }
+
+        .ac-empty {
+            padding: 8px 10px;
+            color: #94a3b8; /* slate-400 */
+            font-style: italic;
+        }
+    </style>
 
     {% include 'vendor/vendor_grid_table.html' %}
 
