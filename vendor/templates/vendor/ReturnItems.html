@@ -45,19 +45,21 @@
 
                 <label class="block text-sm">
                     <span class="text-gray-700 dark:text-gray-400">Invoice Number</span>
-                    <input type="text"
-                        name="invoiceID"
-                        id="invoiceID"
-                        list="invoiceList"
-                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                        placeholder="Type or select invoice"
-                        autocomplete="off">
-                    <datalist id="invoiceList">
-                        {% for inv in invoices %}
-                            <option value="{{ inv.invoiceID }}">{{ inv.invoiceID }}</option>
-                        {% endfor %}
-                    </datalist>
-                    <input type="hidden" name="initial_total" id="initial_total" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input">
+                    <div style="position: relative;">
+                        <input type="text"
+                            name="invoiceID"
+                            id="invoiceID"
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                            placeholder="Type or select invoice"
+                            autocomplete="off">
+                        <!-- Custom suggestions list -->
+                        <ul id="invoiceSuggestions"
+                            style="display:none; position:absolute; top:100%; left:0; right:0; z-index:1000;
+                                max-height:200px; overflow-y:auto; background:white; border:1px solid #ccc;
+                                border-radius:4px; margin-top:2px; padding:0; list-style:none;">
+                        </ul>
+                    </div>
+                    <input type="hidden" name="initial_total" id="initial_total">
                 </label>
 
                 <label class="block text-sm">
@@ -316,6 +318,68 @@
         </form>
 
     </div>
+
+    <script>
+        (function() {
+            // ── Gather invoice IDs from Django ──────────────────────────
+            const invoiceOptions = [
+                {% for inv in invoices %}
+                    '{{ inv.invoiceID }}',
+                {% endfor %}
+            ];
+
+            const input = document.getElementById('invoiceID');
+            const suggestions = document.getElementById('invoiceSuggestions');
+
+            // ── Show suggestions on input ──────────────────────────────
+            input.addEventListener('input', function() {
+                const val = this.value.toLowerCase().trim();
+                const matches = invoiceOptions.filter(id => id.toLowerCase().includes(val));
+
+                if (matches.length && val.length > 0) {
+                    suggestions.style.display = 'block';
+                    suggestions.innerHTML = matches.map(id =>
+                        `<li style="padding:8px 12px; cursor:pointer; border-bottom:1px solid #f0f0f0;"
+                            data-value="${id}"
+                            onmouseover="this.style.background='#f3f4f6'"
+                            onmouseout="this.style.background=''"
+                            onclick="selectInvoice('${id}')">
+                            ${id}
+                        </li>`
+                    ).join('');
+                } else {
+                    suggestions.style.display = 'none';
+                }
+            });
+
+            // ── Hide on blur (with short delay to allow click) ────────
+            input.addEventListener('blur', function() {
+                setTimeout(() => { suggestions.style.display = 'none'; }, 200);
+            });
+
+            // ── Select function (global) ────────────────────────────────
+            window.selectInvoice = function(id) {
+                input.value = id;
+                suggestions.style.display = 'none';
+                // Trigger the existing jQuery change/input handler
+                $(input).trigger('input');
+            };
+
+            // ── Keyboard: Enter to select first match ──────────────────
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && suggestions.style.display === 'block') {
+                    const first = suggestions.querySelector('li');
+                    if (first) {
+                        e.preventDefault();
+                        selectInvoice(first.dataset.value);
+                    }
+                }
+                if (e.key === 'Escape') {
+                    suggestions.style.display = 'none';
+                }
+            });
+        })();
+    </script>
 
     <script>
         var row = null
