@@ -522,49 +522,226 @@ def getWarehouseStockLevel(request, db):
 
 
 
+def _clean_stock_filter(value):
+   """Treat empty / placeholder select values as no filter."""
+   if value is None:
+      return None
+   value = str(value).strip()
+   if not value:
+      return None
+   # Default options in StockLevelComparison.html
+   if value.startswith('_ _') or value.startswith('__'):
+      return None
+   if value.lower().startswith('choose'):
+      return None
+   return value
+
+
 def getStockLevelComparison(request, db):
-   getitemcode = request.GET.get('Itemcode')
-   getitemname = request.GET.get('searchItem')
-   getshop = request.GET.get('selectshop')
-   getwarehouse = request.GET.get('selectwarehouse')
-   INSTOCKLEVEL = Check_StockLevel_By.objects.using(db).first() #request.session.get('level', 'NO')
-   combined_data=[]
-   grandtotalforwarehouse= None
-   grandtotaforshop= None
-   if getitemcode or getitemname or getshop or getwarehouse :
-      getstock1 = CreateStockIn.objects.using(db).filter(Q(item_code=getitemcode) | Q(item=getitemname) | Q(warehouse=getwarehouse))
-      getstock2 = CreateOutletStockIn.objects.using(db).filter(Q(item_code=getitemcode) | Q(item=getitemname) | Q(outlet=getshop))
-      compare_data = list(zip_longest(getstock1, getstock2))
-      total_quantity1 = sum(item.quantity for item in getstock1)
-      total_quantity2 = sum(item.quantity for item in getstock2)
-      
+   """
+   Compare warehouse vs outlet stock levels for matching items.
 
-      if getstock1 or getstock2:
-         for item1, item2 in compare_data:
-            if item1:
-               grandtotalforwarehouse = get_grand_total_from_stock_log(item1, CreateStockInLog, CreateOutletStockInLog,   item1.warehouse, db)
-            if item2:
-               grandtotaforshop = get_grand_total_from_stock_log(item2, CreateOutletStockInLog, CreateStockInLog,  item2.outlet, db)
+   Returns (combined_data, total_warehouse_qty, total_outlet_qty), or
+   ([], 0, 0) when filters are set but nothing matches. Returns None when
+   no search filters were provided (page render).
+   """
+   getitemcode = _clean_stock_filter(request.GET.get('Itemcode'))
+   getitemname = _clean_stock_filter(request.GET.get('searchItem'))
+   getshop = _clean_stock_filter(request.GET.get('selectshop'))
+   getwarehouse = _clean_stock_filter(request.GET.get('selectwarehouse'))
 
-            if INSTOCKLEVEL == 'YES':
-               if item1:
-                  grandtotalforwarehouse = item1.quantity
-               if item2:
-                  grandtotaforshop       = item2.quantity
-            combined_data.append(
-                  {
-                     'id': item1.id if item1 and item1.id is not None else item2.id,
-                     'items': item1.item if item1 and item1.item is not None else item2.item,
-                     'qty1': grandtotalforwarehouse if item1 and grandtotalforwarehouse is not None else None,
-                     'qty2': grandtotaforshop if item2 and grandtotaforshop is not None else None,
-                     'datetx': item1.datetx if item1 and item1.datetx is not None else item2.datetx,
-                     'itemcode': item1.item_code if item1 and item1.item_code is not None else item2.item_code,
-                     'store1': item1.warehouse if item1 and item1.warehouse is not None else None,
-                     'store2': item2.outlet if item2 and item2.outlet is not None else None,
-                  })
-         return combined_data, total_quantity1, total_quantity2
-   
+   if not (getitemcode or getitemname or getshop or getwarehouse):
+      return None
 
+   try:
+      stock_cfg = Check_StockLevel_By.objects.using(db).first()
+      stock_level = stock_cfg.level if stock_cfg is not None else 'NO'
+   except Exception:
+      stock_level = 'NO'
+   stock_level = (stock_level or 'NO').strip().upper()
+
+   # Build filters from only the fields the user actually set (AND)
+   wh_q = Q()
+   if getitemcode:
+      wh_q &= Q(item_code=getitemcode)
+   if getitemname:
+      wh_q &= Q(item__icontains=getitemname)
+   if getwarehouse:
+      wh_q &= Q(warehouse=getwarehouse)
+
+   out_q = Q()
+   if getitemcode:
+      out_q &= Q(item_code=getitemcode)
+   if getitemname:
+      out_q &= Q(item__icontains=getitemname)
+   if getshop:
+      out_q &= Q(outlet=getshop)
+
+   warehouse_rows = list(CreateStockIn.objects.using(db).filter(wh_q)) if wh_q else []
+   outlet_rows = list(CreateOutletStockIn.objects.using(db).filter(out_q)) if out_q else []
+
+   # Index by item_code (prefer latest row for names / dates)
+   warehouse_by_code = {}
+   for row in warehouse_rows:
+      code = row.item_code
+      if not code:
+         continue
+      warehouse_by_code[code] = row
+
+   outlet_by_code = {}
+   for row in outlet_rows:
+      code = row.item_code
+      if not code:
+         continue
+      outlet_by_code[code] = row
+
+   all_codes = sorted(set(warehouse_by_code.keys()) | set(outlet_by_code.keys()))
+   if not all_codes:
+      return [], 0, 0
+
+   combined_data = []
+   total_quantity1 = Decimal('0')
+   total_quantity2 = Decimal('0')
+
+   for code in all_codes:
+      wh_row = warehouse_by_code.get(code)
+      out_row = outlet_by_code.get(code)
+
+      # Resolve display fields from whichever side has data
+      item_name = (wh_row.item if wh_row else None) or (out_row.item if out_row else '')
+      datetx = (wh_row.datetx if wh_row else None) or (out_row.datetx if out_row else None)
+      row_id = (wh_row.id if wh_row else None) or (out_row.id if out_row else None)
+      store1 = wh_row.warehouse if wh_row else (getwarehouse or None)
+      store2 = out_row.outlet if out_row else (getshop or None)
+
+      # ── Warehouse qty ──────────────────────────────────────────────────
+      qty1 = None
+      if wh_row is not None or getwarehouse or getitemcode or getitemname:
+         wh_store = getwarehouse or (wh_row.warehouse if wh_row else None)
+         if stock_level == 'YES':
+            if getwarehouse:
+               qty1 = get_grand_total_from_outlet_stockin(
+                  code, CreateStockIn, wh_store, db, Q(warehouse=wh_store)
+               )
+            else:
+               # Sum across all warehouses for this item
+               qty1 = (
+                  CreateStockIn.objects.using(db)
+                  .filter(item_code=code)
+                  .aggregate(total=Sum('quantity'))['total']
+                  or 0
+               )
+               store1 = store1 or 'All warehouses'
+         else:
+            if wh_store:
+               qty1 = warehouse_stock_log_level(
+                  code, CreateStockInLog, CreateOutletStockInLog, wh_store, db
+               )
+            else:
+               # Sum log-based levels for every warehouse that has this item
+               wh_names = (
+                  CreateStockIn.objects.using(db)
+                  .filter(item_code=code)
+                  .values_list('warehouse', flat=True)
+                  .distinct()
+               )
+               total_wh = Decimal('0')
+               for wh_name in wh_names:
+                  if not wh_name:
+                     continue
+                  total_wh += Decimal(str(
+                     warehouse_stock_log_level(
+                        code, CreateStockInLog, CreateOutletStockInLog, wh_name, db
+                     ) or 0
+                  ))
+               qty1 = total_wh
+               store1 = store1 or 'All warehouses'
+
+      # ── Outlet qty ─────────────────────────────────────────────────────
+      qty2 = None
+      if out_row is not None or getshop or getitemcode or getitemname:
+         out_store = getshop or (out_row.outlet if out_row else None)
+         if stock_level == 'YES':
+            if getshop:
+               qty2 = get_grand_total_from_outlet_stockin(
+                  code, CreateOutletStockIn, out_store, db, Q(outlet=out_store)
+               )
+            else:
+               qty2 = (
+                  CreateOutletStockIn.objects.using(db)
+                  .filter(item_code=code)
+                  .aggregate(total=Sum('quantity'))['total']
+                  or 0
+               )
+               store2 = store2 or 'All outlets'
+         else:
+            outlet_names = (
+               [out_store] if getshop and out_store else list(
+                  CreateOutletStockIn.objects.using(db)
+                  .filter(item_code=code)
+                  .values_list('outlet', flat=True)
+                  .distinct()
+               )
+            )
+            total_out = Decimal('0')
+            for out_name in outlet_names:
+               if not out_name:
+                  continue
+               filter1 = Q(outlet=out_name)
+               filter2 = Q(outlet=out_name)
+               total_out += Decimal(str(
+                  get_grand_total_from_stock_log(
+                     code,
+                     CreateOutletStockInLog,
+                     CreateStockInLog,
+                     out_name,
+                     db,
+                     filter1,
+                     filter2,
+                  ) or 0
+               ))
+            qty2 = total_out
+            if not getshop:
+               store2 = store2 or 'All outlets'
+
+      # Category from Item master when available
+      category_name = ''
+      try:
+         item_master = Item.objects.using(db).filter(generated_code=code).first()
+         if item_master and getattr(item_master, 'category', None):
+            category_name = getattr(item_master.category, 'category_name', '') or str(item_master.category)
+         if item_master and item_master.item_name:
+            item_name = item_master.item_name
+      except Exception:
+         pass
+
+      try:
+         q1_dec = Decimal(str(qty1)) if qty1 is not None else None
+      except Exception:
+         q1_dec = None
+      try:
+         q2_dec = Decimal(str(qty2)) if qty2 is not None else None
+      except Exception:
+         q2_dec = None
+
+      if q1_dec is not None:
+         total_quantity1 += q1_dec
+      if q2_dec is not None:
+         total_quantity2 += q2_dec
+
+      combined_data.append({
+         'id': row_id,
+         'category': category_name or '—',
+         'items': item_name or '—',
+         'qty1': float(q1_dec) if q1_dec is not None else None,
+         'qty2': float(q2_dec) if q2_dec is not None else None,
+         'datetx': str(datetx) if datetx is not None else '—',
+         'itemcode': code,
+         'store1': store1 or '—',
+         'store2': store2 or '—',
+      })
+
+   return combined_data, float(total_quantity1), float(total_quantity2)
 
 
 def add_stockin_invoice(request, db):

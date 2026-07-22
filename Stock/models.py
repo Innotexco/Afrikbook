@@ -16,7 +16,7 @@ from main.models import User
 #     userlog             = models.CharField(max_length=500)
 
 #     class Meta:
-#         db_table = 'category'  # Specify the table name
+#         db_table = 'category'  
 
 
 
@@ -35,7 +35,7 @@ from main.models import User
 #     Userlogin            = models.CharField(max_length=250)
 
     # class Meta:
-    #     db_table = 'Item'  # Specify the table name
+    #     db_table = 'Item'  
 
 
 
@@ -53,7 +53,7 @@ class CreateStockout(models.Model):
    
 
     class Meta:
-        db_table = 'stockout'  # Specify the table name
+        db_table = 'stockout'  
 
 
 class CreateStockoutOrder(models.Model):
@@ -71,7 +71,7 @@ class CreateStockoutOrder(models.Model):
    
 
     class Meta:
-        db_table = 'stockout_order'  # Specify the table name
+        db_table = 'stockout_order'  
 
 
 
@@ -104,7 +104,7 @@ class CreateStockInLog(models.Model):
    
 
     class Meta:
-        db_table = 'stockin_log'  # Specify the table name
+        db_table = 'stockin_log'  
 
 
 
@@ -135,7 +135,7 @@ class CreateStockIn(models.Model):
    
 
     class Meta:
-        db_table = 'stockin'  # Specify the table name
+        db_table = 'stockin'  
 
 
 
@@ -164,7 +164,7 @@ class CreateOutletStockInLog(models.Model):
     main                 = models.BooleanField(default=True)  
 
     class Meta:
-        db_table = 'outlet_stockin_log'  # Specify the table name
+        db_table = 'outlet_stockin_log'  
 
 
 
@@ -194,7 +194,7 @@ class CreateOutletStockIn(models.Model):
    
 
     class Meta:
-        db_table = ' outlet_stockin'  # Specify the table name
+        db_table = ' outlet_stockin'  
 
 
 
@@ -212,7 +212,7 @@ class StockAdjustmentLog(models.Model):
    
 
     class Meta:
-        db_table = 'stock_adjustment_log'  # Specify the table name
+        db_table = 'stock_adjustment_log'  
 
 
 
@@ -228,7 +228,7 @@ class StockInUpdateLog(models.Model):
     user                 = models.CharField(max_length=250)
 
     class Meta:
-        db_table = 'stockin_update_log'  # Specify the table name
+        db_table = 'stockin_update_log'  
 
 
 
@@ -242,7 +242,7 @@ class StockOutStatus(models.Model):
     
 
     class Meta:
-        db_table = 'stockout_status'  # Specify the table name
+        db_table = 'stockout_status'  
 
 
 
@@ -263,7 +263,7 @@ class StockOutLog(models.Model):
    
 
     class Meta:
-        db_table = 'stockout_log'  # Specify the table name
+        db_table = 'stockout_log'  
 
 
 

@@ -881,9 +881,24 @@ def StockLevelComparison(request):
       'warehouse' : warehouse,
     }
     stockcomparison = getStockLevelComparison(request, db)
-    if stockcomparison:
+
+    # AJAX / search: always return JSON (including empty results)
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+    has_filters = any([
+        request.GET.get('Itemcode'),
+        request.GET.get('searchItem'),
+        request.GET.get('selectshop'),
+        request.GET.get('selectwarehouse'),
+    ])
+    if is_ajax or (request.method == 'GET' and has_filters and stockcomparison is not None):
+        if stockcomparison is None:
+            return JsonResponse({'data': [], 'totalqty1': 0, 'totalqty2': 0})
         combined_data, total_quantity1, total_quantity2 = stockcomparison
-        return JsonResponse({'data': combined_data, 'totalqty1': total_quantity1, 'totalqty2': total_quantity2})
+        return JsonResponse({
+            'data': combined_data,
+            'totalqty1': total_quantity1,
+            'totalqty2': total_quantity2,
+        })
 
     return render(request, 'StockLevelComparison.html', context)
 

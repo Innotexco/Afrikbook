@@ -187,58 +187,75 @@
 
 
 <script>
-        function StockLevelComparison(){
-            let selectshop  =  $('#selectshop').val();
-            let selectwarehouse  =  $('#selectwarehouse').val();   
-            let Itemcode    =  $('#Itemcode').val();
-            let searchItem    =  $('#searchItem').val();    
+        function fmtCell(val) {
+            if (val === null || val === undefined || val === '' || val === 'null' || val === 'None') {
+                return '—';
+            }
+            return val;
+        }
+
+        function StockLevelComparison() {
+            let selectshop = $('#selectshop').val();
+            let selectwarehouse = $('#selectwarehouse').val();
+            let Itemcode = $('#Itemcode').val();
+            let searchItem = $('#searchItem').val();
+
+            // Skip placeholder option text
+            if (selectshop && String(selectshop).indexOf('Choose') !== -1) selectshop = '';
+            if (selectwarehouse && String(selectwarehouse).indexOf('Choose') !== -1) selectwarehouse = '';
+
+            if (!Itemcode && !searchItem && !selectshop && !selectwarehouse) {
+                return;
+            }
+
             $.ajax({
                 type: 'GET',
                 url: "{% url 'Stock:StockLevelComparison' %}",
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 data: {
-                    selectshop: selectshop,
-                    selectwarehouse: selectwarehouse,   
-                    Itemcode: Itemcode,
-                    searchItem: searchItem,   
+                    selectshop: selectshop || '',
+                    selectwarehouse: selectwarehouse || '',
+                    Itemcode: Itemcode || '',
+                    searchItem: searchItem || '',
                 },
-                success: function(res){
+                success: function (res) {
                     $('#comparedata tbody').empty();
-                    $('#totalqty1').empty();
-                    $('#totalqty2').empty();
-                    res.data.forEach(function(item, index) {
-                        let newRow = $('<tr id="campareTR'+ item.id + '">');
-                        // Add data to the row
-                        newRow.append('<td class="text-[10px]">' + (index + 1) + '</td>');
-                        newRow.append('<td class="text-[10px]">' + item.items + '</td>');
-                        newRow.append('<td class="text-[10px]">' + item.items + '</td>');
-                        newRow.append('<td class="text-[10px]">' + item.qty1 + '</td>');
-                        newRow.append('<td class="text-[10px]">' + item.qty2 + '</td>');
-                        newRow.append('<td class="text-[10px]">' + item.datetx + '</td>');
-                        newRow.append('<td class="text-[10px]">' + item.itemcode + '</td>');
-                        newRow.append('<td class="text-[10px]"> ' + item.store1 + ' </td>');
-                        newRow.append('<td class="text-[10px]"> ' + item.store2 + ' </td>');
-                            // Add more columns as needed
+                    const rows = (res && res.data) ? res.data : [];
+                    if (!rows.length) {
+                        $('#comparedata tbody').append(
+                            '<tr><td colspan="9" class="text-center text-gray-400 py-4 text-sm">No matching stock found</td></tr>'
+                        );
+                    } else {
+                        rows.forEach(function (item, index) {
+                            let newRow = $('<tr id="campareTR' + (item.id || index) + '">');
+                            newRow.append('<td class="text-[10px]">' + (index + 1) + '</td>');
+                            newRow.append('<td class="text-[10px]">' + fmtCell(item.category) + '</td>');
+                            newRow.append('<td class="text-[10px]">' + fmtCell(item.items) + '</td>');
+                            newRow.append('<td class="text-[10px]">' + fmtCell(item.qty1) + '</td>');
+                            newRow.append('<td class="text-[10px]">' + fmtCell(item.qty2) + '</td>');
+                            newRow.append('<td class="text-[10px]">' + fmtCell(item.datetx) + '</td>');
+                            newRow.append('<td class="text-[10px]">' + fmtCell(item.itemcode) + '</td>');
+                            newRow.append('<td class="text-[10px]">' + fmtCell(item.store1) + '</td>');
+                            newRow.append('<td class="text-[10px]">' + fmtCell(item.store2) + '</td>');
                             $('#comparedata tbody').append(newRow);
-                    });
-                    // Append the row to the table body
-                    let newtotal1 = $('#totalqty1')
-                    let newtotal2 = $('#totalqty2')
-                    newtotal1.val(res.totalqty1);
-                    newtotal2.val(res.totalqty2 );
+                        });
+                    }
+                    $('#totalqty1').val(res.totalqty1 != null ? res.totalqty1 : 0);
+                    $('#totalqty2').val(res.totalqty2 != null ? res.totalqty2 : 0);
+                },
+                error: function () {
+                    alertify.error('Stock level comparison failed');
                 }
-            })
+            });
         }
-        
-        $(document).on('click', '.Search', function(){
-            StockLevelComparison()
-        }); 
-        
-        $(document).on('change', '.commonClass', function(){
-            StockLevelComparison()
-        })
-            
-       
-        
+
+        $(document).on('click', '.Search', function () {
+            StockLevelComparison();
+        });
+
+        $(document).on('change', '.commonClass', function () {
+            StockLevelComparison();
+        });
     </script>
 
 
