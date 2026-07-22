@@ -942,40 +942,55 @@ def GetItemDetails(request, item_id):
     
 def GetInvoiceDetails(request, invoice_id):
     db = request.user.company_id.db_name
-    invoiceID = request.GET.get('invoiceID')
+    invoiceID = request.GET.get('invoiceID') or invoice_id
     try:
-        # Fetch all fields related to the given invoice_id
-        data = Vendor_invoice.objects.using(db).filter(invoiceID=invoiceID).values()
-        
-       
+        # Only open (not already returned) lines — used by Return Outward
+        data = (
+            Vendor_invoice.objects.using(db)
+            .filter(invoiceID=invoiceID, cancellation=0)
+            .exclude(invoiceID__icontains='returned')
+            .values()
+        )
+
+        if not data.exists():
+            return JsonResponse({
+                'error': 'Invoice not found or already fully returned',
+                'invoice': [],
+            }, status=404)
+
         def get_customer_or_vendor():
-            invoice = Vendor_invoice.objects.using(db).filter(invoiceID=invoiceID).first()
+            invoice = Vendor_invoice.objects.using(db).filter(
+                invoiceID=invoiceID, cancellation=0
+            ).first()
             if invoice:
-                try:
-                    vendor_table.objects.using(db).filter(custID=invoice.cusID)
+                if vendor_table.objects.using(db).filter(custID=invoice.cusID).exists():
                     return "Vendor"
-                except vendor_table.DoesNotExist:
-                    return "None"
-            else:
                 return "None"
+            return "None"
 
         accountType = get_customer_or_vendor()
-        
+
         try:
             vat = Vat.objects.using(db).get(source=invoiceID).amount
         except Vat.DoesNotExist:
             vat = None
-
-        # Serialize the queryset to JSON
+        except Vat.MultipleObjectsReturned:
+            vat = (
+                Vat.objects.using(db)
+                .filter(source=invoiceID)
+                .order_by('-id')
+                .first()
+                .amount
+            )
 
         serialized_data = {
-            'invoice':list(data),
-            'accountType':accountType,
-            'vat': vat
+            'invoice': list(data),
+            'accountType': accountType,
+            'vat': vat,
         }
 
-        return JsonResponse(serialized_data,  safe=False)
-    except Vendor_invoice.DoesNotExist: 
+        return JsonResponse(serialized_data, safe=False)
+    except Vendor_invoice.DoesNotExist:
         return JsonResponse({'error': 'Item not found'}, status=404)
    
 
@@ -1099,7 +1114,28 @@ def ReturnItems(request):
     amount = Vendor_Order.objects.using(db).all()
     item = Item.objects.using(db).all()
     account = chart_of_account.objects.using(db).filter(account_bankname__icontains="Return Outward")
-    invoices = Vendor_invoice.objects.using(db).all().order_by('-invoice_date')
+
+    # Only invoices that still have open (not cancelled / not renamed as returned) lines
+    open_invoice_ids = (
+        Vendor_invoice.objects.using(db)
+        .filter(cancellation=0)
+        .exclude(invoiceID__icontains='returned')
+        .exclude(invoiceID__icontains='_returned')
+        .values_list('invoiceID', flat=True)
+        .distinct()
+    )
+    # One row per invoice for the autocomplete list (latest line date order)
+    invoices = []
+    seen = set()
+    for row in (
+        Vendor_invoice.objects.using(db)
+        .filter(invoiceID__in=open_invoice_ids, cancellation=0)
+        .order_by('-invoice_date', '-id')
+    ):
+        if row.invoiceID in seen:
+            continue
+        seen.add(row.invoiceID)
+        invoices.append(row)
     
     if request.method == "POST":
         add_return_item(request, db)
@@ -1133,42 +1169,32 @@ def ViewReturnOutwards(request):
 def GetReturnOutwardItemDetails(request, invoice, item_id):
     db = request.user.company_id.db_name
 
-    try:
-        item = Vendor_invoice.objects.using(db).get(invoiceID=invoice, itemcode=item_id)
-        # unit = unit price; amount = line total for convenience
-        try:
-            unit_p = item.unit_p
-            line_amount = item.amount
-        except Exception:
-            unit_p = item.unit_p
-            line_amount = item.amount
+    if 'returned' in str(invoice).lower():
+        return JsonResponse({'error': 'Invoice already returned'}, status=404)
 
-        data = {
-            'desc': item.item_descriptions or '',
-            'name': item.item_name or '',
-            'qty': item.qty,
-            'unit': unit_p,
-            'amount': str(line_amount) if line_amount is not None else '',
-            'purchase': unit_p,
-            'generated_code': item.itemcode,
-        }
-        return JsonResponse(data)
+    try:
+        item = Vendor_invoice.objects.using(db).get(
+            invoiceID=invoice, itemcode=item_id, cancellation=0
+        )
     except Vendor_invoice.DoesNotExist:
-        return JsonResponse({'error': 'Item not found'}, status=404)
+        return JsonResponse({'error': 'Item not found or already returned'}, status=404)
     except Vendor_invoice.MultipleObjectsReturned:
         item = Vendor_invoice.objects.using(db).filter(
-            invoiceID=invoice, itemcode=item_id
+            invoiceID=invoice, itemcode=item_id, cancellation=0
         ).first()
-        data = {
-            'desc': item.item_descriptions or '',
-            'name': item.item_name or '',
-            'qty': item.qty,
-            'unit': item.unit_p,
-            'amount': str(item.amount) if item.amount is not None else '',
-            'purchase': item.unit_p,
-            'generated_code': item.itemcode,
-        }
-        return JsonResponse(data)
+        if item is None:
+            return JsonResponse({'error': 'Item not found or already returned'}, status=404)
+
+    data = {
+        'desc': item.item_descriptions or '',
+        'name': item.item_name or '',
+        'qty': item.qty,
+        'unit': item.unit_p,
+        'amount': str(item.amount) if item.amount is not None else '',
+        'purchase': item.unit_p,
+        'generated_code': item.itemcode,
+    }
+    return JsonResponse(data)
 
 
 @login_required(login_url="/")
