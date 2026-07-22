@@ -2,6 +2,32 @@ import json
 from Stock.models import Item
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+# Default page size for server-side list pagination
+DEFAULT_PAGE_SIZE = 25
+
+
+def paginate_queryset(request, queryset, per_page=DEFAULT_PAGE_SIZE):
+    """
+    Paginate a queryset or sequence using ?page= from the request.
+
+    Returns a Django Page object (usable in templates as page_obj / iterable).
+    """
+    try:
+        per_page = int(request.GET.get('per_page', per_page) or per_page)
+    except (TypeError, ValueError):
+        per_page = DEFAULT_PAGE_SIZE
+    per_page = max(5, min(per_page, 200))
+
+    paginator = Paginator(queryset, per_page)
+    page = request.GET.get('page', 1)
+    try:
+        return paginator.page(page)
+    except PageNotAnInteger:
+        return paginator.page(1)
+    except EmptyPage:
+        return paginator.page(paginator.num_pages)
+
+
 def cookieCart(request):
 
 	#Create empty cart for now for non-logged in user

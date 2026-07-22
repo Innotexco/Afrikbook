@@ -13,7 +13,7 @@ urlpatterns = [
 
     path('get_vendors/<str:id>/',GetVendorDetails, name='VendorDetails'), #ajax
     path('GetInvoiceDetails/<str:invoice_id>/',GetInvoiceDetails, name='GetInvoiceDetails'), #ajax
-    path('GetReturnOutwardItemDetails/<str:invoice>/<int:item_id>/',GetReturnOutwardItemDetails, name='GetReturnOutwardItemDetails'), #ajax
+    path('GetReturnOutwardItemDetails/<str:invoice>/<str:item_id>/', GetReturnOutwardItemDetails, name='GetReturnOutwardItemDetails'),  # ajax
     path('new-purchase/', NewPurchase, name='NewPurchase'),
     path('purchase/edit/<str:invoice_id>/', EditPurchaseInvoice, name='EditPurchaseInvoice'),
     path('purchase-adjustment/', PurchaseAdjustment, name='PurchaseAdjustment'),

@@ -116,12 +116,15 @@ def AccountSetup(request):
 @login_required(login_url='/')
 @urls_name(name = "Chart of account")
 def ViewChartOfAccount(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
-    account_chart = chart_of_account.objects.using(db).all()
+    account_chart = chart_of_account.objects.using(db).all().order_by('account_id')
+    page_obj = paginate_queryset(request, account_chart, per_page=20)
 
-    account_chart = pagenation(request, account_chart, 1, 20)
-    
-    return render(request, 'account/ViewChartOfAccount.html', {'account_chart': account_chart})
+    return render(request, 'account/ViewChartOfAccount.html', {
+        'account_chart': page_obj,
+        'page_obj': page_obj,
+    })
 
 
 
@@ -167,17 +170,18 @@ def ViewChartOfAccountDetails(request, account_id):
 @login_required(login_url='/')
 @urls_name(name = "Inter Account Transfer")
 def ViewInterAccountTransfer(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
-    view_account = transfer_account.objects.using(db).all()
+    view_account = transfer_account.objects.using(db).all().order_by('-id')
+    page_obj = paginate_queryset(request, view_account)
 
     amount = transfer_account.objects.using(db).filter(amount=1000)
 
-    # if amount > 3 :
-    #     amount - 2
-    # else:
-    #     print(amount)
-   
-    return render(request, 'account/ViewInterAccountTransfer.html', {'view_account': view_account, 'amount': amount})
+    return render(request, 'account/ViewInterAccountTransfer.html', {
+        'view_account': page_obj,
+        'page_obj': page_obj,
+        'amount': amount,
+    })
 
 
 

@@ -80,6 +80,7 @@
                 </tbody>
             </table>
         </div>
+        {% include 'components/pagination.html' with page_obj=page_obj %}
 
         <div class="flex justify-between items-center gap-6 mt-4">
             <button onclick="generatePDF('sq')" class="block w-full px-4 py-1 mt-2 text-sm font-medium text-center text-gray-600 bg-slate-200 border border-transparent rounded-lg hover:bg-slate-300">Print</button>

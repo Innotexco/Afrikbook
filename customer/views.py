@@ -38,11 +38,14 @@ from vendor.functions.purchaseorder import add_purchase_order
 @login_required(login_url='/')
 @urls_name(name = "Customer")
 def Customers(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
-    customers = customer_table.objects.using(db).all()
+    customers = customer_table.objects.using(db).all().order_by('name')
+    page_obj = paginate_queryset(request, customers)
 
     context = {
-        'customers':customers,
+        'customers': page_obj,
+        'page_obj': page_obj,
     }
    
     return render(request, 'customer/Customers.html', context)
@@ -617,6 +620,7 @@ def AddSalesQuote(request):
 @login_required(login_url='/')
 @urls_name(name="Sales Quotes")
 def SalesQuote(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
     company = company_table.objects.get(id=request.user.company_id_id)
     profile = CreateProfile.objects.using(db).filter(
@@ -634,10 +638,12 @@ def SalesQuote(request):
             seen.add(q.referenceID)
             unique_quotes.append(q)
 
+    page_obj = paginate_queryset(request, unique_quotes)
     context = {
         'company': company,
         'profile': profile,
-        'quotes': unique_quotes,
+        'quotes': page_obj,
+        'page_obj': page_obj,
     }
     return render(request, "customer/SalesQuote.html", context)
 
@@ -871,18 +877,23 @@ def AddSalesOrder(request):
 @login_required(login_url='/')
 @urls_name(name="Sales Order")
 def SalesOrder(request):
-    # customer = customer_table.objects.all()
-    # item = Item.objects.all()
-
-    # if request.method == "POST":
-    #     add_sales_order(request)
-     
-    # context = {
-        
-    #     'customers': customer,
-    #     'items': item
-    # }   
-    return render(request, "customer/SalesOrder.html")
+    from main.utils import paginate_queryset
+    from customer.models import sales_order as SalesOrderModel
+    db = request.user.company_id.db_name
+    raw = SalesOrderModel.objects.using(db).all().order_by('referenceID', 'id')
+    seen = set()
+    unique_orders = []
+    for o in raw:
+        key = o.referenceID or o.order_ID or o.id
+        if key not in seen:
+            seen.add(key)
+            unique_orders.append(o)
+    page_obj = paginate_queryset(request, unique_orders)
+    return render(request, "customer/SalesOrder.html", {
+        'orders': page_obj,
+        'page_obj': page_obj,
+        'display_vendor': page_obj,  # legacy template var
+    })
 
 
 def GetItemDetails(request, item_id):

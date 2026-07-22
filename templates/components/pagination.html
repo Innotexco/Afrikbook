@@ -1,107 +1,50 @@
-<div class="flex justify-between py-3 text-xs font-semibold tracking-wide text-gray-500 uppercase border-t bg-gray-50 sm:grid-cols-9 my-4">
-    <span class="flex items-center col-span-3">
-       SHOWING {{sales}}
+{#
+  Server-side pagination controls.
+  Usage:
+    {% include 'components/pagination.html' with page_obj=page_obj %}
+  Optional:
+    page_obj can also be passed as `sales` for legacy templates.
+#}
+{% with page=page_obj|default:sales %}
+{% if page and page.paginator.num_pages > 1 %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 my-3 text-xs text-gray-600 bg-white border border-gray-100 rounded-lg shadow-sm">
+    <span class="font-medium tracking-wide">
+        Showing {{ page.start_index }}–{{ page.end_index }}
+        of {{ page.paginator.count }}
+        (page {{ page.number }} / {{ page.paginator.num_pages }})
     </span>
-    <span class="col-span-2"></span>
-    {% if sales.has_other_pages %}
-        <div class="">
-            <div class="col-md-12">
-                <nav>
-                    <ul class="pagination inline-flex items-center">
-                        {% if sales.has_previous %}
-                            <li><a href="?page={{sales.previous_page_number}}">
-                                <button
-                                    class="px-3 py-1 rounded-md rounded-l-lg focus:outline-none focus:shadow-outline-purple"
-                                    aria-label="Previous"
-                                >
-                                    <svg
-                                    aria-hidden="true"
-                                    class="w-4 h-4 fill-current"
-                                    viewBox="0 0 20 20"
-                                    >
-                                    <path
-                                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                                        clip-rule="evenodd"
-                                        fill-rule="evenodd"
-                                    ></path>
-                                    </svg>
-                                </button>
-                            </a></button></li>
-                        {% else %}
-                            <li class="disabled">
-                                <button
-                                class="px-3 py-1 rounded-md rounded-l-lg focus:outline-none focus:shadow-outline-purple"
-                                aria-label="Previous"
-                                >
-                                <svg
-                                aria-hidden="true"
-                                class="w-4 h-4 fill-current"
-                                viewBox="0 0 20 20"
-                                >
-                                <path
-                                    d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                                    clip-rule="evenodd"
-                                    fill-rule="evenodd"
-                                ></path>
-                                </svg>
-                                </button>
-                            </li>
-                        {% endif %}
-                        {% for i in sales.paginator.page_range %}
-                        {% if sales.number == i %}
-                            <li class="active border rounded-lg"><button
-                                class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple"
-                            >{{ i }} <span class="sr_only"></span></button></li>
-                        {% else %}
-                            <li> <button
-                                class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple"
-                            ><a href="?page={{ i }}">{{ i }}</a></button></li>
-                        {% endif %}
-                        {% endfor %}
-                        {% if sales.has_next %}
-                            <li><a href="?page={{sales.next_page_number}}">
-                                <button
-                                    class="px-3 py-1 rounded-md rounded-r-lg focus:outline-none focus:shadow-outline-purple"
-                                    aria-label="Next"
-                                >
-                                    <svg
-                                    class="w-4 h-4 fill-current"
-                                    aria-hidden="true"
-                                    viewBox="0 0 20 20"
-                                    >
-                                    <path
-                                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                        clip-rule="evenodd"
-                                        fill-rule="evenodd"
-                                    ></path>
-                                    </svg>
-                                </button>
-                            </a></li>
-                        {% else %}
-                            <li class="disabled">
-                                <button
-                                class="px-3 py-1 rounded-md rounded-r-lg focus:outline-none focus:shadow-outline-purple"
-                                aria-label="Next"
-                                >
-                                    <svg
-                                    class="w-4 h-4 fill-current"
-                                    aria-hidden="true"
-                                    viewBox="0 0 20 20"
-                                    >
-                                    <path
-                                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                        clip-rule="evenodd"
-                                        fill-rule="evenodd"
-                                    ></path>
-                                    </svg>
-                                </button>
-                            </li>
-                        {% endif %}
-                    </ul>
+    <nav class="inline-flex flex-wrap items-center gap-1" aria-label="Pagination">
+        {% if page.has_previous %}
+        <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&amp;{{ key }}={{ value }}{% endif %}{% endfor %}"
+           class="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700"
+           title="First">«</a>
+        <a href="?page={{ page.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&amp;{{ key }}={{ value }}{% endif %}{% endfor %}"
+           class="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700">Prev</a>
+        {% else %}
+        <span class="px-2.5 py-1 rounded-md bg-slate-50 text-slate-300 cursor-not-allowed">«</span>
+        <span class="px-2.5 py-1 rounded-md bg-slate-50 text-slate-300 cursor-not-allowed">Prev</span>
+        {% endif %}
 
-                </nav>
-            </div>
-        </div>
-    {% endif %}
- 
+        {% for num in page.paginator.page_range %}
+            {% if page.number == num %}
+            <span class="px-2.5 py-1 rounded-md bg-slate-700 text-white font-semibold">{{ num }}</span>
+            {% elif num > page.number|add:'-3' and num < page.number|add:'3' %}
+            <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&amp;{{ key }}={{ value }}{% endif %}{% endfor %}"
+               class="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page.has_next %}
+        <a href="?page={{ page.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&amp;{{ key }}={{ value }}{% endif %}{% endfor %}"
+           class="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700">Next</a>
+        <a href="?page={{ page.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&amp;{{ key }}={{ value }}{% endif %}{% endfor %}"
+           class="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700"
+           title="Last">»</a>
+        {% else %}
+        <span class="px-2.5 py-1 rounded-md bg-slate-50 text-slate-300 cursor-not-allowed">Next</span>
+        <span class="px-2.5 py-1 rounded-md bg-slate-50 text-slate-300 cursor-not-allowed">»</span>
+        {% endif %}
+    </nav>
 </div>
+{% endif %}
+{% endwith %}
