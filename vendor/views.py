@@ -1038,6 +1038,7 @@ def delete_PurchaseQuote(request, id):
 @login_required(login_url='/')
 @urls_name(name = "Purchase Quotes")
 def ViewPurchaseQuote(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
 
     # Deduplicate by quote_ID — one row per quote (like sales quotes by referenceID)
@@ -1049,7 +1050,11 @@ def ViewPurchaseQuote(request):
             seen.add(q.quote_ID)
             unique_quotes.append(q)
 
-    return render(request, 'vendor/ViewPurchaseQuote.html', {'quotes': unique_quotes})
+    page_obj = paginate_queryset(request, unique_quotes)
+    return render(request, 'vendor/ViewPurchaseQuote.html', {
+        'quotes': page_obj,
+        'page_obj': page_obj,
+    })
 
 
 
@@ -1074,10 +1079,14 @@ def NewPurchaseOrder(request):
 @login_required(login_url='/')
 @urls_name(name = "Purchase Order")
 def ViewPurchaseOrder(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
-    purchase_order = Vendor_Order.objects.using(db).all()
-   
-    return render(request, 'vendor/ViewPurchaseOrder.html', {'purchase_order': purchase_order})
+    purchase_order = Vendor_Order.objects.using(db).all().order_by('-id')
+    page_obj = paginate_queryset(request, purchase_order)
+    return render(request, 'vendor/ViewPurchaseOrder.html', {
+        'purchase_order': page_obj,
+        'page_obj': page_obj,
+    })
 
 
 @login_required(login_url='/')
@@ -1110,44 +1119,74 @@ def ReturnItems(request):
 @login_required(login_url='/')
 @urls_name(name = "Returns Outwards")
 def ViewReturnOutwards(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
-    return_outwards = Vendor_Return.objects.using(db).all()
-   
-    return render(request, 'vendor/ViewReturnOutwards.html', {'return_outwards': return_outwards})
+    return_outwards = Vendor_Return.objects.using(db).all().order_by('-id')
+    page_obj = paginate_queryset(request, return_outwards)
+    return render(request, 'vendor/ViewReturnOutwards.html', {
+        'return_outwards': page_obj,
+        'page_obj': page_obj,
+    })
 
 @login_required(login_url='/')
 @urls_name(name = "Returns Outwards")
 def GetReturnOutwardItemDetails(request, invoice, item_id):
     db = request.user.company_id.db_name
-  
+
     try:
-       item = Vendor_invoice.objects.using(db).get(invoiceID=invoice, itemcode=item_id)
-      
-       data = {
-            'desc': item.item_descriptions,
-            'name': item.item_name,
+        item = Vendor_invoice.objects.using(db).get(invoiceID=invoice, itemcode=item_id)
+        # unit = unit price; amount = line total for convenience
+        try:
+            unit_p = item.unit_p
+            line_amount = item.amount
+        except Exception:
+            unit_p = item.unit_p
+            line_amount = item.amount
+
+        data = {
+            'desc': item.item_descriptions or '',
+            'name': item.item_name or '',
             'qty': item.qty,
-            'unit': item.amount,
-            'generated_code': item.itemcode
+            'unit': unit_p,
+            'amount': str(line_amount) if line_amount is not None else '',
+            'purchase': unit_p,
+            'generated_code': item.itemcode,
         }
-       return JsonResponse(data)
-    except Item.DoesNotExist: 
+        return JsonResponse(data)
+    except Vendor_invoice.DoesNotExist:
         return JsonResponse({'error': 'Item not found'}, status=404)
+    except Vendor_invoice.MultipleObjectsReturned:
+        item = Vendor_invoice.objects.using(db).filter(
+            invoiceID=invoice, itemcode=item_id
+        ).first()
+        data = {
+            'desc': item.item_descriptions or '',
+            'name': item.item_name or '',
+            'qty': item.qty,
+            'unit': item.unit_p,
+            'amount': str(item.amount) if item.amount is not None else '',
+            'purchase': item.unit_p,
+            'generated_code': item.itemcode,
+        }
+        return JsonResponse(data)
 
 
 @login_required(login_url="/")
 @urls_name(name='Vendor')
 def register_vendor(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
     form = VendorRegistrationForm(request.POST or None)
-    display_vendor = vendor_table.objects.using(db).all()
+    display_vendor = vendor_table.objects.using(db).all().order_by('name')
 
     if request.method == "POST":
         add_vendor(request, db)
 
+    page_obj = paginate_queryset(request, display_vendor)
     context = {
         "form": form,
-        "display_vendor": display_vendor
+        "display_vendor": page_obj,
+        "page_obj": page_obj,
     }
     return render(request, 'vendor/AddVendor.html', context)
 
@@ -1172,11 +1211,14 @@ def update_vendor(request, id):
 @login_required(login_url="/")
 @urls_name(name='Vendor')
 def view_vendor(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
-    display_vendor = vendor_table.objects.using(db).all()
+    display_vendor = vendor_table.objects.using(db).all().order_by('name')
+    page_obj = paginate_queryset(request, display_vendor)
 
     context = {
-        "display_vendor": display_vendor
+        "display_vendor": page_obj,
+        "page_obj": page_obj,
     }
     return render(request, 'vendor/ViewVendor.html', context)
 

@@ -23,10 +23,13 @@ from routers.page_permission import  urls_name
 @login_required(login_url='/')
 @urls_name(name="Employee")
 def ViewEmployee(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
-    Employee = employee.objects.using(db).all()
+    Employee = employee.objects.using(db).all().order_by('id')
+    page_obj = paginate_queryset(request, Employee)
     context = {
-        'employee': Employee
+        'employee': page_obj,
+        'page_obj': page_obj,
     }
     return render(request, "employee/ViewEmployee.html", context)
 
@@ -90,15 +93,18 @@ def DeleteEmployee(request, id):
 @login_required(login_url='/')
 @urls_name(name="Payroll")
 def ViewPayroll(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
     today_date = date.today()
     year = datetime.today().year
    
     years = range(year, year - 10, -1)
-    Payroll = payroll.objects.using(db).filter(dateG=today_date)
+    Payroll = payroll.objects.using(db).filter(dateG=today_date).order_by('id')
     amount_total = payroll.objects.using(db).filter(dateG=today_date).values("staffID").distinct().aggregate(total_amount=Sum("net_pay"))['total_amount']
+    page_obj = paginate_queryset(request, Payroll)
     context = {
-        'Payroll': Payroll,
+        'Payroll': page_obj,
+        'page_obj': page_obj,
         'total':amount_total,
         'date':today_date,
         'years': years

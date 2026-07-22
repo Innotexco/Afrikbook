@@ -114,6 +114,7 @@
 
                 </tbody>
             </table>
+            {% include 'components/pagination.html' with page_obj=page_obj %}
             <div class="text-center  text-gray-500 py-2 font-semibold" id="no-data" style="display: none;">No data found</div>
         </div>
     </div>

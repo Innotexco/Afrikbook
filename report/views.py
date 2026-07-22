@@ -1194,18 +1194,21 @@ from settings.models import CreateProfile
 @login_required(login_url='/')
 @urls_name(name="Sales Ledger")
 def SalesLedger(request):
+    from main.utils import paginate_queryset
     db = AfrikBookDB(request)
     item_name = Item.objects.using(db).values("item_name")
     sales = customer_invoice.objects.using(db).filter(invoice_state="Supplied").exclude(invoiceID__icontains=str('returned')) #.distinct()
-    unique_invoices = {sale.invoiceID: sale for sale in sales}.values()
+    unique_invoices = list({sale.invoiceID: sale for sale in sales}.values())
     company = company_table.objects.get(id=request.user.company_id_id)
     profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
 
     sales_total = customer_invoice.objects.using(db).values("invoiceID").distinct().count()
     amount_total = customer_invoice.objects.using(db).values("invoiceID").distinct().aggregate(total_amount=Sum("amount"))['total_amount']
 
+    page_obj = paginate_queryset(request, unique_invoices)
     context = {
-        'sales':unique_invoices,
+        'sales': page_obj,
+        'page_obj': page_obj,
         'amount_total':amount_total,
         'item_name':item_name,
         'company':company,
@@ -1265,11 +1268,12 @@ def EditSalesLedgerDate(request):
 @login_required(login_url='/')
 @urls_name(name="Purchase Ledger")
 def PurchaseLedger(request):
+    from main.utils import paginate_queryset
     db = AfrikBookDB(request)
     item_name = Item.objects.using(db).values("item_name")
     sales = Vendor_invoice.objects.using(db).all() #.distinct()
     # sales = Vendor_invoice.objects.filter(invoice_state="Supplied").exclude(invoiceID__icontains=str('returned')) #.distinct()
-    unique_invoices =  {sale.invoiceID: sale for sale in sales}.values()
+    unique_invoices = list({sale.invoiceID: sale for sale in sales}.values())
     company = company_table.objects.get(id=request.user.company_id_id)
 
     sales_total = Vendor_invoice.objects.using(db).values("invoiceID").distinct().count()
@@ -1279,8 +1283,10 @@ def PurchaseLedger(request):
     profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
     
     balance= amount_expected_total - amount_paid_total
+    page_obj = paginate_queryset(request, unique_invoices)
     context = {
-        'purchase':unique_invoices,
+        'purchase': page_obj,
+        'page_obj': page_obj,
         'amount_total':amount_total,
         'item_name':item_name,
         'amount_paid_total':amount_paid_total,

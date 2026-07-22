@@ -88,6 +88,7 @@ def search_vendor_customer(request):
 @login_required(login_url='/')
 @urls_name(name="Add New Journal")
 def ViewJournalEntry(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
 
     unique_invoices = new_journal_entry.objects.using(db).values('invoice_no').distinct()
@@ -100,9 +101,11 @@ def ViewJournalEntry(request):
         if invoice_data.exists():
             invoices_data.append(invoice_data.first())
 
-
-  
-    return render(request, 'journal/ViewJournalEntry.html', {'journals':invoices_data})
+    page_obj = paginate_queryset(request, invoices_data)
+    return render(request, 'journal/ViewJournalEntry.html', {
+        'journals': page_obj,
+        'page_obj': page_obj,
+    })
 
 
 @login_required(login_url='/')

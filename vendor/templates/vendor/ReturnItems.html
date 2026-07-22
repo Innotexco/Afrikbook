@@ -100,8 +100,7 @@
                     <span class="text-gray-700 dark:text-gray-400">
                         Account
                     </span>
-                    <select name="amount"  class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
-                        
+                    <select name="account" id="return_account" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
                         {% for display in accounts %}
                         <option value="{{display.account_id}}">{{ display.account_bankname }}</option>
                         {% endfor %}
@@ -644,9 +643,12 @@
                                 qty.val(data.qty)
                                 qty.attr("max", data.qty)
                                 unit.val(data.unit)
-                                amount.val(data.unit)
+                                // amount = qty * unit price (not unit alone)
+                                const q = parseFloat(data.qty) || 0;
+                                const u = parseFloat(data.unit) || 0;
+                                amount.val((q * u).toFixed(2));
                                 
-                                purchaseP.val(data.purchase);
+                                purchaseP.val(data.purchase || data.unit);
                               
                                 const inputElements = document.getElementsByName("amount[]");
     
