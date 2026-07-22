@@ -454,108 +454,133 @@
             
         };
 
-        $("#invoiceID").on('input', function() {
-            const invoiceId = $(this).val();
-         
-            if (invoiceId != "") {
-                $.ajax({
-                    url: '/GetInvoiceDetails/'+ invoiceId + '/',
-                    method: 'GET',
-                    data:{'invoiceID': invoiceId},
-                    success: function(data) {
-                        console.log(data.accountType)
-                        
-                        if (data.invoice && data.invoice.length > 0) {
-                            console.log(data.invoice)
-                            const table = $('#itemsTable tbody');
-                            table.empty(); // Clear previous content
-                            // Populate table with items
-                            let num = 0
-                            let executed = false
-                            data.invoice.forEach(item => {
-                                num++ 
-                                i = num
-                                const selectInput = $('<select>').attr('name', 'item[]').attr('id', 'name').attr('class', 'block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input item-select');
-                                selectInput.append($('<option>').attr('value', item.itemcode).text(item.item_name));
-                                const input1 = $('<input>').attr('type', 'text').attr('name', 'item_name').attr('id', 'name2').attr('value', item.item_name).attr('class', 'block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input');
-                                const input2 = $('<input>').attr('type', 'text').attr('name', 'desc[]').attr('id', 'desc').attr('value', item.item_description).attr('class', 'block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input').attr('readonly', 'true');
-                                const input3 = $('<input>').attr('type', 'number').attr('name', 'qty[]').attr('id', 'qty').attr('value', item.qty).attr('max', item.qty).attr('class', 'block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input');
-                                const input4 = $('<input>').attr('type', 'text').attr('name', 'unit[]').attr('id', 'unit').attr('value', item.unit_p).attr('class', 'block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input').attr('readonly', 'true');
-                                const input5 = $('<input>').attr('type', 'text').attr('name', 'discount[]').attr('id', 'discount').attr('value', item.dicount).attr('class', 'block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input');
-                                const input6 = $('<input>').attr('type', 'text').attr('name', 'amount[]').attr('id', 'amount').attr('value', item.unit_p * item.qty).attr('class', 'block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input');
-                                const input7 = '<button  id="'+num+'" class="remove_row flex justify-center items-center w-full h-3 px-2 py-1 text-[12px] font-semibold text-center text-gray-600 transition-colors duration-150 border border-transparent focus:outline-none focus:shadow-outline-slate"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" enable-background="new 0 0 64 64" viewBox="0 0 64 64" id="delete"><g transform="translate(232 228)"><path fill="#134563" d="M-207.5-205.1h3v24h-3zM-201.5-205.1h3v24h-3zM-195.5-205.1h3v24h-3zM-219.5-214.1h39v3h-39z"></path><path fill="#134563" d="M-192.6-212.6h-2.8v-3c0-.9-.7-1.6-1.6-1.6h-6c-.9 0-1.6.7-1.6 1.6v3h-2.8v-3c0-2.4 2-4.4 4.4-4.4h6c2.4 0 4.4 2 4.4 4.4v3"></path><path fill="#134563" d="M-191-172.1h-18c-2.4 0-4.5-2-4.7-4.4l-2.8-36 3-.2 2.8 36c.1.9.9 1.6 1.7 1.6h18c.9 0 1.7-.8 1.7-1.6l2.8-36 3 .2-2.8 36c-.2 2.5-2.3 4.4-4.7 4.4"></path></g></svg></button>'
+        var invoiceDebounceTimer = null;
 
-                                const input8 = $('<input>').attr('type', 'text').attr('name', 'purchaseP').attr('id', 'name').attr('value', item.purchaseP)
-                                //const input9 = $('<input>').attr('type', 'text').attr('name', 'itemcod').attr('id', 'name').attr('value', item.itemcode)
+        function clearInvoiceFields() {
+            const table = $('#itemsTable tbody');
+            table.empty();
 
-                                const row = $('<tr id="row'+num+'">').append(
-                                    $('<td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">').text(num),
-                                    $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ... hidden">').append(selectInput),
-                                    $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').append(input1),
-                                    $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').append(input2),
-                                    $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').append(input3),
-                                    $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').append(input4),
-                                    $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').append(input5),
-                                    $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').append(input6),
-                                    $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').append(input7),
-                                        //hidden colunm
-                                    $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ... hidden">').append(input8),
-                                    //$('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ... hidde">').append(input9),
-                                    // Add more columns as needed
-                                );
-                               
-                                table.append(row);
-                                if(executed === false){
-                                    $('#Gdesc').val(item.Gdescription).attr('readonly', 'true')
-                                    $('#order_id').val(item.orderID).attr('readonly', 'true')
-                                    $("#warehouse option:selected").html(item.warehouse).attr('disabled', false)
-                                    
-                                    if(item.amount_expected > 0){
-                                        $('#sub-total').val(item.amount_expected).attr('readonly', 'true')
-                                        $('#total').val(item.amount_expected).attr('readonly', 'true')
-                                    }else{
-                                        $('#sub-total').val(item.amount_paid).attr('readonly', 'true')
-                                        $('#total').val(item.amount_paid).attr('readonly', 'true')
-                                    }
-                                    if (data.vat != null){
-                                        $('#discountcheck').prop('checked', true)
-                                        $('#discount2').val(data.vat).attr('readonly', 'true')
+            $('#Gdesc').val('').removeAttr('readonly');
+            $('#order_id').val('').removeAttr('readonly');
+            $("#warehouse option:selected").html('').removeAttr('disabled');
+            $('#sub-total').val('').removeAttr('readonly');
+            $('#total').val('').removeAttr('readonly');
+            $('#initial_total').val('');
+            $('#discountcheck').prop('checked', false);
+            $('#discount2').val('').removeAttr('readonly');
+            $("#vendor_id option:selected").val('').html('').removeAttr('disabled');
+        }
 
-                                    }
-                                    if(data.accountType === "Vendor"){
-                                        
-                                        $("#vendor_id option:selected").val(item.cusID).html(item.vendor_name).attr('disabled', false)
-                                        fetchVendor(item.cusID);
-                                    }else{
-                                        //alert("None")
-                                        
-                                    }
-                                    
-                                    if(item.amount_expected){
-                                        $('#initial_total').val(item.amount_expected);
-                                    }else{
-                                        $('#initial_total').val(item.amount_paid);
-                                    }
-                                    executed = true;
+        function showInvoiceNotFound() {
+            const table = $('#itemsTable tbody');
+            table.empty();
+            table.append(
+                '<tr id="no-invoice-row">' +
+                    '<td colspan="10" class="text-center text-[11px] text-gray-500 py-2">' +
+                        'Invoice not found' +
+                    '</td>' +
+                '</tr>'
+            );
+        }
+
+        function fetchInvoiceDetails(invoiceId) {
+            $.ajax({
+                url: '/GetInvoiceDetails/' + invoiceId + '/',
+                method: 'GET',
+                data: { 'invoiceID': invoiceId },
+                success: function(data) {
+                    console.log(data.accountType)
+
+                    if (data.invoice && data.invoice.length > 0) {
+                        console.log(data.invoice)
+                        const table = $('#itemsTable tbody');
+                        table.empty(); // Clear previous content
+                        // Populate table with items
+                        let num = 0
+                        let executed = false
+                        data.invoice.forEach(item => {
+                            num++
+                            i = num
+                            const selectInput = $('<select>').attr('name', 'item[]').attr('id', 'name').attr('class', 'block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input item-select');
+                            selectInput.append($('<option>').attr('value', item.itemcode).text(item.item_name));
+                            const input1 = $('<input>').attr('type', 'text').attr('name', 'item_name').attr('id', 'name2').attr('value', item.item_name).attr('class', 'block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input');
+                            const input2 = $('<input>').attr('type', 'text').attr('name', 'desc[]').attr('id', 'desc').attr('value', item.item_description).attr('class', 'block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input').attr('readonly', 'true');
+                            const input3 = $('<input>').attr('type', 'number').attr('name', 'qty[]').attr('id', 'qty').attr('value', item.qty).attr('max', item.qty).attr('class', 'block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input');
+                            const input4 = $('<input>').attr('type', 'text').attr('name', 'unit[]').attr('id', 'unit').attr('value', item.unit_p).attr('class', 'block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input').attr('readonly', 'true');
+                            const input5 = $('<input>').attr('type', 'text').attr('name', 'discount[]').attr('id', 'discount').attr('value', item.dicount).attr('class', 'block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input');
+                            const input6 = $('<input>').attr('type', 'text').attr('name', 'amount[]').attr('id', 'amount').attr('value', item.unit_p * item.qty).attr('class', 'block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input');
+                            const input7 = '<button  id="'+num+'" class="remove_row flex justify-center items-center w-full h-3 px-2 py-1 text-[12px] font-semibold text-center text-gray-600 transition-colors duration-150 border border-transparent focus:outline-none focus:shadow-outline-slate"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" enable-background="new 0 0 64 64" viewBox="0 0 64 64" id="delete"><g transform="translate(232 228)"><path fill="#134563" d="M-207.5-205.1h3v24h-3zM-201.5-205.1h3v24h-3zM-195.5-205.1h3v24h-3zM-219.5-214.1h39v3h-39z"></path><path fill="#134563" d="M-192.6-212.6h-2.8v-3c0-.9-.7-1.6-1.6-1.6h-6c-.9 0-1.6.7-1.6 1.6v3h-2.8v-3c0-2.4 2-4.4 4.4-4.4h6c2.4 0 4.4 2 4.4 4.4v3"></path><path fill="#134563" d="M-191-172.1h-18c-2.4 0-4.5-2-4.7-4.4l-2.8-36 3-.2 2.8 36c.1.9.9 1.6 1.7 1.6h18c.9 0 1.7-.8 1.7-1.6l2.8-36 3 .2-2.8 36c-.2 2.5-2.3 4.4-4.7 4.4"></path></g></svg></button>'
+
+                            const input8 = $('<input>').attr('type', 'text').attr('name', 'purchaseP').attr('id', 'name').attr('value', item.purchaseP)
+
+                            const row = $('<tr id="row'+num+'">').append(
+                                $('<td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">').text(num),
+                                $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ... hidden">').append(selectInput),
+                                $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').append(input1),
+                                $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').append(input2),
+                                $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').append(input3),
+                                $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').append(input4),
+                                $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').append(input5),
+                                $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').append(input6),
+                                $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ...">').append(input7),
+                                $('<td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ... hidden">').append(input8),
+                            );
+
+                            table.append(row);
+                            if (executed === false) {
+                                $('#Gdesc').val(item.Gdescription).attr('readonly', 'true')
+                                $('#order_id').val(item.orderID).attr('readonly', 'true')
+                                $("#warehouse option:selected").html(item.warehouse).attr('disabled', false)
+
+                                if (item.amount_expected > 0) {
+                                    $('#sub-total').val(item.amount_expected).attr('readonly', 'true')
+                                    $('#total').val(item.amount_expected).attr('readonly', 'true')
+                                } else {
+                                    $('#sub-total').val(item.amount_paid).attr('readonly', 'true')
+                                    $('#total').val(item.amount_paid).attr('readonly', 'true')
                                 }
-                            });
-                            addRow2(i)
-                           
-        
-                        }else{
-                            table.empty();
-                        }
-                        //alert('Items found');
-                    },
-                    error: function() {
-                        //alert('Item retrieval failed');
-                        alertify.confirm("Invoice retrieval failed");
-                    }
-                });
-            }
-           
-        });
+                                if (data.vat != null) {
+                                    $('#discountcheck').prop('checked', true)
+                                    $('#discount2').val(data.vat).attr('readonly', 'true')
+                                }
+                                if (data.accountType === "Vendor") {
+                                    $("#vendor_id option:selected").val(item.cusID).html(item.vendor_name).attr('disabled', false)
+                                    fetchVendor(item.cusID);
+                                }
 
+                                if (item.amount_expected) {
+                                    $('#initial_total').val(item.amount_expected);
+                                } else {
+                                    $('#initial_total').val(item.amount_paid);
+                                }
+                                executed = true;
+                            }
+                        });
+                        addRow2(i)
+                    } else {
+                        showInvoiceNotFound();
+                    }
+                },
+                error: function() {
+                    showInvoiceNotFound();
+                }
+            });
+        }
+
+        $("#invoiceID").on('input', function() {
+            const invoiceId = $(this).val().trim();
+
+            clearTimeout(invoiceDebounceTimer);
+
+            if (invoiceId.length < 2) {
+                clearInvoiceFields();
+                return;
+            }
+
+            invoiceDebounceTimer = setTimeout(function() {
+                fetchInvoiceDetails(invoiceId);
+            }, 300);
+        });
 
         function fetchVendor(vendorId) {
 
