@@ -1207,7 +1207,7 @@ def SalesLedger(request):
 
     page_obj = paginate_queryset(request, unique_invoices)
     context = {
-        'sales': page_obj,
+        # 'sales': page_obj,
         'page_obj': page_obj,
         'amount_total':amount_total,
         'item_name':item_name,
