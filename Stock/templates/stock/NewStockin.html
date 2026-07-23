@@ -426,7 +426,7 @@
                 // Check if the selected value matches the value of other selects
                 if (select.value === itemId) {
                     isValueExists = true;
-                    alert("Selected item already exists, add quantity instaed.");
+                    alertify.error("Selected item already exists. Please increase the quantity instead.");
                     event.target.value = "0"; // Reset the selected value
                 
                     
