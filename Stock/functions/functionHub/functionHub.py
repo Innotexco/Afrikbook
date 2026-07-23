@@ -795,9 +795,9 @@ def add_stockin_invoice(request, db):
         ven = vendor_table.objects.using(db).get(id=vendor_name)
        
 
-    
+     # outlet_count = sales_outlet.objects.count()
     # Count the number of records in the Sales_Outlet model
-    # outlet_count = sales_outlet.objects.count()
+   
     check_outlet = User.objects.get(id = request.user.id).outlet
 
     stock_in = CreateStockIn.objects.using(db).all()
