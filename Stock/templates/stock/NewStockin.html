@@ -503,92 +503,52 @@
 
 
     $(document).on("input", "#qty", function (e) {
-        const value =  $(this).val();
-        //console.log(value)
-        
-        
-        const unit =  $(this).closest('tr').find('input[name="unit[]"]');
-        const qty =  $(this).closest('tr').find('input[name="qty[]"]');
-        const discount =  $(this).closest('tr').find('input[name="discount[]"]');
-        const amount =  $(this).closest('tr').find('input[name="amount[]"]');
-        
+        const value = $(this).val();
+
+        const unit = $(this).closest('tr').find('input[name="unit[]"]');
+        const qty = $(this).closest('tr').find('input[name="qty[]"]');
+        const discount = $(this).closest('tr').find('input[name="discount[]"]');
+        const amount = $(this).closest('tr').find('input[name="amount[]"]');
+
         const subTotal = document.getElementById("sub-total");
         const total = document.getElementById("total");
         const allAmount = document.getElementsByName("amount[]");
-        
-        if(value > 0){
-            const unit_p = parseInt(unit.val());
-            const qty_p = parseInt(qty.val());
-            const discount_p = parseInt(discount.val());
-            
-            if(!isNaN(unit_p && discount_p)){
 
-                amount.val((unit_p - discount_p)* value)
-                //alert(unit_p)
-                //const inputElements = document.getElementsByName("amount[]");
-
-                // Initialize a variable to store the sum
-                let sum = 0;
-
-                //alert(sum)
-                // Loop through allAmount input elements and add their values to the sum
-                for (let i = 0; i < allAmount.length; i++) {
-                    const inputValue = parseFloat(allAmount[i].value);
-                    if (!isNaN(inputValue)) {
-                        sum += inputValue;
-                    }
+        function recomputeTotals() {
+            let sum = 0;
+            for (let i = 0; i < allAmount.length; i++) {
+                const inputValue = parseFloat(allAmount[i].value);
+                if (!isNaN(inputValue)) {
+                    sum += inputValue;
                 }
-                // Display the sum in a result 
-                
-                subTotal.value = sum;
-                total.value = sum;
-            }else if(isNaN(discount_p)){
-                amount.val(unit_p * value)
-                // Initialize a variable to store the sum
-                let sum = 0;
-
-                //alert(sum)
-                // Loop through allAmount input elements and add their values to the sum
-                for (let i = 0; i < allAmount.length; i++) {
-                    const inputValue = parseFloat(allAmount[i].value);
-                    if (!isNaN(inputValue)) {
-                        sum += inputValue;
-                    }
-                }
-                // Display the sum in a result 
-                
-                subTotal.value = sum;
-                total.value = sum;
             }
-        }else{
-            unit_p = parseInt(unit.val())
-            if(!isNaN(unit_p)){
-
-                amount.val(unit_p)
-
-                let sum = 0;
-
-                //alert(sum)
-                // Loop through allAmount input elements and add their values to the sum
-                for (let i = 0; i < allAmount.length; i++) {
-                    const inputValue = parseFloat(allAmount[i].value);
-                    if (!isNaN(inputValue)) {
-                        sum += inputValue;
-                    }
-                }
-                // Display the sum in a result div
-                
-                subTotal.value = sum;
-                total.value = sum;
-                }else{
-                    amount.val("")
-                }
-
-            
+            subTotal.value = sum;
+            total.value = sum;
         }
-        
-    });
 
+        if (value > 0) {
+            const unit_p = parseFloat(unit.val());
+            const discount_p = parseFloat(discount.val());
+
+            if (!isNaN(unit_p) && !isNaN(discount_p)) {
+                amount.val((unit_p - discount_p) * value);
+                recomputeTotals();
+            } else if (!isNaN(unit_p)) {
+                amount.val(unit_p * value);
+                recomputeTotals();
+            } else {
+                amount.val("");
+            }
+        } else {
+            const unit_p = parseFloat(unit.val());
+            if (!isNaN(unit_p)) {
+                amount.val(unit_p);
+                recomputeTotals();
+            } else {
+                amount.val("");
+            }
+        }
+    });
 
      /*$(document).on('click', '.remove_row',function(e){
         e.preventDefault()
