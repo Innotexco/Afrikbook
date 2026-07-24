@@ -13,7 +13,7 @@ load_dotenv()
 import time
 import subprocess
 from django.urls import reverse
-from settings.models import CreateProfile
+from settings.models import CreateProfile, Warehouse
 from account.models import chart_of_account
 from django.core.management import call_command
 import psycopg2
@@ -365,6 +365,16 @@ def create_pages(request):
             Pages.objects.create(page_name=page)
             
 
+def create_default_warehouse(db):
+    if not Warehouse.objects.using(db).filter(is_default=True).exists():
+        Warehouse.objects.using(db).create(
+            warehouse_name="Default Warehouse",
+            description="Default warehouse — automatically created and cannot be deleted",
+            is_default=True,
+        )
+        
+        
+
 def create_profile(request, loginuser):
     company = loginuser.company_id  # get the related company object, not just ID
     
@@ -392,6 +402,9 @@ def create_profile(request, loginuser):
     
     #Create default Accounts
     default_account(request, company.db_name)
+    
+    #Create default warehouse
+    create_default_warehouse(company.db_name)
 
 
 def default_account(request, db):

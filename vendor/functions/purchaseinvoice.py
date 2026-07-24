@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.http import HttpResponse
 from account.models import account_log, chart_of_account, Expenses_account
 from Stock.models import CreateStockIn, CreateStockInLog, CreateOutletStockIn, CreateOutletStockInLog
-from settings.models import sales_outlet
+from settings.models import Warehouse, sales_outlet
 from main.models import User
 from vendor.models import vendor_table
 from customer.functions.generalFunction import *
@@ -11,7 +11,13 @@ from customer.functions.newsalesfunc import *
 import decimal
 from django.db import transaction
 
-
+def get_default_warehouse(db):
+    default_warehouse = Warehouse.objects.using(db).filter(is_default=True).first()
+    if not default_warehouse:
+        raise ValueError(
+            "No default warehouse is configured."
+        )
+    return default_warehouse
 
 def add_purchase_invoice(request, db):
 
@@ -109,12 +115,10 @@ def add_purchase_invoice(request, db):
                     # ── Stock updates ─────────────────────────────────────────
                     try:
                         if warehouse and outlet:
-                            try:
-                                CreateStockIn.objects.using(db).get(warehouse=warehouse, item_code=itemcode[i])
-                                saveStockinLog(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
-                            except CreateStockIn.DoesNotExist:
-                                pass
+                            # Log against the chosen warehouse, but never touch its quantity
+                            saveStockinLog(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
 
+                            # Update outlet quantity
                             try:
                                 stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=outlet, item_code=itemcode[i])
                                 stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
@@ -123,38 +127,50 @@ def add_purchase_invoice(request, db):
                                 saveOutlet(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
                             saveOutletLog(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i, warehouse)
 
-                        elif not warehouse and not outlet:
+                        elif outlet and not warehouse:
+                            # Only outlet selected: log against the default warehouse, no quantity change there
+                            default_warehouse = get_default_warehouse(db)
+                            saveStockinLog(invoice_date, vendor_name, invoice_id, order_id, default_warehouse.warehouse_name, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
+
+                            try:
+                                stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=outlet, item_code=itemcode[i])
+                                stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
+                                stock_in_outlet_query.save(using=db)
+                            except CreateOutletStockIn.DoesNotExist:
+                                saveOutlet(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
+                            saveOutletLog(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i, default_warehouse.warehouse_name)
+
+                        elif warehouse and not outlet:
+                            # Only warehouse selected: normal quantity update
+                            try:
+                                stock_in_query = CreateStockIn.objects.using(db).get(warehouse=warehouse, item_code=itemcode[i])
+                                stock_in_query.quantity += int(quantities[i])
+                                stock_in_query.save(using=db)
+                            except CreateStockIn.DoesNotExist:
+                                saveStockin(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
+                            saveStockinLog(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
+
+                        else:
+                            # Neither selected — fall back to the logged-in user's assigned outlet,
+                            # logging against the default warehouse first (no quantity change there)
                             if check_outlet:
+                                default_warehouse = get_default_warehouse(db)
+                                saveStockinLog(invoice_date, vendor_name, invoice_id, order_id, default_warehouse.warehouse_name, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
+
                                 try:
                                     stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=check_outlet, item_code=itemcode[i])
                                     stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
                                     stock_in_outlet_query.save(using=db)
                                 except CreateOutletStockIn.DoesNotExist:
                                     saveOutlet(invoice_date, vendor_name, invoice_id, order_id, check_outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
-                                saveOutletLog(invoice_date, vendor_name, invoice_id, order_id, check_outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i, None)
-
-                        else:
-                            if warehouse:
-                                try:
-                                    stock_in_query = CreateStockIn.objects.using(db).get(warehouse=warehouse, item_code=itemcode[i])
-                                    stock_in_query.quantity += int(quantities[i])
-                                    stock_in_query.save(using=db)
-                                except CreateStockIn.DoesNotExist:
-                                    saveStockin(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
-                                saveStockinLog(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
-
-                            if outlet:
-                                try:
-                                    stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=outlet, item_code=itemcode[i])
-                                    stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
-                                    stock_in_outlet_query.save(using=db)
-                                except CreateOutletStockIn.DoesNotExist:
-                                    saveOutlet(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
-                                saveOutletLog(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i, None)
+                                saveOutletLog(invoice_date, vendor_name, invoice_id, order_id, check_outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i, default_warehouse.warehouse_name)
+                            else:
+                                messages.error(request, "Select outlet or warehouse")
+                                raise ValueError("No outlet or warehouse selected, and user has no assigned outlet")
 
                     except Exception as e:
                         messages.error(request, f"Stock update failed for item {i + 1}: {e}")
-                        raise  # triggers rollback
+                        raise
 
                     # ── Accounting — runs once per invoice, not per line ──────
                     if not message_displayed:
