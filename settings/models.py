@@ -76,6 +76,7 @@ class Warehouse(models.Model):
     code                  = models.CharField(max_length=255, default=generate_order_id)
     token_id              = models.CharField(max_length=255, default=generate_unique_id)
     Userlogin             = models.CharField(max_length=255, blank=True)
+    is_default            = models.BooleanField(default=False)
 
     class Meta:
         db_table = "warehouse"

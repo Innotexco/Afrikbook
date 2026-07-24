@@ -119,7 +119,7 @@ def Login(request):
                             messages.error(request, "Database connection error. Please try again or contact support.")
                             return render(request, 'login.html', {"form": form})
                     
-                    # Run migrations for first-time users (optional - can be removed if not needed)
+                    # Run migrations for first-time users 
                     if user.last_login is None:
                         try:
                             print(f"First-time login for {user.username}, running migrations...")

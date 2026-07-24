@@ -20,6 +20,7 @@ from Stock.Forms.StockoutForm import*;
 from Stock.functions.verifyFunctions.verify import *
 from Stock.functions.globalFunctions.globalFunctions import *
 
+from settings.models import Warehouse
 from vendor.models import vendor_table
 from vendor.forms import VendorInovoiceForm
 from django.contrib import messages
@@ -744,142 +745,165 @@ def getStockLevelComparison(request, db):
    return combined_data, float(total_quantity1), float(total_quantity2)
 
 
-def add_stockin_invoice(request, db):
-    
-    message_displayed = False  # Initialize the message_displayed variable
-   
-    invoice_id = request.POST.get('invoiceID')
-    order_id = request.POST.get('orderID')
+def get_default_warehouse(db):
+    default_warehouse = Warehouse.objects.using(db).filter(is_default=True).first()
+    if not default_warehouse:
+        raise ValueError(
+            "No default warehouse is configured."
+        )
+    return default_warehouse
 
-    account_id = request.POST.get('account_id')
-    warehouse = request.POST.get('warehouse')
-    p_method = request.POST.get('source')
-    outlet = request.POST.get('outlet')
-    vendor_name = request.POST.get('vendor_name')
+
+from django.db import transaction
+
+def add_stockin_invoice(request, db):
+
+    message_displayed = False
+
+    invoice_id   = request.POST.get('invoiceID')
+    order_id     = request.POST.get('orderID')
+    warehouse    = request.POST.get('warehouse')
+    p_method     = request.POST.get('source')
+    outlet       = request.POST.get('outlet')
+    vendor_name  = request.POST.get('vendor_name')
     Gdescription = request.POST.get('Gdescription')
     invoice_date = request.POST.get('invoice_date')
-    due_date = request.POST.get('due_date')
-    item_name = request.POST.getlist('item_name')
-    itemcode = request.POST.getlist('item[]')
+    due_date     = request.POST.get('due_date')
+    item_name         = request.POST.getlist('item_name')
+    itemcode          = request.POST.getlist('item[]')
     item_descriptions = request.POST.getlist('desc[]')
-    quantities = request.POST.getlist('qty[]')
-    unit = request.POST.getlist('unit[]')
-    discount = request.POST.getlist('discount[]')
-    amount = request.POST.getlist('amount[]')
-    total = request.POST.get('total')
-    vat = request.POST.get('vat')
-    amount_paid = request.POST.get('amount_paid')
+    quantities        = request.POST.getlist('qty[]')
+    unit              = request.POST.getlist('unit[]')
+    discount          = request.POST.getlist('discount[]')
+    amount            = request.POST.getlist('amount[]')
+    total        = request.POST.get('total')
+    vat          = request.POST.get('vat')
+    amount_paid  = request.POST.get('amount_paid')
     amount_expected = request.POST.get('amount_expected')
-    
-   # Validate that at least one valid item was selected
+
+    # Validate that at least one valid item was selected
     valid_items = [code for code in itemcode if str(code) != "0"]
     if not valid_items:
-       messages.error(request, "Please select at least one item")
-       return  # Exit early
+        messages.error(request, "Please select at least one item")
+        return None
 
-
-    # total = float(request.POST['total'])
-  
     if p_method == "Cash":
-        amount_paid = total
+        amount_paid     = total
         amount_expected = total
     else:
-        amount_paid = 0.00
+        amount_paid     = 0.00
         amount_expected = total
 
+    if not vendor_name:
+        messages.error(request, "Vendor is required.")
+        return None
 
-    transaction_source = "Purchase"
-    source = "New Stock"
-
-    if vendor_name:
+    try:
         ven = vendor_table.objects.using(db).get(id=vendor_name)
-       
+    except vendor_table.DoesNotExist:
+        messages.error(request, "Vendor not found.")
+        return None
 
-     # outlet_count = sales_outlet.objects.count()
-    # Count the number of records in the Sales_Outlet model
-   
-    check_outlet = User.objects.get(id = request.user.id).outlet
+    check_outlet = User.objects.get(id=request.user.id).outlet
 
-    stock_in = CreateStockIn.objects.using(db).all()
-    
+    try:
+        with transaction.atomic(using=db):
 
-    for i in range(len(itemcode)):
+            for i in range(len(itemcode)):
 
-            # Check if the itemcode (value) is equal to 0
+                if str(itemcode[i]) != "0":
+                    if not quantities[i] or int(quantities[i]) == 0:
+                        quantities[i] = 1
 
-        if str(itemcode[i]) != "0":
-             # Check if quantity (value) is equal to 0 or empty 
-            if not quantities[i] or int(quantities[i]) == 0:
-                #Automatically change the quantity to 1
-                quantities[i] = 1
-        
-            vendor_invoice_form_data = {
-                'cusID': ven.custID,
-                'vendor_name': ven.name,
-                'invoiceID': invoice_id,
-                'orderID': order_id,
-                'Gdescription': Gdescription,
-                'invoice_date': invoice_date,
-                'due_date' : due_date,
-                'amount_paid' : amount_paid,
-                'amount_expected': amount_expected,
-                'item_name': item_name[i],
-                'itemcode': itemcode[i],
-                'item_descriptions': item_descriptions[i],
-                'qty': quantities[i],
-                'unit_p': unit[i],
-                'discount': discount[i],
-                'amount': amount[i],
-                'total': total
-            }
-            
-            vendor_form = VendorInovoiceForm(vendor_invoice_form_data)
-            
-            
-            if vendor_form.is_valid():
-                
-               form_i = vendor_form.save(commit=False)
-               form_i.Userlogin = request.user.username
-               # form_i.save(using=db)
+                    vendor_invoice_form_data = {
+                        'cusID':             ven.custID,
+                        'vendor_name':       ven.name,
+                        'invoiceID':         invoice_id,
+                        'orderID':           order_id,
+                        'Gdescription':      Gdescription,
+                        'invoice_date':      invoice_date,
+                        'due_date':          due_date,
+                        'amount_paid':       amount_paid,
+                        'amount_expected':   amount_expected,
+                        'item_name':         item_name[i],
+                        'itemcode':          itemcode[i],
+                        'item_descriptions': item_descriptions[i],
+                        'qty':               quantities[i],
+                        'unit_p':            unit[i],
+                        'discount':          discount[i],
+                        'amount':            amount[i],
+                        'total':             total,
+                    }
 
-                
-                # stock_in = Stock_In.objects.filter(warehouse=warehouse, item_code=itemcode).first()
-               
-               if outlet != "":
-                  try:
-                        stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=outlet, item_code=itemcode[i])
-                        stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
-                        stock_in_outlet_query.save(using=db)
-                  except CreateOutletStockIn.DoesNotExist:
-                        saveOutlet(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
-                        saveOutletLog(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i, None)
+                    vendor_form = VendorInovoiceForm(vendor_invoice_form_data)
 
-                  if not message_displayed:     
-                     messages.success(request, "Items Stocked in successfully")
-                     message_displayed = True  # Update the message_displayed variable      
-               else:
-                  ## INSTANT TRANSFER
-                  if warehouse is None:
-                     messages.error(request, "Select outlet or warehouse")
-                  else:
-                     # STOCK IN WAREHOUSE
-                     if warehouse != '':
-                           try:
-                              stock_in_query = CreateStockIn.objects.using(db).get(warehouse=warehouse, item_code=itemcode[i])
-                              stock_in_query.quantity += int(quantities[i])
-                              stock_in_query.save(using=db)
-                           except CreateStockIn.DoesNotExist:
-                              saveStockin(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
-                           saveStockinLog(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
+                    if not vendor_form.is_valid():
+                        messages.error(request, f"Invalid data on item {i + 1}: {vendor_form.errors}")
+                        raise ValueError(f"Form invalid on item {i + 1}")
 
-                     if not message_displayed:
-                           
-                        messages.success(request, "Items Stocked in successfullyy")
-                        message_displayed = True  # Update the message_displayed variable
-            else:
-                return HttpResponse('error')
-            
+                    form_i = vendor_form.save(commit=False)
+                    form_i.Userlogin = request.user.username
+                    form_i.save(using=db)
 
+                    try:
+                        if warehouse and outlet:
+                            # Log against the chosen warehouse, don't touch its quantity
+                            saveStockinLog(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
+
+                            try:
+                                stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=outlet, item_code=itemcode[i])
+                                stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
+                                stock_in_outlet_query.save(using=db)
+                            except CreateOutletStockIn.DoesNotExist:
+                                saveOutlet(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
+                            saveOutletLog(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i, warehouse)
+
+                        elif outlet and not warehouse:
+                            # Only outlet selected: log against the default warehouse, no quantity change there
+                            default_warehouse = get_default_warehouse(db)
+                            saveStockinLog(invoice_date, vendor_name, invoice_id, order_id, default_warehouse.warehouse_name, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
+
+                            try:
+                                stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=outlet, item_code=itemcode[i])
+                                stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
+                                stock_in_outlet_query.save(using=db)
+                            except CreateOutletStockIn.DoesNotExist:
+                                saveOutlet(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
+                            saveOutletLog(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i, default_warehouse.warehouse_name)
+
+                        elif warehouse and not outlet:
+                            # Only warehouse selected: normal quantity update
+                            try:
+                                stock_in_query = CreateStockIn.objects.using(db).get(warehouse=warehouse, item_code=itemcode[i])
+                                stock_in_query.quantity += int(quantities[i])
+                                stock_in_query.save(using=db)
+                            except CreateStockIn.DoesNotExist:
+                                saveStockin(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
+                            saveStockinLog(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
+
+                        else:
+                            # Neither selected - prompt user to select one
+                            if check_outlet:
+                                messages.error(request, "Select outlet or warehouse")
+                                raise ValueError("No outlet or warehouse selected")
+
+                    except ValueError:
+                        raise
+                    except Exception as e:
+                        messages.error(request, f"Stock update failed for item {i + 1}: {e}")
+                        raise
+
+                    if not message_displayed:
+                        messages.success(request, "Items Stocked in successfully")
+                        message_displayed = True
+
+    except Exception:
+        if not message_displayed:
+            if not any(m for m in messages.get_messages(request)):
+                messages.error(request, "Stock-in could not be saved. All changes have been rolled back.")
+        return None
+
+    return True
 
 
 
