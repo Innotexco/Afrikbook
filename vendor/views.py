@@ -37,14 +37,21 @@ logger = logging.getLogger(__name__)
 
 
 def generate_next_invoice_id(db):
-    invoices = Vendor_invoice.objects.using(db).all()
-    if not invoices.exists():
-        return 1000001
-    latest = max(
-        invoices.values_list('invoiceID', flat=True),
-        key=lambda x: int(x) if str(x).isdigit() else 0
+    invoice_ids = Vendor_invoice.objects.using(db).values_list(
+        'invoiceID',
+        flat=True
     )
-    return int(latest) + 1
+
+    numeric_ids = []
+
+    for invoice in invoice_ids:
+        if str(invoice).isdigit():
+            numeric_ids.append(int(invoice))
+
+    if not numeric_ids:
+        return 1000001
+
+    return max(numeric_ids) + 1
 
 
 @login_required(login_url="/")
@@ -983,17 +990,35 @@ def GetInvoiceDetails(request, invoice_id):
                 .amount
             )
 
+        # Resolve the warehouse these items were originally stocked into.
+        # CreateStockInLog stores the warehouse name in its 'outlet' field
+        stockin_log_row = CreateStockInLog.objects.using(db).filter(
+            invoice_no=invoiceID
+        ).first()
+        resolved_warehouse = stockin_log_row.outlet if stockin_log_row else None
+
+        invoice_list = list(data)
+        for line in invoice_list:
+            line['warehouse'] = resolved_warehouse
+            available = decimal.Decimal('0')
+            if resolved_warehouse:
+                stock_row = CreateStockIn.objects.using(db).filter(
+                    warehouse=resolved_warehouse, item_code=line.get('itemcode')
+                ).first()
+                if stock_row:
+                    available = decimal.Decimal(stock_row.quantity or 0)
+            line['available_qty'] = str(available)
+
         serialized_data = {
-            'invoice': list(data),
+            'invoice': invoice_list,
             'accountType': accountType,
             'vat': vat,
+            'warehouse': resolved_warehouse,
         }
 
         return JsonResponse(serialized_data, safe=False)
     except Vendor_invoice.DoesNotExist:
         return JsonResponse({'error': 'Item not found'}, status=404)
-   
-
 
 
 @login_required(login_url='/')
