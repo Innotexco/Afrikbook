@@ -379,11 +379,20 @@
                 if (data.success === true) {
                     alertify.success(
                         payment > 0 && discount > 0 ? "Payment and discount recorded." :
-                        payment > 0                 ? "Payment recorded successfully." :
-                                                    "Discount applied successfully."
+                        payment > 0 ? "Payment recorded successfully." :
+                        "Discount applied successfully."
                     );
+
                     refreshInvoiceData(customer, invoice);
-                    if (typeof Filter === 'function') Filter();
+
+                    const hasFilter =
+                        $('#from').val() ||
+                        $('#to').val() ||
+                        $('#customer_id').val();
+
+                    if (hasFilter) {
+                        Filter();
+                    }
                 } else {
                     alertify.error(data.error || "Transaction unsuccessful.");
                 }
