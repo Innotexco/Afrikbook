@@ -654,7 +654,7 @@ def AgedReceivables(request):
                 return JsonResponse({"success": False, "error": f"Customer '{customer}' not found"}, status=404)
 
             try:
-                inv = customer_invoice.objects.using(db).get(invoiceID=invoice, cusID=customer)
+                inv = customer_invoice.objects.using(db).filter(invoiceID=invoice, cusID=customer).first()
             except customer_invoice.DoesNotExist:
                 return JsonResponse({"success": False, "error": f"Invoice '{invoice}' not found"}, status=404)
 
