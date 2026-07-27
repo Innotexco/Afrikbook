@@ -1556,9 +1556,9 @@ class WarehouseStock:
         # Determine stock level mode
         try:
             stock_ = Check_StockLevel_By.objects.using(self.db).first()
-            stock_level = stock_.level if stock_ else "NO"
+            stock_level = stock_.level if stock_ else "YES"
         except Check_StockLevel_By.DoesNotExist:
-            stock_level = "NO"
+            stock_level = "YES"
 
         data = []
 
