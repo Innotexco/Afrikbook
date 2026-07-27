@@ -657,6 +657,11 @@ def AgedReceivables(request):
                 inv = customer_invoice.objects.using(db).filter(invoiceID=invoice, cusID=customer).first()
             except customer_invoice.DoesNotExist:
                 return JsonResponse({"success": False, "error": f"Invoice '{invoice}' not found"}, status=404)
+            
+            try:
+                invs = customer_invoice.objects.using(db).filter(invoiceID=invoice,cusID=customer)
+            except customer_invoice.DoesNotExist:
+                return JsonResponse({"success": False, "error": f"Invoice '{invoice}' not found"}, status=404)
 
             invoice_total = Decimal(str(inv.amount_expected))
             current_paid  = Decimal(str(inv.amount_paid))
@@ -706,7 +711,7 @@ def AgedReceivables(request):
                 except chart_of_account.DoesNotExist:
                     return JsonResponse({"success": False, "error": "Selected account not found"}, status=404)
 
-                if cost > 0:  # ← only post payment entries if there's an actual payment
+                if cost > 0:  
                     if payment_method == "Transfer":
                         DebitReceivable(request, db, cus, today, Gdescription, "Transfer", account_ID, cost, invoice)
                         CreditReceivable(request, db, cus, today, Gdescription, "Transfer", account_ID, cost, invoice, invoice_total, current_paid)
@@ -763,11 +768,17 @@ def AgedReceivables(request):
                     payment_method, discount_account.account_id, discount,
                     invoice, invoice_total, current_paid + cost
                 )
-                inv.amount_paid += discount
+                for lines in invs:
+                    lines.amount_paid += discount
+                    lines.save(using=db)
+                # inv.amount_paid += discount
 
             # ── Update invoice ────────────────────────────────────────────────────
-            inv.amount_paid += cost
-            inv.save(using=db)
+            for lines in invs:
+                lines.amount_paid += cost
+                lines.save(using=db)
+            # inv.amount_paid += cost
+            # inv.save(using=db)
 
             if payment_method == "Customer Balance" and cost > 0:
                 total_payment = cost + discount
