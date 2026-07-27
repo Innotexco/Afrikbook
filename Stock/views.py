@@ -314,7 +314,7 @@ def _verify_single(db, item_id, outlet, warehouse, whichtrans, quantity, item_co
 #     deletedata.delete()
 #     return JsonResponse({'message': 'Transfer reversed and deleted successfully'})
 
-
+YES
 @login_required(login_url='/')
 @urls_name(name="Item")
 def DeleteStockItem(request):
