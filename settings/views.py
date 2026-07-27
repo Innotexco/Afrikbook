@@ -678,7 +678,7 @@ def Create_UpdateNewProfile(request):
                     logger.info(
                         f"[Create_UpdateNewProfile] Profile created | pdf={pdf_template} | "
                         f"send_email={send_email_invoice} | send_whatsapp={send_whatsapp_invoice} | "
-                        f"auto_verify_transfer={auto_verify_transfer}"                              # ← added
+                        f"auto_verify_transfer={auto_verify_transfer}"                              
                     )
                     return redirect('settings:ProfileSetup')
                 else:
