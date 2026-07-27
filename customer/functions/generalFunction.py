@@ -256,12 +256,15 @@ def IncreaseOutletStockinItemQuantity(db, outlet, itemcode, qty):
 
 
 def ReduceStockinItemQuantity(db, outlet, itemcode, qty):
-    
     lookups = Q(outlet=outlet) | Q(warehouse=outlet)
     stock = CreateStockIn.objects.using(db).filter(lookups, item_code=itemcode).first()
-    new_qty = decimal.Decimal(stock.quantity) -  decimal.Decimal(qty)
+    if stock is None:
+        raise CreateStockIn.DoesNotExist(
+            f"No CreateStockIn row found for warehouse/outlet={outlet}, item_code={itemcode}"
+        )
+    new_qty = decimal.Decimal(stock.quantity) - decimal.Decimal(str(qty))
     stock.quantity = new_qty
-    stock.save()
+    stock.save(using=db)
     
 from django.apps import apps
     
