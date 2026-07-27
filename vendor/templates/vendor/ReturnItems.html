@@ -456,13 +456,36 @@
 
         var invoiceDebounceTimer = null;
 
+        function lockWarehouse(warehouseName) {
+            const select = $('#warehouse');
+            select.find('option').each(function() {
+                if ($(this).text().trim() === warehouseName) {
+                    $(this).prop('selected', true);
+                }
+            });
+            select.prop('disabled', true);
+            if ($('#warehouse_locked_value').length === 0) {
+                $('<input>').attr({
+                    type: 'hidden',
+                    id: 'warehouse_locked_value',
+                    name: 'warehouse',
+                }).insertAfter(select);
+            }
+            $('#warehouse_locked_value').val(warehouseName);
+        }
+
+        function unlockWarehouse() {
+            $('#warehouse').prop('disabled', false);
+            $('#warehouse_locked_value').remove();
+        }
+
         function clearInvoiceFields() {
             const table = $('#itemsTable tbody');
             table.empty();
 
             $('#Gdesc').val('').removeAttr('readonly');
             $('#order_id').val('').removeAttr('readonly');
-            $("#warehouse option:selected").html('').removeAttr('disabled');
+            unlockWarehouse();
             $('#sub-total').val('').removeAttr('readonly');
             $('#total').val('').removeAttr('readonly');
             $('#initial_total').val('');
@@ -527,10 +550,29 @@
                             );
 
                             table.append(row);
+
+                            // Insufficient-stock check for this line
+                            const available = parseFloat(item.available_qty) || 0;
+                            const requested = parseFloat(item.qty) || 0;
+                            if (requested > available) {
+                                const warningRow = $('<tr class="insufficient-stock-row">').append(
+                                    $('<td colspan="10" class="text-[10px] text-red-600 bg-red-50 px-2 py-1">').html(
+                                        '⚠ Only ' + available + ' of "' + item.item_name + '" available in ' +
+                                        (item.warehouse || 'the warehouse') + '. You requested ' + requested + '. ' +
+                                        '<button type="button" class="remove-insufficient-row underline" data-row="row' + num + '">Remove this row</button> ' +
+                                        'or <a href="/Transfer-from-outlet-warehouse" target="_blank" class="underline">transfer stock back from the outlet</a> first.'
+                                    )
+                                );
+                                table.append(warningRow);
+                            }
+
                             if (executed === false) {
                                 $('#Gdesc').val(item.Gdescription).attr('readonly', 'true')
                                 $('#order_id').val(item.orderID).attr('readonly', 'true')
-                                $("#warehouse option:selected").html(item.warehouse).attr('disabled', false)
+
+                                if (item.warehouse) {
+                                    lockWarehouse(item.warehouse);
+                                }
 
                                 if (item.amount_expected > 0) {
                                     $('#sub-total').val(item.amount_expected).attr('readonly', 'true')
@@ -580,6 +622,12 @@
             invoiceDebounceTimer = setTimeout(function() {
                 fetchInvoiceDetails(invoiceId);
             }, 300);
+        });
+
+        $(document).on('click', '.remove-insufficient-row', function() {
+            const rowId = $(this).data('row');
+            $('#' + rowId).remove();
+            $(this).closest('tr').remove();
         });
 
         function fetchVendor(vendorId) {

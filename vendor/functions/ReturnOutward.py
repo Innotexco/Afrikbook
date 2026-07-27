@@ -71,7 +71,21 @@ def add_return_item(request, db):
     if invoice2 is None:
         messages.error(request, "Invoice ID not found")
         return None
+    
+    stockin_log = CreateStockInLog.objects.using(db).filter(
+        invoice_no=invoiceID
+    ).values_list('outlet', flat=True).first()
 
+    if not stockin_log:
+        messages.error(request, "Could not determine the warehouse this invoice was stocked into.")
+        return None
+
+    resolved_warehouse = stockin_log
+    if warehouse and warehouse != resolved_warehouse:
+        messages.error(request, "Warehouse cannot be changed — items must be returned to where they were stocked in.")
+        return None
+    warehouse = resolved_warehouse
+    
     # Resolve return account (template may still send legacy name="amount")
     if not account:
         account = request.POST.get('amount')  # legacy select name
@@ -94,6 +108,40 @@ def add_return_item(request, db):
         except chart_of_account.DoesNotExist:
             messages.error(request, "Return Outward account not found")
             return None
+
+
+    insufficient_items = []
+    for i in range(len(itemcode)):
+        if str(itemcode[i]) == "0" or not itemcode[i]:
+            continue
+        qty_i = quantities[i] if i < len(quantities) and quantities[i] else '1'
+        try:
+            qty_needed = decimal.Decimal(str(qty_i))
+        except (decimal.InvalidOperation, TypeError, ValueError):
+            qty_needed = decimal.Decimal('1')
+
+        stock_row = CreateStockIn.objects.using(db).filter(
+            warehouse=warehouse, item_code=itemcode[i]
+        ).first()
+        available = decimal.Decimal(stock_row.quantity) if stock_row else decimal.Decimal('0')
+
+        if available < qty_needed:
+            insufficient_items.append({
+                'itemcode': itemcode[i],
+                'item_name': item_name[i] if i < len(item_name) else itemcode[i],
+                'available': str(available),
+                'needed': str(qty_needed),
+            })
+
+    if insufficient_items:
+        for bad in insufficient_items:
+            messages.error(
+                request,
+                f"'{bad['item_name']}' only has {bad['available']} in {warehouse}, "
+                f"but {bad['needed']} was requested. Remove this item or transfer "
+                f"stock back from the outlet before returning."
+            )
+        return None
 
     saved_lines = 0
     returned_itemcodes = []
