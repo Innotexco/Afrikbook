@@ -1208,7 +1208,7 @@ def SalesLedger(request):
     from main.utils import paginate_queryset
     db = AfrikBookDB(request)
     item_name = Item.objects.using(db).values("item_name")
-    sales = customer_invoice.objects.using(db).filter(invoice_state="Supplied").exclude(invoiceID__icontains=str('returned')) #.distinct()
+    sales = customer_invoice.objects.using(db).filter(invoice_state="Supplied").exclude(invoiceID__icontains=str('returned')).distinct()
     unique_invoices = list({sale.invoiceID: sale for sale in sales}.values())
     company = company_table.objects.get(id=request.user.company_id_id)
     profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
@@ -1218,6 +1218,12 @@ def SalesLedger(request):
     .filter(invoice_state="Supplied")\
     .exclude(invoiceID__icontains="returned")\
     .aggregate(total_amount=Sum("amount"))["total_amount"] or 0
+    amounts = customer_invoice.objects.using(db)\
+    .filter(invoice_state="Supplied")\
+    .exclude(invoiceID__icontains="returned")\
+    .values_list("amount", flat=True)
+
+    print("Amounts:", list(amounts))
     page_obj = paginate_queryset(request, unique_invoices)
     context = {
         'sales': page_obj,
