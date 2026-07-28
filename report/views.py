@@ -1214,7 +1214,7 @@ def SalesLedger(request):
     profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
 
     sales_total = customer_invoice.objects.using(db).values("invoiceID").distinct().count()
-    amount_total = customer_invoice.objects.using(db).exclude(cancellation_status="1").values("invoiceID").distinct().aggregate(total_amount=Sum("amount"))['total_amount']
+    amount_total = customer_invoice.objects.using(db).exclude(invoiceID__icontains=str('returned')).values("invoiceID").distinct().aggregate(total_amount=Sum("amount"))['total_amount']
 
     page_obj = paginate_queryset(request, unique_invoices)
     context = {
