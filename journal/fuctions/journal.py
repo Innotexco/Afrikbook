@@ -117,6 +117,7 @@ def create_new_journal_enty(request, db):
                     messages.success(request, "New Journal Entry was created successfully")
                     message_displayed = True
             else:
+                messages.error(request, f"Error in form submission: {form.errors}")
                 return form
     else:
         messages.error(request, "Select valid Account")
