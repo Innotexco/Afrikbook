@@ -46,31 +46,31 @@
             <table id="aged-payables" class="display" style="width:100%">
                 <thead>
                     <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 bg-gray-50">
-                        <th class="px-4">SN</th>
-                        <th class="px-4">Date</th>
-                        <th class="px-4">Vendor ID</th>
-                        <th class="px-4">Vendor Name</th>
-                        <th class="px-4">Invoice ID</th>
-                        <th class="px-4">Description</th>
-                        <th class="px-4">Amount Paid</th>
-                        <th class="px-4">Expected Amount</th>
-                        <th class="px-4">Outstanding</th>
-                        <th class="px-4">View</th>
+                        <th class="px-4 py-3">SN</th>
+                        <th class="px-4 py-3">Date</th>
+                        <th class="px-4 py-3">Vendor ID</th>
+                        <th class="px-4 py-3">Vendor Name</th>
+                        <th class="px-4 py-3">Invoice ID</th>
+                        <th class="px-4 py-3">Description</th>
+                        <th class="px-4 py-3">Amount Paid</th>
+                        <th class="px-4 py-3">Expected Amount</th>
+                        <th class="px-4 py-3">Outstanding</th>
+                        <th class="px-4 py-3">View</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y">
                     {% for aged in aged_payable %}
                     <tr class="text-gray-700">
-                        <td class="text-[10px] px-4 py-2">{{ forloop.counter }}</td>
-                        <td class="text-[10px] px-4 py-2">{{ aged.invoice_date }}</td>
-                        <td class="text-[10px] px-4 py-2">{{ aged.cusID }}</td>
-                        <td class="text-[10px] px-4 py-2">{{ aged.vendor_name }}</td>
-                        <td class="text-[10px] px-4 py-2">{{ aged.invoiceID }}</td>
-                        <td class="text-[10px] px-4 py-2">{{ aged.Gdescription|default:"—" }}</td>
-                        <td class="text-[10px] px-4 py-2">{{ aged.amount_paid }}</td>
-                        <td class="text-[10px] px-4 py-2">{{ aged.amount_expected }}</td>
-                        <td class="text-[10px] px-4 py-2 text-red-600 font-semibold">{{ aged.outstanding }}</td>
-                        <td class="text-[10px] px-4 py-2">
+                        <td class="text-[10px] px-4">{{ forloop.counter }}</td>
+                        <td class="text-[10px] px-4">{{ aged.invoice_date }}</td>
+                        <td class="text-[10px] px-4">{{ aged.cusID }}</td>
+                        <td class="text-[10px] px-4">{{ aged.vendor_name }}</td>
+                        <td class="text-[10px] px-4">{{ aged.invoiceID }}</td>
+                        <td class="text-[10px] px-4">{{ aged.Gdescription|default:"—" }}</td>
+                        <td class="text-[10px] px-4">{{ aged.amount_paid }}</td>
+                        <td class="text-[10px] px-4">{{ aged.amount_expected }}</td>
+                        <td class="text-[10px] px-4 text-red-600 font-semibold">{{ aged.outstanding }}</td>
+                        <td class="text-[10px] px-4">
                             <a onclick="showModal('{{ aged.invoiceID }}', '{{ aged.cusID }}')"
                                 class="flex items-center justify-center text-blue-500" aria-label="View">
                                 <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
@@ -95,7 +95,6 @@
                 </tfoot>
             </table>
             <div class="text-center text-gray-500 py-2 font-semibold" id="no-data" style="display:none;">No data found</div>
-            {% include 'components/pagination.html' with page_obj=page_obj %}
         </div>
     </div>
 
