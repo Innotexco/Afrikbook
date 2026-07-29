@@ -795,14 +795,18 @@ def AgedReceivables(request):
             traceback.print_exc()
             return JsonResponse({"success": False, "error": str(e)}, status=500)
 
+    from main.utils import paginate_queryset
+    page_obj = paginate_queryset(request, aged_list)
+
     context = {
-        'customers':      customers,
-        'aged_recievable': aged_list,
-        'amount_total':   amount_total,
-        'company':        company,
-        'bank_accounts':  bank_accounts,
-        'accounts':       accounts,
-        'today': date.today(),
+        'customers':       customers,
+        'aged_recievable': page_obj,
+        'page_obj':        page_obj,
+        'amount_total':    amount_total,
+        'company':         company,
+        'bank_accounts':   bank_accounts,
+        'accounts':        accounts,
+        'today':           date.today(),
         'payment_methods': ["Cash", "Transfer", "Cheque", "Transfer and Cash", "Customer Balance"],
     }
     return render(request, 'report/AgedReceivables.html', context)
@@ -1042,9 +1046,13 @@ def AgedPayable(request):
             traceback.print_exc()
             return JsonResponse({"success": False, "error": str(e)}, status=500)
 
+    from main.utils import paginate_queryset
+    page_obj = paginate_queryset(request, aged_list)
+
     context = {
         'vendors':         vendors,
-        'aged_payable':    aged_list,
+        'aged_payable':    page_obj,
+        'page_obj':        page_obj,
         'amount_total':    amount_total,
         'company':         company,
         'bank_accounts':   bank_accounts,
