@@ -109,47 +109,55 @@ def payables_filter_by_date(request):
 
 
 def aged_payables_filter_by_date(request):
+    """Filter aged payables by date range and/or vendor — mirrors aged_receivable_filter_by_date."""
+    from decimal import Decimal
+
     db = request.user.company_id.db_name
     start_date_str = request.GET.get('start_date')
-    end_date_str = request.GET.get('end_date')
-    vendor = request.GET.get('vendor')
-    
-    filter_conditions = Q()
-    
-    if start_date_str and end_date_str:
-        pass
-        filter_conditions &= Q(invoice_date__date__range=(convertDate(start_date_str, end_date_str)))
+    end_date_str   = request.GET.get('end_date')
+    vendor         = request.GET.get('vendor')
 
-           
+    filter_conditions = Q()
+
+    if start_date_str and end_date_str:
+        start_date, end_date = convertDate(start_date_str, end_date_str)
+        filter_conditions &= Q(invoice_date__date__range=(start_date, end_date))
+
     if vendor:
         filter_conditions &= Q(cusID=vendor)
-    
-    data = []
-    if filter_conditions:   
-        # Perform filtering based on the date range
-        filtered_data = Vendor_invoice.objects.using(db).filter(Q(amount_paid__lt=F('amount_expected')) & filter_conditions).values() 
-        for item in filtered_data:
-            if item['invoiceID'] not in [d['invoiceID'] for d in data]:
-                data.append(item)
-            
-            
-    amount_total = Vendor_invoice.objects.using(db).filter(Q(amount_paid__lt=F('amount_expected')) & filter_conditions).values("invoiceID").distinct().aggregate(total_amount=Sum("amount_expected"))['total_amount'] or 0
-    amount_paid_total = Vendor_invoice.objects.using(db).filter(Q(amount_paid__lt=F('amount_expected')) & filter_conditions).values("invoiceID").distinct().aggregate(total_amount_paid=Sum("amount_paid"))['total_amount_paid'] or 0
-        
-    total_amount = amount_total - amount_paid_total #Vendor_invoice.objects.using(db).filter(Q(amount_paid__lt=F('amount_expected')) & filter_conditions).values().aggregate(total_amount=Sum('amount_paid'))['total_amount'] or 0
 
-   
+    # Base queryset — only invoices with outstanding balance
+    base_qs = Vendor_invoice.objects.using(db).filter(
+        Q(amount_paid__lt=F('amount_expected')) & filter_conditions
+    )
 
-    serializer_data = list(data)
+    # Deduplicate by invoiceID
+    seen = set()
+    unique_data = []
+    total_outstanding = Decimal('0.00')
 
+    for item in base_qs.order_by('invoiceID', 'id'):
+        if item.invoiceID not in seen:
+            seen.add(item.invoiceID)
+            amount_paid     = item.amount_paid or Decimal('0.00')
+            amount_expected = item.amount_expected or Decimal('0.00')
+            balance         = amount_expected - amount_paid
+            total_outstanding += balance
+            unique_data.append({
+                'invoice_date':    str(item.invoice_date) if item.invoice_date else '',
+                'cusID':           item.cusID,
+                'vendor_name':     item.vendor_name,
+                'invoiceID':       item.invoiceID,
+                'Gdescription':    item.Gdescription or '—',
+                'amount_paid':     str(amount_paid),
+                'amount_expected': str(amount_expected),
+                'balance':         str(balance),
+            })
 
-    response ={
-        "serializer_data":serializer_data,
-        "total_amount":total_amount,
-        
-    }
-    return JsonResponse(response, safe=False)
-
+    return JsonResponse({
+        'serializer_data': unique_data,
+        'total_amount':    str(total_outstanding),
+    }, safe=False)
 
 
 
