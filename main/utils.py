@@ -2,6 +2,9 @@ import json
 from Stock.models import Item
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+# Re-export money helpers for convenient imports: from main.utils import parse_money, format_money
+from main.money import parse_money, clean_decimal, format_money, strip_money_commas  # noqa: F401
+
 # Default page size for server-side list pagination
 DEFAULT_PAGE_SIZE = 25
 

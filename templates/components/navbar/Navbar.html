@@ -1344,11 +1344,20 @@
             
     )
     function NCFormat(num){
-        const formatter = new Intl.NumberFormat('en-ar',{
-            minimumFractionDigits: 2,
-            });
-
-            return formatter.format(num)
+        // Prefer global money.js helper when loaded
+        if (typeof window.formatMoney === 'function') {
+            return window.formatMoney(num);
+        }
+        var n = parseFloat(String(num).replace(/,/g, '').replace(/[₦$£€\s]/g, ''));
+        if (!isFinite(n)) n = 0;
+        try {
+            return new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            }).format(n);
+        } catch (e) {
+            return n.toFixed(2);
+        }
     }
 </script>
 

@@ -781,6 +781,14 @@
         //})
 
         $('#p-method').on('change', function(){check();})
+
+        $('form').on('submit', function(e) {
+            if ($('.insufficient-stock-row').length > 0) {
+                e.preventDefault();
+                alertify.error("Please resolve insufficient stock warnings before submitting.");
+                return false;
+            }
+        });
     </script>
 
 

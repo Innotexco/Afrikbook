@@ -147,3 +147,31 @@ class DatabaseMiddleware(MiddlewareMixin):
                     }
 
 
+class SanitizeMoneyMiddleware(MiddlewareMixin):
+    """
+    Strip thousand-separator commas from numeric POST/PUT/PATCH (and GET)
+    values before views, forms, and the ORM see them.
+
+    Only values that remain valid numbers after comma removal are changed,
+    so free text with commas is left alone.
+    """
+
+    def process_request(self, request):
+        from main.money import sanitize_mapping
+
+        if request.method in ("POST", "PUT", "PATCH"):
+            try:
+                if hasattr(request.POST, "_mutable"):
+                    request.POST._mutable = True
+                sanitize_mapping(request.POST)
+            except Exception:
+                pass
+
+        try:
+            if hasattr(request.GET, "_mutable"):
+                request.GET._mutable = True
+            sanitize_mapping(request.GET)
+        except Exception:
+            pass
+
+        return None

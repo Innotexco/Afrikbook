@@ -75,6 +75,13 @@ class MainConfig(AppConfig):  # Change 'MainConfig' to match your app name
     name = 'main'  # Change this to your app name
     
     def ready(self):
+        # Accept comma-formatted money in DRF DecimalField (API payloads)
+        try:
+            from main.money import patch_drf_decimal_field
+            patch_drf_decimal_field()
+        except Exception:
+            pass
+
         # Only run in actual server processes, not during management commands
         # that don't need database connections
         skip_commands = ['makemigrations', 'migrate', 'collectstatic', 'createsuperuser']
