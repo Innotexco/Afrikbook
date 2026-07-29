@@ -42,15 +42,38 @@ def add_purchase_invoice(request, db):
     amount            = request.POST.getlist('amount[]')
     total        = request.POST.get('total')
     vat          = request.POST.get('vat')
-    amount_paid  = request.POST.get('amount_paid')
-    amount_expected = request.POST.get('amount_expected')
 
-    if p_method == "Cash":
-        amount_paid     = total
-        amount_expected = total
-    else:
-        amount_paid     = 0.00
-        amount_expected = total
+    # Credit purchase / part payment — same pattern as add_new_sales
+    credit_purchase     = request.POST.get('credit_purchase') or request.POST.get('credit_sales')
+    part_payment        = request.POST.get('part_payment')
+    part_payment_amount = request.POST.get('part_payment_amount', '').strip()
+
+    try:
+        total_decimal = clean_decimal(total)
+
+        if credit_purchase:
+            amount_paid     = decimal.Decimal('0.00')
+            amount_expected = total_decimal
+
+        elif part_payment and part_payment_amount:
+            part_decimal = clean_decimal(part_payment_amount)
+            if part_decimal <= decimal.Decimal('0.00'):
+                messages.error(request, "Part payment amount must be greater than zero.")
+                return None
+            if part_decimal >= total_decimal:
+                messages.error(request, "Part payment amount must be less than the invoice total.")
+                return None
+            amount_paid     = part_decimal
+            amount_expected = total_decimal
+
+        else:
+            # Full payment (Cash / POS / Transfer / Bank Payment, etc.)
+            amount_paid     = total_decimal
+            amount_expected = total_decimal
+
+    except Exception:
+        messages.error(request, "Invalid amount format.")
+        return None
 
     # ── Resolve account and vendor before entering the transaction ────────────
     try:
@@ -71,6 +94,7 @@ def add_purchase_invoice(request, db):
 
     transaction_source = "Purchase"
     check_outlet = User.objects.get(id=request.user.id).outlet
+    payment_method = p_method or "Cash"
 
     try:
         with transaction.atomic(using=db):
@@ -98,7 +122,7 @@ def add_purchase_invoice(request, db):
                         'unit_p':            unit[i],
                         'discount':          discount[i],
                         'amount':            amount[i],
-                        'total':             total,
+                        'total':             total_decimal,
                     }
 
                     vendor_form = VendorInovoiceForm(vendor_invoice_form_data)
@@ -175,24 +199,59 @@ def add_purchase_invoice(request, db):
                     # ── Accounting — runs once per invoice, not per line ──────
                     if not message_displayed:
                         try:
-                            if p_method == "Cash":
-                                DebitPayable(request, db, ven, invoice_date, Gdescription, p_method, bank_account.account_id, total)
+                            if credit_purchase:
+                                # Credit purchase: open full payable, no payment yet
+                                # (mirrors credit sales DebitReceivable-only path)
+                                bank_account.actual_balance += total_decimal
+                                bank_account.save(using=db)
+                                DebitPayable(
+                                    request, db, ven, invoice_date, Gdescription,
+                                    payment_method, bank_account.account_id, total_decimal
+                                )
+                                CreateLog(db, bank_account, total_decimal)
                                 account_log.objects.using(db).create(
                                     transaction_source = transaction_source,
-                                    amount             = total,
+                                    amount             = total_decimal,
                                     date               = invoice_date,
                                     account            = bank_account.account_id,
                                     account_type       = bank_account.account_type,
                                     Userlogin          = request.user.username,
                                 )
-                                CreateLog(db, bank_account, total)
-                            else:
-                                bank_account.actual_balance += decimal.Decimal(total)
-                                bank_account.save(using=db)
-                                CreateLog(db, bank_account, total)
+
+                            elif part_payment and amount_paid > 0:
+                                # Part payment: full liability + partial settlement
+                                DebitPayable(
+                                    request, db, ven, invoice_date, Gdescription,
+                                    payment_method, bank_account.account_id, total_decimal
+                                )
+                                CreditPayable(
+                                    request, db, ven, invoice_date, Gdescription,
+                                    payment_method, bank_account.account_id, amount_paid
+                                )
+                                CreateLog(db, bank_account, amount_paid)
                                 account_log.objects.using(db).create(
                                     transaction_source = transaction_source,
-                                    amount             = total,
+                                    amount             = amount_paid,
+                                    date               = invoice_date,
+                                    account            = bank_account.account_id,
+                                    account_type       = bank_account.account_type,
+                                    Userlogin          = request.user.username,
+                                )
+
+                            else:
+                                # Full payment: open and clear payable for the total
+                                DebitPayable(
+                                    request, db, ven, invoice_date, Gdescription,
+                                    payment_method, bank_account.account_id, total_decimal
+                                )
+                                CreditPayable(
+                                    request, db, ven, invoice_date, Gdescription,
+                                    payment_method, bank_account.account_id, total_decimal
+                                )
+                                CreateLog(db, bank_account, total_decimal)
+                                account_log.objects.using(db).create(
+                                    transaction_source = transaction_source,
+                                    amount             = total_decimal,
                                     date               = invoice_date,
                                     account            = bank_account.account_id,
                                     account_type       = bank_account.account_type,

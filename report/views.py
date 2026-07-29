@@ -883,55 +883,175 @@ def Payables(request):
 def AgedPayable(request):
     db = AfrikBookDB(request)
     vendors = vendor_table.objects.using(db).all()
-    aged = payable.objects.using(db).filter(amount__lt=F('initial_amount')).distinct()
-    amount_total = payable.objects.using(db).aggregate(total_amount=Sum("amount"))['total_amount']
     company = company_table.objects.get(id=request.user.company_id_id)
-    profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
-    
+    bank_accounts = chart_of_account.objects.using(db).filter(account_type="Bank")
+    accounts = chart_of_account.objects.using(db).all()
+
+    # ── Deduplicate by invoiceID and pre-calculate outstanding ───────────
+    # Mirror AgedReceivables: source is purchase invoices with open balance
+    raw_aged = Vendor_invoice.objects.using(db).filter(
+        amount_paid__lt=F('amount_expected')
+    ).order_by('invoiceID', 'id')
+
+    seen = set()
+    aged_list = []
+    for inv in raw_aged:
+        if inv.invoiceID not in seen:
+            seen.add(inv.invoiceID)
+            inv.outstanding = (inv.amount_expected or Decimal('0.00')) - (inv.amount_paid or Decimal('0.00'))
+            aged_list.append(inv)
+
+    amount_total = sum(inv.outstanding for inv in aged_list)
+
     if request.method == "POST":
-       
-        discount = request.POST.get("Discount")
-        cost = request.POST.get("cost")
-        vendor = request.POST.get("vendor")
-        invoice = request.POST.get("invoice")
+        discount        = Decimal(str(request.POST.get("Discount", 0) or 0))
+        cost            = Decimal(str(request.POST.get("cost", 0) or 0))
+        vendor          = request.POST.get("vendor")
+        invoice         = request.POST.get("invoice")
+        payment_method  = request.POST.get("payment_method", "Cash")
+        account_ID      = request.POST.get("transfer_account")
+        transfer_amount = Decimal(str(request.POST.get("transfer_amount", 0) or 0))
+        cash_amount     = Decimal(str(request.POST.get("cash_amount", 0) or 0))
         payment_date_str = request.POST.get("payment_date")
         if payment_date_str:
             try:
-                payment_date = datetime.strptime(payment_date_str, "%Y-%m-%d")
+                today = datetime.strptime(payment_date_str, "%Y-%m-%d")
             except ValueError:
-                payment_date = datetime.now()
+                today = datetime.now()
         else:
-            payment_date = datetime.now()
-        try:
-            ven = vendor_table.objects.using(db).get(custID=vendor)
-            account = chart_of_account.objects.using(db).get(account_id='2067-Purchase').account_id
-            if discount == "NaN":
-                description = "Payment Received"
-                CreditPayable(request, db, ven, payment_date, description, "Transfer", account, cost)
-                Vendor_invoice.objects.using(db).filter(invoiceID=invoice, cusID=vendor).update(amount_paid=F('amount_paid')+cost)
-            else:
-                description = "Payment Received"
-                CreditPayable(request, db, ven, payment_date, description, "Transfer", account, cost)
-                description = "Discount Allowed"
-                CreditPayable(request, db, ven, payment_date, description, "Transfer", account, discount)
-                # acc = Income_account.objects.using(db).get(account_bankname="Discount Received").actual_balance += discount
-                # acc.save()
-                total = int(cost) + int(discount)
-                Vendor_invoice.objects.using(db).filter(invoiceID=invoice, cusID=vendor).update(amount_paid=F('amount_paid')+total)
-                
-            # DebitPayable(request, db, ven, payment_date, description, "Transfer", cost)    
-            return JsonResponse(True, safe=False)
-        except vendor_table.DoesNotExist:
-            return JsonResponse(False, safe=False)
+            today = datetime.now()
 
-    context ={
-        'vendors': vendors,
-        'aged_recievable':aged, 
-        'amount_total':amount_total,
-        'company': company,
-        'profile':profile
+        try:
+            if not vendor or not invoice:
+                return JsonResponse({"success": False, "error": "Vendor or Invoice missing"}, status=400)
+
+            try:
+                ven = vendor_table.objects.using(db).get(custID=vendor)
+            except vendor_table.DoesNotExist:
+                return JsonResponse({"success": False, "error": f"Vendor '{vendor}' not found"}, status=404)
+
+            inv = Vendor_invoice.objects.using(db).filter(invoiceID=invoice, cusID=vendor).first()
+            if not inv:
+                return JsonResponse({"success": False, "error": f"Invoice '{invoice}' not found"}, status=404)
+
+            invs = Vendor_invoice.objects.using(db).filter(invoiceID=invoice, cusID=vendor)
+
+            invoice_total = Decimal(str(inv.amount_expected or 0))
+            current_paid  = Decimal(str(inv.amount_paid or 0))
+            Gdescription  = f"Payment Made - Invoice {invoice}"
+
+            remaining = invoice_total - current_paid
+            total_clearing = cost + discount
+
+            if total_clearing > remaining:
+                return JsonResponse({
+                    "success": False,
+                    "error": f"Payment + Discount (₦{total_clearing:,.2f}) exceeds remaining balance (₦{remaining:,.2f})"
+                }, status=400)
+
+            if cost <= 0 and discount <= 0:
+                return JsonResponse({
+                    "success": False,
+                    "error": "Enter a payment amount, a discount, or both."
+                }, status=400)
+
+            # Default purchase account for cash / fallback
+            try:
+                purchase_account = chart_of_account.objects.using(db).get(account_id='2067-Purchase')
+            except chart_of_account.DoesNotExist:
+                purchase_account = None
+
+            # ── Accounting entries (mirror aged receivables, payables side) ──
+            if cost > 0:
+                if account_ID:
+                    try:
+                        account = chart_of_account.objects.using(db).get(account_id=account_ID)
+                    except chart_of_account.DoesNotExist:
+                        return JsonResponse({"success": False, "error": "Selected account not found"}, status=404)
+
+                    if payment_method == "Transfer":
+                        CreditPayable(request, db, ven, today, Gdescription, "Transfer", account_ID, cost)
+                        CreateLog(db, account, cost)
+
+                    elif payment_method == "Transfer and Cash":
+                        CreditPayable(request, db, ven, today, Gdescription, "Transfer", account_ID, transfer_amount)
+                        CreateLog(db, account, transfer_amount)
+
+                        cash_acct = purchase_account
+                        if cash_acct:
+                            CreditPayable(
+                                request, db, ven, today, Gdescription,
+                                "Cash", cash_acct.account_id, cash_amount
+                            )
+                            CreateLog(db, cash_acct, cash_amount)
+
+                    elif payment_method == "Cheque":
+                        CreditPayable(request, db, ven, today, Gdescription, "Cheque", account_ID, cost)
+                        CreateLog(db, account, cost)
+
+                    elif payment_method == "Cash":
+                        CreditPayable(
+                            request, db, ven, today, Gdescription,
+                            "Cash", account_ID or (purchase_account.account_id if purchase_account else ""),
+                            cost
+                        )
+                        CreateLog(db, account, cost)
+
+                    else:
+                        CreditPayable(request, db, ven, today, Gdescription, payment_method, account_ID, cost)
+                        CreateLog(db, account, cost)
+
+                else:
+                    # No account selected — fall back to Purchase account
+                    if not purchase_account:
+                        return JsonResponse({"success": False, "error": "Purchase account not found"}, status=404)
+                    CreditPayable(
+                        request, db, ven, today, Gdescription,
+                        payment_method, purchase_account.account_id, cost
+                    )
+                    CreateLog(db, purchase_account, cost)
+
+            # ── Discount (Discount Received) ──────────────────────────────────
+            if discount > 0:
+                try:
+                    discount_account = chart_of_account.objects.using(db).get(account_id='6003-Discount')
+                except chart_of_account.DoesNotExist:
+                    discount_account = purchase_account
+                    if not discount_account:
+                        return JsonResponse({"success": False, "error": "Discount account not found"}, status=404)
+
+                CreditPayable(
+                    request, db, ven, today, f"Discount Received - Invoice {invoice}",
+                    payment_method, discount_account.account_id, discount
+                )
+                CreateLog(db, discount_account, discount)
+                for lines in invs:
+                    lines.amount_paid = Decimal(str(lines.amount_paid or 0)) + discount
+                    lines.save(using=db)
+
+            # ── Update invoice paid amount on all lines ───────────────────────
+            if cost > 0:
+                for lines in invs:
+                    lines.amount_paid = Decimal(str(lines.amount_paid or 0)) + cost
+                    lines.save(using=db)
+
+            return JsonResponse({"success": True})
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+    context = {
+        'vendors':         vendors,
+        'aged_payable':    aged_list,
+        'amount_total':    amount_total,
+        'company':         company,
+        'bank_accounts':   bank_accounts,
+        'accounts':        accounts,
+        'today':           date.today(),
+        'payment_methods': ["Cash", "Transfer", "Cheque", "Transfer and Cash"],
     }
-   
     return render(request, 'report/AgedPayable.html', context)
 
 def GetCustomerDetailsAndInvoice(request, code, cusID):
@@ -1129,11 +1249,11 @@ def ViewPurchase(request, code):
             'name': vendor.name,
             'phone': vendor.phone,
             'email': vendor.email,
-            # 'category': vendor.category,
             'code': vendor.custID,
-            'company': vendor.company_name,
-            # 'address': vendor.address,
-            # 'balance': vendor.balance,
+            'company': vendor.company_name or vendor.name,
+            'address': getattr(vendor, 'address', '') or '',
+            'balance': str(getattr(vendor, 'account_payable', 0) or 0),
+            'description': getattr(vendor, 'company_name', '') or '',
            }
        }
        return JsonResponse(data, safe=False)
