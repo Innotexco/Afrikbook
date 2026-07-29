@@ -182,7 +182,9 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'main.middleware.EnsureDatabaseConnectionMiddleware', 
+    'main.middleware.EnsureDatabaseConnectionMiddleware',
+    # Strip thousand-separator commas from numeric request values before views/DB
+    'main.middleware.SanitizeMoneyMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -201,6 +203,11 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'report.context_processors.pdf_template',
+            ],
+            # Available in every template without {% load %}:
+            #   {{ amount|money }}  ->  1,234.56
+            'builtins': [
+                'main.templatetags.money_tags',
             ],
         },
     },

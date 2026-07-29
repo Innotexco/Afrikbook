@@ -61,16 +61,16 @@
                 <tbody class="bg-white divide-y">
                     {% for aged in aged_recievable %}
                     <tr class="text-gray-700">
-                        <td class="text-[10px]">{{ forloop.counter }}</td>
-                        <td class="text-[10px]">{{ aged.invoice_date }}</td>
-                        <td class="text-[10px]">{{ aged.cusID }}</td>
-                        <td class="text-[10px]">{{ aged.customer_name }}</td>
-                        <td class="text-[10px]">{{ aged.invoiceID }}</td>
-                        <td class="text-[10px]">{{ aged.Gdescription|default:"—" }}</td>
-                        <td class="text-[10px]">{{ aged.amount_paid }}</td>
-                        <td class="text-[10px]">{{ aged.amount_expected }}</td>
-                        <td class="text-[10px] text-red-600 font-semibold">{{ aged.outstanding }}</td>  {# pre-calculated in view #}
-                        <td class="text-[10px]">
+                        <td class="text-[10px] px-4 py-3">{{ forloop.counter }}</td>
+                        <td class="text-[10px] px-4 py-3">{{ aged.invoice_date }}</td>
+                        <td class="text-[10px] px-4 py-3">{{ aged.cusID }}</td>
+                        <td class="text-[10px] px-4 py-3">{{ aged.customer_name }}</td>
+                        <td class="text-[10px] px-4 py-3">{{ aged.invoiceID }}</td>
+                        <td class="text-[10px] px-4 py-3">{{ aged.Gdescription|default:"—" }}</td>
+                        <td class="text-[10px] px-4 py-3">{{ aged.amount_paid }}</td>
+                        <td class="text-[10px] px-4 py-3">{{ aged.amount_expected }}</td>
+                        <td class="text-[10px] px-4 py-3 text-red-600 font-semibold">{{ aged.outstanding }}</td>  {# pre-calculated in view #}
+                        <td class="text-[10px] px-4 py-3">
                             <a onclick="showModal('{{ aged.invoiceID }}', '{{ aged.cusID }}')"
                                 class="flex items-center justify-center text-blue-500" aria-label="View">
                                 <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
