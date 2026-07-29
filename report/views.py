@@ -16,7 +16,7 @@ from .functions.globalFunctions.globalFunctions import *
 from .functions.functionHub.functionHub import *
 from account.models import account_log, chart_of_account
 from customer.functions.generalFunction import *
-from account.models import Expenses_account, Income_account, Assets_account, Liability_account, Equity_account
+from account.models import Expenses_account, Income_account, Assets_account, Liability_account
 
 from main.models import company_table
 from django.contrib.auth.decorators import login_required
@@ -138,305 +138,62 @@ def TrialBalance(request):
 @login_required(login_url='/')
 @urls_name(name="Balance Sheet")
 def BalanceSheet(request):
-    """
-    Balance Sheet as of a date (or current chart balances).
+    context = {}
+    
+    fromDate = request.GET.get('fromDate')
+    toDate   = request.GET.get('toDate')
 
-    Uses chart_of_account.actual_balance as the primary source of truth
-    (same live balances maintained by sales/purchase/transfers).
-
-    When From/To dates are supplied, series ledgers (Assets_account,
-    Liability_account, Equity_account, …) are summed cumulatively
-    date <= To  so the report reflects balances as of the end date.
-    """
-    from decimal import Decimal as D
-    from django.db.models import Sum as DSum
-
-    db = AfrikBookDB(request)
-    fromDate = (request.GET.get('fromDate') or '').strip()
-    toDate   = (request.GET.get('toDate') or '').strip()
-    company  = company_table.objects.get(id=request.user.company_id_id)
-
-    from_date = to_date = None
     if fromDate and toDate:
-        try:
-            from_date, to_date = getdate(fromDate, toDate)
-        except (ValueError, TypeError):
-            from_date = to_date = None
+        from_date, to_date = getdate(fromDate, toDate)
 
-    def _d(value):
-        try:
-            return D(str(value or 0)).quantize(D('0.01'))
-        except Exception:
-            return D('0.00')
+        # ***************************CURRENT ASSET***********************
+        get_Cash_Sum                = ammountSummer(request, Assets_account, (Q(account_type='Cash') & Q(date__range=(from_date, to_date))))
+        accountReceivables          = ammountSummer(request, Assets_account, (Q(account_bankname='Account Receivable') & Q(date__range=(from_date, to_date))))
+        get_Inventory_Sum           = ammountSummer(request, CreateStockIn, (Q(datetx__range=(from_date, to_date))))
+        get_Prepaid_Expenses_Sum    = ammountSummer(request, Expenses_account, (Q(account_bankname__icontains='Prepaid Expenses') & Q(date__range=(from_date, to_date))))
+        Total_Current_Assets        = float(get_Cash_Sum) + float(accountReceivables) + float(get_Inventory_Sum) + float(get_Prepaid_Expenses_Sum)
 
-    def chart_sum(**filters):
-        qs = chart_of_account.objects.using(db).filter(**filters)
-        return _d(qs.aggregate(t=DSum('actual_balance'))['t'])
+        # ***************************NON-CURRENT ASSET***********************
+        get_PPE_Sum                 = ammountSummer(request, Assets_account, (Q(account_bankname__icontains='Property_plant_equipment') & Q(date__range=(from_date, to_date))))
+        Total_Non_Current_Assets    = get_PPE_Sum
 
-    def chart_sum_q(q_obj):
-        qs = chart_of_account.objects.using(db).filter(q_obj)
-        return _d(qs.aggregate(t=DSum('actual_balance'))['t'])
+        Total_Assets                = float(Total_Current_Assets) + float(Total_Non_Current_Assets)
 
-    def series_sum(model, q_obj):
-        """Sum movement amounts on a series ledger; optional as-of to_date."""
-        try:
-            qs = model.objects.using(db).filter(q_obj)
-            if to_date:
-                qs = qs.filter(date__lte=to_date)
-            return _d(qs.aggregate(t=DSum('amount'))['t'])
-        except Exception:
-            return D('0.00')
+        # ***************************CURRENT LIABILITY***********************
+        get_acct_payable_Sum        = ammountSummer(request, Liability_account, (~Q(account_bankname__icontains='tax_income_payable') & Q(account_type='Payable') & Q(date__range=(from_date, to_date))))
+        Income_Tax_Payables_Sum     = ammountSummer(request, Liability_account, (Q(account_bankname__icontains='tax_income_payable') & Q(date__range=(from_date, to_date))))
+        Total_Current_Liabilities   = float(get_acct_payable_Sum) + float(Income_Tax_Payables_Sum)
 
-    use_series = bool(to_date)
+        # ***************************NON CURRENT LIABILITY***********************
+        Long_term_debit                 = ammountSummer(request, Liability_account, (Q(status='Long_term_debit') & Q(date__range=(from_date, to_date))))
+        Other_debt                      = 0
+        Total_Non_Current_Liabilities   = Long_term_debit + Other_debt
 
-    # ── Assets (Current) ────────────────────────────────────────────────────
-    if use_series:
-        cash_sum = series_sum(
-            Assets_account,
-            Q(account_type__iexact='Cash') | Q(account_type__icontains='Bank')
-        )
-        ar_sum = series_sum(
-            Assets_account,
-            Q(account_type__icontains='Receivable')
-            | Q(account_bankname__icontains='Receivable')
-            | Q(account_bankname__icontains='Debtors')
-        )
-        prepaid_sum = series_sum(
-            Expenses_account,
-            Q(account_bankname__icontains='prepaid') | Q(account_type__icontains='prepaid')
-        )
-        ppe_sum = series_sum(
-            Assets_account,
-            Q(account_bankname__icontains='Property')
-            | Q(account_bankname__icontains='plant')
-            | Q(account_bankname__icontains='equipment')
-            | Q(account_type__icontains='Fixed')
-            | Q(account_type__icontains='PPE')
-        )
-        capital_sum = series_sum(
-            Equity_account,
-            Q(account_bankname__icontains='capital') | Q(account_type__icontains='capital')
-        )
-        # Equity ledger may be empty — also accept Equity series misfiled on Assets
-        if capital_sum == 0:
-            capital_sum = series_sum(
-                Assets_account,
-                Q(account_bankname__icontains='capital')
-            )
-        retained_sum = series_sum(
-            Equity_account,
-            Q(account_bankname__icontains='Retained') | Q(account_type__icontains='Retained')
-        )
-        ap_sum = series_sum(
-            Liability_account,
-            (
-                Q(account_type__icontains='Payable')
-                | Q(account_bankname__icontains='Payable')
-                | Q(account_bankname__icontains='Purchase')
-            )
-            & ~Q(account_bankname__icontains='tax')
-            & ~Q(account_type__iexact='Tax')
-        )
-        tax_payable_sum = series_sum(
-            Liability_account,
-            Q(account_bankname__icontains='tax') | Q(account_type__iexact='Tax')
-        )
-        long_term_sum = series_sum(
-            Liability_account,
-            Q(status__icontains='Long')
-            | Q(account_type__icontains='Long')
-            | Q(account_bankname__icontains='Loan')
-        )
-        other_liab_sum = series_sum(
-            Liability_account,
-            Q(account_type__icontains='Other current')
-            | Q(account_type__icontains='Other')
-        )
-    else:
-        cash_sum = chart_sum_q(
-            Q(series_name__iexact='Assets')
-            & (Q(account_type__iexact='Cash') | Q(account_type__icontains='Bank'))
-        )
-        ar_sum = chart_sum_q(
-            Q(series_name__iexact='Assets')
-            & (
-                Q(account_type__icontains='Receivable')
-                | Q(account_bankname__icontains='Receivable')
-                | Q(account_bankname__icontains='Debtors')
-            )
-        )
-        prepaid_sum = chart_sum_q(
-            Q(account_bankname__icontains='prepaid') | Q(account_type__icontains='prepaid')
-        )
-        ppe_sum = chart_sum_q(
-            Q(series_name__iexact='Assets')
-            & (
-                Q(account_bankname__icontains='Property')
-                | Q(account_bankname__icontains='plant')
-                | Q(account_bankname__icontains='equipment')
-                | Q(account_type__icontains='Fixed')
-                | Q(account_type__icontains='PPE')
-            )
-        )
-        capital_sum = chart_sum_q(
-            Q(series_name__iexact='Equity')
-            & (Q(account_bankname__icontains='capital') | Q(account_type__icontains='capital'))
-        )
-        retained_sum = chart_sum_q(
-            Q(series_name__iexact='Equity')
-            & (Q(account_bankname__icontains='Retained') | Q(account_type__icontains='Retained'))
-        )
-        # Any remaining Equity series balances
-        other_equity = chart_sum(series_name__iexact='Equity') - capital_sum - retained_sum
-        if other_equity < 0:
-            other_equity = D('0.00')
-        retained_sum = retained_sum + other_equity
+        # ***************************Owner's Equity***********************
+        capital_Investment              = ammountSummer(request, Assets_account, (Q(account_bankname__icontains='capital_Investment') & Q(date__range=(from_date, to_date))))
+        Retained_Earning                = ammountSummer(request, Assets_account, (Q(account_bankname__icontains='Retained_Earning') & Q(date__range=(from_date, to_date))))
+        Total_Owners_equity             = float(capital_Investment) + float(Retained_Earning)
 
-        ap_sum = chart_sum_q(
-            Q(series_name__iexact='Liability')
-            & (
-                Q(account_type__icontains='Payable')
-                | Q(account_bankname__icontains='Payable')
-                | Q(account_bankname__icontains='Purchase')
-            )
-            & ~Q(account_bankname__icontains='tax')
-            & ~Q(account_type__iexact='Tax')
-        )
-        tax_payable_sum = chart_sum_q(
-            Q(series_name__iexact='Liability')
-            & (Q(account_bankname__icontains='tax') | Q(account_type__iexact='Tax'))
-        )
-        long_term_sum = chart_sum_q(
-            Q(series_name__iexact='Liability')
-            & (
-                Q(status__icontains='Long')
-                | Q(account_type__icontains='Long')
-                | Q(account_bankname__icontains='Loan')
-            )
-        )
-        other_liab_sum = chart_sum_q(
-            Q(series_name__iexact='Liability')
-            & (
-                Q(account_type__icontains='Other current')
-                | Q(account_type__icontains='Other')
-            )
-        )
+        context = {
+            'CashSum': get_Cash_Sum,
+            'AccountReceivables': accountReceivables,
+            'Inventory_Sum': get_Inventory_Sum,
+            'Prepaid_Expenses_Sum': get_Prepaid_Expenses_Sum,
+            'Total_Current_Assets': Total_Current_Assets,
+            'get_PPE_Sum': get_PPE_Sum,
+            'Total_Non_Current_Assets': Total_Non_Current_Assets,
+            'Total_Assets': Total_Assets,
+            'acctpayableSum': get_acct_payable_Sum,
+            'Income_Tax_Payables_Sum': Income_Tax_Payables_Sum,
+            'Total_Current_Liabilities': Total_Current_Liabilities,
+            'Long_term_debit': Long_term_debit,
+            'Other_Sum': Other_debt,
+            'Total_Non_Current_Liabilities': Total_Non_Current_Liabilities,
+            'capital_Investment': capital_Investment,
+            'Retained_Earning': Retained_Earning,
+            'Total_Owners_equity': Total_Owners_equity,
+        }
 
-    # Inventory: live warehouse stock value (qty × amount/unit cost on stockin rows)
-    inventory_sum = D('0.00')
-    try:
-        stock_rows = CreateStockIn.objects.using(db).all()
-        if to_date:
-            # stock-in records dated on/before as-of (CreateStockIn.datetx is often auto_now_add)
-            stock_rows = stock_rows.filter(datetx__lte=to_date)
-        for row in stock_rows:
-            inventory_sum += _d(row.quantity) * _d(row.amount)
-    except Exception:
-        inventory_sum = D('0.00')
-
-    # Also include inventory-type chart balances if present
-    inv_chart = chart_sum_q(
-        Q(series_name__iexact='Assets') & Q(account_type__icontains='Inventory')
-    )
-    if inv_chart and inventory_sum == 0:
-        inventory_sum = inv_chart
-
-    # Other asset balances on chart not already classified (snapshot mode)
-    other_current_assets = D('0.00')
-    if not use_series:
-        all_assets = chart_sum(series_name__iexact='Assets')
-        classified_assets = cash_sum + ar_sum + inventory_sum + prepaid_sum + ppe_sum
-        other_current_assets = all_assets - classified_assets
-        if other_current_assets < 0:
-            other_current_assets = D('0.00')
-
-    Total_Current_Assets = cash_sum + ar_sum + inventory_sum + prepaid_sum + other_current_assets
-    Total_Non_Current_Assets = ppe_sum
-    Total_Assets = Total_Current_Assets + Total_Non_Current_Assets
-
-    # Avoid double-counting long-term loans inside AP
-    if long_term_sum and ap_sum:
-        # if loan rows were also matched as payable, leave long_term as-is;
-        # AP filter already excludes tax only
-        pass
-
-    Total_Current_Liabilities = ap_sum + tax_payable_sum + other_liab_sum
-    Total_Non_Current_Liabilities = long_term_sum
-    Total_Liabilities = Total_Current_Liabilities + Total_Non_Current_Liabilities
-
-    # Equity: capital + retained; if empty, residual so BS can balance
-    Total_Owners_equity = capital_sum + retained_sum
-    residual_equity = Total_Assets - Total_Liabilities - Total_Owners_equity
-    # If no formal equity accounts, treat residual as retained earnings / net position
-    if Total_Owners_equity == 0 and residual_equity != 0:
-        retained_sum = residual_equity
-        Total_Owners_equity = residual_equity
-        residual_equity = D('0.00')
-
-    Total_Liabilities_and_Equity = Total_Liabilities + Total_Owners_equity
-    difference = Total_Assets - Total_Liabilities_and_Equity
-    is_balanced = abs(difference) < D('0.02')
-
-    # Line items for detailed table (snapshot from chart)
-    asset_lines = list(
-        chart_of_account.objects.using(db)
-        .filter(series_name__iexact='Assets')
-        .order_by('account_id')
-        .values('account_id', 'account_bankname', 'account_type', 'actual_balance')
-    )
-    liability_lines = list(
-        chart_of_account.objects.using(db)
-        .filter(series_name__iexact='Liability')
-        .order_by('account_id')
-        .values('account_id', 'account_bankname', 'account_type', 'actual_balance')
-    )
-    equity_lines = list(
-        chart_of_account.objects.using(db)
-        .filter(series_name__iexact='Equity')
-        .order_by('account_id')
-        .values('account_id', 'account_bankname', 'account_type', 'actual_balance')
-    )
-
-    context = {
-        'company': company,
-        'fromDate': fromDate,
-        'toDate': toDate,
-        'as_of': to_date or date.today(),
-        'use_series': use_series,
-
-        'CashSum': cash_sum,
-        'AccountReceivables': ar_sum,
-        'Inventory_Sum': inventory_sum,
-        'Prepaid_Expenses_Sum': prepaid_sum,
-        'Other_Current_Assets': other_current_assets,
-        'Total_Current_Assets': Total_Current_Assets,
-
-        'get_PPE_Sum': ppe_sum,
-        'Total_Non_Current_Assets': Total_Non_Current_Assets,
-        'Total_Assets': Total_Assets,
-
-        'acctpayableSum': ap_sum,
-        'Income_Tax_Payables_Sum': tax_payable_sum,
-        'Other_Current_Liabilities': other_liab_sum,
-        'Total_Current_Liabilities': Total_Current_Liabilities,
-
-        'Long_term_debit': long_term_sum,
-        'Other_Sum': D('0.00'),
-        'Total_Non_Current_Liabilities': Total_Non_Current_Liabilities,
-        'Total_Liabilities': Total_Liabilities,
-
-        'capital_Investment': capital_sum,
-        'Retained_Earning': retained_sum,
-        'Total_Owners_equity': Total_Owners_equity,
-
-        'Total_Liabilities_and_Equity': Total_Liabilities_and_Equity,
-        'difference': difference,
-        'is_balanced': is_balanced,
-
-        'asset_lines': asset_lines,
-        'liability_lines': liability_lines,
-        'equity_lines': equity_lines,
-    }
     return render(request, 'report/BalanceSheet.html', context)
 
 
