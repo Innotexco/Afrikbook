@@ -223,22 +223,21 @@ def getCOGSSum(request, model, itemcode):
 
 def ammountSummer(request, model, query_kwargs):
     db = AfrikBookDB(request)
-    from_date, to_date = getdate(request)
     model_object = model.objects
     getSum = 0.00
     try:
         getFiltered = model_object.using(db).filter(query_kwargs)
-        if getFiltered  is not None:
+        if getFiltered is not None:
             if model is CreateStockIn:
                 for qty_price in getFiltered:
-                    getamount           = float(qty_price.quantity) * float(qty_price.amount)
-                    getSum              = float(getSum) + float(getamount)
+                    getamount = float(qty_price.quantity) * float(qty_price.amount)
+                    getSum    = float(getSum) + float(getamount)
             else:
-                getSum                  = Sumfunction(getFiltered)
+                getSum = Sumfunction(getFiltered)
     except model.DoesNotExist:
         return 0
     return getSum
-    
+
 
 @login_required(login_url='/')
 @urls_name(name="Profit / Loss")
