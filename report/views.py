@@ -138,71 +138,63 @@ def TrialBalance(request):
 @login_required(login_url='/')
 @urls_name(name="Balance Sheet")
 def BalanceSheet(request):
-    context = None
-    from_date, to_date = getdate(request)
-    if from_date and  to_date:
-        # ***************************CURRENT ASSET***********************
+    context = {}
+    
+    fromDate = request.GET.get('fromDate')
+    toDate   = request.GET.get('toDate')
 
+    if fromDate and toDate:
+        from_date, to_date = getdate(fromDate, toDate)
+
+        # ***************************CURRENT ASSET***********************
         get_Cash_Sum                = ammountSummer(request, Assets_account, (Q(account_type='Cash') & Q(date__range=(from_date, to_date))))
         accountReceivables          = ammountSummer(request, Assets_account, (Q(account_bankname='Account Receivable') & Q(date__range=(from_date, to_date))))
         get_Inventory_Sum           = ammountSummer(request, CreateStockIn, (Q(datetx__range=(from_date, to_date))))
         get_Prepaid_Expenses_Sum    = ammountSummer(request, Expenses_account, (Q(account_bankname__icontains='Prepaid Expenses') & Q(date__range=(from_date, to_date))))
-        Total_Current_Assets        =  float(get_Cash_Sum) + float(accountReceivables) + float(get_Inventory_Sum) + float(get_Prepaid_Expenses_Sum)
-        # ***************************END CURRENT ASSET***********************
+        Total_Current_Assets        = float(get_Cash_Sum) + float(accountReceivables) + float(get_Inventory_Sum) + float(get_Prepaid_Expenses_Sum)
 
-
-        # ***************************END NON-CURRENT ASSET***********************
+        # ***************************NON-CURRENT ASSET***********************
         get_PPE_Sum                 = ammountSummer(request, Assets_account, (Q(account_bankname__icontains='Property_plant_equipment') & Q(date__range=(from_date, to_date))))
-        Total_Non_Current_Assets    = get_PPE_Sum #sums non current assets
-        # ***************************END NON-CURRENT ASSET***********************
+        Total_Non_Current_Assets    = get_PPE_Sum
 
-        # TOTAL ASSETS 
         Total_Assets                = float(Total_Current_Assets) + float(Total_Non_Current_Assets)
 
         # ***************************CURRENT LIABILITY***********************
-        get_acct_payable_Sum        =  ammountSummer(request, Liability_account, (~Q(account_bankname__icontains='tax_income_payable') & Q(account_type='Payable') & Q(date__range=(from_date, to_date))))
-        Income_Tax_Payables_Sum     = ammountSummer(request,  Liability_account, (Q(account_bankname__icontains='tax_income_payable') & Q(date__range=(from_date, to_date))))
+        get_acct_payable_Sum        = ammountSummer(request, Liability_account, (~Q(account_bankname__icontains='tax_income_payable') & Q(account_type='Payable') & Q(date__range=(from_date, to_date))))
+        Income_Tax_Payables_Sum     = ammountSummer(request, Liability_account, (Q(account_bankname__icontains='tax_income_payable') & Q(date__range=(from_date, to_date))))
         Total_Current_Liabilities   = float(get_acct_payable_Sum) + float(Income_Tax_Payables_Sum)
-        # ***************************END CURRENT LIABILITY***********************
-
 
         # ***************************NON CURRENT LIABILITY***********************
-        Long_term_debit                 = ammountSummer(request, Liability_account,  (Q(status='Long_term_debit') & Q(date__range=(from_date, to_date))))
+        Long_term_debit                 = ammountSummer(request, Liability_account, (Q(status='Long_term_debit') & Q(date__range=(from_date, to_date))))
         Other_debt                      = 0
-        Total_Non_Current_Liabilities   =  Long_term_debit + Other_debt
+        Total_Non_Current_Liabilities   = Long_term_debit + Other_debt
 
-        # ***************************END NON CURRENT LIABILITY***********************
-
-
-        # ***************************END Owner's Equity***********************
+        # ***************************Owner's Equity***********************
         capital_Investment              = ammountSummer(request, Assets_account, (Q(account_bankname__icontains='capital_Investment') & Q(date__range=(from_date, to_date))))
-        Retained_Earning                = ammountSummer(request, Assets_account,  (Q(account_bankname__icontains='Retained_Earning') & Q(date__range=(from_date, to_date))))
+        Retained_Earning                = ammountSummer(request, Assets_account, (Q(account_bankname__icontains='Retained_Earning') & Q(date__range=(from_date, to_date))))
         Total_Owners_equity             = float(capital_Investment) + float(Retained_Earning)
 
-        # ***************************END Owner's Equity***********************
-        
-    
-        context= {
+        context = {
             'CashSum': get_Cash_Sum,
             'AccountReceivables': accountReceivables,
             'Inventory_Sum': get_Inventory_Sum,
             'Prepaid_Expenses_Sum': get_Prepaid_Expenses_Sum,
             'Total_Current_Assets': Total_Current_Assets,
             'get_PPE_Sum': get_PPE_Sum,
-            'Total_Non_Current_Assets':Total_Non_Current_Assets,
-            'Total_Assets':Total_Assets,
+            'Total_Non_Current_Assets': Total_Non_Current_Assets,
+            'Total_Assets': Total_Assets,
             'acctpayableSum': get_acct_payable_Sum,
             'Income_Tax_Payables_Sum': Income_Tax_Payables_Sum,
-            'Total_Current_Liabilities':Total_Current_Liabilities,
+            'Total_Current_Liabilities': Total_Current_Liabilities,
             'Long_term_debit': Long_term_debit,
             'Other_Sum': Other_debt,
             'Total_Non_Current_Liabilities': Total_Non_Current_Liabilities,
             'capital_Investment': capital_Investment,
             'Retained_Earning': Retained_Earning,
-            'Total_Owners_equity':Total_Owners_equity,
+            'Total_Owners_equity': Total_Owners_equity,
         }
-    return render(request, 'report/BalanceSheet.html', context)
 
+    return render(request, 'report/BalanceSheet.html', context)
 
 
 def AfrikBookDB(request):
