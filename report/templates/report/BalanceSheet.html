@@ -14,248 +14,278 @@
         <span>Home &RightArrow;</span>
     </a>
 
-    <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
-
-        <form action="" method="get">
-            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-                <label class="block text-sm">
-                    <span class="text-gray-700">From</span>
-                    <input type="date" name="fromDate" value="{{ fromDate }}"
-                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input shadow-lg" />
-                </label>
-                <label class="block text-sm">
-                    <span class="text-gray-700">To (As of)</span>
-                    <input type="date" name="toDate" value="{{ toDate }}"
-                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-input shadow-lg" />
-                </label>
-                <button type="submit"
-                    class="block w-full h-8 px-4 py-1 mt-5 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none">
-                    Search
-                </button>
-            </div>
-            <p class="text-xs text-gray-500 mt-2">
-                Leave dates empty for <strong>current chart-of-account balances</strong>.
-                With dates, series ledgers are summed up to the <strong>To</strong> date (as-of balance sheet).
+    <!-- Filter bar -->
+    <div class="px-4 py-4 my-5 bg-white rounded-lg shadow-md">
+        <form action="" method="get" class="flex flex-wrap items-end gap-4">
+            <label class="block text-sm">
+                <span class="text-gray-700 font-medium">As of</span>
+                <input type="date" name="toDate" value="{{ toDate }}"
+                    class="block w-48 px-3 py-2 mt-1 text-sm border-2 rounded-md focus:border-slate-400 focus:outline-none text-slate-600 shadow-sm" />
+            </label>
+            <button type="submit"
+                class="h-[38px] px-5 text-sm font-medium text-white bg-slate-700 rounded-md hover:bg-slate-800 transition-colors focus:outline-none">
+                Generate
+            </button>
+            <p class="text-xs text-gray-400 ml-auto self-end mb-2 max-w-xs text-right">
+                Leave empty for live chart-of-account balances, or pick a date for an as-of snapshot.
             </p>
         </form>
+    </div>
 
-        <div id="printContent">
-            <h1 class="font-extrabold text-center text-lg m-4">BALANCE SHEET REPORT</h1>
-            <p class="text-center text-sm text-gray-600 mb-2">
-                As of {{ as_of }}
-                {% if company %} · {{ company.company_name }}{% endif %}
+    <div id="printContent">
+
+        <!-- Report header -->
+        <div class="text-center mb-6">
+            <h1 class="font-extrabold text-xl text-[#2F4F4F] tracking-wide">BALANCE SHEET</h1>
+            <p class="text-sm text-gray-500 mt-1">
+                {% if company %}{{ company.company_name }} &nbsp;·&nbsp; {% endif %}
+                As of <span class="font-medium text-gray-700">{{ as_of }}</span>
             </p>
+        </div>
 
+        <!-- Status banners -->
+        <div class="max-w-2xl mx-auto space-y-2 mb-5">
             {% if is_balanced %}
-            <div class="mx-auto max-w-xl mb-3 px-3 py-2 text-sm text-green-800 bg-green-50 border border-green-200 rounded">
-                Balanced: Assets = Liabilities + Equity
+            <div class="flex items-center gap-2 px-4 py-2.5 text-sm text-green-800 bg-green-50 border border-green-200 rounded-lg">
+                <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+                Balanced — Assets equal Liabilities plus Equity
             </div>
             {% else %}
-            <div class="mx-auto max-w-xl mb-3 px-3 py-2 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded">
-                Difference (Assets − L&amp;E):
-                <strong class="money">{{ difference }}</strong>
-                — check missing equity/capital accounts or unposted balances.
+            <div class="flex items-center gap-2 px-4 py-2.5 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg">
+                <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l6.518 11.598c.75 1.334-.213 2.995-1.742 2.995H3.48c-1.53 0-2.493-1.66-1.742-2.995L8.257 3.1zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                <span>Out of balance by <strong>{{ difference }}</strong> — check missing equity or unposted accounts.</span>
             </div>
             {% endif %}
 
-            <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
-                <div class="w-full overflow-x-auto">
+            {% if inventory_is_approximate %}
+            <div class="flex items-center gap-2 px-4 py-2.5 text-xs text-blue-800 bg-blue-50 border border-blue-200 rounded-lg">
+                <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                </svg>
+                Inventory for past dates is estimated (purchase value minus cost of goods sold), not a true historical snapshot.
+            </div>
+            {% endif %}
 
-                    <!-- ASSETS -->
-                    <table class="w-full whitespace-no-wrap">
-                        <thead>
-                            <tr class="text-lg font-extrabold tracking-wide text-left text-white uppercase border-b bg-slate-400">
-                                <th colspan="3" class="px-4 py-3">Assets</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y">
-                            <tr class="text-black font-medium">
-                                <td colspan="3" class="px-4 py-1">Current Assets</td>
-                            </tr>
-                            <tr class="text-slate-600">
-                                <td colspan="2" class="px-4 py-1">Cash &amp; Bank</td>
-                                <td class="px-4 py-1 text-sm text-right assets money">{{ CashSum|default:0|floatformat:2|intcomma }}</td>
-                            </tr>
-                            <tr class="text-slate-600">
-                                <td colspan="2" class="px-4 py-1">Account Receivable</td>
-                                <td class="px-4 py-1 text-sm text-right assets money">{{ AccountReceivables|default:0|floatformat:2|intcomma }}</td>
-                            </tr>
-                            <tr class="text-slate-600">
-                                <td colspan="2" class="px-4 py-1">Inventory</td>
-                                <td class="px-4 py-1 text-sm text-right assets money">{{ Inventory_Sum|default:0|floatformat:2|intcomma }}</td>
-                            </tr>
-                            <tr class="text-slate-600">
-                                <td colspan="2" class="px-4 py-1">Prepaid Expenses</td>
-                                <td class="px-4 py-1 text-sm text-right assets money">{{ Prepaid_Expenses_Sum|default:0|floatformat:2|intcomma }}</td>
-                            </tr>
-                            {% if Other_Current_Assets %}
-                            <tr class="text-slate-600">
-                                <td colspan="2" class="px-4 py-1">Other Current Assets</td>
-                                <td class="px-4 py-1 text-sm text-right assets money">{{ Other_Current_Assets|floatformat:2|intcomma }}</td>
-                            </tr>
-                            {% endif %}
-                            <tr class="text-black font-medium bg-slate-200">
-                                <td colspan="2" class="px-4 py-1">Total Current Assets</td>
-                                <td class="px-4 py-1 text-sm text-right money" id="Total_Current_Assets">{{ Total_Current_Assets|default:0|floatformat:2|intcomma }}</td>
-                            </tr>
+            {% if equity_is_plugged %}
+            <div class="flex items-center gap-2 px-4 py-2.5 text-xs text-blue-800 bg-blue-50 border border-blue-200 rounded-lg">
+                <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                </svg>
+                No equity accounts found on the chart of accounts — Retained Earnings shown below is a balancing figure, not a posted balance.
+            </div>
+            {% endif %}
+        </div>
 
-                            <tr class="text-black font-medium">
-                                <td colspan="3" class="px-4 py-1">Non-Current Assets</td>
-                            </tr>
-                            <tr class="text-slate-600">
-                                <td colspan="2" class="px-4 py-1">Property, Plant &amp; Equipment</td>
-                                <td class="px-4 py-1 text-sm text-right noncurrentassets money">{{ get_PPE_Sum|default:0|floatformat:2|intcomma }}</td>
-                            </tr>
-                            <tr class="text-black font-medium bg-slate-200">
-                                <td colspan="2" class="px-4 py-1">Total Non-Current Assets</td>
-                                <td class="px-4 py-1 text-sm text-right money" id="Total_Non_Current_Assets">{{ Total_Non_Current_Assets|default:0|floatformat:2|intcomma }}</td>
-                            </tr>
-                            <tr class="text-black font-medium bg-slate-300">
-                                <td colspan="2" class="px-4 py-1">Total Assets</td>
-                                <td class="px-4 py-1 text-sm text-right font-bold money" id="Total_Assets">{{ Total_Assets|default:0|floatformat:2|intcomma }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+        <!-- Statement cards -->
+        <div class="grid gap-6 lg:grid-cols-2 max-w-5xl mx-auto">
 
-                    <!-- LIABILITIES + EQUITY -->
-                    <table class="w-full whitespace-no-wrap mt-3">
-                        <thead>
-                            <tr class="text-lg font-extrabold tracking-wide text-left text-white uppercase border-b bg-slate-400">
-                                <th colspan="3" class="px-4 py-3">Liabilities and Owner's Equity</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y">
-                            <tr class="text-black font-medium">
-                                <td colspan="3" class="px-4 py-1">Current Liabilities</td>
-                            </tr>
-                            <tr class="text-slate-600">
-                                <td colspan="2" class="px-4 py-1">Accounts Payable</td>
-                                <td class="px-4 py-1 text-sm text-right currentliabilies money">{{ acctpayableSum|default:0|floatformat:2|intcomma }}</td>
-                            </tr>
-                            <tr class="text-slate-600">
-                                <td colspan="2" class="px-4 py-1">Income Tax Payables</td>
-                                <td class="px-4 py-1 text-sm text-right currentliabilies money">{{ Income_Tax_Payables_Sum|default:0|floatformat:2|intcomma }}</td>
-                            </tr>
-                            {% if Other_Current_Liabilities %}
-                            <tr class="text-slate-600">
-                                <td colspan="2" class="px-4 py-1">Other Current Liabilities</td>
-                                <td class="px-4 py-1 text-sm text-right currentliabilies money">{{ Other_Current_Liabilities|floatformat:2|intcomma }}</td>
-                            </tr>
-                            {% endif %}
-                            <tr class="text-black font-medium bg-slate-200">
-                                <td colspan="2" class="px-4 py-1">Total Current Liabilities</td>
-                                <td class="px-4 py-1 text-sm text-right money" id="Total_Current_Liabilies">{{ Total_Current_Liabilities|default:0|floatformat:2|intcomma }}</td>
-                            </tr>
+            <!-- ASSETS -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                <div class="bg-[#2F4F4F] px-4 py-2.5">
+                    <h2 class="text-sm font-bold text-white uppercase tracking-wide">Assets</h2>
+                </div>
+                <div class="px-4 py-2">
 
-                            <tr class="text-black font-medium">
-                                <td colspan="3" class="px-4 py-1">Non-Current Liabilities</td>
-                            </tr>
-                            <tr class="text-slate-600">
-                                <td colspan="2" class="px-4 py-1">Long-term Debt / Loans</td>
-                                <td class="px-4 py-1 text-sm text-right noncurrentliabilies money">{{ Long_term_debit|default:0|floatformat:2|intcomma }}</td>
-                            </tr>
-                            <tr class="text-black font-medium bg-slate-200">
-                                <td colspan="2" class="px-4 py-1">Total Non-Current Liabilities</td>
-                                <td class="px-4 py-1 text-sm text-right money" id="Total_NonCurrent_Liabilies">{{ Total_Non_Current_Liabilities|default:0|floatformat:2|intcomma }}</td>
-                            </tr>
-
-                            <tr class="text-black font-medium">
-                                <td colspan="3" class="px-4 py-1">Owner's Equity</td>
-                            </tr>
-                            <tr class="text-slate-600">
-                                <td colspan="2" class="px-4 py-1">Capital Investment</td>
-                                <td class="px-4 py-1 text-sm text-right equities money">{{ capital_Investment|default:0|floatformat:2|intcomma }}</td>
-                            </tr>
-                            <tr class="text-slate-600">
-                                <td colspan="2" class="px-4 py-1">Retained Earnings / Net Position</td>
-                                <td class="px-4 py-1 text-sm text-right equities money">{{ Retained_Earning|default:0|floatformat:2|intcomma }}</td>
-                            </tr>
-                            <tr class="text-black font-medium bg-slate-200">
-                                <td colspan="2" class="px-4 py-1">Total Owner's Equity</td>
-                                <td class="px-4 py-1 text-sm text-right money" id="Total_equities_Liabilies">{{ Total_Owners_equity|default:0|floatformat:2|intcomma }}</td>
-                            </tr>
-
-                            <tr class="text-black font-medium bg-slate-300">
-                                <td colspan="2" class="px-4 py-1">Total Liabilities &amp; Owner's Equity</td>
-                                <td class="px-4 py-1 text-sm text-right font-bold money" id="Total_Liabilies">{{ Total_Liabilities_and_Equity|default:0|floatformat:2|intcomma }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    {% if asset_lines or liability_lines or equity_lines %}
-                    <div class="mt-6 grid gap-4 md:grid-cols-2">
-                        <div>
-                            <h3 class="font-semibold text-sm mb-2 text-gray-700">Asset accounts (chart)</h3>
-                            <table class="w-full text-xs border">
-                                <thead class="bg-gray-100">
-                                    <tr>
-                                        <th class="px-2 py-1 text-left">Account</th>
-                                        <th class="px-2 py-1 text-right">Balance</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for a in asset_lines %}
-                                    <tr class="border-t">
-                                        <td class="px-2 py-1">{{ a.account_id }} — {{ a.account_bankname|default:a.account_type }}</td>
-                                        <td class="px-2 py-1 text-right money">{{ a.actual_balance|floatformat:2|intcomma }}</td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr><td colspan="2" class="px-2 py-2 text-gray-400">No asset accounts</td></tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-3 pb-1">Current Assets</p>
+                    <div class="divide-y divide-gray-100">
+                        <div class="flex justify-between py-1.5 text-sm">
+                            <span class="text-gray-600">Cash &amp; Bank</span>
+                            <span class="text-gray-800 money">{{ CashSum|default:0|floatformat:2|intcomma }}</span>
                         </div>
-                        <div>
-                            <h3 class="font-semibold text-sm mb-2 text-gray-700">Liability accounts (chart)</h3>
-                            <table class="w-full text-xs border">
-                                <thead class="bg-gray-100">
-                                    <tr>
-                                        <th class="px-2 py-1 text-left">Account</th>
-                                        <th class="px-2 py-1 text-right">Balance</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for a in liability_lines %}
-                                    <tr class="border-t">
-                                        <td class="px-2 py-1">{{ a.account_id }} — {{ a.account_bankname|default:a.account_type }}</td>
-                                        <td class="px-2 py-1 text-right money">{{ a.actual_balance|floatformat:2|intcomma }}</td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr><td colspan="2" class="px-2 py-2 text-gray-400">No liability accounts</td></tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                            {% if equity_lines %}
-                            <h3 class="font-semibold text-sm mb-2 mt-4 text-gray-700">Equity accounts (chart)</h3>
-                            <table class="w-full text-xs border">
-                                <thead class="bg-gray-100">
-                                    <tr>
-                                        <th class="px-2 py-1 text-left">Account</th>
-                                        <th class="px-2 py-1 text-right">Balance</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for a in equity_lines %}
-                                    <tr class="border-t">
-                                        <td class="px-2 py-1">{{ a.account_id }} — {{ a.account_bankname|default:a.account_type }}</td>
-                                        <td class="px-2 py-1 text-right money">{{ a.actual_balance|floatformat:2|intcomma }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                            {% endif %}
+                        <div class="flex justify-between py-1.5 text-sm">
+                            <span class="text-gray-600">Account Receivable</span>
+                            <span class="text-gray-800 money">{{ AccountReceivables|default:0|floatformat:2|intcomma }}</span>
+                        </div>
+                        <div class="flex justify-between py-1.5 text-sm">
+                            <span class="text-gray-600">Inventory</span>
+                            <span class="text-gray-800 money">{{ Inventory_Sum|default:0|floatformat:2|intcomma }}</span>
+                        </div>
+                        <div class="flex justify-between py-1.5 text-sm">
+                            <span class="text-gray-600">Prepaid Expenses</span>
+                            <span class="text-gray-800 money">{{ Prepaid_Expenses_Sum|default:0|floatformat:2|intcomma }}</span>
+                        </div>
+                        {% if Other_Current_Assets %}
+                        <div class="flex justify-between py-1.5 text-sm">
+                            <span class="text-gray-600">Other Current Assets</span>
+                            <span class="text-gray-800 money">{{ Other_Current_Assets|floatformat:2|intcomma }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="flex justify-between py-2 mt-1 border-t-2 border-gray-200 text-sm font-semibold text-gray-800">
+                        <span>Total Current Assets</span>
+                        <span class="money" id="Total_Current_Assets">{{ Total_Current_Assets|default:0|floatformat:2|intcomma }}</span>
+                    </div>
+
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-4 pb-1">Non-Current Assets</p>
+                    <div class="divide-y divide-gray-100">
+                        <div class="flex justify-between py-1.5 text-sm">
+                            <span class="text-gray-600">Property, Plant &amp; Equipment</span>
+                            <span class="text-gray-800 money">{{ get_PPE_Sum|default:0|floatformat:2|intcomma }}</span>
                         </div>
                     </div>
-                    {% endif %}
+                    <div class="flex justify-between py-2 mt-1 border-t-2 border-gray-200 text-sm font-semibold text-gray-800">
+                        <span>Total Non-Current Assets</span>
+                        <span class="money" id="Total_Non_Current_Assets">{{ Total_Non_Current_Assets|default:0|floatformat:2|intcomma }}</span>
+                    </div>
 
+                    <div class="flex justify-between items-center px-1 py-3 mt-3 -mx-4 bg-[#2F4F4F]/5 border-t-2 border-[#2F4F4F]">
+                        <span class="pl-4 text-sm font-bold text-[#2F4F4F]">Total Assets</span>
+                        <span class="pr-4 text-base font-extrabold text-[#2F4F4F] money" id="Total_Assets">{{ Total_Assets|default:0|floatformat:2|intcomma }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LIABILITIES + EQUITY -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                <div class="bg-[#2F4F4F] px-4 py-2.5">
+                    <h2 class="text-sm font-bold text-white uppercase tracking-wide">Liabilities &amp; Owner's Equity</h2>
+                </div>
+                <div class="px-4 py-2">
+
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-3 pb-1">Current Liabilities</p>
+                    <div class="divide-y divide-gray-100">
+                        <div class="flex justify-between py-1.5 text-sm">
+                            <span class="text-gray-600">Accounts Payable</span>
+                            <span class="text-gray-800 money">{{ acctpayableSum|default:0|floatformat:2|intcomma }}</span>
+                        </div>
+                        <div class="flex justify-between py-1.5 text-sm">
+                            <span class="text-gray-600">Income Tax Payables</span>
+                            <span class="text-gray-800 money">{{ Income_Tax_Payables_Sum|default:0|floatformat:2|intcomma }}</span>
+                        </div>
+                        {% if Other_Current_Liabilities %}
+                        <div class="flex justify-between py-1.5 text-sm">
+                            <span class="text-gray-600">Other Current Liabilities</span>
+                            <span class="text-gray-800 money">{{ Other_Current_Liabilities|floatformat:2|intcomma }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="flex justify-between py-2 mt-1 border-t-2 border-gray-200 text-sm font-semibold text-gray-800">
+                        <span>Total Current Liabilities</span>
+                        <span class="money" id="Total_Current_Liabilies">{{ Total_Current_Liabilities|default:0|floatformat:2|intcomma }}</span>
+                    </div>
+
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-4 pb-1">Non-Current Liabilities</p>
+                    <div class="divide-y divide-gray-100">
+                        <div class="flex justify-between py-1.5 text-sm">
+                            <span class="text-gray-600">Long-term Debt / Loans</span>
+                            <span class="text-gray-800 money">{{ Long_term_debit|default:0|floatformat:2|intcomma }}</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between py-2 mt-1 border-t-2 border-gray-200 text-sm font-semibold text-gray-800">
+                        <span>Total Non-Current Liabilities</span>
+                        <span class="money" id="Total_NonCurrent_Liabilies">{{ Total_Non_Current_Liabilities|default:0|floatformat:2|intcomma }}</span>
+                    </div>
+
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-4 pb-1">Owner's Equity</p>
+                    <div class="divide-y divide-gray-100">
+                        <div class="flex justify-between py-1.5 text-sm">
+                            <span class="text-gray-600">Capital Investment</span>
+                            <span class="text-gray-800 money">{{ capital_Investment|default:0|floatformat:2|intcomma }}</span>
+                        </div>
+                        <div class="flex justify-between py-1.5 text-sm">
+                            <span class="text-gray-600">Retained Earnings / Net Position</span>
+                            <span class="text-gray-800 money">{{ Retained_Earning|default:0|floatformat:2|intcomma }}</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between py-2 mt-1 border-t-2 border-gray-200 text-sm font-semibold text-gray-800">
+                        <span>Total Owner's Equity</span>
+                        <span class="money" id="Total_equities_Liabilies">{{ Total_Owners_equity|default:0|floatformat:2|intcomma }}</span>
+                    </div>
+
+                    <div class="flex justify-between items-center px-1 py-3 mt-3 -mx-4 bg-[#2F4F4F]/5 border-t-2 border-[#2F4F4F]">
+                        <span class="pl-4 text-sm font-bold text-[#2F4F4F]">Total Liabilities &amp; Equity</span>
+                        <span class="pr-4 text-base font-extrabold text-[#2F4F4F] money" id="Total_Liabilies">{{ Total_Liabilities_and_Equity|default:0|floatformat:2|intcomma }}</span>
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- Chart-of-account detail (collapsed by default) -->
+        {% if asset_lines or liability_lines or equity_lines %}
+        <div class="max-w-5xl mx-auto mt-6">
+            <details class="bg-white rounded-lg shadow-sm border border-gray-100">
+                <summary class="cursor-pointer select-none px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 rounded-lg">
+                    View account-level detail
+                </summary>
+                <div class="grid gap-4 md:grid-cols-2 px-4 pb-4">
+                    <div>
+                        <h3 class="font-semibold text-xs mb-2 text-gray-500 uppercase tracking-wide">Asset accounts</h3>
+                        <table class="w-full text-xs border border-gray-100 rounded overflow-hidden">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-2 py-1.5 text-left font-medium text-gray-500">Account</th>
+                                    <th class="px-2 py-1.5 text-right font-medium text-gray-500">Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for a in asset_lines %}
+                                <tr class="border-t border-gray-100">
+                                    <td class="px-2 py-1.5 text-gray-600">{{ a.account_id }} — {{ a.account_bankname|default:a.account_type }}</td>
+                                    <td class="px-2 py-1.5 text-right text-gray-700 money">{{ a.actual_balance|floatformat:2|intcomma }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="2" class="px-2 py-2 text-gray-400">No asset accounts</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-xs mb-2 text-gray-500 uppercase tracking-wide">Liability accounts</h3>
+                        <table class="w-full text-xs border border-gray-100 rounded overflow-hidden">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-2 py-1.5 text-left font-medium text-gray-500">Account</th>
+                                    <th class="px-2 py-1.5 text-right font-medium text-gray-500">Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for a in liability_lines %}
+                                <tr class="border-t border-gray-100">
+                                    <td class="px-2 py-1.5 text-gray-600">{{ a.account_id }} — {{ a.account_bankname|default:a.account_type }}</td>
+                                    <td class="px-2 py-1.5 text-right text-gray-700 money">{{ a.actual_balance|floatformat:2|intcomma }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="2" class="px-2 py-2 text-gray-400">No liability accounts</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                        {% if equity_lines %}
+                        <h3 class="font-semibold text-xs mb-2 mt-4 text-gray-500 uppercase tracking-wide">Equity accounts</h3>
+                        <table class="w-full text-xs border border-gray-100 rounded overflow-hidden">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-2 py-1.5 text-left font-medium text-gray-500">Account</th>
+                                    <th class="px-2 py-1.5 text-right font-medium text-gray-500">Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for a in equity_lines %}
+                                <tr class="border-t border-gray-100">
+                                    <td class="px-2 py-1.5 text-gray-600">{{ a.account_id }} — {{ a.account_bankname|default:a.account_type }}</td>
+                                    <td class="px-2 py-1.5 text-right text-gray-700 money">{{ a.actual_balance|floatformat:2|intcomma }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% endif %}
+                    </div>
+                </div>
+            </details>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <div class="max-w-5xl mx-auto mt-5">
         <button type="button" onclick="printModal.showModal()"
-            class="h-8 px-4 w-full text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none"
+            class="h-9 px-5 text-sm font-medium text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-md hover:bg-slate-300 focus:outline-none"
             id="openModalButton">
-            Print
+            Print Report
         </button>
     </div>
 
