@@ -12,7 +12,14 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script>
-   
+    // Comma-safe number parse for line totals (money.js may format display elsewhere)
+    function num(val) {
+        if (typeof window.parseMoney === "function") return window.parseMoney(val);
+        if (val === null || val === undefined || val === "") return 0;
+        var n = parseFloat(String(val).replace(/,/g, "").replace(/[₦$£€\s]/g, ""));
+        return isFinite(n) ? n : 0;
+    }
+
     var i = 1;
     function addRow() {    
             i++;
@@ -86,10 +93,10 @@
                         
                         unit.val(price);
                         
-                        // Recalculate amount
-                        const qtyVal = parseFloat(qty.val()) || 0;
-                        const discountVal = parseFloat(discount.val()) || 0;
-                        const amountVal = (qtyVal * parseFloat(price)) - discountVal;
+                        // Recalculate amount (comma-safe)
+                        const qtyVal = num(qty.val());
+                        const discountVal = num(discount.val());
+                        const amountVal = (qtyVal * num(price)) - discountVal;
                         amount.val(amountVal.toFixed(2));
                         
                         sun_T();
@@ -210,12 +217,13 @@ $(document).on('change', '#select-item', function(event) {
 
     $(document).on('input', 'input[name="qty[]"], input[name="discount[]"], input[name="unit[]"]', function() {
         const row = $(this).closest('tr');
-        const qty = parseFloat(row.find('input[name="qty[]"]').val()) || 0;
-        const unit = parseFloat(row.find('input[name="unit[]"]').val()) || 0;
-        const discount = parseFloat(row.find('input[name="discount[]"]').val()) || 0;
+        const qty = num(row.find('input[name="qty[]"]').val());
+        const unit = num(row.find('input[name="unit[]"]').val());
+        const discount = num(row.find('input[name="discount[]"]').val());
         const amount = row.find('input[name="amount[]"]');
         
         const calculatedAmount = (qty * unit) - discount;
+        // Plain number only — never insert thousand-separator commas here
         amount.val(calculatedAmount.toFixed(2));
         
         sun_T();   
@@ -230,16 +238,16 @@ $(document).on('change', '#select-item', function(event) {
         //alert(sum)
         // Loop through the input elements and add their values to the sum
         for (let i = 0; i < inputElements.length; i++) {
-            const inputValue = parseFloat(inputElements[i].value);
+            const inputValue = num(inputElements[i].value);
             if (!isNaN(inputValue)) {
                 sum += inputValue;
             }
         }
-        // Display the sum in a result div
+        // Display the sum in a result div — plain numbers for live calc / submit
         const subTotal = document.getElementById("sub-total");
         const total = document.getElementById("total");
-        subTotal.value = sum;
-        total.value = sum;
+        if (subTotal) subTotal.value = sum.toFixed(2);
+        if (total) total.value = sum.toFixed(2);
     }
 
     function if_shipping_method(itemId, qty){
@@ -296,10 +304,10 @@ $(document).on("input", "#qty", function (e) {
     const total = document.getElementById("total");
     const allAmount = document.getElementsByName("amount[]");
 
-    if(value > 0){
-        const unit_p = parseInt(unit.val());
-        const qty_p = parseInt(qty.val());
-        const discount_p = parseInt(discount.val());
+    if(num(value) > 0){
+        const unit_p = num(unit.val());
+        const qty_p = num(qty.val());
+        const discount_p = num(discount.val());
    
         //if_shipping_method(itemcode, qty_p)
 
@@ -310,7 +318,7 @@ $(document).on("input", "#qty", function (e) {
                 data:{"item_id": itemcode},
                 success: function(stock_qty){
                     
-                    if(parseFloat(stock_qty) >= parseFloat(value)){
+                    if(num(stock_qty) >= num(value)){
                         DoCalculation(unit_p, discount_p, value, amount, subTotal, total, allAmount);
                         if_shipping_method(itemcode, qty_p)
                     }else{
@@ -346,25 +354,20 @@ $(document).on("input", "#qty", function (e) {
             })
         }    
     }else{
-            unit_p = parseInt(unit.val())
+            unit_p = num(unit.val())
             if(!isNaN(unit_p)){
 
-                amount.val(unit_p)
+                amount.val(unit_p.toFixed(2))
 
             let sum = 0;
-
-            //alert(sum)
-            // Loop through allAmount input elements and add their values to the sum
             for (let i = 0; i < allAmount.length; i++) {
-                const inputValue = parseFloat(allAmount[i].value);
+                const inputValue = num(allAmount[i].value);
                 if (!isNaN(inputValue)) {
                     sum += inputValue;
                 }
             }
-            // Display the sum in a result div
-            
-            subTotal.value = sum;
-            total.value = sum;
+            if (subTotal) subTotal.value = sum.toFixed(2);
+            if (total) total.value = sum.toFixed(2);
             }else{
                 amount.val("")
             }
@@ -375,44 +378,33 @@ $(document).on("input", "#qty", function (e) {
 
 
 function DoCalculation(unit_p, discount_p, value, amount, subTotal, total, allAmount){
-    if(!isNaN(unit_p && discount_p)){
+    unit_p = num(unit_p);
+    discount_p = num(discount_p);
+    value = num(value);
+    if(!isNaN(unit_p) && !isNaN(discount_p) && discount_p !== 0){
 
-        amount.val((unit_p - discount_p)* value)
-        //alert(unit_p)
-        //const inputElements = document.getElementsByName("amount[]");
+        amount.val(((unit_p - discount_p)* value).toFixed(2))
 
-        // Initialize a variable to store the sum
         let sum = 0;
-
-        //alert(sum)
-        // Loop through allAmount input elements and add their values to the sum
         for (let i = 0; i < allAmount.length; i++) {
-            const inputValue = parseFloat(allAmount[i].value);
+            const inputValue = num(allAmount[i].value);
             if (!isNaN(inputValue)) {
                 sum += inputValue;
             }
         }
-        // Display the sum in a result 
-        
-        subTotal.value = sum;
-        total.value = sum;
-    }else if(isNaN(discount_p)){
-        amount.val(unit_p * value)
-            // Initialize a variable to store the sum
+        if (subTotal) subTotal.value = sum.toFixed(2);
+        if (total) total.value = sum.toFixed(2);
+    }else if(isNaN(discount_p) || discount_p === 0){
+        amount.val((unit_p * value).toFixed(2))
             let sum = 0;
-
-            //alert(sum)
-            // Loop through allAmount input elements and add their values to the sum
             for (let i = 0; i < allAmount.length; i++) {
-                const inputValue = parseFloat(allAmount[i].value);
+                const inputValue = num(allAmount[i].value);
                 if (!isNaN(inputValue)) {
                     sum += inputValue;
                 }
             }
-            // Display the sum in a result 
-            
-            subTotal.value = sum;
-            total.value = sum;
+            if (subTotal) subTotal.value = sum.toFixed(2);
+            if (total) total.value = sum.toFixed(2);
     }
     
 }
@@ -433,52 +425,39 @@ $(document).on("input", "#discount", function (e) {
         const allAmount = document.getElementsByName("amount[]");
 
        
-        if(value > 0){
-            const unit_p = parseInt(unit.val());
-            const qty_p = parseInt(qty.val());
+        if(num(value) > 0){
+            const unit_p = num(unit.val());
+            const qty_p = num(qty.val());
             if(!isNaN(unit_p)){
 
-                amount.val((unit_p - value) * qty_p)
-                //alert(unit_p)
-                //const inputElements = document.getElementsByName("amount[]");
+                amount.val(((unit_p - num(value)) * qty_p).toFixed(2))
 
-                // Initialize a variable to store the sum
                 let sum = 0;
-
-                //alert(sum)
-                // Loop through allAmount input elements and add their values to the sum
                 for (let i = 0; i < allAmount.length; i++) {
-                    const inputValue = parseFloat(allAmount[i].value);
+                    const inputValue = num(allAmount[i].value);
                     if (!isNaN(inputValue)) {
                         sum += inputValue;
                     }
                 }
-                // Display the sum in a result div
-                
-                subTotal.value = sum;
-                total.value = sum;
+                if (subTotal) subTotal.value = sum.toFixed(2);
+                if (total) total.value = sum.toFixed(2);
             }
         }else{
-             unit_p = parseInt(unit.val())
-             const qty_p = parseInt(qty.val());
+             unit_p = num(unit.val())
+             const qty_p = num(qty.val());
              if(!isNaN(unit_p)){
 
-                amount.val(unit_p * qty_p)
+                amount.val((unit_p * qty_p).toFixed(2))
 
                  let sum = 0;
-
-                //alert(sum)
-                // Loop through allAmount input elements and add their values to the sum
                 for (let i = 0; i < allAmount.length; i++) {
-                    const inputValue = parseFloat(allAmount[i].value);
+                    const inputValue = num(allAmount[i].value);
                     if (!isNaN(inputValue)) {
                         sum += inputValue;
                     }
                 }
-                // Display the sum in a result div
-                
-                subTotal.value = sum;
-                total.value = sum;
+                if (subTotal) subTotal.value = sum.toFixed(2);
+                if (total) total.value = sum.toFixed(2);
                 }else{
                     amount.val("")
                 }
@@ -558,13 +537,14 @@ $(document).on('click', '.remove_row', function(e) {
     const subTotal = document.getElementById("sub-total");
     const total = document.getElementById("total");
 
-    if (amount !== "" && !isNaN(parseFloat(amount))) {
-        subTotal.value = parseFloat(subTotal.value) - parseFloat(amount);
-        total.value = parseFloat(total.value) - parseFloat(amount);
+    if (amount !== "" && !isNaN(num(amount))) {
+        if (subTotal) subTotal.value = (num(subTotal.value) - num(amount)).toFixed(2);
+        if (total) total.value = (num(total.value) - num(amount)).toFixed(2);
     }
 
     $row.remove();
     renumberRows();
+    sun_T();
 });
 
 function renumberRows() {
@@ -579,7 +559,7 @@ const checkbox = document.getElementById("discountcheck")
 checkbox.addEventListener("change", function () {
         const subTotal = document.getElementById("sub-total"); 
         const discount = document.getElementById("discount2"); 
-        const sub_Total = parseInt(subTotal.value); 
+        const sub_Total = num(subTotal.value); 
         const total = document.getElementById("total");
         if (checkbox.checked) {
             //alert('checked');
@@ -587,8 +567,8 @@ checkbox.addEventListener("change", function () {
 
                 sum = sub_Total * 0.075;
              
-                discount.value = sum;
-                total.value = sub_Total + sum;
+                discount.value = sum.toFixed(2);
+                total.value = (sub_Total + sum).toFixed(2);
 
             }else{
                 
