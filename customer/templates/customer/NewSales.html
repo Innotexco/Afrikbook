@@ -221,7 +221,7 @@
             <div class="w-full my-5 overflow-hidden shadow-xs">
                 <div class="w-full overflow-x-auto" id="sales_div">
                     {% include 'components/header.html' %}
-                    <table class="border-collapse border border-slate-400 w-full">
+                    <table class="border-collapse border border-slate-400 w-full" data-money-skip="1">
                         <thead>
                             <tr class="font-medium tracking-wide text-left px-4 text-gray-500 border-b bg-gray-200">
                                 <th class="border border-slate-300 px-4 text-[10px]">SN</th>
@@ -385,12 +385,13 @@
             const payment_method  = $("#payment_method").val()
             var transfer          = $("#transfer").val()
             var cash              = $("#cash").val()
-            // FIX: single declaration of amount as a float (removed duplicate const amount)
-            const amount          = parseFloat($("#total").val()) || 0
+            // Comma-safe (money.js parseMoney when available)
+            const _num = (v) => (typeof parseMoney === "function" ? parseMoney(v) : (parseFloat(String(v||"").replace(/,/g,"")) || 0));
+            const amount          = _num($("#total").val())
             const account         = $("#account_id").val()
             const credit_sales    = $("input[name='credit_sales']").is(':checked')
             const is_part_payment = $("#part_payment_check").is(":checked")
-            const part_amount     = parseFloat($("#part_payment_amount").val()) || 0
+            const part_amount     = _num($("#part_payment_amount").val())
 
             if(customer == "Casual Customer"){
                 runcheck();
@@ -561,8 +562,9 @@
         });
 
         function updatePartPaymentHint() {
-            const total = parseFloat($("#total").val()) || 0;
-            const paid  = parseFloat($("#part_payment_amount").val()) || 0;
+            const _num = (v) => (typeof parseMoney === "function" ? parseMoney(v) : (parseFloat(String(v||"").replace(/,/g,"")) || 0));
+            const total = _num($("#total").val());
+            const paid  = _num($("#part_payment_amount").val());
             if (total > 0) {
                 const balance = total - paid;
                 $("#part_payment_hint").text(
