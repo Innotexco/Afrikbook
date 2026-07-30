@@ -45,6 +45,20 @@ EMAIL_USE_SSL = True # CHANGE EMAIL_USE_TLS = False
 
 EMAIL_BACKEND= 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_BACKEND= 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL') or EMAIL_HOST_USER or 'noreply@afrikbook.com'
+SITE_URL = os.getenv('SITE_URL', 'https://console.afrikbook.com')
+
+# ── Celery (Redis broker) ────────────────────────────────────────────────────
+# Start worker:  celery -A Afrikbook_proj worker -l info
+# Windows:       celery -A Afrikbook_proj worker -l info --pool=solo
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://127.0.0.1:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://127.0.0.1:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 300  # 5 minutes hard limit per task
 
 PAYSTACK_SECRET_KEY = os.getenv('PAYSTACK_SECRET_KEY')
 

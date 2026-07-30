@@ -50,88 +50,52 @@ def billing_shipping_reference(db, invoice, cusID, shipping, method, cost):
         
 
 
-from django.core.mail import EmailMessage
-from django.template.loader import render_to_string
-from weasyprint import HTML
 from django.conf import settings
-import tempfile
-import os
 import logging
 from django.db import connection
 from customer.models import Vat
 # from django.db.models import Sum
 
 def email_invoice_to_customer(request, db, invoiceID, customer_email, customer_name):
-    try:
-        invoice_items = customer_invoice.objects.using(db).filter(invoiceID=invoiceID)
-        if not invoice_items.exists():
-            return False, "Invoice not found"
+    """
+    Queue invoice PDF email via Celery (does not block the request).
 
-        invoice = invoice_items.first()
+    Returns (True, msg) if the task was enqueued successfully.
+    """
+    try:
+        if not customer_email:
+            return False, "No customer email"
+
+        company_name = ""
+        try:
+            company_name = request.user.company_id.company_name
+        except Exception:
+            pass
 
         try:
-            company = CreateProfile.objects.using(db).first()
-        except CreateProfile.DoesNotExist:
-            company = None
+            base_url = request.build_absolute_uri("/")
+        except Exception:
+            base_url = getattr(settings, "SITE_URL", "https://console.afrikbook.com")
 
-        subtotal    = sum(item.amount for item in invoice_items)
-        vat_items   = Vat.objects.using(db).filter(source=invoiceID)
-        vat_total   = sum(v.amount for v in vat_items)
-        grand_total = subtotal + vat_total
-        balance_due = grand_total - (invoice.amount_paid or 0)
+        from main.tasks import send_invoice_email_task
 
-        # ── Company footer details ───────────────────────────────────────────
-        company_name    = company.CompanyName if company and company.CompanyName else request.user.company_id.company_name
-        company_address = company.address     if company and company.address     else ""
-        company_email   = company.email       if company and company.email       else ""
-        company_phone   = company.phone       if company and company.phone       else ""
-        company_rc      = company.Rc          if company and company.Rc          else ""
-
-        # ── PDF attachment ───────────────────────────────────────────────────
-        html_content = render_to_string('customer/invoice_pdf.html', {
-            'invoice':       invoice,
-            'invoice_items': invoice_items,
-            'company':       company,
-            'subtotal':      subtotal,
-            'vat_items':     vat_items,
-            'vat_total':     vat_total,
-            'grand_total':   grand_total,
-            'balance_due':   balance_due,
-        })
-        pdf_file = HTML(
-            string=html_content,
-            base_url=request.build_absolute_uri()
-        ).write_pdf()
-
-        # ── Compose email ────────────────────────────────────────────────────
-        footer_lines = [company_name]
-        if company_address: footer_lines.append(company_address)
-        if company_email:   footer_lines.append(company_email)
-        if company_rc:      footer_lines.append(f"RC {company_rc}")
-
-        footer = "\n".join(footer_lines)
-
-        email = EmailMessage(
-            subject    = f"Invoice {invoiceID} from {company_name}",
-            body       = (
-                f"Dear {customer_name},\n\n"
-                f"Here is your invoice {invoiceID} .We appreciate your business!\n"
-                f"Please find the attached document for your invoice details.\n"
-                f"──────────────────────────\n"
-                f"{footer}\n"
-                f"──────────────────────────"
-            ),
-            from_email = settings.DEFAULT_FROM_EMAIL,
-            to         = [customer_email],
+        send_invoice_email_task.delay(
+            db_name=db,
+            invoice_id=str(invoiceID),
+            customer_email=customer_email,
+            customer_name=customer_name or "",
+            company_display_name=company_name or "",
+            base_url=base_url,
         )
-        email.attach(f"Invoice_{invoiceID}.pdf", pdf_file, 'application/pdf')
-        email.send()
-
-        logger.info(f"[email_invoice_to_customer] Sent | invoiceID={invoiceID} | to={customer_email}")
-        return True, "Invoice emailed successfully"
+        logger.info(
+            f"[email_invoice_to_customer] Queued Celery task | invoiceID={invoiceID} | to={customer_email}"
+        )
+        return True, "Invoice email queued"
 
     except Exception as e:
-        logger.error(f"[email_invoice_to_customer] Failed | invoiceID={invoiceID} | {e}\n{traceback.format_exc()}")
+        logger.error(
+            f"[email_invoice_to_customer] Queue failed | invoiceID={invoiceID} | {e}\n{traceback.format_exc()}"
+        )
         return False, str(e)
 
 
@@ -770,7 +734,7 @@ def add_new_sales(request, db):
                 if send_email and customer.email:
                     success, msg = email_invoice_to_customer(request, db, invoiceID, customer.email, customer_name)
                     if success:
-                        messages.success(request, f"Invoice emailed to {customer.email}")
+                        messages.success(request, f"Invoice email queued for {customer.email}")
                     else:
                         messages.warning(request, f"Invoice saved but email failed: {msg}")
 
@@ -791,7 +755,7 @@ def add_new_sales(request, db):
                 if send_email and vendor.email:
                     success, msg = email_invoice_to_customer(request, db, invoiceID, vendor.email, customer_name)
                     if success:
-                        messages.success(request, f"Invoice emailed to {vendor.email}")
+                        messages.success(request, f"Invoice email queued for {vendor.email}")
                     else:
                         messages.warning(request, f"Invoice saved but email failed: {msg}")
 

@@ -5,10 +5,6 @@ from vendor.models import vendor_table
 from django.contrib import messages
 import decimal, uuid
 from customer.functions.generalFunction import *
-from django.core.mail import EmailMessage
-from weasyprint import HTML
-from django.template.loader import render_to_string
-from settings.models import CreateProfile
 from django.conf import settings
 import logging
 import traceback
@@ -167,63 +163,45 @@ def receive_payment(request, db):
 
             messages.success(request, "Payment received successfully")
 
-            # ── Email receipt ─────────────────────────────────────────────
+            # ── Email receipt (Celery) ────────────────────────────────────
             if customer_email:
                 try:
-                    company = CreateProfile.objects.using(db).first()
+                    from main.tasks import send_receipt_email_task
 
-                    company_name    = company.CompanyName if company and company.CompanyName else request.user.company_id.company_name
-                    company_address = company.address     if company and company.address     else ""
-                    company_email_  = company.email       if company and company.email       else ""
-                    company_phone   = company.phone       if company and company.phone       else ""
-                    company_rc      = company.Rc          if company and company.Rc          else ""
+                    company_name = ""
+                    try:
+                        company_name = request.user.company_id.company_name
+                    except Exception:
+                        pass
+
+                    try:
+                        base_url = request.build_absolute_uri("/")
+                    except Exception:
+                        base_url = getattr(settings, "SITE_URL", "https://console.afrikbook.com")
 
                     amount_in_words = amount_to_words(amount)
 
-                    html_content = render_to_string('journal/receipt_email.html', {
-                        'company':         company,
-                        'customer_name':   customer_name,
-                        'invoice_no':      invoice_no,
-                        'customer_code':   customer_code,
-                        'date':            date,
-                        'amount':          amount,
-                        'amount_in_words': amount_in_words,
-                        'description':     description,
-                        'payment_method':  payment_method,
-                    })
-
-                    pdf_file = HTML(
-                        string=html_content,
-                        base_url=request.build_absolute_uri()
-                    ).write_pdf()
-
-                    footer_lines = [company_name]
-                    if company_address: footer_lines.append(company_address)
-                    if company_email_:  footer_lines.append(company_email_)
-                    if company_phone:   footer_lines.append(company_phone)
-                    if company_rc:      footer_lines.append(f"RC {company_rc}")
-
-                    email = EmailMessage(
-                        subject    = f"Payment Receipt — Invoice {invoice_no}",
-                        body       = (
-                            f"Dear {customer_name},\n\n"
-                            f"Thank you for your payment of {amount} for invoice {invoice_no}.\n"
-                            f"Please find your receipt attached.\n\n"
-                            f"──────────────────────────\n"
-                            f"{chr(10).join(footer_lines)}\n"
-                            f"──────────────────────────"
-                        ),
-                        from_email = settings.DEFAULT_FROM_EMAIL,
-                        to         = [customer_email],
+                    send_receipt_email_task.delay(
+                        db_name=db,
+                        customer_email=customer_email,
+                        customer_name=customer_name or "",
+                        invoice_no=str(invoice_no),
+                        customer_code=str(customer_code or ""),
+                        date_str=str(date),
+                        amount=str(amount),
+                        amount_in_words=str(amount_in_words),
+                        description=description or "",
+                        payment_method=payment_method or "",
+                        company_display_name=company_name or "",
+                        base_url=base_url,
                     )
-                    email.attach(f"Receipt_{invoice_no}.pdf", pdf_file, 'application/pdf')
-                    email.send()
-
-                    logger.info(f"[receive_payment] Receipt emailed | invoice_no={invoice_no} | to={customer_email}")
+                    logger.info(
+                        f"[receive_payment] Receipt email queued | invoice_no={invoice_no} | to={customer_email}"
+                    )
 
                 except Exception as e:
-                    logger.error(f"[receive_payment] Receipt email failed | invoice_no={invoice_no} | {e}\n{traceback.format_exc()}")
-                    messages.warning(request, "Payment recorded but receipt email could not be sent.")
+                    logger.error(f"[receive_payment] Receipt email queue failed | invoice_no={invoice_no} | {e}\n{traceback.format_exc()}")
+                    messages.warning(request, "Payment recorded but receipt email could not be queued.")
 
         else:
             return receivable_form

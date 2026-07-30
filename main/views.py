@@ -1646,23 +1646,40 @@ def insert_items(request):
 from django.core.mail import send_mail,  EmailMessage
 from django.conf import settings
 from io import BytesIO
+import base64
 
 def send_email(email, title, message):
-   
-    result = send_mail(
-        title, 
-        message, 
-        settings.EMAIL_HOST_USER, 
-        email, 
-        fail_silently=False,
-        html_message=message
-    )
-
-
-    if result == len(email):
+    """
+    Queue a plain/HTML email via Celery.
+    `email` may be a list of addresses or a single string.
+    Returns True if the task was enqueued (not necessarily delivered yet).
+    """
+    try:
+        from main.tasks import send_email_task
+        recipients = email if isinstance(email, (list, tuple)) else [email]
+        send_email_task.delay(
+            recipients=list(recipients),
+            subject=title,
+            message=message if not message or "<" not in str(message) else "",
+            html_message=message,
+        )
         return True
-    else:
-        return False
+    except Exception as e:
+        # Fallback to synchronous send if broker is unavailable
+        try:
+            recipients = email if isinstance(email, (list, tuple)) else [email]
+            result = send_mail(
+                title,
+                message,
+                settings.EMAIL_HOST_USER,
+                list(recipients),
+                fail_silently=False,
+                html_message=message,
+            )
+            return result == len(list(recipients))
+        except Exception:
+            print(e)
+            return False
 
 def send_email_with_pdf(request):
 
@@ -1672,30 +1689,42 @@ def send_email_with_pdf(request):
         return JsonResponse({'success': False, 'error': 'No file uploaded'})
 
     pdf_file = request.FILES['pdf_file']
-    receipient_email = request.POST['email']
+    receipient_email = request.POST.get('email') or request.POST.get('receipient_email')
     
     
     if not pdf_file or not receipient_email:
         return JsonResponse({'error': 'Invalid data'}, status=400)
     
-    # pdf_file = generate_pdf_from_text(html_content)
-
-    # receipient_email = 'isdoremartins23@gmail.com'
     subject = "From Afrikbook"
     message = "welcome to Afrikbook account system"
-    html_msg = '<h1>THANK YOU !!!</h1>'
 
-    email = EmailMessage(
-        subject, 
-        message, 
-        settings.EMAIL_HOST_USER, 
-        [receipient_email], 
-    )
-    pdf = 'media/profiles/image_4.png'
-    email.attach('document.pdf', pdf_file.read(), 'application/pdf')
-    email.send(fail_silently=False)
-
-    return JsonResponse({'success': True})
+    try:
+        from main.tasks import send_email_with_attachment_task
+        pdf_b64 = base64.b64encode(pdf_file.read()).decode("ascii")
+        send_email_with_attachment_task.delay(
+            recipients=[receipient_email],
+            subject=subject,
+            body=message,
+            attachment_filename="document.pdf",
+            attachment_b64=pdf_b64,
+            attachment_mimetype="application/pdf",
+        )
+        return JsonResponse({'success': True, 'queued': True})
+    except Exception as e:
+        # Synchronous fallback
+        try:
+            email = EmailMessage(
+                subject,
+                message,
+                settings.EMAIL_HOST_USER,
+                [receipient_email],
+            )
+            pdf_file.seek(0)
+            email.attach('document.pdf', pdf_file.read(), 'application/pdf')
+            email.send(fail_silently=False)
+            return JsonResponse({'success': True, 'queued': False})
+        except Exception as err:
+            return JsonResponse({'success': False, 'error': str(err)}, status=500)
 
 
 # def generate_pdf_from_text(text):
