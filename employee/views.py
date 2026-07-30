@@ -344,6 +344,11 @@ def SaveChanges(request):
                 'total_due': total_due,
                 'net_pay': net_pay
             }
+        
+        print(request.POST)
+        print("ID:", request.POST.get("id"))
+        print("Staff ID:", request.POST.get("staff_ID[]"))
+        
         form_instance = payroll.objects.using(db).get(id=id, staffID=staffID)
         form = PayRollForm(form_data, instance=form_instance)
         
