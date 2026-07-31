@@ -205,7 +205,7 @@ def RefundCustomer(request):
 @urls_name(name="Sales Invoices")
 def SalesInvoice(request):
     db = request.user.company_id.db_name
-    customer = customer_table.objects.using(db).all()
+    customer = customer_table.objects.using(db).all().order_by('name')
     vendor   = vendor_table.objects.using(db).all()
     accounts = chart_of_account.objects.using(db).all()
     billing_address = billing_addr.objects.using('afrikbook_client').all()
