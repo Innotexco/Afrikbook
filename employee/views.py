@@ -372,7 +372,7 @@ def ApprovePayroll(request):
         try:
             c_account = chart_of_account.objects.using(db).get(account_id='6001-Salary')
         except chart_of_account.DoesNotExist:
-            return JsonResponse({'type': 'error', 'message': "Default Salary account (6001-Salary) not found. Run default_account setup first."})
+            return JsonResponse({'type': 'error', 'message': "Salary account not found."})
 
         payrolls = payroll.objects.using(db).filter(month_year=month_year)
 
