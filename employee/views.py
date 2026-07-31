@@ -360,105 +360,109 @@ def SaveChanges(request):
 def ApprovePayroll(request):
     db = request.user.company_id.db_name
     if request.method == "GET":
-        account = request.GET.get('account')
-        c_account = request.GET.get('c-account')
-        month_year = request.GET.get('month_year')
-        total_salary = request.GET.get('total_salary')
+        account       = request.GET.get('account')
+        month_year    = request.GET.get('month_year')
+        total_salary  = request.GET.get('total_salary')
 
-        account = chart_of_account.objects.using(db).get(account_id=account)
-        c_account = chart_of_account.objects.using(db).get(account_id=c_account)
+        try:
+            account = chart_of_account.objects.using(db).get(account_id=account)
+        except chart_of_account.DoesNotExist:
+            return JsonResponse({'type': 'error', 'message': "Account does not exist"})
+
+        try:
+            c_account = chart_of_account.objects.using(db).get(account_id='6001-Salary')
+        except chart_of_account.DoesNotExist:
+            return JsonResponse({'type': 'error', 'message': "Default Salary account (6001-Salary) not found. Run default_account setup first."})
+
         payrolls = payroll.objects.using(db).filter(month_year=month_year)
 
-        
-        form = PayRollLogForm({'month_year':month_year, 'Amount':total_salary,'status':"Approved", 'account_debited':account.account_id})
+        form = PayRollLogForm({
+            'month_year': month_year,
+            'Amount': total_salary,
+            'status': "Approved",
+            'account_debited': account.account_id
+        })
         dater = date.today()
 
-        if account and c_account:
-           if account.actual_balance >= decimal.Decimal(total_salary):
-                
-                   
-                    if form.is_valid():
-                            # create payroll log 
-                            form_i = form.save(commit=False)
-                            form_i.Userlogin = request.user.username
-                            form.save(using=db)
+        if account.actual_balance >= decimal.Decimal(total_salary):
 
-                            #   Debit account
-                            account.actual_balance -= decimal.Decimal(total_salary)
-                            account.save()
-                            CreateLog(db, account, total_salary)
+            if form.is_valid():
+                # create payroll log
+                form_i = form.save(commit=False)
+                form_i.Userlogin = request.user.username
+                form.save(using=db)
 
-                            #   Credit account
-                            c_account.actual_balance += decimal.Decimal(total_salary)
-                            c_account.save()
-                            CreateLog(db, c_account, total_salary)
+                # Debit account (the one selected by the user)
+                account.actual_balance -= decimal.Decimal(total_salary)
+                account.save(using=db)
+                CreateLog(db, account, total_salary)
 
-                            #   Update payroll status
-                            payrolls.update(status='Approve')
+                # Credit account — always the default salary account now
+                c_account.actual_balance += decimal.Decimal(total_salary)
+                c_account.save(using=db)
+                CreateLog(db, c_account, total_salary)
 
-                            # create debit account log 
-                            debit_acc_log = account_log(
-                                transaction_source  = "Salary",
-                                amount              = total_salary,
-                                date                = date.today(),
-                                account             = account.account_id,
-                                account_type        = account.account_type,
-                                Userlogin           = request.user.username
-                            )
-                            # debit_acc_log.save(using=db)
+                # Update payroll status
+                payrolls.update(status='Approve')
 
-                            # create credit account log 
-                            credit_acc_log = account_log(
-                                transaction_source  = "Salary",
-                                amount              = total_salary,
-                                date                = date.today(),
-                                account             = c_account.account_id,
-                                account_type        = c_account.account_type,
-                                Userlogin           = request.user.username
-                            )
-                            # credit_acc_log.save(using=db)
+                # create debit account log
+                account_log.objects.using(db).create(
+                    transaction_source = "Salary",
+                    amount             = total_salary,
+                    date               = date.today(),
+                    account            = account.account_id,
+                    account_type       = account.account_type,
+                    Userlogin          = request.user.username,
+                )
 
-                            #credit staff
-                            # Generate a new transaction ID
-                            transaction_id = uuid.uuid4()
-                            for i in payrolls:
-                                staff = employee.objects.using(db).get(staff_ID=i.staffID)
-                                # net_pay = payroll.objects.using(db).get(month_year=month_year, staffID=i.staffID).net_pay
-                                loan_repay = payroll.objects.using(db).get(month_year=month_year, staffID=i.staffID).loan_repay
+                # create credit account log
+                account_log.objects.using(db).create(
+                    transaction_source = "Salary",
+                    amount             = total_salary,
+                    date               = date.today(),
+                    account            = c_account.account_id,
+                    account_type       = c_account.account_type,
+                    Userlogin          = request.user.username,
+                )
 
-                                if loan_repay > 0:
-                                    #get staf last account balance 
-                                    if staff_account.objects.using(db).filter(staff_id=i.staffID).exists():
-                                        initial_bal = staff_account.objects.using(db).filter(staff_id=i.staffID).last().balance
-                                    else: 
-                                        initial_bal = 0.00
-                                    
-                                    if initial_bal > 0:
-                                        balance = decimal.Decimal(initial_bal) - decimal.Decimal(loan_repay)
-                                    else:
-                                        balance = decimal.Decimal(initial_bal) + decimal.Decimal(loan_repay)
+                # credit staff loan repayments
+                transaction_id = uuid.uuid4()
+                for i in payrolls:
+                    staff = employee.objects.using(db).get(staff_ID=i.staffID)
+                    loan_repay = payroll.objects.using(db).get(month_year=month_year, staffID=i.staffID).loan_repay
 
-                                    # insert into staff accpunt   
-                                    staff = staff_account(
-                                        date = dater, staff_id = staff.staff_ID,
-                                        staff_name = staff.fullname, amount =loan_repay, 
-                                        initial_amount = initial_bal,
-                                        balance = balance,
-                                        account_posted = c_account.account_id,
-                                        description ="Loan Repayment", type = "Credit", 
-                                        payment_method = "Transfer",invoice_status = "Unused",
-                                        transaction_id = transaction_id,
-                                        Userlogin = request.user.username)
-                                    staff.save(using=db)
+                    if loan_repay > 0:
+                        if staff_account.objects.using(db).filter(staff_id=i.staffID).exists():
+                            initial_bal = staff_account.objects.using(db).filter(staff_id=i.staffID).last().balance
+                        else:
+                            initial_bal = 0.00
 
-                            
-                            return JsonResponse({'type':'success','message': month_year+" Salary Approved"})
-                    else:
-                        return JsonResponse({'type':'error','message':"Approve Payroll Unsuccessful"}) 
-           else:
-              return JsonResponse({'type':'error','message':"Insufficient funds"})       
+                        if initial_bal > 0:
+                            balance = decimal.Decimal(initial_bal) - decimal.Decimal(loan_repay)
+                        else:
+                            balance = decimal.Decimal(initial_bal) + decimal.Decimal(loan_repay)
+
+                        staff_account.objects.using(db).create(
+                            date            = dater,
+                            staff_id        = staff.staff_ID,
+                            staff_name      = staff.fullname,
+                            amount          = loan_repay,
+                            initial_amount  = initial_bal,
+                            balance         = balance,
+                            account_posted  = c_account.account_id,
+                            description     = "Loan Repayment",
+                            type            = "Credit",
+                            payment_method  = "Transfer",
+                            invoice_status  = "Unused",
+                            transaction_id  = transaction_id,
+                            Userlogin       = request.user.username,
+                        )
+
+                return JsonResponse({'type': 'success', 'message': month_year + " Salary Approved"})
+            else:
+                return JsonResponse({'type': 'error', 'message': "Approve Payroll Unsuccessful"})
         else:
-            return JsonResponse({'type':'error','message':"Account does not exists"})
+            return JsonResponse({'type': 'error', 'message': "Insufficient funds"})    
         
 def ConfirmPayment(request):
     db = request.user.company_id.db_name
