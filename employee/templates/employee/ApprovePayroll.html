@@ -288,7 +288,7 @@
     function ApprovePayroll(month_year, total_salary){
         
        const account = $('#account').val();
-       if(account && c_account){
+       if(account){
           alertify.defaults.glossary.title = "Confirm";
           alertify.confirm("You are about to approve "+month_year+" salary", function(e) {
             if(e){
