@@ -905,7 +905,14 @@ def AgedReceivables(request):
     # ── Deduplicate by invoiceID and pre-calculate outstanding ───────────
     raw_aged = customer_invoice.objects.using(db).filter(
         amount_paid__lt=F('amount_expected')
+    ).exclude(
+        invoiceID__icontains='returned'
+    ).exclude(
+        cancellation_status=1
+    ).exclude(
+        invoice_state='Cancelled'
     ).order_by('invoiceID', 'id')
+
 
     seen = set()
     aged_list = []
