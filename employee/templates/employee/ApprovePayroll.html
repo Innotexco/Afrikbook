@@ -299,7 +299,6 @@
                         'month_year':month_year,
                         'total_salary':total_salary,
                         'account':account,
-                        'c-account':c_account
                     },
                     success: function(data){
                         if(data.type == "success"){
@@ -318,9 +317,9 @@
             }
           });
           
-       }else{
-        alertify.error("Select a valid accounts")
-       }
+        }else{
+            alertify.error("Select a valid accounts")
+        }
       
     }
 
