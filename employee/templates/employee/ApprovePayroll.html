@@ -37,7 +37,7 @@
 
             <label for="">
                 <span class="text-gray-700">Account</span>
-                <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" name='account' id="account" required >
+                <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" name='account' id="payroll_account" required >
                     <option selected disabled=true></option>
                     {% for account in accounts %}
                        {% if account.series_name|title == 'Assets' %}
@@ -287,7 +287,7 @@
 
     function ApprovePayroll(month_year, total_salary){
         
-       const account = $('#account').val();
+       const account = $('#payroll_account').val();
        if(account){
           alertify.defaults.glossary.title = "Confirm";
           alertify.confirm("You are about to approve "+month_year+" salary", function(e) {
