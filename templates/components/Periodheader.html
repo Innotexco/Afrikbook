@@ -36,11 +36,11 @@
 <section class="hidden template-invoice font-sans px-5 pt-0.5 pb-5">
     
     <!-- Logo + Company Name -->
-    <div class="flex items-center gap-4 mx-20 my-2">
+    <div class="flex  items-center gap-4 mx-20 my-2 justify-center">
         {% if profile.logo %}
             <img src="{{ profile.logo.url }}" 
                  alt="{{ profile.CompanyName }}" 
-                 class="w-20 h-20 rounded-full object-cover object-left flex-shrink-0 border-2 border-gray-200">
+                 class="w-20 h-20 rounded-full  object-cover object-left flex-shrink-0 border-2 border-gray-200">
         {% else %}
             <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs flex-shrink-0">
                 No Logo
