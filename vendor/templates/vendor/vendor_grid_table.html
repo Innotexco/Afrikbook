@@ -6,6 +6,46 @@
 
 <!---  MAIN ITEM GRID VIEW ---->
 <script>
+    // Comma-safe number parse for purchase line totals
+    function num(val) {
+        if (typeof window.parseMoney === "function") return window.parseMoney(val);
+        if (val === null || val === undefined || val === "") return 0;
+        var n = parseFloat(String(val).replace(/,/g, "").replace(/[₦$£€\s]/g, ""));
+        return isFinite(n) ? n : 0;
+    }
+
+    function sumAmounts() {
+        const inputElements = document.getElementsByName("amount[]");
+        let sum = 0;
+        for (let i = 0; i < inputElements.length; i++) {
+            const inputValue = num(inputElements[i].value);
+            if (!isNaN(inputValue)) sum += inputValue;
+        }
+        const subTotal = document.getElementById("sub-total");
+        const total = document.getElementById("total");
+        if (subTotal) subTotal.value = sum.toFixed(2);
+        if (total) total.value = sum.toFixed(2);
+        return sum;
+    }
+
+    /** amount = (unit - discount) * qty  (discount defaults to 0) */
+    function recalcRow($row) {
+        const qty = num($row.find('input[name="qty[]"]').val()) || 0;
+        const unit = num($row.find('input[name="unit[]"]').val()) || 0;
+        const discount = num($row.find('input[name="discount[]"]').val()) || 0;
+        const amountEl = $row.find('input[name="amount[]"]');
+        const line = Math.max(0, (unit - discount) * (qty > 0 ? qty : 0));
+        // If qty empty/0 but unit set, show unit as amount when qty is 1 default — keep 0 when qty blank
+        if (qty > 0) {
+            amountEl.val(line.toFixed(2));
+        } else if (unit > 0) {
+            amountEl.val((unit - discount).toFixed(2));
+        } else {
+            amountEl.val("");
+        }
+        sumAmounts();
+    }
+
     var i = 1;
     function addRow() {
         
@@ -116,31 +156,19 @@
                     method: 'GET',
                     
                     success: function(data){
+                            // Purchase cost only (never selling price)
+                            const purchasePrice = data.purchase_price != null
+                                ? data.purchase_price
+                                : (data.amount != null ? data.amount : data.unit);
+
                             desc.val(data.desc)
                             name.val(data.name)
-                            purchaseP.val(data.amount)
+                            purchaseP.val(purchasePrice)
                             qty.val(1)
-                            unit.val(data.unit)
-                            amount.val(data.unit)
+                            unit.val(purchasePrice)
+                            amount.val(num(purchasePrice).toFixed(2))
 
-                            const inputElements = document.getElementsByName("amount[]");
-
-                            // Initialize a variable to store the sum
-                            let sum = 0;
-
-                            //alert(sum)
-                            // Loop through the input elements and add their values to the sum
-                            for (let i = 0; i < inputElements.length; i++) {
-                                const inputValue = parseFloat(inputElements[i].value);
-                                if (!isNaN(inputValue)) {
-                                    sum += inputValue;
-                                }
-                            }
-                            // Display the sum in a result div
-                            const subTotal = document.getElementById("sub-total");
-                            const total = document.getElementById("total");
-                            subTotal.value = sum;
-                            total.value = sum;
+                            sumAmounts();
 
                             // Only add a new row if this is the last row
                             const allRows = $('#dynamic_row_add tr');
@@ -168,160 +196,9 @@
    
     
    
-    $(document).on("input", "#qty", function (e) {
-        const value =  $(this).val();
-        //console.log(value)
-        
-        
-        const unit =  $(this).closest('tr').find('input[name="unit[]"]');
-        const qty =  $(this).closest('tr').find('input[name="qty[]"]');
-        const discount =  $(this).closest('tr').find('input[name="discount[]"]');
-        const amount =  $(this).closest('tr').find('input[name="amount[]"]');
-        
-        const subTotal = document.getElementById("sub-total");
-        const total = document.getElementById("total");
-        const allAmount = document.getElementsByName("amount[]");
-        
-        if(value > 0){
-            const unit_p = parseInt(unit.val());
-            const qty_p = parseInt(qty.val());
-            const discount_p = parseInt(discount.val());
-            
-            if(!isNaN(unit_p && discount_p)){
-
-                amount.val((unit_p - discount_p)* value)
-                //alert(unit_p)
-                //const inputElements = document.getElementsByName("amount[]");
-
-                // Initialize a variable to store the sum
-                let sum = 0;
-
-                //alert(sum)
-                // Loop through allAmount input elements and add their values to the sum
-                for (let i = 0; i < allAmount.length; i++) {
-                    const inputValue = parseFloat(allAmount[i].value);
-                    if (!isNaN(inputValue)) {
-                        sum += inputValue;
-                    }
-                }
-                // Display the sum in a result 
-                
-                subTotal.value = sum;
-                total.value = sum;
-            }else if(isNaN(discount_p)){
-                amount.val(unit_p * value)
-                 // Initialize a variable to store the sum
-                 let sum = 0;
-
-                 //alert(sum)
-                 // Loop through allAmount input elements and add their values to the sum
-                 for (let i = 0; i < allAmount.length; i++) {
-                     const inputValue = parseFloat(allAmount[i].value);
-                     if (!isNaN(inputValue)) {
-                         sum += inputValue;
-                     }
-                 }
-                 // Display the sum in a result 
-                 
-                 subTotal.value = sum;
-                 total.value = sum;
-            }
-        }else{
-             unit_p = parseInt(unit.val())
-             if(!isNaN(unit_p)){
-
-                 amount.val(unit_p)
-
-                let sum = 0;
-
-                //alert(sum)
-                // Loop through allAmount input elements and add their values to the sum
-                for (let i = 0; i < allAmount.length; i++) {
-                    const inputValue = parseFloat(allAmount[i].value);
-                    if (!isNaN(inputValue)) {
-                        sum += inputValue;
-                    }
-                }
-                // Display the sum in a result div
-                
-                subTotal.value = sum;
-                total.value = sum;
-                }else{
-                    amount.val("")
-                }
-
-             
-        }
-        
-    });
-
-    $(document).on("input", "#discount", function (e) {
-        const value =  $(this).val();
-        //console.log(value)
-        
-        
-        const unit =  $(this).closest('tr').find('input[name="unit[]"]');
-        const qty =  $(this).closest('tr').find('input[name="qty[]"]');
-        const amount =  $(this).closest('tr').find('input[name="amount[]"]');
-        
-        const subTotal = document.getElementById("sub-total");
-        const total = document.getElementById("total");
-        const allAmount = document.getElementsByName("amount[]");
-
-       
-        if(value > 0){
-            const unit_p = parseInt(unit.val());
-            const qty_p = parseInt(qty.val());
-            if(!isNaN(unit_p)){
-
-                amount.val((unit_p - value) * qty_p)
-                //alert(unit_p)
-                //const inputElements = document.getElementsByName("amount[]");
-
-                // Initialize a variable to store the sum
-                let sum = 0;
-
-                //alert(sum)
-                // Loop through allAmount input elements and add their values to the sum
-                for (let i = 0; i < allAmount.length; i++) {
-                    const inputValue = parseFloat(allAmount[i].value);
-                    if (!isNaN(inputValue)) {
-                        sum += inputValue;
-                    }
-                }
-                // Display the sum in a result div
-                
-                subTotal.value = sum;
-                total.value = sum;
-            }
-        }else{
-             unit_p = parseInt(unit.val())
-             const qty_p = parseInt(qty.val());
-             if(!isNaN(unit_p)){
-
-                amount.val(unit_p * qty_p)
-
-                 let sum = 0;
-
-                //alert(sum)
-                // Loop through allAmount input elements and add their values to the sum
-                for (let i = 0; i < allAmount.length; i++) {
-                    const inputValue = parseFloat(allAmount[i].value);
-                    if (!isNaN(inputValue)) {
-                        sum += inputValue;
-                    }
-                }
-                // Display the sum in a result div
-                
-                subTotal.value = sum;
-                total.value = sum;
-                }else{
-                    amount.val("")
-                }
-
-             
-        }
-        
+    // Recalc line amount whenever qty, unit price, or discount changes
+    $(document).on("input", 'input[name="qty[]"], input[name="unit[]"], input[name="discount[]"]', function () {
+        recalcRow($(this).closest("tr"));
     });
 
     /*$(document).on('click', '.remove_row',function(e){
@@ -365,13 +242,9 @@
         const subTotal = document.getElementById("sub-total");
         const total = document.getElementById("total");
 
-        if (amount !== "" && !isNaN(parseFloat(amount))) {
-            subTotal.value = parseFloat(subTotal.value) - parseFloat(amount);
-            total.value = parseFloat(total.value) - parseFloat(amount);
-        }
-
         $row.remove();
         renumberRows();
+        sumAmounts();
     });
 
     function renumberRows() {
@@ -382,40 +255,28 @@
 
 
 
-    //If Discount
-    const checkbox = document.getElementById("discountcheck")
-checkbox.addEventListener("change", function () {
-        const subTotal = document.getElementById("sub-total"); 
-        const discount = document.getElementById("discount2"); 
-        const sub_Total = parseInt(subTotal.value); 
-        const total = document.getElementById("total");
-        if (checkbox.checked) {
-            //alert('checked');
-            if(!isNaN(sub_Total)){
-
-                sum = sub_Total * 0.075;
-             
-                discount.value = sum;
-                total.value = sub_Total + sum;
-
-            }else{
-                
-
+    // VAT include checkbox
+    const checkbox = document.getElementById("discountcheck");
+    if (checkbox) {
+        checkbox.addEventListener("change", function () {
+            const subTotal = document.getElementById("sub-total");
+            const discount = document.getElementById("discount2");
+            const sub_Total = num(subTotal && subTotal.value);
+            const total = document.getElementById("total");
+            if (checkbox.checked) {
+                if (!isNaN(sub_Total)) {
+                    const vat = sub_Total * 0.075;
+                    if (discount) discount.value = vat.toFixed(2);
+                    if (total) total.value = (sub_Total + vat).toFixed(2);
+                }
+            } else {
+                if (discount) discount.value = "";
+                if (total) {
+                    total.value = isNaN(sub_Total) ? "" : sub_Total.toFixed(2);
+                }
             }
-            
-            
-        } else {
-            //alert('unchecked');
-            discount.value = "";
-            if(isNaN(sub_Total)){
-
-                total.value = "";
-            }else{
-                total.value = sub_Total
-            }
-            
-        }
-})
+        });
+    }
 
 
     
