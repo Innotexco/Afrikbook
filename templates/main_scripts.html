@@ -927,29 +927,44 @@ function generatePDF(div) {
                 table.style.width = '100%';
                 table.style.maxWidth = '100%';
             });
-            // Compact company header so it fits landscape payroll width
+            // Compact + center company header for landscape payroll width
             element.classList.add('pdf-generating');
             element.querySelectorAll('.no-print, .payroll-edit-col').forEach(function(el) {
                 el.style.setProperty('display', 'none', 'important');
             });
-            element.querySelectorAll('.template-invoice .mx-20, .template-invoice > div.flex').forEach(function(el) {
-                el.style.marginLeft = '0';
-                el.style.marginRight = '0';
+            // Logo + company name row — centered as a group
+            element.querySelectorAll('.template-invoice > div.flex').forEach(function(el) {
+                el.style.setProperty('display', 'flex', 'important');
+                el.style.setProperty('flex-direction', 'row', 'important');
+                el.style.setProperty('justify-content', 'center', 'important');
+                el.style.setProperty('align-items', 'center', 'important');
+                el.style.setProperty('margin', '4px auto 8px auto', 'important');
+                el.style.setProperty('width', '100%', 'important');
+                el.style.setProperty('gap', '12px', 'important');
             });
             element.querySelectorAll('.template-invoice address').forEach(function(el) {
-                el.style.paddingLeft = '0';
-                el.style.marginTop = '4px';
-                el.style.whiteSpace = 'normal';
-                el.style.textAlign = 'center';
+                el.style.setProperty('padding-left', '0', 'important');
+                el.style.setProperty('margin', '4px auto', 'important');
+                el.style.setProperty('white-space', 'normal', 'important');
+                el.style.setProperty('text-align', 'center', 'important');
+                el.style.setProperty('display', 'block', 'important');
+                el.style.setProperty('width', '100%', 'important');
             });
             element.querySelectorAll('.template-invoice .ml-16').forEach(function(el) {
-                el.style.marginLeft = '0';
-                el.style.flexWrap = 'wrap';
-                el.style.justifyContent = 'center';
+                el.style.setProperty('margin-left', 'auto', 'important');
+                el.style.setProperty('margin-right', 'auto', 'important');
+                el.style.setProperty('flex-wrap', 'wrap', 'important');
+                el.style.setProperty('justify-content', 'center', 'important');
+                el.style.setProperty('width', '100%', 'important');
             });
             element.querySelectorAll('.template-invoice img, .template-invoice .w-20.h-20').forEach(function(el) {
-                el.style.width = '48px';
-                el.style.height = '48px';
+                el.style.setProperty('width', '48px', 'important');
+                el.style.setProperty('height', '48px', 'important');
+                el.style.setProperty('margin', '0', 'important');
+                el.style.setProperty('object-position', 'center', 'important');
+            });
+            element.querySelectorAll('.template-classic').forEach(function(el) {
+                el.style.setProperty('text-align', 'center', 'important');
             });
         }
 
