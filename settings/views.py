@@ -156,7 +156,7 @@ def get_user_currency(request):
     cur = get_currency(request)
     
     try:
-        profile = CreateProfile.objects.using(db).get(CompanyName=request.user.company_id.company_name)
+        profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
        
         cn = profile.ownerName
         img = str(profile.logo.url) 
