@@ -154,25 +154,26 @@
                         }
                         
                             const row = $('<tr id="row">').append(
-                                $('<td class="text-[10px]">').html(num),
-                                $('<td class="text-[10px]">').text(item.employee_name),
-                                $('<td class="text-[10px]">').text(item.staffID),
-                                $('<td class="text-[10px]">').text(item.bsaic_salary),
-                                $('<td class="text-[10px]">').text(item.overtime),
-                                $('<td class="text-[10px]">').text(item.allowance),
-                                $('<td class="text-[10px]">').text(item.others),
-                                $('<td class="text-[10px]">').text(item.gross_pay),
-                                $('<td class="text-[10px]">').text(item.tax),
-                                $('<td class="text-[10px]">').text(item.loan_repay),
-                                $('<td class="text-[10px]">').text(item.union_pay),
-                                $('<td class="text-[10px]">').text(item.sanction),
-                                $('<td class="text-[10px]">').text(item.NHF),
-                                $('<td class="text-[10px]">').text(item.NSIFT),
-                                $('<td class="text-[10px]">').text(item.other_deduction),
-                                $('<td class="text-[10px]">').text(item.total_due),
-                                $('<td class="text-[10px]">').text(item.net_pay),
-                                $('<td class="text-[10px] w-3">').append('<a onclick="showEditModal(\'' + item.id + '\',\'' + item.staffID + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">Edit</a>'),
-                               
+                                $('<td class="text-[10px] border border-slate-300 px-1">').html(num),
+                                $('<td class="text-[10px] border border-slate-300 px-1">').text(item.employee_name),
+                                $('<td class="text-[10px] border border-slate-300 px-1">').text(item.staffID),
+                                $('<td class="text-[10px] border border-slate-300 px-1">').text(item.bsaic_salary),
+                                $('<td class="text-[10px] border border-slate-300 px-1">').text(item.overtime),
+                                $('<td class="text-[10px] border border-slate-300 px-1">').text(item.allowance),
+                                $('<td class="text-[10px] border border-slate-300 px-1">').text(item.others),
+                                $('<td class="text-[10px] border border-slate-300 px-1">').text(item.gross_pay),
+                                $('<td class="text-[10px] border border-slate-300 px-1">').text(item.tax),
+                                $('<td class="text-[10px] border border-slate-300 px-1">').text(item.loan_repay),
+                                $('<td class="text-[10px] border border-slate-300 px-1">').text(item.union_pay),
+                                $('<td class="text-[10px] border border-slate-300 px-1">').text(item.sanction),
+                                $('<td class="text-[10px] border border-slate-300 px-1">').text(item.NHF),
+                                $('<td class="text-[10px] border border-slate-300 px-1">').text(item.NSIFT),
+                                $('<td class="text-[10px] border border-slate-300 px-1">').text(item.other_deduction),
+                                $('<td class="text-[10px] border border-slate-300 px-1">').text(item.total_due),
+                                $('<td class="text-[10px] border border-slate-300 px-1">').text(item.net_pay),
+                                $('<td class="text-[10px] w-3 border border-slate-300 px-1 payroll-edit-col no-print">').append(
+                                    '<a href="javascript:void(0)" onclick="showEditModal(\'' + item.id + '\',\'' + item.staffID + '\')" class="no-print flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-2" aria-label="Edit">Edit</a>'
+                                ),
                             );
                             table.append(row);
                         //}

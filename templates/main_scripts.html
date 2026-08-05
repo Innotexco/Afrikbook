@@ -927,6 +927,30 @@ function generatePDF(div) {
                 table.style.width = '100%';
                 table.style.maxWidth = '100%';
             });
+            // Compact company header so it fits landscape payroll width
+            element.classList.add('pdf-generating');
+            element.querySelectorAll('.no-print, .payroll-edit-col').forEach(function(el) {
+                el.style.setProperty('display', 'none', 'important');
+            });
+            element.querySelectorAll('.template-invoice .mx-20, .template-invoice > div.flex').forEach(function(el) {
+                el.style.marginLeft = '0';
+                el.style.marginRight = '0';
+            });
+            element.querySelectorAll('.template-invoice address').forEach(function(el) {
+                el.style.paddingLeft = '0';
+                el.style.marginTop = '4px';
+                el.style.whiteSpace = 'normal';
+                el.style.textAlign = 'center';
+            });
+            element.querySelectorAll('.template-invoice .ml-16').forEach(function(el) {
+                el.style.marginLeft = '0';
+                el.style.flexWrap = 'wrap';
+                el.style.justifyContent = 'center';
+            });
+            element.querySelectorAll('.template-invoice img, .template-invoice .w-20.h-20').forEach(function(el) {
+                el.style.width = '48px';
+                el.style.height = '48px';
+            });
         }
 
         const footer = document.createElement('div');
@@ -940,6 +964,10 @@ function generatePDF(div) {
             element.style.margin = prevStyle.margin;
             element.style.boxSizing = prevStyle.boxSizing;
             element.style.overflow = prevStyle.overflow;
+            element.classList.remove('pdf-generating');
+            element.querySelectorAll('.no-print, .payroll-edit-col').forEach(function(el) {
+                el.style.removeProperty('display');
+            });
             $section.addClass('hidden');
             hide_elements(false, div);
             if (element.contains(footer)) element.removeChild(footer);
@@ -1003,13 +1031,25 @@ function hide_elements(hide, containerId) {
     if (hide) {
         // Hide all UI controls page-wide
         $('button, select, input[type="date"], .no-print, a[href]').css('display', 'none');
-        // Restore everything inside the print container
+        // Restore content inside the print container, but keep no-print / edit cols hidden
         if (containerId) {
-            $('#' + containerId).find('*').css('display', '');
+            $('#' + containerId).find('*').each(function () {
+                var $el = $(this);
+                if ($el.hasClass('no-print') || $el.hasClass('payroll-edit-col') || $el.closest('.no-print, .payroll-edit-col').length) {
+                    $el.css('display', 'none');
+                } else {
+                    $el.css('display', '');
+                }
+            });
+            // Ensure edit column stays hidden for payroll PDF
+            $('#' + containerId).find('.no-print, .payroll-edit-col').css('display', 'none');
         }
     } else {
         // Restore everything
         $('button, select, input[type="date"], .no-print, a[href]').css('display', '');
+        if (containerId) {
+            $('#' + containerId).find('.no-print, .payroll-edit-col').css('display', '');
+        }
     }
 }
 // Optional: Function to preview template before generating PDF

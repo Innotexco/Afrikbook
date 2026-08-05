@@ -25,7 +25,72 @@
         <form  method="post">
             {% csrf_token %}
 
-            <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs pdf-page-a4" id="payroll_print" data-pdf-layout="a4" style="max-width: 210mm; margin: 0 auto;">
+            {# Landscape A4 for wide payroll columns; Edit column hidden when printing #}
+            <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs pdf-page-a4-landscape"
+                 id="payroll_print"
+                 data-pdf-layout="a4-landscape"
+                 style="max-width: 100%; margin: 0 auto;">
+                <style>
+                    /* Screen: keep wide table usable */
+                    #payroll_print #payroll-deatil { font-size: 10px; }
+                    /* Print / PDF: hide edit actions */
+                    @media print {
+                        #payroll_print .no-print,
+                        #payroll_print .payroll-edit-col { display: none !important; }
+                    }
+                    /* Applied while generating PDF (html2pdf captures computed styles) */
+                    #payroll_print.pdf-generating .no-print,
+                    #payroll_print.pdf-generating .payroll-edit-col { display: none !important; }
+                    #payroll_print.pdf-generating .template-invoice {
+                        padding-left: 4px !important;
+                        padding-right: 4px !important;
+                        padding-bottom: 8px !important;
+                    }
+                    #payroll_print.pdf-generating .template-invoice > div.flex {
+                        margin-left: 0 !important;
+                        margin-right: 0 !important;
+                        justify-content: flex-start;
+                        align-items: center;
+                        gap: 12px;
+                    }
+                    #payroll_print.pdf-generating .template-invoice img,
+                    #payroll_print.pdf-generating .template-invoice .w-20 {
+                        width: 48px !important;
+                        height: 48px !important;
+                    }
+                    #payroll_print.pdf-generating .template-invoice address {
+                        padding-left: 0 !important;
+                        margin-top: 4px !important;
+                        white-space: normal !important;
+                        text-align: center !important;
+                    }
+                    #payroll_print.pdf-generating .template-invoice .flex.ml-16,
+                    #payroll_print.pdf-generating .template-invoice div.flex.ml-16 {
+                        margin-left: 0 !important;
+                        flex-wrap: wrap;
+                        justify-content: center !important;
+                        gap: 8px 16px !important;
+                    }
+                    #payroll_print.pdf-generating .template-classic p.hhh {
+                        font-size: 18px !important;
+                        white-space: normal !important;
+                    }
+                    #payroll_print.pdf-generating .template-classic address,
+                    #payroll_print.pdf-generating .template-classic p {
+                        white-space: normal !important;
+                    }
+                    #payroll_print.pdf-generating table {
+                        table-layout: fixed;
+                        width: 100% !important;
+                        font-size: 8px !important;
+                    }
+                    #payroll_print.pdf-generating th,
+                    #payroll_print.pdf-generating td {
+                        padding: 2px 3px !important;
+                        word-wrap: break-word;
+                        overflow-wrap: break-word;
+                    }
+                </style>
                 {% include 'components/Periodheader.html' %}
 
                 <div class="w-full overflow-x-auto table-responsive">
@@ -44,9 +109,10 @@
                                 </th>
                                 <th class="px-1 py-3">
                                     <div class="relative py-2 px-3 flex items-center justify-center bg-slate-200">
-                                        <span class="text-sm text-slate-600 uppercase">summarys</span>
+                                        <span class="text-sm text-slate-600 uppercase">summary</span>
                                     </div>
                                 </th>
+                                <th class="px-1 py-3 payroll-edit-col no-print"></th>
                             </tr>
                             <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50 px-4 border-b">
                                 <th class="border border-slate-300 px-1 py-1">SN</th>
@@ -66,7 +132,7 @@
                                 <th class="border border-slate-300 px-1 py-1">Other Deductions</th>
                                 <th class="border border-slate-300 px-1 py-1">Total Dues</th>
                                 <th class="border border-slate-300 px-1 py-1">Net Pay</th>
-                                <th class="border border-slate-300 px-1 py-1"></th>
+                                <th class="border border-slate-300 px-1 py-1 payroll-edit-col no-print">Edit</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y">
