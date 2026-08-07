@@ -313,9 +313,47 @@
             $('#stock_row_add').append('<tr id="row'+i+'"><td class="border border-slate-300 py-0 my-0 px-2 h-4 text-[10px]  ...">*</td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><select name="item[]" onchange="StockaddRow()" class="block w-full px-2 text-[10px] h-4 form-select focus:outline-none focus:shadow-outline-green text-slate-600"><option value="1">Select Item</option><option value="1">$5,000</option></select></td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="text" name="desc[]" id="desc" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td><td class="border border-slate-300 py-0 my-0 text-[11px] font-medium tracking-wide ..."><input type="text" name="qty[]" id="qty" class="block w-full px-2 h-4 text-[10px] focus:outline-none focus:shadow-outline-green text-slate-600 form-input"/></td><td class="border border-slate-300 py-0 my-0"><button  id="'+i+'" class="journal_remove_row flex justify-center items-center w-full h-3 px-2 py-1 text-[12px] font-semibold text-center text-gray-600 transition-colors duration-150 border border-transparent focus:outline-none focus:shadow-outline-slate"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" enable-background="new 0 0 64 64" viewBox="0 0 64 64" id="delete"><g transform="translate(232 228)"><path fill="#134563" d="M-207.5-205.1h3v24h-3zM-201.5-205.1h3v24h-3zM-195.5-205.1h3v24h-3zM-219.5-214.1h39v3h-39z"></path><path fill="#134563" d="M-192.6-212.6h-2.8v-3c0-.9-.7-1.6-1.6-1.6h-6c-.9 0-1.6.7-1.6 1.6v3h-2.8v-3c0-2.4 2-4.4 4.4-4.4h6c2.4 0 4.4 2 4.4 4.4v3"></path><path fill="#134563" d="M-191-172.1h-18c-2.4 0-4.5-2-4.7-4.4l-2.8-36 3-.2 2.8 36c.1.9.9 1.6 1.7 1.6h18c.9 0 1.7-.8 1.7-1.6l2.8-36 3 .2-2.8 36c-.2 2.5-2.3 4.4-4.7 4.4"></path></g></svg></button></td></tr>');
         
     };
-    $(document).on('click', '.stock_remove_row',function(){
-        var row_id = $(this).attr("id");
-        $('#row'+row_id+'').remove();
+    $(document).on('click', '.stock_remove_row', function (e) {
+        e.preventDefault();
+        var $row = $(this).closest('tr');
+        if (!$row.length) return;
+
+        var $select = $row.find('select').first();
+        var val = ($select.val() || '').toString();
+        var text = ($select.find('option:selected').text() || '').toString();
+        var isEmptyDefault =
+            val === '_ _Choose an Option_ _' ||
+            ((!val || val === '0' || val === '1') &&
+                (text.indexOf('Choose an Option') !== -1 || text.indexOf('Select Item') !== -1));
+
+        var $tbody = $row.closest('tbody');
+        var emptyCount = $tbody.find('tr').filter(function () {
+            var $s = $(this).find('select').first();
+            var v = ($s.val() || '').toString();
+            var t = ($s.find('option:selected').text() || '').toString();
+            return (
+                v === '_ _Choose an Option_ _' ||
+                ((!v || v === '0' || v === '1') &&
+                    (t.indexOf('Choose an Option') !== -1 || t.indexOf('Select Item') !== -1))
+            );
+        }).length;
+
+        // Only the last empty "Choose an Option" / "Select Item" row is protected
+        if (isEmptyDefault && emptyCount <= 1) {
+            if (typeof alertify !== 'undefined') {
+                alertify.alert('You cannot delete the default empty row.');
+            } else {
+                alert('You cannot delete the default empty row.');
+            }
+            return;
+        }
+
+        var row_id = $(this).attr('id');
+        if (row_id && $('#row' + row_id).length) {
+            $('#row' + row_id).remove();
+        } else {
+            $row.remove();
+        }
     });
 </script>
 

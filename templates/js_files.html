@@ -136,22 +136,37 @@
             inputField2.data("button-name");
             
             // cloning each row in the next line
+            // Mark the source row (often the first filled line) so it can be deleted too
+            const $sourceRow = closeTR;
+            if (!$sourceRow.attr('class') || $sourceRow.attr('class').indexOf('fordelete') === -1) {
+                const sourceId = generateID();
+                $sourceRow.addClass('fordelete' + sourceId);
+                $sourceRow.find('.stock_remove_W_W, .stock_remove_row').attr('id', 'delete_' + sourceId);
+            }
+
             const newRow = $('#stock_row_add tr:first').clone();
             // making the cloned input empty
             newRow.find('input').val('');
+            // Reset select to Choose an Option on the new empty row
+            newRow.find('select').each(function () {
+                this.selectedIndex = 0;
+            });
+            // Clear delete markers on the clone (it is the new default empty row)
+            newRow.removeClass(function (i, cls) {
+                return (cls.match(/(^|\s)fordelete\S+/g) || []).join(' ');
+            });
+            newRow.find('.stock_remove_W_W, .stock_remove_row').removeAttr('id');
 
             // adding the cloned to the table by ID
             $('#stock_row_add').append(newRow);
 
             // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                // creating a random ID for delete btn
+                // creating a random ID for delete btn on any future filled use
                 const uniqueId =  generateID();
 
                 // adding a class for the same table #stock_row_ad, using the generated ID
-                newRow.addClass('fordelete' + uniqueId);
-            
-                // creating an id for the delete btn using the generated ID 
-                newRow.find('.stock_remove_W_W').attr('id', 'delete_' + uniqueId);
+                // Keep empty placeholder without fordelete so only filled rows are tagged when selected
+                // newRow intentionally left without fordelete until it gets an item
             // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
@@ -274,20 +289,73 @@
     });
 
 
-    $(document).on('click', '.stock_remove_W_W', function(){
-        var button_id = $(this).attr("id");
-        var row_id = button_id.replace('delete_', '');
-        $('.fordelete'+row_id).remove();
-        // check for other valid...
-            var errortag = $('.your_label_class').text()
-            var [check_if_store_selection_is_ok, check_if_item_selection_is_ok] = hiddenInput()
-            console.log(errortag, check_if_store_selection_is_ok.val(), check_if_item_selection_is_ok.val(),  'errortag.text()errortag.text()')
-            if(errortag == ''){
-                if(check_if_store_selection_is_ok.val() == 'ok'){
-                    enabledbutton()
-                }
-            }
+    function isTransferEmptyChoiceRow($row) {
+        var $select = $row.find('select.select-dropdown, select[name*="item_code"], select[name*="item"]').first();
+        if (!$select.length) return false;
+        var val = ($select.val() || '').toString();
+        var text = ($select.find('option:selected').text() || '').toString();
+        // Default placeholder only — real items must always be deletable
+        if (val === '_ _Choose an Option_ _') return true;
+        if (text.indexOf('Choose an Option') !== -1 || text.indexOf('Select Item') !== -1) {
+            // value "1" or empty with placeholder label
+            if (!val || val === '1' || val === '0' || val.indexOf('_ _') === 0) return true;
+        }
+        return false;
+    }
 
+    $(document).on('click', '.stock_remove_W_W, .stock_remove_row', function(e){
+        e.preventDefault();
+        var $btn = $(this);
+        var $row = $btn.closest('tr');
+        if (!$row.length) return;
+
+        var $tbody = $row.closest('tbody');
+        var isEmptyDefault = isTransferEmptyChoiceRow($row);
+        var emptyDefaults = $tbody.find('tr').filter(function () {
+            return isTransferEmptyChoiceRow($(this));
+        });
+
+        // Only the empty "Choose an Option" placeholder is protected (keep at least one)
+        if (isEmptyDefault && emptyDefaults.length <= 1) {
+            if (typeof alertify !== 'undefined') {
+                alertify.defaults.glossary.title = "Alert";
+                alertify.alert("You cannot delete the default empty row.");
+            } else {
+                alert("You cannot delete the default empty row.");
+            }
+            return;
+        }
+
+        // Prefer class-based remove for cloned rows; always fall back to closest tr
+        var button_id = $btn.attr("id");
+        if (button_id && button_id.indexOf('delete_') === 0) {
+            var row_id = button_id.replace('delete_', '');
+            var $byClass = $('.fordelete' + row_id);
+            if ($byClass.length) {
+                $byClass.remove();
+            } else {
+                $row.remove();
+            }
+        } else {
+            $row.remove();
+        }
+
+        // If no empty placeholder remains, clone a fresh Choose-an-Option row
+        var stillHasEmpty = $tbody.find('tr').filter(function () {
+            return isTransferEmptyChoiceRow($(this));
+        }).length > 0;
+        if (!stillHasEmpty && $tbody.find('tr').length === 0) {
+            // Edge: nothing left — user must refresh; avoid complex re-clone of template
+        }
+
+        // check for other valid...
+        var errortag = $('.your_label_class').text();
+        var [check_if_store_selection_is_ok, check_if_item_selection_is_ok] = hiddenInput();
+        if (errortag == '') {
+            if (check_if_store_selection_is_ok.val() == 'ok') {
+                enabledbutton();
+            }
+        }
     });
 
 
