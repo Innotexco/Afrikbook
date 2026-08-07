@@ -223,8 +223,25 @@ def getStockAdjustmentData(request, model, db):
          
 
 
-def getStockAdjustmentDate(request, model, db):
+def getStockAdjustmentDate(request, model, db_or_context=None, db=None):
+    """
+    Filter stock adjustment log rows.
+
+    Call styles supported:
+      getStockAdjustmentDate(request, model, db)
+      getStockAdjustmentDate(request, model, context, db)  # context ignored (legacy)
+    """
+    # Resolve db: 3-arg form passes db as 3rd; 4-arg form passes context then db
+    if db is None:
+        db = db_or_context
+    # If someone swapped args and 3rd is a dict (context), 4th must be db
+    if isinstance(db, dict) and db_or_context is not None and not isinstance(db_or_context, dict):
+        db = db_or_context
+
     if request.method != 'GET':
+        return None
+
+    if not db:
         return None
 
     getfromdate  = request.GET.get('fromdate', '').strip()
