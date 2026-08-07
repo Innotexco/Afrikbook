@@ -537,7 +537,8 @@ def StockAdjustment(request):
     updateStockAdjustmentData(request, CreateStockInLog, CreateStockIn, 'warehouse', context, db)
 
     # ── Date/filter search 
-    stockadjustmentdata = getStockAdjustmentDate(request, CreateStockInLog, context, db)
+    # Signature: getStockAdjustmentDate(request, model, db) — do not pass context
+    stockadjustmentdata = getStockAdjustmentDate(request, CreateStockInLog, db)
     if stockadjustmentdata:
         return JsonResponse({'data': stockadjustmentdata})
 
