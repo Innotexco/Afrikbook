@@ -77,23 +77,30 @@
             const inputField5 = closeTR.find('#wholesale_price');
             inputField2.data("button-name");
             
+            // Tag the filled source row so it can always be deleted
+            if (!closeTR.attr('class') || closeTR.attr('class').indexOf('fordelete') === -1) {
+                var sourceId = generateID();
+                closeTR.addClass('fordelete' + sourceId);
+                closeTR.find('.stock_remove_W_W, .stock_remove_row').attr('id', 'delete_' + sourceId);
+            }
+
             // cloning each row in the next line
             const newRow = $('#stock_row_add tr:first').clone();
             // making the cloned input empty
             newRow.find('input').val('');
+            newRow.find('select').each(function () { this.selectedIndex = 0; });
+            newRow.removeClass(function (i, cls) {
+                return (cls.match(/(^|\s)fordelete\S+/g) || []).join(' ');
+            });
+            newRow.find('.stock_remove_W_W, .stock_remove_row').removeAttr('id');
 
             // adding the cloned to the table by ID
             $('#stock_row_add').append(newRow);
 
+            // Empty placeholder row is left without fordelete id (protected only when last empty)
             // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                // creating a random ID for delete btn
+                // creating a random ID for qty label refs
                 const uniqueId =  generateID();
-
-                // adding a class for the same table #stock_row_ad, using the generated ID
-                newRow.addClass('fordelete' + uniqueId);
-            
-                // creating an id for the delete btn using the generated ID 
-                newRow.find('.stock_remove_W_W').attr('id', 'delete_' + uniqueId);
             // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                 // giving attr to class for code refrence
@@ -196,15 +203,56 @@
     });
 
 
-    $(document).on('click', '.stock_remove_W_W', function(){
-        var button_id = $(this).attr("id");
-        var row_id = button_id.replace('delete_', '');
-        $('.fordelete'+row_id).remove();
-        // check for other auth
-            var errortag = $('.your_label_class').text()
-            if(errortag == ''){
-                enabledbutton()
+    $(document).on('click', '.stock_remove_W_W, .stock_remove_row', function(e){
+        e.preventDefault();
+        var $btn = $(this);
+        var $row = $btn.closest('tr');
+        if (!$row.length) return;
+
+        var $select = $row.find('select').first();
+        var val = ($select.val() || '').toString();
+        var text = ($select.find('option:selected').text() || '').toString();
+        var isEmptyDefault =
+            val === '_ _Choose an Option_ _' ||
+            ((!val || val === '0' || val === '1') &&
+                (text.indexOf('Choose an Option') !== -1 || text.indexOf('Select Item') !== -1));
+
+        var $tbody = $row.closest('tbody');
+        var emptyCount = $tbody.find('tr').filter(function () {
+            var $s = $(this).find('select').first();
+            var v = ($s.val() || '').toString();
+            var t = ($s.find('option:selected').text() || '').toString();
+            return (
+                v === '_ _Choose an Option_ _' ||
+                ((!v || v === '0' || v === '1') &&
+                    (t.indexOf('Choose an Option') !== -1 || t.indexOf('Select Item') !== -1))
+            );
+        }).length;
+
+        // Only block deleting the last empty "Choose an Option" placeholder
+        if (isEmptyDefault && emptyCount <= 1) {
+            if (typeof alertify !== 'undefined') {
+                alertify.alert('You cannot delete the default empty row.');
+            } else {
+                alert('You cannot delete the default empty row.');
             }
+            return;
+        }
+
+        var button_id = $btn.attr('id');
+        if (button_id && button_id.indexOf('delete_') === 0) {
+            var row_id = button_id.replace('delete_', '');
+            var $byClass = $('.fordelete' + row_id);
+            if ($byClass.length) $byClass.remove();
+            else $row.remove();
+        } else {
+            $row.remove();
+        }
+
+        var errortag = $('.your_label_class').text();
+        if (errortag == '' && typeof enabledbutton === 'function') {
+            enabledbutton();
+        }
     });
 
 
