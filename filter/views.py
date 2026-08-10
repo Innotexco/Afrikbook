@@ -19,6 +19,7 @@ def sales_report_filter_by_date(request):
     invoice_state = request.GET.get('invoice_state')
     customer = request.GET.get('customer')
     item = request.GET.get('item')
+    payment_method = request.GET.get('payment_method')
     
     
     # Combine all filter conditions with AND operator
@@ -41,11 +42,21 @@ def sales_report_filter_by_date(request):
     if item:
         filter_conditions &= Q(item_name=item)
 
+    if payment_method:
+        filter_conditions &= Q(payment_method=payment_method)
+
     data = []
+    sales_total = 0
+    qty_total = 0
     if filter_conditions:
       
-        # Perform filtering based on the date range
-        filtered_data = customer_invoice.objects.using(db).filter(filter_conditions).values()
+        # Perform filtering based on the date range; sort by payment method then date
+        filtered_data = (
+            customer_invoice.objects.using(db)
+            .filter(filter_conditions)
+            .order_by('payment_method', 'invoice_date', 'invoiceID')
+            .values()
+        )
         
         sales_total = customer_invoice.objects.using(db).filter(filter_conditions).values("invoiceID").distinct().aggregate(total=Sum("amount_expected"))['total']
         qty_total = customer_invoice.objects.using(db).filter(filter_conditions).aggregate(total_qty=Sum("qty"))['total_qty']
