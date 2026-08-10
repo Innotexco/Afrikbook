@@ -421,12 +421,11 @@ def add_new_sales(request, db):
                     'amount_expected':     amount_expected,
                     'cancellation_status': 0,
                     'status':              status,
-                    'payment_method':      payment_method or '',
-                    'Transfer':            1 if payment_method and 'Transfer' in payment_method else 0,
-                    'POS':                 1 if payment_method and 'POS' in payment_method else 0,
-                    'Cash':                1 if payment_method and 'Cash' in payment_method else 0,
-                    'Customer_account':    1 if payment_method == 'Customer Balance' else 0,
-                    'Cheque':              1 if payment_method == 'Cheque' else 0,
+                    'Transfer':            0,
+                    'POS':                 0,
+                    'Cash':                0,
+                    'Customer_account':    0,
+                    'Cheque':              0,
                     'invoice_state':       invoice_state,
                     'purchaseP':           clean_purchaseP,
                     'total_purchaseP':     total_purchaseP,
@@ -439,7 +438,7 @@ def add_new_sales(request, db):
                     "description":    Gdescription,
                     "type":           "Debit",
                     "amount":         amount_paid,
-                    "payment_method": payment_method or "Cash",
+                    "payment_method": "Transfer",
                     "account_posted": "",
                     "invoice_status": "Unused",
                 })
@@ -462,7 +461,6 @@ def add_new_sales(request, db):
                     try:
                         form           = cus_form.save(commit=False)
                         form.Userlogin = request.user.username
-                        form.payment_method = payment_method or form.payment_method or ''
                         if payment_account_used:                         
                             form.payment_account = payment_account_used   
                         form.save(using=db)
