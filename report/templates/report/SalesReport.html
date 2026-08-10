@@ -210,14 +210,7 @@
         
                     <label class="flex justify-between gap-6 text-sm">
                         <span class="text-gray-700 ">Total Quantity:</span>
-                        <span class="text-gray-700 ">{{qty_total}}</span>
-                        <!-- <input 
-                            class="block w-full px-2 mt-1 text-sm bg-slate-100  border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                            placeholder=""
-                            disabled
-                            value="{{qty_total}}"
-                            id="qty_total"
-                        /> -->
+                        <span class="text-gray-700 " id="qty_total">{{qty_total}}</span>
                     </label>
         
                     
@@ -269,33 +262,34 @@
                     data: datas,
                     success: function(response) {
                         if(response.serializer_data && response.serializer_data.length > 0){
-                            // Handle the response data
-                        
                             $(".sales_total").html(response.sales_total);
                             $("#qty_total").html(response.qty_total);
                             const table = $('#example2 tbody')
                             table.empty()
                             let num = 0;
                             response.serializer_data.forEach(item => {
-                                num++ 
-                                
-        
+                                num++
+                                const amount = parseFloat(item.amount_expected || item.amount_paid || 0) || 0;
+                                const payMethod = item.payment_method || '';
+                                const salesPerson = item.Userlogin || '';
+                                const safeInvoice = String(item.invoiceID || '').replace(/'/g, "\\'");
+                                const safeCus = String(item.cusID || '').replace(/'/g, "\\'");
+
                                 const row = $('<tr id="row">').append(
                                     $('<td class="text-[10px]">').html(num),
-                                    $('<td class="text-[10px]">').text(item.cusID),
-                                    $('<td class="text-[10px]">').text(item.customer_name),
-                                    $('<td class="text-[10px]">').text(item.invoice_date),
-                                    $('<td class="text-[10px]">').text(item.invoiceID),
-                                    $('<td class="text-[10px]">').text(item.Gdescription),
-                                    $('<td class="text-[10px]">').text(parseFloat(item.amount_expected)),
-                                    $('<td class="text-[10px]">').text(item.customer_name),
-                                    $('<td class="text-[10px]">').text(item.payment_method),
-                                    $('<td class="text-[10px]">').append('<a onclick="showModal(\'' + item.invoiceID + '\', \'' + item.cusID + '\')" class="flex items-center justify-center text-blue-500 border px-3 bg-gray-50 cursor-pointer"  aria-label="Edit">View</a>'),
-                                    
-                                
+                                    $('<td class="text-[10px]">').text(item.cusID || ''),
+                                    $('<td class="text-[10px]">').text(item.customer_name || ''),
+                                    $('<td class="text-[10px]">').text(item.invoice_date || ''),
+                                    $('<td class="text-[10px]">').text(item.invoiceID || ''),
+                                    $('<td class="text-[10px]">').text(item.Gdescription || ''),
+                                    $('<td class="text-[10px]">').text(amount),
+                                    $('<td class="text-[10px]">').text(salesPerson),
+                                    $('<td class="text-[10px]">').text(payMethod),
+                                    $('<td class="text-[10px]">').append(
+                                        '<a onclick="showModal(\'' + safeInvoice + '\', \'' + safeCus + '\')" class="flex items-center justify-center text-blue-500 border px-3 bg-gray-50 cursor-pointer" aria-label="View">View</a>'
+                                    ),
                                 );
                                 table.append(row);
-                                
                                 $("#no-data").css('display', 'none');
                             });
                         }else{
@@ -303,8 +297,7 @@
                             $(".sales_total").text(0);
                             $("#qty_total").text(0);
                             $("#no-data").css('display', 'block');
-                            alertify.error("No Return data between selected category")
-                            //alertify.error("Select start_date and end_date")
+                            alertify.error("No sales data for the selected filters")
                         }
                     },
                     error: function(error) {
