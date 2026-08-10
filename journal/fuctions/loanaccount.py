@@ -14,6 +14,7 @@ from django.core.exceptions import ObjectDoesNotExist
 import decimal
 import uuid
 
+
 def create_new_loan(request, db):
     try:
         #Safely get POST data

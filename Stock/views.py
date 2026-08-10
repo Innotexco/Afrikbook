@@ -536,8 +536,6 @@ def StockAdjustment(request):
     # ── Update submitted
     updateStockAdjustmentData(request, CreateStockInLog, CreateStockIn, 'warehouse', context, db)
 
-    # ── Date/filter search 
-    # Signature: getStockAdjustmentDate(request, model, db) — do not pass context
     stockadjustmentdata = getStockAdjustmentDate(request, CreateStockInLog, db)
     if stockadjustmentdata:
         return JsonResponse({'data': stockadjustmentdata})
@@ -554,7 +552,6 @@ def StockAdjustment(request):
     if is_ajax:
         return JsonResponse({'data': []})
 
-    #  Normal page load: render the template 
     return render(request, 'StockAdjustment_warehouse.html', context)
 # ********************************************************************************************************
 

@@ -26,7 +26,7 @@
 
     <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
         {% comment %} <form method="get"> {% endcomment %}
-            <div class="grid gap-6 md:grid-cols-6 xl:grid-cols-4 mb-3">
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mb-3">
 
                 <label class="block text-sm">
                     <span class="text-gray-700">FROM</span>
@@ -50,12 +50,6 @@
                     />
                 </label>
 
-               
-               
-                <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="search2" onclick="Filter()">
-                    Search
-                </button> 
-
                 <label for="">
                     <span class="text-gray-700">By Invoice state</span>
                     <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="invoice_state" required>
@@ -65,6 +59,18 @@
                            <!-- <option>Pending</option>    -->
                            <option>Cancelled</option>   
                         
+                    </select>
+                </label>
+
+                <label for="">
+                    <span class="text-gray-700">By Payment Method</span>
+                    <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="payment_method">
+                        <option selected value="">All payment methods</option>
+                        <option>Cash</option>
+                        <option>Customer Balance</option>
+                        <option>Transfer</option>
+                        <option>Cheque</option>
+                        <option>Transfer and Cash</option>
                     </select>
                 </label>
 
@@ -101,7 +107,11 @@
                         {% endfor %}
                     </select>
                 </label>
-            </div> 
+
+                <button type="button" class="block w-full h-8 px-4 py-1 mt-6 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="search2" onclick="Filter()">
+                    Search
+                </button>
+            </div>
 
         {% comment %} </form> {% endcomment %}
 
@@ -249,9 +259,10 @@
                 invoice_state: $('#invoice_state').val(),
                 customer: $('#customer_id').val(),
                 item: $('#item').val(),
+                payment_method: $('#payment_method').val(),
             }
             //console.log(datas)
-            if(from || to || datas.invoice || datas.invoice_state || datas.customer || datas.item){
+            if(from || to || datas.invoice || datas.invoice_state || datas.customer || datas.item || datas.payment_method){
                 $.ajax({
                     url: '{% url "filter:sales-report-date" %}',
                     method: 'GET',
