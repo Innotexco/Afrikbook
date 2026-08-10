@@ -776,6 +776,7 @@ def OutletStockinReport(request):
     ForOutletStockinReport(request, context, db)
     return render(request, 'report/OutletStockinReport.html', context)
 
+
 @login_required(login_url='/')
 @urls_name(name="Sales Report")
 def SalesReport(request):
