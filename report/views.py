@@ -784,25 +784,20 @@ def SalesReport(request):
     company = company_table.objects.get(id=request.user.company_id_id)
     item_name = Item.objects.using(db).values("item_name")
     customer = customer_table.objects.using(db)
-    # Invoice dropdown: active sales only (no returned / cancelled)
-    sales = (
-        customer_invoice.objects.using(db)
-        .exclude(invoiceID__icontains='returned')
-        .exclude(invoiceID__icontains='cancelled')
-        .exclude(invoice_state='Cancelled')
-        .exclude(cancellation_status__in=['1', 1])
-    )
+    sales = customer_invoice.objects.using(db).all().exclude(invoiceID__icontains=str('returned')) #.distinct()
     unique_invoices = {sale.invoiceID: sale for sale in sales}.values()
     try:
        note = company_details.objects.get(type='Invoice').detail
     except company_details.DoesNotExist:
         note=""
 
+    sales_total = customer_invoice.objects.using(db).values("invoiceID").distinct().count()
+    qty_total = customer_invoice.objects.using(db).aggregate(total_qty=Sum("qty"))['total_qty']
+
     context = {
         'sales':unique_invoices,
         'total_sales': 0.00,
-        'sales_total': 0.00,
-        'qty_total': 0.00,
+        'qty_total':0.00,
         'item_name':item_name,
         'customer':customer,
         'company': company,

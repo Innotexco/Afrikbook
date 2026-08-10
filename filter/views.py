@@ -20,26 +20,21 @@ def sales_report_filter_by_date(request):
     customer = request.GET.get('customer')
     item = request.GET.get('item')
     payment_method = request.GET.get('payment_method')
-
-    # Ignore placeholder values from disabled select options
-    if invoice_state in (None, '', 'Select state'):
-        invoice_state = None
-    if invoice in (None, '', 'Select Invoice'):
-        invoice = None
-    if customer in (None, '', 'Select Customer'):
-        customer = None
-    if item in (None, '', 'Select Item'):
-        item = None
-    if payment_method in (None, '', 'All payment methods'):
-        payment_method = None
-
+    
+    
+    # Combine all filter conditions with AND operator
     filter_conditions = Q()
 
     if start_date_str and end_date_str:
+        
+
         filter_conditions &= Q(invoice_date__range=(convertDate(start_date_str, end_date_str)))
 
     if invoice:
         filter_conditions &= Q(invoiceID=invoice)
+
+    if invoice_state:
+        filter_conditions &= Q(invoice_state=invoice_state)
 
     if customer:
         filter_conditions &= Q(cusID=customer)
@@ -50,80 +45,35 @@ def sales_report_filter_by_date(request):
     if payment_method:
         filter_conditions &= Q(payment_method=payment_method)
 
-    # Cancelled / returned invoices should not appear in normal sales totals.
-    # Only include them when the user explicitly filters by Cancelled state.
-    if invoice_state == 'Cancelled':
-        filter_conditions &= (
-            Q(invoice_state='Cancelled')
-            | Q(cancellation_status__in=['1', 1, '1.0'])
-            | Q(invoiceID__icontains='returned')
-            | Q(invoiceID__icontains='cancelled')
-        )
-    else:
-        filter_conditions &= ~Q(invoice_state='Cancelled')
-        filter_conditions &= ~Q(cancellation_status__in=['1', 1, '1.0'])
-        filter_conditions &= ~Q(invoiceID__icontains='returned')
-        filter_conditions &= ~Q(invoiceID__icontains='cancelled')
-        if invoice_state:
-            filter_conditions &= Q(invoice_state=invoice_state)
-
     data = []
     sales_total = 0
     qty_total = 0
     if filter_conditions:
-        qs = customer_invoice.objects.using(db).filter(filter_conditions)
-
-        filtered_data = qs.order_by('payment_method', 'invoice_date', 'invoiceID').values(
-            'cusID',
-            'customer_name',
-            'invoice_date',
-            'invoiceID',
-            'Gdescription',
-            'amount_expected',
-            'amount_paid',
-            'qty',
-            'Userlogin',
-            'payment_method',
-            'invoice_state',
-            'cancellation_status',
+      
+        # Perform filtering based on the date range; sort by payment method then date
+        filtered_data = (
+            customer_invoice.objects.using(db)
+            .filter(filter_conditions)
+            .order_by('payment_method', 'invoice_date', 'invoiceID')
+            .values()
         )
+        
+        sales_total = customer_invoice.objects.using(db).filter(filter_conditions).values("invoiceID").distinct().aggregate(total=Sum("amount_expected"))['total']
+        qty_total = customer_invoice.objects.using(db).filter(filter_conditions).aggregate(total_qty=Sum("qty"))['total_qty']
 
-        # Sum qty across all lines; for sales total use one amount per invoice
-        qty_total = qs.aggregate(total_qty=Sum('qty'))['total_qty'] or 0
-        invoice_amounts = (
-            qs.values('invoiceID')
-            .annotate(inv_amount=Sum('amount'))
-            .aggregate(total=Sum('inv_amount'))
-        )
-        sales_total = invoice_amounts['total'] or 0
+        for item in filtered_data:
+            if item['invoiceID'] not in [d['invoiceID'] for d in data]:
+                data.append(item)
+       
 
-        seen = set()
-        for row in filtered_data:
-            inv = row.get('invoiceID')
-            if inv in seen:
-                continue
-            seen.add(inv)
-            # Ensure JSON-friendly values
-            inv_date = row.get('invoice_date')
-            data.append({
-                'cusID': row.get('cusID') or '',
-                'customer_name': row.get('customer_name') or '',
-                'invoice_date': inv_date.strftime('%Y-%m-%d %H:%M:%S') if inv_date else '',
-                'invoiceID': inv or '',
-                'Gdescription': row.get('Gdescription') or '',
-                'amount_expected': str(row.get('amount_expected') or 0),
-                'amount_paid': str(row.get('amount_paid') or 0),
-                'qty': str(row.get('qty') or 0),
-                'Userlogin': row.get('Userlogin') or '',
-                'payment_method': row.get('payment_method') or '',
-                'invoice_state': row.get('invoice_state') or '',
-            })
+    serializer_data = list(data)
+    data = {
+        'serializer_data': serializer_data,
+        'sales_total':sales_total,
+        'qty_total':qty_total
+    }
 
-    return JsonResponse({
-        'serializer_data': data,
-        'sales_total': str(sales_total) if sales_total is not None else '0',
-        'qty_total': str(qty_total) if qty_total is not None else '0',
-    })
+    return JsonResponse(data)
 
 
     
