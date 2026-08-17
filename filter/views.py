@@ -20,14 +20,23 @@ def sales_report_filter_by_date(request):
     customer = request.GET.get('customer')
     item = request.GET.get('item')
     payment_method = request.GET.get('payment_method')
-    
-    
+
+    # Ignore placeholder values from disabled select options
+    if invoice_state in (None, '', 'Select state'):
+        invoice_state = None
+    if invoice in (None, '', 'Select Invoice'):
+        invoice = None
+    if customer in (None, '', 'Select Customer'):
+        customer = None
+    if item in (None, '', 'Select Item'):
+        item = None
+    if payment_method in (None, '', 'All payment methods'):
+        payment_method = None
+
     # Combine all filter conditions with AND operator
     filter_conditions = Q()
 
     if start_date_str and end_date_str:
-        
-
         filter_conditions &= Q(invoice_date__range=(convertDate(start_date_str, end_date_str)))
 
     if invoice:
@@ -49,31 +58,87 @@ def sales_report_filter_by_date(request):
     sales_total = 0
     qty_total = 0
     if filter_conditions:
-      
-        # Perform filtering based on the date range; sort by payment method then date
-        filtered_data = (
-            customer_invoice.objects.using(db)
-            .filter(filter_conditions)
-            .order_by('payment_method', 'invoice_date', 'invoiceID')
-            .values()
+        qs = customer_invoice.objects.using(db).filter(filter_conditions)
+
+        # Sort by payment method then date
+        filtered_data = qs.order_by('payment_method', 'invoice_date', 'invoiceID').values(
+            'cusID',
+            'customer_name',
+            'invoice_date',
+            'invoiceID',
+            'Gdescription',
+            'amount_expected',
+            'amount_paid',
+            'qty',
+            'Userlogin',
+            'payment_method',
+            'Cash',
+            'Transfer',
+            'Cheque',
+            'POS',
+            'Customer_account',
         )
-        
-        sales_total = customer_invoice.objects.using(db).filter(filter_conditions).values("invoiceID").distinct().aggregate(total=Sum("amount_expected"))['total']
-        qty_total = customer_invoice.objects.using(db).filter(filter_conditions).aggregate(total_qty=Sum("qty"))['total_qty']
 
-        for item in filtered_data:
-            if item['invoiceID'] not in [d['invoiceID'] for d in data]:
-                data.append(item)
-       
+        sales_total = qs.values('invoiceID').distinct().aggregate(total=Sum('amount_expected'))['total'] or 0
+        qty_total = qs.aggregate(total_qty=Sum('qty'))['total_qty'] or 0
 
-    serializer_data = list(data)
-    data = {
-        'serializer_data': serializer_data,
-        'sales_total':sales_total,
-        'qty_total':qty_total
-    }
+        # Fallback payment methods from receivable (for older invoices with blank payment_method)
+        invoice_ids = list(qs.values_list('invoiceID', flat=True).distinct())
+        pm_from_recv = {}
+        if invoice_ids:
+            for row in receivable.objects.using(db).filter(token_id__in=invoice_ids).exclude(
+                payment_method__isnull=True
+            ).exclude(payment_method='').values('token_id', 'payment_method'):
+                if row['token_id'] and row['token_id'] not in pm_from_recv:
+                    pm_from_recv[row['token_id']] = row['payment_method']
 
-    return JsonResponse(data)
+        def resolve_payment_method(row):
+            pm = (row.get('payment_method') or '').strip()
+            if pm:
+                return pm
+            inv = row.get('invoiceID')
+            if inv and inv in pm_from_recv:
+                return pm_from_recv[inv]
+            # Flag columns used by older save paths
+            if str(row.get('Cash') or '0') not in ('0', '', 'None') and str(row.get('Transfer') or '0') not in ('0', '', 'None'):
+                return 'Transfer and Cash'
+            if str(row.get('Transfer') or '0') not in ('0', '', 'None'):
+                return 'Transfer'
+            if str(row.get('Cash') or '0') not in ('0', '', 'None'):
+                return 'Cash'
+            if str(row.get('Cheque') or '0') not in ('0', '', 'None'):
+                return 'Cheque'
+            if str(row.get('POS') or '0') not in ('0', '', 'None'):
+                return 'POS'
+            if str(row.get('Customer_account') or '0') not in ('0', '', 'None'):
+                return 'Customer Balance'
+            return ''
+
+        seen = set()
+        for row in filtered_data:
+            inv = row.get('invoiceID')
+            if inv in seen:
+                continue
+            seen.add(inv)
+            inv_date = row.get('invoice_date')
+            data.append({
+                'cusID': row.get('cusID') or '',
+                'customer_name': row.get('customer_name') or '',
+                'invoice_date': inv_date.strftime('%Y-%m-%d %H:%M:%S') if inv_date else '',
+                'invoiceID': inv or '',
+                'Gdescription': row.get('Gdescription') or '',
+                'amount_expected': str(row.get('amount_expected') or 0),
+                'amount_paid': str(row.get('amount_paid') or 0),
+                'qty': str(row.get('qty') or 0),
+                'Userlogin': row.get('Userlogin') or '',
+                'payment_method': resolve_payment_method(row),
+            })
+
+    return JsonResponse({
+        'serializer_data': data,
+        'sales_total': str(sales_total) if sales_total is not None else '0',
+        'qty_total': str(qty_total) if qty_total is not None else '0',
+    })
 
 
     
