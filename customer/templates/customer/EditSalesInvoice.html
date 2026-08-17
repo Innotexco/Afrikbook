@@ -52,37 +52,51 @@
             <label class="block text-sm">
                 <span class="text-gray-600 text-xs font-medium">Payment Method</span>
 
-                <select name="source"
+                <select name="payment_method"
                         class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none text-slate-600 form-select">
 
                     <option value="Cash"
-                        {% if invoices.payment_method == 'Cash' %}selected{% endif %}>
+                        {% if first.payment_method == 'Cash' %}selected{% endif %}>
                         Cash
                     </option>
 
-                    <option value="POS"
-                        {% if invoices.payment_method == 'Customer Balance' %}selected{% endif %}>
+                    <option value="Customer Balance"
+                        {% if first.payment_method == 'Customer Balance' %}selected{% endif %}>
                         Customer Balance
                     </option>
 
                     <option value="Transfer"
-                        {% if invoices.payment_method == 'Transfer' %}selected{% endif %}>
+                        {% if first.payment_method == 'Transfer' %}selected{% endif %}>
                         Transfer
                     </option>
 
-                    <option value="Bank Payment"
-                        {% if invoices.payment_method == 'Cheque' %}selected{% endif %}>
+                    <option value="Cheque"
+                        {% if first.payment_method == 'Cheque' %}selected{% endif %}>
                         Cheque
                     </option>
 
-                    <option value="Bank Payment"
-                        {% if invoices.payment_method == 'Transfer and Cash' %}selected{% endif %}>
+                    <option value="Transfer and Cash"
+                        {% if first.payment_method == 'Transfer and Cash' %}selected{% endif %}>
                         Transfer and Cash
                     </option>
 
-
                 </select>
             </label>
+
+            <div class="block text-sm">
+                <span class="text-gray-600 text-xs font-medium">Payment status (preserved on save)</span>
+                <p class="mt-1 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-md px-2 py-2">
+                    Paid: <b>{{ first.amount_paid|floatformat:2|intcomma }}</b>
+                    &nbsp;/&nbsp; Expected: <b>{{ first.amount_expected|floatformat:2|intcomma }}</b>
+                    {% if first.amount_paid == 0 %}
+                        <span class="ml-2 text-orange-600 font-medium">(Credit — unpaid)</span>
+                    {% elif first.amount_paid < first.amount_expected %}
+                        <span class="ml-2 text-orange-600 font-medium">(Part payment)</span>
+                    {% else %}
+                        <span class="ml-2 text-green-600 font-medium">(Fully paid)</span>
+                    {% endif %}
+                </p>
+            </div>
 
             <label class="block text-sm">
                 <span class="text-gray-600 text-xs font-medium">Invoice Date</span>
