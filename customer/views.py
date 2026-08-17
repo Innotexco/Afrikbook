@@ -548,11 +548,8 @@ def EditSalesInvoice(request, invoice_id):
                         messages.error(request, f"Item {code} not found — skipped")
                         continue
 
-                # Compute total
-                grand_total = sum(float(a) for a in amount_list)
-                new_total = decimal.Decimal(str(round(grand_total, 2)))
-                # Keep what the customer already paid; never mark unpaid/part-paid as full
-                preserved_paid = min(original_paid, new_total) if new_total > 0 else decimal.Decimal('0.00')
+                # Line subtotal (ex-VAT) — same as New Sales #sub-total
+                subtotal = decimal.Decimal(str(round(sum(float(a) for a in amount_list), 2)))
 
                 # Resolve customer from selected PK (or original invoice customer).
                 # Always use live name from customer master — never the old invoice snapshot.
@@ -581,6 +578,32 @@ def EditSalesInvoice(request, invoice_id):
                 if preserved_state not in ('Supplied', 'Pending', 'Cancelled'):
                     preserved_state = first.invoice_state or 'Supplied'
 
+                # VAT checkbox posts only when checked (pre-checked if invoice already had VAT).
+                # Match New Sales: total = subtotal + VAT so amount_expected includes VAT.
+                apply_vat = request.POST.get('include_vat') in ('on', '1', 'true', 'True')
+                posted_vat = request.POST.get('vat', '').strip()
+                if apply_vat and subtotal > 0:
+                    try:
+                        new_vat = decimal.Decimal(str(posted_vat).replace(',', '')) if posted_vat else decimal.Decimal('0')
+                        if new_vat <= 0:
+                            new_vat = (subtotal * decimal.Decimal('0.075')).quantize(
+                                decimal.Decimal('0.01'), rounding=decimal.ROUND_HALF_UP
+                            )
+                    except Exception:
+                        new_vat = (subtotal * decimal.Decimal('0.075')).quantize(
+                            decimal.Decimal('0.01'), rounding=decimal.ROUND_HALF_UP
+                        )
+                else:
+                    new_vat = decimal.Decimal('0.00')
+
+                total_with_vat = subtotal + new_vat
+                # Keep what the customer already paid (compare against grand total incl. VAT)
+                preserved_paid = (
+                    min(original_paid, total_with_vat)
+                    if total_with_vat > 0
+                    else decimal.Decimal('0.00')
+                )
+
                 # Patch POST so add_new_sales reads the right values
                 request.POST['invoiceID']      = invoice_id
                 request.POST['cusID']          = str(resolved_customer.id)
@@ -599,26 +622,9 @@ def EditSalesInvoice(request, invoice_id):
                     or first.payment_method
                     or 'Cash'
                 )
-                # VAT checkbox posts only when checked (pre-checked if invoice already had VAT).
-                # Amount is recalculated at 7.5% of new subtotal (same as New Sales).
-                apply_vat = request.POST.get('include_vat') in ('on', '1', 'true', 'True')
-                posted_vat = request.POST.get('vat', '').strip()
-                if apply_vat and new_total > 0:
-                    try:
-                        new_vat = decimal.Decimal(str(posted_vat).replace(',', '')) if posted_vat else decimal.Decimal('0')
-                        if new_vat <= 0:
-                            new_vat = (new_total * decimal.Decimal('0.075')).quantize(
-                                decimal.Decimal('0.01'), rounding=decimal.ROUND_HALF_UP
-                            )
-                    except Exception:
-                        new_vat = (new_total * decimal.Decimal('0.075')).quantize(
-                            decimal.Decimal('0.01'), rounding=decimal.ROUND_HALF_UP
-                        )
-                else:
-                    new_vat = decimal.Decimal('0.00')
-
-                request.POST['sub-total']      = str(grand_total)
-                request.POST['total']          = str(grand_total)
+                # Same as New Sales grid: sub-total = lines, total = lines + VAT
+                request.POST['sub-total']      = str(subtotal)
+                request.POST['total']          = str(total_with_vat)
                 request.POST['vat']            = str(new_vat)
                 request.POST.setlist('item[]',      item_list)
                 request.POST.setlist('qty[]',       qty_list)
@@ -636,7 +642,7 @@ def EditSalesInvoice(request, invoice_id):
                 request.POST.pop('part_payment_amount', None)
                 if preserved_paid <= 0:
                     request.POST['credit_sales'] = 'on'
-                elif preserved_paid < new_total:
+                elif preserved_paid < total_with_vat:
                     request.POST['part_payment'] = 'on'
                     request.POST['part_payment_amount'] = str(preserved_paid)
                 # else: fully paid — add_new_sales treats as full payment
