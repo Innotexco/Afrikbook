@@ -290,6 +290,7 @@ def EditSalesInvoice(request, invoice_id):
         invoices.values_list('itemcode', flat=True)
     )
 
+    c_name = customer_table.objects.using(db).filter(customer_code=first.cusID).first()
     if request.method == 'POST' and request.POST.get('action') == 'update_all':
         try:
             with db_transaction.atomic(using=db):
@@ -298,7 +299,7 @@ def EditSalesInvoice(request, invoice_id):
                 for line in invoices:
                     edited_customer_invoice.objects.using(db).create(
                         cusID               = line.cusID,
-                        customer_name       = line.customer_name,
+                        customer_name       = c_name.name,
                         invoiceID           = line.invoiceID,
                         order_ID            = line.order_ID,
                         Gdescription        = line.Gdescription,
@@ -536,7 +537,7 @@ def EditSalesInvoice(request, invoice_id):
                 request.POST['cusID']          = new_cusID or first.cusID
                 request.POST['venID']          = request.POST.get('venID', '')
                 request.POST['accountType']    = request.POST.get('accountType', 'Customer')
-                request.POST['genby']          = request.POST.get('genby', first.customer_name)
+                request.POST['genby']          = request.POST.get('genby', c_name.name)
                 request.POST['invoice_date']   = new_date
                 request.POST['due_date']       = new_due_date
                 request.POST['order_id']       = request.POST.get('order_id', first.order_ID or '')
@@ -553,6 +554,7 @@ def EditSalesInvoice(request, invoice_id):
                 request.POST.setlist('amount[]',    amount_list)
                 request.POST.setlist('item_name',   name_list)
                 request.POST.setlist('purchaseP',   purchaseP_list)
+                request.POST['invoice_state'] = request.POST.get('invoice_state', first.invoice_state)
 
                 # Call the real create function
                 add_new_sales(request, db)
