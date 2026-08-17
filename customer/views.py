@@ -1,7 +1,7 @@
 import requests
 import json
 from django.shortcuts import render, redirect
-from .models import customer_table, customer_invoice
+from .models import customer_table, customer_invoice, receivable, payable
 from vendor.models import vendor_table
 from account.models import *
 from django.http import JsonResponse, HttpResponse
@@ -25,7 +25,11 @@ from routers.page_permission import  urls_name
 from main .models import company_table
 import re
 import copy
+import decimal
+import logging
 from django.db import transaction as db_transaction
+
+logger = logging.getLogger(__name__)
 
 #Vendor functions
 from vendor.functions.purchasequote import add_purchase_quote
@@ -337,12 +341,11 @@ def EditSalesInvoice(request, invoice_id):
                             db, line.outlet, line.itemcode, line.qty
                         )
 
-                # ── Step 3: Undo accounting entries 
+                # ── Step 3: Undo accounting entries for this invoice ─────
                 accountType = get_customer_or_vendor(db, invoice_id)
+                original_paid = decimal.Decimal(str(first.amount_paid or 0))
                 try:
-                    # Use the stored payment account from the original invoice
                     original_payment_account = first.payment_account or '4001-Sales'
-
                     try:
                         pay_account = chart_of_account.objects.using(db).get(
                             account_id=original_payment_account
@@ -352,47 +355,27 @@ def EditSalesInvoice(request, invoice_id):
                             account_id='4001-Sales'
                         )
 
-                    if first.amount_paid == first.amount_expected:
-                        if accountType == "Customer":
-                            cus = customer_table.objects.using(db).get(
-                                customer_code=first.cusID
-                            )
-                            CreditReceivable(
-                                request, db, cus,
-                                first.invoice_date,
-                                first.Gdescription,
-                                first.payment_method,       
-                                pay_account.account_id,
-                                first.amount_paid,
-                                invoice_id,                 
-                                first.amount_expected,      
-                                decimal.Decimal('0.00'),    
-                            )
-                        elif accountType == "Vendor":
-                            ven = vendor_table.objects.using(db).get(
-                                custID=first.cusID
-                            )
-                            CreditPayable(
-                                request, db, ven,
-                                first.invoice_date,
-                                first.Gdescription,
-                                first.payment_method,
-                                pay_account.account_id,
-                                first.amount_paid,
-                                invoice_id,
-                                first.amount_expected,
-                                decimal.Decimal('0.00'),
-                            )
+                    if accountType == "Customer":
+                        receivable.objects.using(db).filter(token_id=invoice_id).delete()
+                    elif accountType == "Vendor":
+                        payable.objects.using(db).filter(token_id=invoice_id).delete()
 
-                        # Reverse the account balance
-                        pay_account.actual_balance -= decimal.Decimal(first.amount_paid)
+                    if original_paid > 0:
+                        pay_account.actual_balance = (
+                            decimal.Decimal(str(pay_account.actual_balance or 0)) - original_paid
+                        )
                         pay_account.save(using=db)
-                        CreateLog(db, pay_account, first.amount_paid)
+                        CreateLog(db, pay_account, original_paid)
 
                 except chart_of_account.DoesNotExist:
                     logger.warning(
                         f"[EditSalesInvoice] Payment account not found for reversal | "
-                        f"invoiceID={invoice_id} | account={original_payment_account}"
+                        f"invoiceID={invoice_id} | account={getattr(first, 'payment_account', None)}"
+                    )
+                except Exception as rev_err:
+                    logger.warning(
+                        f"[EditSalesInvoice] Accounting reverse warning | "
+                        f"invoiceID={invoice_id} | {rev_err}"
                     )
 
                 # ── Step 4: Delete original invoice lines ─────────────────
@@ -531,18 +514,28 @@ def EditSalesInvoice(request, invoice_id):
 
                 # Compute total
                 grand_total = sum(float(a) for a in amount_list)
+                new_total = decimal.Decimal(str(round(grand_total, 2)))
+                # Keep what the customer already paid; never mark unpaid/part-paid as full
+                preserved_paid = min(original_paid, new_total) if new_total > 0 else decimal.Decimal('0.00')
 
                 # Patch POST so add_new_sales reads the right values
                 request.POST['invoiceID']      = invoice_id
                 request.POST['cusID']          = new_cusID or first.cusID
                 request.POST['venID']          = request.POST.get('venID', '')
                 request.POST['accountType']    = request.POST.get('accountType', 'Customer')
-                request.POST['genby']          = request.POST.get('genby', c_name.name)
+                request.POST['genby']          = request.POST.get('genby', c_name.name if c_name else first.customer_name)
                 request.POST['invoice_date']   = new_date
                 request.POST['due_date']       = new_due_date
                 request.POST['order_id']       = request.POST.get('order_id', first.order_ID or '')
                 request.POST['Gdescription']   = new_desc
-                request.POST['payment_method'] = payment_method
+                # Template may post as payment_method or source
+                request.POST['payment_method'] = (
+                    request.POST.get('payment_method')
+                    or request.POST.get('source')
+                    or payment_method
+                    or first.payment_method
+                    or 'Cash'
+                )
                 request.POST['sub-total']      = str(grand_total)
                 request.POST['total']          = str(grand_total)
                 request.POST['vat']            = request.POST.get('vat', '0')
@@ -555,6 +548,21 @@ def EditSalesInvoice(request, invoice_id):
                 request.POST.setlist('item_name',   name_list)
                 request.POST.setlist('purchaseP',   purchaseP_list)
                 request.POST['invoice_state'] = request.POST.get('invoice_state', first.invoice_state)
+
+                # Preserve credit / part-payment status (do not force full payment)
+                request.POST.pop('credit_sales', None)
+                request.POST.pop('part_payment', None)
+                request.POST.pop('part_payment_amount', None)
+                if preserved_paid <= 0:
+                    request.POST['credit_sales'] = 'on'
+                elif preserved_paid < new_total:
+                    request.POST['part_payment'] = 'on'
+                    request.POST['part_payment_amount'] = str(preserved_paid)
+                # else: fully paid — add_new_sales treats as full payment
+
+                # Restore original payment account when transfer was used
+                if first.payment_account:
+                    request.POST['t_account'] = first.payment_account
 
                 # Call the real create function
                 add_new_sales(request, db)
