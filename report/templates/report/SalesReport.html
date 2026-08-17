@@ -210,14 +210,7 @@
         
                     <label class="flex justify-between gap-6 text-sm">
                         <span class="text-gray-700 ">Total Quantity:</span>
-                        <span class="text-gray-700 ">{{qty_total}}</span>
-                        <!-- <input 
-                            class="block w-full px-2 mt-1 text-sm bg-slate-100  border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                            placeholder=""
-                            disabled
-                            value="{{qty_total}}"
-                            id="qty_total"
-                        /> -->
+                        <span class="text-gray-700 " id="qty_total">{{qty_total}}</span>
                     </label>
         
                     
@@ -271,28 +264,25 @@
                         if(response.serializer_data && response.serializer_data.length > 0){
                             // Handle the response data
                         
-                            $(".sales_total").html(response.sales_total);
-                            $("#qty_total").html(response.qty_total);
+                            $(".sales_total").html(response.sales_total != null ? response.sales_total : 0);
+                            $("#qty_total").html(response.qty_total != null ? response.qty_total : 0);
                             const table = $('#example2 tbody')
                             table.empty()
                             let num = 0;
                             response.serializer_data.forEach(item => {
-                                num++ 
-                                
-        
+                                num++
+                                const amount = parseFloat(item.amount_expected != null ? item.amount_expected : 0) || 0;
                                 const row = $('<tr id="row">').append(
                                     $('<td class="text-[10px]">').html(num),
-                                    $('<td class="text-[10px]">').text(item.cusID),
-                                    $('<td class="text-[10px]">').text(item.customer_name),
-                                    $('<td class="text-[10px]">').text(item.invoice_date),
-                                    $('<td class="text-[10px]">').text(item.invoiceID),
-                                    $('<td class="text-[10px]">').text(item.Gdescription),
-                                    $('<td class="text-[10px]">').text(parseFloat(item.amount_expected)),
-                                    $('<td class="text-[10px]">').text(item.customer_name),
-                                    $('<td class="text-[10px]">').text(item.payment_method),
+                                    $('<td class="text-[10px]">').text(item.cusID || ''),
+                                    $('<td class="text-[10px]">').text(item.customer_name || ''),
+                                    $('<td class="text-[10px]">').text(item.invoice_date || ''),
+                                    $('<td class="text-[10px]">').text(item.invoiceID || ''),
+                                    $('<td class="text-[10px]">').text(item.Gdescription || ''),
+                                    $('<td class="text-[10px]">').text(amount),
+                                    $('<td class="text-[10px]">').text(item.Userlogin || ''),
+                                    $('<td class="text-[10px]">').text(item.payment_method || ''),
                                     $('<td class="text-[10px]">').append('<a onclick="showModal(\'' + item.invoiceID + '\', \'' + item.cusID + '\')" class="flex items-center justify-center text-blue-500 border px-3 bg-gray-50 cursor-pointer"  aria-label="Edit">View</a>'),
-                                    
-                                
                                 );
                                 table.append(row);
                                 
