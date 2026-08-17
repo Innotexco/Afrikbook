@@ -208,8 +208,21 @@
             </table>
         </div>
 
-        <div class="flex justify-end mt-3 text-[11px] font-medium text-slate-600">
-            <span>Total: <b class="text-green-700 ml-1 text-sm" id="grandTotal">0.00</b></span>
+        <div class="flex flex-col items-end gap-1 mt-3 text-[11px] font-medium text-slate-600">
+            <span>Subtotal: <b class="text-slate-700 ml-1 text-sm" id="grandTotal">0.00</b></span>
+            <label class="flex items-center gap-2 text-gray-700">
+                <input type="checkbox"
+                       name="include_vat"
+                       id="include_vat"
+                       value="on"
+                       class="form-checkbox"
+                       {% if has_vat %}checked{% endif %}
+                       onchange="recalcTotal()"/>
+                <span>Include VAT 7.5%</span>
+            </label>
+            <span>VAT (7.5%): <b class="text-slate-700 ml-1" id="vatAmount">{{ original_vat|floatformat:2|intcomma }}</b></span>
+            <input type="hidden" name="vat" id="vatField" value="{{ original_vat|default:0 }}">
+            <span>Grand total: <b class="text-green-700 ml-1 text-sm" id="grandTotalWithVat">0.00</b></span>
         </div>
     </div>
 
@@ -320,7 +333,7 @@
         recalcTotal();
     });
 
-    {# ── Grand total ── #}
+    {# ── Grand total + VAT ── #}
     function recalcTotal() {
         var total = 0;
         $('#lineItems tr.line-row').each(function() {
@@ -335,7 +348,17 @@
             var discount = parseFloat($(this).find('.new-discount').val()) || 0;
             total += Math.max(0, (qty * unit) - discount);
         });
-        $('#grandTotal').text(total.toLocaleString('en', { minimumFractionDigits: 2 }));
+        var vat = 0;
+        if ($('#include_vat').is(':checked') && total > 0) {
+            vat = Math.round(total * 0.075 * 100) / 100;
+        }
+        var fmt = function(n) {
+            return n.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+        $('#grandTotal').text(fmt(total));
+        $('#vatAmount').text(fmt(vat));
+        $('#vatField').val(vat.toFixed(2));
+        $('#grandTotalWithVat').text(fmt(total + vat));
     }
 
     {# ── Add new item row ── #}
