@@ -293,7 +293,12 @@ def add_new_sales(request, db):
     instant_stockout = request.session.get('IN_STOCKOUT', 'Yes')
     status = 1 if instant_stockout == "Yes" else 0
 
-    if invoice_state:
+    # Keep real states as-is (EditSalesInvoice posts Supplied/Pending/Cancelled).
+    # New Sales often omits the field (→ Supplied) or used a legacy truthy checkbox (→ Pending).
+    _known_states = {'Supplied', 'Pending', 'Cancelled'}
+    if invoice_state in _known_states:
+        pass
+    elif invoice_state:
         invoice_state = "Pending"
     else:
         invoice_state = "Supplied"
@@ -313,15 +318,31 @@ def add_new_sales(request, db):
         total_purchaseP = 0
 
     # ── 4. Resolve customer / vendor ─────────────────────────────────────────
+    # Always take customer_name from the master record for cusID (not stale genby/invoice snapshot).
     try:
         if cusID:
+            cus_row = None
+            try:
+                cus_row = customer_table.objects.using(db).get(id=cusID)
+            except (customer_table.DoesNotExist, ValueError, TypeError):
+                # Fallback: some callers may post customer_code instead of PK
+                cus_row = customer_table.objects.using(db).filter(customer_code=cusID).first()
+            if not cus_row:
+                raise customer_table.DoesNotExist()
+
+            customer_code = cus_row.customer_code
+            customer_name = cus_row.name  # live name from customer master
             res           = billing_shipping_address(request, customer_name)
-            customer_code = customer_table.objects.using(db).get(id=cusID).customer_code
-            logger.debug(f"[add_new_sales] Customer resolved | cusID={cusID} | customer_code={customer_code}")
+            logger.debug(
+                f"[add_new_sales] Customer resolved | cusID={cusID} | "
+                f"customer_code={customer_code} | name={customer_name}"
+            )
 
         elif venID:
             res           = False
-            customer_code = vendor_table.objects.using(db).get(id=venID).custID
+            ven_row       = vendor_table.objects.using(db).get(id=venID)
+            customer_code = ven_row.custID
+            customer_name = ven_row.name
             logger.debug(f"[add_new_sales] Vendor resolved | venID={venID} | customer_code={customer_code}")
 
         else:
@@ -801,23 +822,43 @@ def add_new_sales(request, db):
 
             
 def create_add_vat(db, invoiceID, vat):
-   
-    if vat:
-        try:
-            Vat.objects.using(db).get(source=invoiceID, amount=vat)
-        except Vat.DoesNotExist:
-            Vat.objects.using(db).create(source=invoiceID, amount=vat)
-            vat_account = chart_of_account.objects.using(db).get(account_id='6002-Vat')
-            vat_account.actual_balance += decimal.Decimal(vat)
-            vat_account.save()
+    """Post VAT for an invoice. Skips zero/empty amounts. Uses tenant db."""
+    if vat in (None, '', 0, '0'):
+        return
+    try:
+        vat_amount = decimal.Decimal(str(vat).replace(',', '').strip())
+    except Exception:
+        return
+    if vat_amount <= 0:
+        return
+
+    try:
+        Vat.objects.using(db).get(source=invoiceID, amount=vat_amount)
+    except Vat.DoesNotExist:
+        Vat.objects.using(db).create(source=invoiceID, amount=vat_amount)
+        vat_account = chart_of_account.objects.using(db).get(account_id='6002-Vat')
+        vat_account.actual_balance = (
+            decimal.Decimal(str(vat_account.actual_balance or 0)) + vat_amount
+        )
+        vat_account.save(using=db)
 
 def create_minus_vat(db, invoiceID, vat):
-    
-    if vat:
-        try:
-            Vat.objects.using(db).get(source=invoiceID, amount=-abs(decimal.Decimal(vat)))
-        except Vat.DoesNotExist:
-            Vat.objects.using(db).create(source=invoiceID, amount=-abs(decimal.Decimal(vat)))
-            vat_account = chart_of_account.objects.using(db).get(account_id='6002-Vat')
-            vat_account.actual_balance -= decimal.Decimal(vat)
-            vat_account.save()
+    """Reverse VAT for returns. Uses tenant db."""
+    if vat in (None, '', 0, '0'):
+        return
+    try:
+        vat_amount = abs(decimal.Decimal(str(vat).replace(',', '').strip()))
+    except Exception:
+        return
+    if vat_amount <= 0:
+        return
+
+    try:
+        Vat.objects.using(db).get(source=invoiceID, amount=-vat_amount)
+    except Vat.DoesNotExist:
+        Vat.objects.using(db).create(source=invoiceID, amount=-vat_amount)
+        vat_account = chart_of_account.objects.using(db).get(account_id='6002-Vat')
+        vat_account.actual_balance = (
+            decimal.Decimal(str(vat_account.actual_balance or 0)) - vat_amount
+        )
+        vat_account.save(using=db)

@@ -1,7 +1,7 @@
 import requests
 import json
 from django.shortcuts import render, redirect
-from .models import customer_table, customer_invoice, receivable, payable
+from .models import customer_table, customer_invoice, receivable, payable, Vat
 from vendor.models import vendor_table
 from account.models import *
 from django.http import JsonResponse, HttpResponse
@@ -15,7 +15,7 @@ from .functions.salesorder import *
 from .functions.newsalesfunc import *
 from .functions.returninwards import *
 from .functions.verifypayment import *
-from django.db.models import Q
+from django.db.models import Q, Sum
 from Stock.models import Item, CreateStockIn
 from settings.models import *
 from client .models import shipping_addr
@@ -295,6 +295,17 @@ def EditSalesInvoice(request, invoice_id):
     )
 
     c_name = customer_table.objects.using(db).filter(customer_code=first.cusID).first()
+
+    # Original VAT on this invoice (positive rows only)
+    original_vat_amount = decimal.Decimal('0.00')
+    for v in Vat.objects.using(db).filter(source=invoice_id):
+        try:
+            amt = decimal.Decimal(str(v.amount or 0))
+        except Exception:
+            amt = decimal.Decimal('0.00')
+        if amt > 0:
+            original_vat_amount += amt
+
     if request.method == 'POST' and request.POST.get('action') == 'update_all':
         try:
             with db_transaction.atomic(using=db):
@@ -376,6 +387,31 @@ def EditSalesInvoice(request, invoice_id):
                     logger.warning(
                         f"[EditSalesInvoice] Accounting reverse warning | "
                         f"invoiceID={invoice_id} | {rev_err}"
+                    )
+
+                # Reverse VAT for this invoice (always, independent of payment reverse)
+                try:
+                    if original_vat_amount > 0:
+                        try:
+                            vat_account = chart_of_account.objects.using(db).get(
+                                account_id='6002-Vat'
+                            )
+                            vat_account.actual_balance = (
+                                decimal.Decimal(str(vat_account.actual_balance or 0))
+                                - original_vat_amount
+                            )
+                            vat_account.save(using=db)
+                            CreateLog(db, vat_account, original_vat_amount)
+                        except chart_of_account.DoesNotExist:
+                            logger.warning(
+                                f"[EditSalesInvoice] VAT account 6002-Vat not found | "
+                                f"invoiceID={invoice_id}"
+                            )
+                    Vat.objects.using(db).filter(source=invoice_id).delete()
+                except Exception as vat_rev_err:
+                    logger.warning(
+                        f"[EditSalesInvoice] VAT reverse warning | "
+                        f"invoiceID={invoice_id} | {vat_rev_err}"
                     )
 
                 # ── Step 4: Delete original invoice lines ─────────────────
@@ -518,12 +554,39 @@ def EditSalesInvoice(request, invoice_id):
                 # Keep what the customer already paid; never mark unpaid/part-paid as full
                 preserved_paid = min(original_paid, new_total) if new_total > 0 else decimal.Decimal('0.00')
 
+                # Resolve customer from selected PK (or original invoice customer).
+                # Always use live name from customer master — never the old invoice snapshot.
+                selected_cus = (new_cusID or '').strip()
+                resolved_customer = None
+                if selected_cus:
+                    resolved_customer = customer_table.objects.using(db).filter(id=selected_cus).first()
+                if not resolved_customer and c_name:
+                    resolved_customer = c_name
+                if not resolved_customer:
+                    resolved_customer = customer_table.objects.using(db).filter(
+                        customer_code=first.cusID
+                    ).first()
+                if not resolved_customer:
+                    raise ValueError(
+                        f"Customer not found for invoice {invoice_id} "
+                        f"(posted cusID={selected_cus!r}, invoice cusID={first.cusID!r})"
+                    )
+
+                # Preserve real invoice state (Supplied / Pending / Cancelled) — do not remap
+                preserved_state = (
+                    request.POST.get('invoice_state')
+                    or first.invoice_state
+                    or 'Supplied'
+                )
+                if preserved_state not in ('Supplied', 'Pending', 'Cancelled'):
+                    preserved_state = first.invoice_state or 'Supplied'
+
                 # Patch POST so add_new_sales reads the right values
                 request.POST['invoiceID']      = invoice_id
-                request.POST['cusID']          = new_cusID or first.cusID
+                request.POST['cusID']          = str(resolved_customer.id)
                 request.POST['venID']          = request.POST.get('venID', '')
                 request.POST['accountType']    = request.POST.get('accountType', 'Customer')
-                request.POST['genby']          = request.POST.get('genby', c_name.name if c_name else first.customer_name)
+                request.POST['genby']          = resolved_customer.name
                 request.POST['invoice_date']   = new_date
                 request.POST['due_date']       = new_due_date
                 request.POST['order_id']       = request.POST.get('order_id', first.order_ID or '')
@@ -536,9 +599,27 @@ def EditSalesInvoice(request, invoice_id):
                     or first.payment_method
                     or 'Cash'
                 )
+                # VAT checkbox posts only when checked (pre-checked if invoice already had VAT).
+                # Amount is recalculated at 7.5% of new subtotal (same as New Sales).
+                apply_vat = request.POST.get('include_vat') in ('on', '1', 'true', 'True')
+                posted_vat = request.POST.get('vat', '').strip()
+                if apply_vat and new_total > 0:
+                    try:
+                        new_vat = decimal.Decimal(str(posted_vat).replace(',', '')) if posted_vat else decimal.Decimal('0')
+                        if new_vat <= 0:
+                            new_vat = (new_total * decimal.Decimal('0.075')).quantize(
+                                decimal.Decimal('0.01'), rounding=decimal.ROUND_HALF_UP
+                            )
+                    except Exception:
+                        new_vat = (new_total * decimal.Decimal('0.075')).quantize(
+                            decimal.Decimal('0.01'), rounding=decimal.ROUND_HALF_UP
+                        )
+                else:
+                    new_vat = decimal.Decimal('0.00')
+
                 request.POST['sub-total']      = str(grand_total)
                 request.POST['total']          = str(grand_total)
-                request.POST['vat']            = request.POST.get('vat', '0')
+                request.POST['vat']            = str(new_vat)
                 request.POST.setlist('item[]',      item_list)
                 request.POST.setlist('qty[]',       qty_list)
                 request.POST.setlist('unit[]',      unit_list)
@@ -547,7 +628,7 @@ def EditSalesInvoice(request, invoice_id):
                 request.POST.setlist('amount[]',    amount_list)
                 request.POST.setlist('item_name',   name_list)
                 request.POST.setlist('purchaseP',   purchaseP_list)
-                request.POST['invoice_state'] = request.POST.get('invoice_state', first.invoice_state)
+                request.POST['invoice_state']  = preserved_state
 
                 # Preserve credit / part-payment status (do not force full payment)
                 request.POST.pop('credit_sales', None)
@@ -587,6 +668,8 @@ def EditSalesInvoice(request, invoice_id):
         'payments':payments,
         'shipping_method': method,
         'existing_itemcodes': list(existing_itemcodes),
+        'original_vat': original_vat_amount,
+        'has_vat': original_vat_amount > 0,
     }
     return render(request, 'customer/EditSalesInvoice.html', context)
 
