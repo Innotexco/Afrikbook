@@ -142,6 +142,119 @@ def send_email_with_attachment_task(
 
 @shared_task(
     bind=True,
+    name="main.tasks.send_quote_email_task",
+    max_retries=3,
+    default_retry_delay=60,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+)
+def send_quote_email_task(
+    self,
+    db_name,
+    quote_id,
+    customer_email,
+    customer_name,
+    company_display_name="",
+    base_url="",
+):
+    """
+    Build sales quote PDF (same layout family as invoice) and email it.
+    Called after a new sales quote is created when the user chooses to email PDF.
+    """
+    from django.template.loader import render_to_string
+    from weasyprint import HTML
+
+    from customer.models import Vat, sales_quote
+    from settings.models import CreateProfile
+
+    db = ensure_tenant_db(db_name)
+    try:
+        quote_items = sales_quote.objects.using(db).filter(referenceID=quote_id)
+        if not quote_items.exists():
+            logger.error(
+                "[send_quote_email_task] Quote not found | db=%s | quote=%s",
+                db,
+                quote_id,
+            )
+            return {"ok": False, "error": "Quote not found"}
+
+        quote = quote_items.first()
+        company = CreateProfile.objects.using(db).first()
+
+        subtotal = sum((item.amount or 0) for item in quote_items)
+        vat_items = Vat.objects.using(db).filter(source=quote_id)
+        vat_total = sum(v.amount for v in vat_items)
+        grand_total = subtotal + vat_total
+
+        company_name = (
+            (company.CompanyName if company and company.CompanyName else None)
+            or company_display_name
+            or "Afrikbook"
+        )
+        company_address = company.address if company and company.address else ""
+        company_email = company.email if company and company.email else ""
+        company_rc = company.Rc if company and company.Rc else ""
+
+        html_content = render_to_string(
+            "customer/quote_pdf.html",
+            {
+                "quote": quote,
+                "quote_items": quote_items,
+                "company": company,
+                "subtotal": subtotal,
+                "vat_items": vat_items,
+                "vat_total": vat_total,
+                "grand_total": grand_total,
+            },
+        )
+
+        pdf_base = base_url or getattr(settings, "SITE_URL", "https://console.afrikbook.com")
+        pdf_file = HTML(string=html_content, base_url=pdf_base).write_pdf()
+
+        footer_lines = [company_name]
+        if company_address:
+            footer_lines.append(company_address)
+        if company_email:
+            footer_lines.append(company_email)
+        if company_rc:
+            footer_lines.append(f"RC {company_rc}")
+        footer = "\n".join(footer_lines)
+
+        email = EmailMessage(
+            subject=f"Sales Quote {quote_id} from {company_name}",
+            body=(
+                f"Dear {customer_name},\n\n"
+                f"Here is your sales quote {quote_id}. We appreciate your interest!\n"
+                f"Please find the attached document for your quote details.\n"
+                f"──────────────────────────\n"
+                f"{footer}\n"
+                f"──────────────────────────"
+            ),
+            from_email=_from_email(),
+            to=[customer_email],
+        )
+        safe_name = str(quote_id).replace("/", "-").replace("\\", "-")
+        email.attach(f"Quote_{safe_name}.pdf", pdf_file, "application/pdf")
+        email.send(fail_silently=False)
+
+        logger.info(
+            "[send_quote_email_task] Sent | quote=%s | to=%s",
+            quote_id,
+            customer_email,
+        )
+        return {"ok": True}
+    except Exception as exc:
+        logger.error(
+            "[send_quote_email_task] FAILED | quote=%s | %s\n%s",
+            quote_id,
+            exc,
+            traceback.format_exc(),
+        )
+        raise
+
+
+@shared_task(
+    bind=True,
     name="main.tasks.send_invoice_email_task",
     max_retries=3,
     default_retry_delay=60,
