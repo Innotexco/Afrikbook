@@ -3303,12 +3303,11 @@ def SalesPersonYearlySalesReport(request):
     db = request.user.company_id.db_name
     customer = customer_invoice.objects.using(db).values('Userlogin').distinct()
     now = datetime.now()
-    years = list(range(now.year, now.year - 15, -1))
+    years = list(range(2025, now.year + 1))
     selected_start_year = now.year
     selected_end_year = now.year
 
-    def _parse_year(raw):
-        """Accept YYYY or YYYY-MM-DD; yearly report uses calendar years."""
+    def _parse_year(raw):  
         if not raw:
             return None
         raw = str(raw).strip()
