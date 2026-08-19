@@ -23,11 +23,11 @@
 
 <!-- Classic Template -->
 <section class="hidden template-classic">
-    <p class="text-center hhh my-1 text-[#2F4F4F] text-2xl font-bold whitespace-nowrap">{{profile.CompanyName | upper}}</p>
-    <address class="text-center text-sm font-light whitespace-nowrap">{{profile.address}}</address>
-    <p class="text-center text-sm font-light whitespace-nowrap">{{profile.email}}, {{profile.phone}}</p>
-    <hr class="my-3">
-    <p class="flex justify-end mb-3 self-center text-sm font-light whitespace-nowrap report_date">Gen. on:</p>
+    <p class="text-center hhh my-1 text-[#111827] text-2xl font-extrabold whitespace-nowrap">{{profile.CompanyName | upper}}</p>
+    <address class="text-center text-sm font-semibold whitespace-nowrap text-[#1f2937]">{{profile.address}}</address>
+    <p class="text-center text-sm font-semibold whitespace-nowrap text-[#1f2937]">{{profile.email}}, {{profile.phone}}</p>
+    <hr class="my-3 border-gray-400">
+    <p class="flex justify-end mb-3 self-center text-sm font-semibold whitespace-nowrap text-[#111827] report_date">Gen. on:</p>
 </section>
 
 
@@ -40,45 +40,45 @@
         {% if profile.logo %}
             <img src="{{ profile.logo.url }}" 
                  alt="{{ profile.CompanyName }}" 
-                 class="w-20 h-20 rounded-full object-cover object-left flex-shrink-0 border-2 border-gray-200">
+                 class="w-20 h-20 rounded-full object-cover object-left flex-shrink-0 border-2 border-gray-300">
         {% else %}
-            <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs flex-shrink-0">
+            <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 text-xs font-bold flex-shrink-0">
                 No Logo
             </div>
         {% endif %}
 
-        <p class="font-extrabold text-[#2F4F4F] leading-tight break-words"
-           style="font-size: clamp(14px, 3vw, 26px); word-break: break-word; overflow-wrap: break-word; max-width: 100%;">
+        <p class="font-extrabold text-[#111827] leading-tight break-words"
+           style="font-size: clamp(16px, 3vw, 28px); word-break: break-word; overflow-wrap: break-word; max-width: 100%;">
             {{ profile.CompanyName|upper }}
         </p>
     </div>
     
     <!-- Address Line -->
-    <address class="text-center text-[11px] pl-32 -mt-6 not-italic whitespace-nowrap text-gray-700">
+    <address class="text-center text-[12px] font-semibold pl-32 -mt-6 not-italic whitespace-nowrap text-[#1f2937]">
         {{ profile.address }}
     </address>
     
     <!-- Contact Bar -->
-    <div class="flex ml-16 justify-center items-center gap-6 text-[11px] font-light whitespace-nowrap text-gray-700 mt-1.5">
+    <div class="flex ml-16 justify-center items-center gap-6 text-[12px] font-semibold whitespace-nowrap text-[#1f2937] mt-1.5">
         <div class="flex items-center gap-1.5">
-            <svg class="w-4 h-4 inline-block text-gray-700" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <svg class="w-4 h-4 inline-block text-[#1f2937]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v.01L12 13 2 6.01V6z"/>
                 <path d="M2 8.5V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8.5l-9.4 6.27a1 1 0 0 1-1.2 0L2 8.5z"/>
             </svg>
             <span>{{ profile.email }}</span>
         </div>
         <div class="flex items-center gap-1.5">
-            <svg class="w-4 h-4 inline-block text-gray-700" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <svg class="w-4 h-4 inline-block text-[#1f2937]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M2.01 5.87a2 2 0 0 1 2-2h3.2a1 1 0 0 1 .96.73l1.1 3.86a1 1 0 0 1-.45 1.14l-1.7 1.02a15.05 15.05 0 0 0 6.59 6.59l1.02-1.7a1 1 0 0 1 1.14-.45l3.86 1.1a1 1 0 0 1 .73.96v3.2a2 2 0 0 1-2 2A18 18 0 0 1 2.01 5.87z"/>
             </svg>
             <span>{{ profile.phone }}{% if profile.phone2 %}, {{ profile.phone2 }}{% endif %}</span>
         </div>
         {% if profile.Rc %}
-            <span class="font-medium">RC {{ profile.Rc }}</span>
+            <span class="font-bold">RC {{ profile.Rc }}</span>
         {% endif %}
     </div>
     
-    <hr class="my-5 border-0 border-t border-gray-200">
+    <hr class="my-5 border-0 border-t-2 border-gray-400">
 </section>
 
 
@@ -109,5 +109,41 @@
     .template-classic.hidden,
     .template-invoice.hidden {
         display: none !important;
+    }
+
+    /* High-contrast text for generated PDFs (invoices, quotes, reports) */
+    .pdf-generating,
+    .pdf-generating * {
+        color: #111827 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    .pdf-generating,
+    .pdf-generating p,
+    .pdf-generating span,
+    .pdf-generating td,
+    .pdf-generating th,
+    .pdf-generating div,
+    .pdf-generating address,
+    .pdf-generating b,
+    .pdf-generating strong {
+        font-weight: 700 !important;
+    }
+    .pdf-generating th {
+        font-weight: 800 !important;
+        color: #030712 !important;
+        background: #e5e7eb !important;
+    }
+    .pdf-generating .template-classic .hhh,
+    .pdf-generating .template-invoice p.font-extrabold {
+        font-weight: 900 !important;
+        color: #030712 !important;
+    }
+    .pdf-generating table {
+        color: #111827 !important;
+    }
+    .pdf-generating tfoot td {
+        font-weight: 800 !important;
+        color: #030712 !important;
     }
 </style>
