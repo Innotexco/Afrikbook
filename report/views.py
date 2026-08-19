@@ -3119,40 +3119,56 @@ def CustomerQuaterlySalesReport(request):
     company = company_table.objects.get(id=request.user.company_id_id)
     db = request.user.company_id.db_name
     customer = customer_table.objects.using(db).all()
+    now = datetime.now()
+    # Year picker options (report groups Q1–Q4 for a single calendar year)
+    years = list(range(now.year, now.year - 15, -1))
+    selected_year = now.year
+
+    def _parse_quarter_year(raw):
+        """Accept YYYY or YYYY-MM-DD; quarterly report uses the year only."""
+        if not raw:
+            return None
+        raw = str(raw).strip()
+        try:
+            if len(raw) == 4 and raw.isdigit():
+                return datetime(int(raw), 1, 1)
+            return datetime.strptime(raw[:10], '%Y-%m-%d')
+        except (ValueError, TypeError):
+            return None
+
     if request.method == "POST":
         start = request.POST.get("start_date")
-        if start:
-            start_date = datetime.strptime(start, '%Y-%m-%d') #.date()
-            quarterly_sales_data, total_sales, total_qty = customer_quaterly_sales_report(request, start_date, customer, 1)
-            
+        start_date = _parse_quarter_year(start)
+        if start_date:
+            selected_year = start_date.year
+            quarterly_sales_data, total_sales, total_qty = customer_quaterly_sales_report(
+                request, start_date, customer, 1
+            )
         else:
-            start =  datetime.now() #.date()
-    
-            quarterly_sales_data, total_sales, total_qty = customer_quaterly_sales_report(request, start, customer, 1)
-       
-            messages.error(request, 'Enter valid date')
-        
-        
-        
-        # JsonResponse({'data':daily_sales_data, 'total_sales': total_sales, 'total_qty':total_qty})
-        
+            start_date = datetime(now.year, 1, 1)
+            selected_year = now.year
+            quarterly_sales_data, total_sales, total_qty = customer_quaterly_sales_report(
+                request, start_date, customer, 1
+            )
+            messages.error(request, 'Enter a valid year')
     else:
-        start =  datetime.now() #.date()
-    
-        quarterly_sales_data, total_sales, total_qty = customer_quaterly_sales_report(request, start, customer, 1)
-        
+        start_date = datetime(now.year, 1, 1)
+        quarterly_sales_data, total_sales, total_qty = customer_quaterly_sales_report(
+            request, start_date, customer, 1
+        )
+
     context = {
-        'customer':customer.all(),
-        'customers':customer,
-        'quarterly_sales_data':quarterly_sales_data,
+        'customer': customer.all(),
+        'customers': customer,
+        'quarterly_sales_data': quarterly_sales_data,
         'total_sales': total_sales,
         'total_qty': total_qty,
         'company': company,
-        'cols': customer.count() + 1
-        
-        }
-    
-    
+        'cols': customer.count() + 1,
+        'years': years,
+        'selected_year': selected_year,
+    }
+
     return render(request, 'customer_sales/Quaterly.html', context)
 
 @login_required(login_url='/')
