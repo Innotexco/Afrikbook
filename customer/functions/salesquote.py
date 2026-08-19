@@ -2,10 +2,60 @@ from customer.forms import SalesQuoteForm
 from django.contrib import messages
 from django.http import HttpResponse
 from django.shortcuts import redirect
+from django.conf import settings
 import uuid
 import decimal
+import logging
 from datetime import datetime
 from customer.models import sales_quote, Vat
+
+logger = logging.getLogger(__name__)
+
+
+def email_quote_to_customer(request, db, quote_id, customer_email, customer_name):
+    """
+    Queue sales quote PDF email via Celery (same pattern as invoice email).
+    Returns (True, msg) if the task was enqueued successfully.
+    """
+    try:
+        if not customer_email:
+            return False, "No customer email"
+
+        company_name = ""
+        try:
+            company_name = request.user.company_id.company_name
+        except Exception:
+            pass
+
+        try:
+            base_url = request.build_absolute_uri("/")
+        except Exception:
+            base_url = getattr(settings, "SITE_URL", "https://console.afrikbook.com")
+
+        from main.tasks import send_quote_email_task
+
+        send_quote_email_task.delay(
+            db_name=db,
+            quote_id=str(quote_id),
+            customer_email=customer_email,
+            customer_name=customer_name or "",
+            company_display_name=company_name or "",
+            base_url=base_url,
+        )
+        logger.info(
+            "[email_quote_to_customer] Queued Celery task | quote=%s | to=%s",
+            quote_id,
+            customer_email,
+        )
+        return True, "Quote email queued"
+    except Exception as e:
+        logger.error(
+            "[email_quote_to_customer] Queue failed | quote=%s | %s",
+            quote_id,
+            e,
+            exc_info=True,
+        )
+        return False, str(e)
 
 
 def save_quote_vat(db, reference_id, vat_amount):
@@ -101,5 +151,21 @@ def add_sales_quote(request, db):
     elif saved_any:
         # Persist VAT against quote reference (view modal reads Vat by source=referenceID)
         save_quote_vat(db, referenceID, vat)
+
+        # Same flow as invoice: save first, then queue WeasyPrint PDF email
+        send_flag = request.POST.get("send_quote_email") in ("1", "on", "true", "True")
+        quote_email = (
+            request.POST.get("quote_email")
+            or request.POST.get("email")
+            or ""
+        ).strip()
+        if send_flag and quote_email and "@" in quote_email:
+            ok, msg = email_quote_to_customer(
+                request, db, referenceID, quote_email, genby or "Customer"
+            )
+            if ok:
+                messages.success(request, f"Quote email queued for {quote_email}")
+            else:
+                messages.warning(request, f"Quote saved but email failed: {msg}")
 
     return None

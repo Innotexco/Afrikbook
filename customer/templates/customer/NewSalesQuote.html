@@ -133,6 +133,9 @@
             <input type="hidden" id="genby" name="genby" value="" />
             <input type="hidden" id="cusID" name="cusID" value="" />
             <input type="hidden" id="type" name="cusID" value="quote" />
+            {# Server-side quote email (Celery + WeasyPrint), same pattern as invoice #}
+            <input type="hidden" name="send_quote_email" id="send_quote_email" value="0" />
+            <input type="hidden" name="quote_email" id="quote_email" value="" />
         </div>
 
         <div class="w-full my-5 overflow-hidden shadow-xs">
@@ -303,53 +306,28 @@
 
     {% include 'customer_grid_table.html' %}
     <script>
-        function submitQuoteForm() {
-            var form = document.getElementById('form_id');
+        function submitQuoteForm(opts) {
+            opts = opts || {};
+            var email = (opts.email || $("#email").val() || "").trim();
+            if (opts.sendEmail && email) {
+                $("#send_quote_email").val("1");
+                $("#quote_email").val(email);
+            } else {
+                $("#send_quote_email").val("0");
+                $("#quote_email").val("");
+            }
+            var form = document.getElementById("form_id");
             if (form) {
+                $("#submit_form").prop("disabled", true).text("Saving...");
                 form.submit();
             }
         }
 
-        function quoteEmailOptions() {
-            var companyName = "{{ company.company_name|default:'Afrikbook'|escapejs }}";
-            var customerName = ($("#genby").val() || "Customer").trim();
-            var ref = ($("input[name='referenceID']").val() || "").trim();
-            var subject = "Sales Quote from " + companyName;
-            if (ref) {
-                subject += " (" + ref + ")";
-            }
-            var message =
-                "Dear " + customerName + ",\n\n" +
-                "Please find your sales quote" + (ref ? " (" + ref + ")" : "") +
-                " attached as a PDF.\n\n" +
-                "Regards,\n" + companyName;
-            return {
-                subject: subject,
-                message: message,
-                filename: ref ? ("sales-quote-" + ref.replace(/[^\w\-]+/g, "_") + ".pdf") : "sales-quote.pdf",
-                successMessage: "Quote emailed successfully!",
-            };
-        }
-
-        function emailQuoteThenSave(div) {
-            var opts = quoteEmailOptions();
-            // Disable create while email is in flight
-            $("#submit_form").prop("disabled", true).text("Sending...");
-            return Email_PDF(div, opts)
-                .then(function () {
-                    submitQuoteForm();
-                })
-                .catch(function (err) {
-                    console.error(err);
-                    // Still offer to save the quote if email failed
-                    alertify.confirm(
-                        "Email could not be sent. Save the quote anyway?",
-                        function () { submitQuoteForm(); },
-                        function () {
-                            $("#submit_form").prop("disabled", false).text("Create");
-                        }
-                    ).set("labels", { ok: "Save", cancel: "Cancel" });
-                });
+        // Save quote first; server queues WeasyPrint PDF email (same as invoice)
+        function emailQuoteThenSave() {
+            var email = ($("#email").val() || "").trim();
+            submitQuoteForm({ sendEmail: true, email: email });
+            return Promise.resolve();
         }
 
         function Email(div) {
@@ -357,26 +335,23 @@
             var hasValidEmail = value.indexOf("@") !== -1 && value.indexOf(".") !== -1;
 
             alertify.defaults.glossary.title = "{{ request.user.username|escapejs }}";
-            // Yes → email PDF (await) then save | No → save only
             alertify.confirm(
                 "Would you like to send quote as PDF?",
                 function onYes() {
                     if (hasValidEmail) {
-                        // Works for normal customers AND Casual Customer when email is set
-                        emailQuoteThenSave(div);
+                        emailQuoteThenSave();
                     } else {
-                        // Need an address first — open email modal
-                        $("#div").val(div);
+                        $("#div").val(div || "sq");
                         email_modal.showModal();
                     }
                 },
                 function onNo() {
-                    submitQuoteForm();
+                    submitQuoteForm({ sendEmail: false });
                 }
             ).set("labels", { ok: "Yes", cancel: "No" });
         }
 
-        // Called from email modal Send — always save quote after email (incl. Casual Customer)
+        // Modal Send for quote: save + queue server PDF email
         function customer_exists() {
             try {
                 if (typeof email_modal !== "undefined" && email_modal.open) {
@@ -385,7 +360,7 @@
                     $("#close").click();
                 }
             } catch (e) {}
-            // Form submit is handled by the modal Send handler after Email_PDF resolves
+            emailQuoteThenSave();
         }
     </script> 
 {% endblock content %}

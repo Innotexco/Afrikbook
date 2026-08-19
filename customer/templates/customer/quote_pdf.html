@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Invoice {{ invoice.invoiceID }}</title>
+    <title>Sales Quote {{ quote.referenceID }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% load humanize %}
     <style>
@@ -87,7 +87,6 @@
         tbody tr {
             border-bottom: 1px solid #d1d5db;
         }
-        tbody tr:last-child { border-bottom: none; }
         tbody td {
             padding: 8px 12px;
             font-size: 11px;
@@ -100,6 +99,12 @@
             font-weight: 800;
             color: #030712;
         }
+        .summary-row td {
+            background: #f3f4f6;
+            color: #030712;
+            font-size: 12px;
+            font-weight: 800;
+        }
         .total-row {
             background: #e5e7eb;
             border-top: 2px solid #111827;
@@ -108,12 +113,6 @@
             font-weight: 900;
             font-size: 13px;
             color: #030712;
-        }
-        .summary-row td {
-            background: #f3f4f6;
-            color: #030712;
-            font-size: 12px;
-            font-weight: 800;
         }
         .divider-row td {
             border-top: 1px solid #9ca3af;
@@ -132,15 +131,13 @@
         }
         .badge {
             display: inline-block;
-            padding: 2px 8px;
+            padding: 3px 10px;
             border-radius: 9999px;
-            font-size: 9px;
-            font-weight: 600;
+            font-size: 10px;
+            font-weight: 800;
             text-transform: uppercase;
         }
-        .badge-supplied { background: #d1fae5; color: #065f46; }
-        .badge-pending  { background: #fef3c7; color: #92400e; }
-        .badge-credit   { background: #dbeafe; color: #1e40af; }
+        .badge-quote { background: #dbeafe; color: #1e3a8a; }
     </style>
 </head>
 <body>
@@ -149,9 +146,9 @@
         {% if company.logo %}
             <img src="{{ company.logo.url }}"
                 alt="{{ company.CompanyName }}"
-                style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; object-position: left center; flex-shrink: 0; border: 2px solid #e5e7eb;">
+                style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; object-position: left center; flex-shrink: 0; border: 2px solid #9ca3af;">
         {% else %}
-            <div style="width: 72px; height: 72px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 10px; flex-shrink: 0;">
+            <div style="width: 72px; height: 72px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #111827; font-size: 10px; font-weight: 800; flex-shrink: 0;">
                 No Logo
             </div>
         {% endif %}
@@ -165,76 +162,54 @@
     </address>
 
     <div style="display: flex; margin-left: 64px; justify-content: center; align-items: center; gap: 24px; font-size: 12px; font-weight: 700; white-space: nowrap; color: #1f2937; margin-top: 6px;">
-        <!-- Email -->
         <div style="display: flex; align-items: center; gap: 6px;">
-            <svg style="width: 16px; height: 16px; display: inline-block; text-gray-700;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v.01L12 13 2 6.01V6z"/>
-                <path d="M2 8.5V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8.5l-9.4 6.27a1 1 0 0 1-1.2 0L2 8.5z"/>
-            </svg>
             <span>{{ company.email }}</span>
         </div>
-        <!-- Phone -->
         <div style="display: flex; align-items: center; gap: 6px;">
-            <svg style="width: 16px; height: 16px; display: inline-block; text-gray-700;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M2.01 5.87a2 2 0 0 1 2-2h3.2a1 1 0 0 1 .96.73l1.1 3.86a1 1 0 0 1-.45 1.14l-1.7 1.02a15.05 15.05 0 0 0 6.59 6.59l1.02-1.7a1 1 0 0 1 1.14-.45l3.86 1.1a1 1 0 0 1 .73.96v3.2a2 2 0 0 1-2 2A18 18 0 0 1 2.01 5.87z"/>
-            </svg>
             <span>{{ company.phone }}{% if company.phone2 %}, {{ company.phone2 }}{% endif %}</span>
         </div>
-        <!-- RC -->
         {% if company.Rc %}
-            <span style="font-weight: 500;">RC {{ company.Rc }}</span>
+            <span style="font-weight: 800;">RC {{ company.Rc }}</span>
         {% endif %}
     </div>
 
-    <hr style="margin: 20px 0; border: none; border-top: 1px solid #e5e7eb;">
+    <hr style="margin: 20px 0; border: none; border-top: 2px solid #9ca3af;">
 
-
-    <!-- Invoice Meta -->
     <div class="invoice-meta">
         <div>
-            <div class="label">Invoice ID</div>
-            <div class="value">{{ invoice.invoiceID }}</div>
+            <div class="label">Quote Ref</div>
+            <div class="value">{{ quote.referenceID }}</div>
         </div>
         <div>
-            <div class="label">Invoice Date</div>
-            <div class="value">{{ invoice.invoice_date|date:"d/m/Y" }}</div>
-        </div>
-        <div>
-            <div class="label">Due Date</div>
-            <div class="value">{{ invoice.due_date|date:"d/m/Y" }}</div>
+            <div class="label">Date</div>
+            <div class="value">{{ quote.quote_date|date:"d/m/Y" }}</div>
         </div>
         <div>
             <div class="label">Status</div>
             <div class="value">
-                <span class="badge {% if invoice.invoice_state == 'Supplied' %}badge-supplied{% else %}badge-pending{% endif %}">
-                    {{ invoice.invoice_state }}
-                </span>
+                <span class="badge badge-quote">Quote</span>
             </div>
         </div>
-        {% if invoice.order_ID %}
         <div>
-            <div class="label">Order Ref</div>
-            <div class="value">{{ invoice.order_ID }}</div>
+            <div class="label">Document</div>
+            <div class="value">Sales Quote</div>
         </div>
-        {% endif %}
     </div>
 
-    <!-- Customer Info -->
     <div class="customer-section">
         <div class="block">
             <div class="block-label">Bill To</div>
-            <div class="block-value">{{ invoice.customer_name }}</div>
-            <div class="block-sub">ID: {{ invoice.cusID }}</div>
+            <div class="block-value">{{ quote.genby }}</div>
+            <div class="block-sub">ID: {{ quote.custID }}</div>
         </div>
-        {% if invoice.Gdescription %}
+        {% if quote.Gdescription %}
         <div class="block" style="text-align:right;">
             <div class="block-label">Description</div>
-            <div class="block-value">{{ invoice.Gdescription }}</div>
+            <div class="block-value">{{ quote.Gdescription }}</div>
         </div>
         {% endif %}
     </div>
 
-    <!-- Items Table -->
     <div class="table-wrap">
         <table>
             <thead>
@@ -248,10 +223,13 @@
                 </tr>
             </thead>
             <tbody>
-                {% for item in invoice_items %}
+                {% for item in quote_items %}
                 <tr>
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ item.item_name }}</td>
+                    <td>
+                        {{ item.item_name }}
+                        {% if item.item_description %} — {{ item.item_description }}{% endif %}
+                    </td>
                     <td>{{ item.qty }}</td>
                     <td>{{ item.unit_p|floatformat:2|intcomma }}</td>
                     <td>{% if item.discount %}{{ item.discount|floatformat:2|intcomma }}{% else %}—{% endif %}</td>
@@ -259,20 +237,18 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" style="text-align:center; color:#9ca3af; padding:16px;">No items found</td>
+                    <td colspan="6" style="text-align:center; color:#374151; padding:16px; font-weight:700;">No items found</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tfoot>
                 <tr><td colspan="6" style="padding:4px;"></td></tr>
 
-                <!-- Subtotal -->
                 <tr class="summary-row">
                     <td colspan="4" style="text-align:right; padding-right:12px;">Subtotal</td>
                     <td colspan="2">{{ company.currency }} {{ subtotal|floatformat:2|intcomma }}</td>
                 </tr>
 
-                <!-- VAT lines -->
                 {% for vat in vat_items %}
                 <tr class="summary-row">
                     <td colspan="4" style="text-align:right; padding-right:12px;">VAT</td>
@@ -280,32 +256,17 @@
                 </tr>
                 {% endfor %}
 
-                <!-- VAT Total (only if more than one VAT line) -->
                 {% if vat_items|length > 1 %}
                 <tr class="summary-row divider-row">
-                    <td colspan="4" style="text-align:right; padding-right:12px; color:#6b7280; font-weight:700;">VAT Total</td>
-                    <td colspan="2" style="color:#6b7280; font-weight:700;">{{ company.currency }} {{ vat_total|floatformat:2|intcomma }}</td>
+                    <td colspan="4" style="text-align:right; padding-right:12px;">VAT Total</td>
+                    <td colspan="2">{{ company.currency }} {{ vat_total|floatformat:2|intcomma }}</td>
                 </tr>
                 {% endif %}
 
-                <!-- Grand Total -->
                 <tr class="total-row">
                     <td colspan="4" style="text-align:right; padding-right:12px;">Total Amount</td>
                     <td colspan="2">{{ company.currency }} {{ grand_total|floatformat:2|intcomma }}</td>
                 </tr>
-
-                <!-- Amount Paid / Balance Due -->
-                {% if invoice.amount_paid and invoice.amount_paid != grand_total %}
-                <tr style="background:#fff;">
-                    <td colspan="4" style="text-align:right; padding-right:12px; color:#030712; font-weight:800;">Amount Paid</td>
-                    <td colspan="2" style="color:#030712; font-weight:800;">{{ company.currency }} {{ invoice.amount_paid|floatformat:2|intcomma }}</td>
-                </tr>
-                <tr style="background:#fff;">
-                    <td colspan="4" style="text-align:right; padding-right:12px; color:#030712; font-weight:800;">Balance Due</td>
-                    <td colspan="2" style="color:#030712; font-weight:800;">{{ company.currency }} {{ balance_due|floatformat:2|intcomma }}</td>
-                </tr>
-                {% endif %}
-
             </tfoot>
         </table>
     </div>
@@ -313,7 +274,7 @@
     <hr>
 
     <p class="footer">
-        Generated on: {% now "d/m/Y H:i" %} &nbsp;&nbsp;|&nbsp;&nbsp; Prepared by: {{ invoice.Userlogin }}
+        Generated on: {% now "d/m/Y H:i" %} &nbsp;&nbsp;|&nbsp;&nbsp; Prepared by: {{ quote.Userlogin }}
     </p>
 
 </body>

@@ -71,24 +71,21 @@
         var $btn = $(this);
         $btn.prop('disabled', true).text('Sending...');
 
-        var sendPromise;
-        // New Sales Quote: use quote-specific subject/body and await before save
+        // New Sales Quote: save first, then server queues WeasyPrint PDF (like invoice)
         if (value === 'sq' && typeof emailQuoteThenSave === 'function') {
-            sendPromise = emailQuoteThenSave(value).finally(function () {
-                $btn.prop('disabled', false).text('Send');
-                try {
-                    if (typeof email_modal !== 'undefined' && email_modal.open) {
-                        email_modal.close();
-                    } else {
-                        $('#close').click();
-                    }
-                } catch (e) {}
-            });
+            try {
+                if (typeof email_modal !== 'undefined' && email_modal.open) {
+                    email_modal.close();
+                } else {
+                    $('#close').click();
+                }
+            } catch (e) {}
+            emailQuoteThenSave();
+            $btn.prop('disabled', false).text('Send');
             return;
         }
 
-        sendPromise = Promise.resolve(Email_PDF(value));
-        Promise.resolve(sendPromise)
+        Promise.resolve(Email_PDF(value))
             .then(function () {
                 if ($('#submit_form').length && typeof customer_exists === 'function') {
                     customer_exists();
