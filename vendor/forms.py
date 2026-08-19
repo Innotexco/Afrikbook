@@ -53,22 +53,28 @@ class VendorRegistrationForm(forms.ModelForm):
         model = vendor_table
         fields = ("name", "phone", "email", "address",)
 
+    phone = forms.CharField(required=False)
     email = forms.CharField(required=False)
     
     def clean_email(self):
-        email = self.cleaned_data.get('email')
+        email = (self.cleaned_data.get('email') or '').strip()
+        if not email:
+            return ''
         model = self.Meta.model
-        vendor = model.objects.filter(email__iexact = email)
-
-        if vendor.exists():
+        if model.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError("A vendor with that email already exists!")
-        return self.cleaned_data.get('email') 
+        return email
+
+    def clean_phone(self):
+        return (self.cleaned_data.get('phone') or '').strip()
 
 
 
 class VendorUpdateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['phone'].required = False
+        self.fields['email'].required = False
 
          
     class Meta:
@@ -76,13 +82,16 @@ class VendorUpdateForm(forms.ModelForm):
         fields = ("name", "phone", "email", "address", "company_name",)
 
     def clean_email(self):
-        email = self.cleaned_data.get('email')
+        email = (self.cleaned_data.get('email') or '').strip()
+        if not email:
+            return ''
         model = self.Meta.model
-        vendor = model.objects.filter(email = email).exclude(pk=self.instance.pk)
-
-        if vendor.exists():
+        if model.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError("A vendor with that email already exists!")
-        return self.cleaned_data.get('email') 
+        return email
+
+    def clean_phone(self):
+        return (self.cleaned_data.get('phone') or '').strip()
 
 
 

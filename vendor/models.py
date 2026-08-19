@@ -129,7 +129,7 @@ class Vendor_Return(models.Model):
 
 class vendor_table(models.Model):
     name            = models.CharField(max_length=100)
-    phone           = models.CharField(max_length=50)
+    phone           = models.CharField(max_length=50, blank=True, default='')
     email   = models.EmailField(
         max_length=150,
         blank=True,

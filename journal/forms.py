@@ -7,6 +7,14 @@ class JournalEntryForm(forms.ModelForm):
         model = new_journal_entry
         fields = '__all__'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Narration and line description are optional
+        if 'narration' in self.fields:
+            self.fields['narration'].required = False
+        if 'description' in self.fields:
+            self.fields['description'].required = False
+
 class JournalEntryLogForm(forms.ModelForm):
     class Meta:
         model =new_journal_entry_log
