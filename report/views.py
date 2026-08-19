@@ -3302,38 +3302,63 @@ def SalesPersonYearlySalesReport(request):
     company = company_table.objects.get(id=request.user.company_id_id)
     db = request.user.company_id.db_name
     customer = customer_invoice.objects.using(db).values('Userlogin').distinct()
+    now = datetime.now()
+    years = list(range(now.year, now.year - 15, -1))
+    selected_start_year = now.year
+    selected_end_year = now.year
+
+    def _parse_year(raw):
+        """Accept YYYY or YYYY-MM-DD; yearly report uses calendar years."""
+        if not raw:
+            return None
+        raw = str(raw).strip()
+        try:
+            if len(raw) == 4 and raw.isdigit():
+                return datetime(int(raw), 1, 1)
+            return datetime.strptime(raw[:10], '%Y-%m-%d')
+        except (ValueError, TypeError):
+            return None
+
     if request.method == "POST":
         start = request.POST.get("start_date")
         end = request.POST.get("end_date")
-        if start:
-            start_date = datetime.strptime(start, '%Y-%m-%d') #.date()
-            end_date = datetime.strptime(end, '%Y-%m-%d') #.date()
-            yearly_sales_data, total_sales, total_qty = customer_yearly_sales_report(request, start_date, end_date, customer, 2)
+        start_date = _parse_year(start)
+        end_date = _parse_year(end) or start_date
+        if start_date:
+            if end_date and end_date.year < start_date.year:
+                start_date, end_date = end_date, start_date
+            selected_start_year = start_date.year
+            selected_end_year = end_date.year
+            yearly_sales_data, total_sales, total_qty = customer_yearly_sales_report(
+                request, start_date, end_date, customer, 2
+            )
         else:
-            start =  datetime.now() #.date()
-    
-            yearly_sales_data, total_sales, total_qty = customer_yearly_sales_report(request, start, start_date, customer, 2)
-       
-            messages.error(request, 'Enter valid date')
-        
-        # JsonResponse({'data':daily_sales_data, 'total_sales': total_sales, 'total_qty':total_qty})
-        
+            start_date = datetime(now.year, 1, 1)
+            end_date = start_date
+            yearly_sales_data, total_sales, total_qty = customer_yearly_sales_report(
+                request, start_date, end_date, customer, 2
+            )
+            messages.error(request, 'Enter a valid year')
     else:
-        start =  datetime.now() #.date()
-    
-        yearly_sales_data, total_sales, total_qty = customer_yearly_sales_report(request, start, start, customer, 2)
-        
+        start_date = datetime(now.year, 1, 1)
+        end_date = start_date
+        yearly_sales_data, total_sales, total_qty = customer_yearly_sales_report(
+            request, start_date, end_date, customer, 2
+        )
+
     context = {
-        'customer':customer.all(),
-        'customers':customer,
-        'yearly_sales_data':yearly_sales_data,
+        'customer': customer.all(),
+        'customers': customer,
+        'yearly_sales_data': yearly_sales_data,
         'total_sales': total_sales,
         'total_qty': total_qty,
         'company': company,
-        'cols': customer.count() + 1
-        
-        }
-    
+        'cols': customer.count() + 1,
+        'years': years,
+        'selected_start_year': selected_start_year,
+        'selected_end_year': selected_end_year,
+    }
+
     return render(request, 'sales_person/Yearly.html', context)
 
 
