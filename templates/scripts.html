@@ -408,6 +408,7 @@
    
 
     let vendor = document.getElementById("Vendor");
+    let casualCustomer = document.getElementById("Casual_Customer");
 
     let customerSelect = document.getElementById("id_customer");
     
@@ -419,6 +420,46 @@
     }
     
     let details = document.getElementById("details");
+
+    function applyCasualCustomerSelection() {
+        const casualId = $("#Casual_Customer").data("customer-id");
+        const casualName = $("#Casual_Customer").data("customer-name") || "Casual Customer";
+        const casualCode = $("#Casual_Customer").data("customer-code") || "";
+        const casualPhone = $("#Casual_Customer").data("customer-phone") || "";
+        const casualEmail = $("#Casual_Customer").data("customer-email") || "";
+        const casualCategory = $("#Casual_Customer").data("customer-category") || "Retail";
+        const casualCompany = $("#Casual_Customer").data("customer-company") || casualName;
+
+        if (customerSelect) {
+            customerSelect.style.display = "none";
+            customerSelect.removeAttribute("required");
+            $("#id_customer").val("");
+        }
+        if (vendorSelect) {
+            vendorSelect.style.display = "none";
+            vendorSelect.removeAttribute("required");
+            $("#id_vendor").val("");
+        }
+        if (details != null) {
+            details.textContent = "Casual Customer Details";
+        }
+
+        $("#text").html(
+            "Name:  " + casualName + "\n" +
+            "Code:  " + casualCode + "\n" +
+            "Phone:  " + casualPhone + "\n" +
+            "Email:  " + casualEmail + "\n" +
+            "Category:  " + casualCategory + "\n" +
+            "Company:  " + casualCompany
+        );
+        $("#genby").val(casualName);
+        $("#cusID").val(casualCode);
+        $("#email").val(casualEmail);
+        if (casualId && customerSelect) {
+            // Keep select in sync if Casual Customer is also in the list
+            $("#id_customer").val(String(casualId));
+        }
+    }
  
     
    if(customer){
@@ -429,6 +470,7 @@
         vendorSelect.style.display = "none"
         // Remove required attribute from vendor select menu
         vendorSelect.removeAttribute('required');
+        if (customerSelect) customerSelect.setAttribute('required', true);
         if (details !=null){
             details.textContent = 'Customer Details'
 
@@ -450,6 +492,7 @@
         customerSelect.style.display = "none"
         // Remove required attribute from customer select menu
         customerSelect.removeAttribute('required');
+        if (vendorSelect) vendorSelect.setAttribute('required', true);
         if (details !=null){
             details.textContent = 'Vendor Details'
 
@@ -463,6 +506,11 @@
     });
 
     
+   }
+   if (casualCustomer) {
+    casualCustomer.addEventListener('click', function () {
+        applyCasualCustomerSelection();
+    });
    }
 
  

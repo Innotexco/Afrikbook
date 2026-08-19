@@ -687,6 +687,10 @@ from main .views import send_email, send_email_with_pdf
 @urls_name(name="Sales Quotes")
 def AddSalesQuote(request):
     db = request.user.company_id.db_name
+    # Ensure Casual Customer exists for older accounts created before this default
+    from main.functions.company.company import create_casual_customer
+    casual = create_casual_customer(db)
+
     customer = customer_table.objects.using(db).all()
     vendor = vendor_table.objects.using(db).all()
     item = Item.objects.using(db).all()
@@ -695,23 +699,25 @@ def AddSalesQuote(request):
 
     if request.method == "POST":
         selected = request.POST.get('accountType')
-        
-        if selected == "Customer":
+
+        if selected == "Casual Customer":
+            # Force quote onto the system Casual Customer record
+            request.POST = request.POST.copy()
+            request.POST['genby'] = casual.name
+            request.POST['cusID'] = casual.customer_code
             form = add_sales_quote(request, db)
-        elif selected == "Vendor":
+        elif selected in ("Customer", "Vendor"):
             form = add_sales_quote(request, db)
-            # add_purchase_quote(request, db)
         else:
-            messages.error(request, "Select customer or vendor")
-            
-            send_email()
+            messages.error(request, "Select customer, vendor, or casual customer")
 
     context = {
         'customers': customer,
         'vendor': vendor,
         'items': item,
         'form': form,
-        'company': company
+        'company': company,
+        'casual_customer': casual,
     }
     return render(request, "customer/NewSalesQuote.html", context)
 
