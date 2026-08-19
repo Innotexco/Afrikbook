@@ -310,20 +310,62 @@
             }
         }
 
-        function Email(div) {
-            var value = $("#email").val();
-            var customer = $("#Casual_Customer").prop('checked');
+        function quoteEmailOptions() {
+            var companyName = "{{ company.company_name|default:'Afrikbook'|escapejs }}";
+            var customerName = ($("#genby").val() || "Customer").trim();
+            var ref = ($("input[name='referenceID']").val() || "").trim();
+            var subject = "Sales Quote from " + companyName;
+            if (ref) {
+                subject += " (" + ref + ")";
+            }
+            var message =
+                "Dear " + customerName + ",\n\n" +
+                "Please find your sales quote" + (ref ? " (" + ref + ")" : "") +
+                " attached as a PDF.\n\n" +
+                "Regards,\n" + companyName;
+            return {
+                subject: subject,
+                message: message,
+                filename: ref ? ("sales-quote-" + ref.replace(/[^\w\-]+/g, "_") + ".pdf") : "sales-quote.pdf",
+                successMessage: "Quote emailed successfully!",
+            };
+        }
 
-            alertify.defaults.glossary.title = "{{request.user.username}}";
-            // Yes → save + email PDF | No → save only
+        function emailQuoteThenSave(div) {
+            var opts = quoteEmailOptions();
+            // Disable create while email is in flight
+            $("#submit_form").prop("disabled", true).text("Sending...");
+            return Email_PDF(div, opts)
+                .then(function () {
+                    submitQuoteForm();
+                })
+                .catch(function (err) {
+                    console.error(err);
+                    // Still offer to save the quote if email failed
+                    alertify.confirm(
+                        "Email could not be sent. Save the quote anyway?",
+                        function () { submitQuoteForm(); },
+                        function () {
+                            $("#submit_form").prop("disabled", false).text("Create");
+                        }
+                    ).set("labels", { ok: "Save", cancel: "Cancel" });
+                });
+        }
+
+        function Email(div) {
+            var value = ($("#email").val() || "").trim();
+            var hasValidEmail = value.indexOf("@") !== -1 && value.indexOf(".") !== -1;
+
+            alertify.defaults.glossary.title = "{{ request.user.username|escapejs }}";
+            // Yes → email PDF (await) then save | No → save only
             alertify.confirm(
                 "Would you like to send quote as PDF?",
                 function onYes() {
-                    if (value && customer == false) {
-                        Email_PDF(div);
-                        submitQuoteForm();
+                    if (hasValidEmail) {
+                        // Works for normal customers AND Casual Customer when email is set
+                        emailQuoteThenSave(div);
                     } else {
-                        // Need an address first — open email modal, then save from there if applicable
+                        // Need an address first — open email modal
                         $("#div").val(div);
                         email_modal.showModal();
                     }
@@ -331,20 +373,19 @@
                 function onNo() {
                     submitQuoteForm();
                 }
-            ).set('labels', { ok: 'Yes', cancel: 'No' });
+            ).set("labels", { ok: "Yes", cancel: "No" });
         }
 
+        // Called from email modal Send — always save quote after email (incl. Casual Customer)
         function customer_exists() {
-            var customer = $("#Casual_Customer").prop('checked');
-            if (customer == false) {
-                submitQuoteForm();
-            } else {
-                $('#close').click();
-            }
+            try {
+                if (typeof email_modal !== "undefined" && email_modal.open) {
+                    email_modal.close();
+                } else {
+                    $("#close").click();
+                }
+            } catch (e) {}
+            // Form submit is handled by the modal Send handler after Email_PDF resolves
         }
-
-        $("#Casual_Customer").on('click', function () {
-            $("#div").val("");
-        });
     </script> 
 {% endblock content %}
