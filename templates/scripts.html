@@ -433,7 +433,6 @@
         if (customerSelect) {
             customerSelect.style.display = "none";
             customerSelect.removeAttribute("required");
-            $("#id_customer").val("");
         }
         if (vendorSelect) {
             vendorSelect.style.display = "none";
@@ -455,9 +454,15 @@
         $("#genby").val(casualName);
         $("#cusID").val(casualCode);
         $("#email").val(casualEmail);
+
+        // Item grid requires currentCustomerCategory (set via #id_customer change)
+        if (typeof currentCustomerCategory !== "undefined") {
+            currentCustomerCategory = casualCategory;
+        }
         if (casualId && customerSelect) {
-            // Keep select in sync if Casual Customer is also in the list
-            $("#id_customer").val(String(casualId));
+            $("#id_customer").val(String(casualId)).trigger("change");
+        } else if (typeof updateAllItemPrices === "function") {
+            updateAllItemPrices();
         }
     }
  

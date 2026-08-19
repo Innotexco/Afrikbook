@@ -118,12 +118,21 @@ $(document).on('change', '#select-item', function(event) {
     const unit = $currentRow.find('input[name="unit[]"]');
     const amount = $currentRow.find('input[name="amount[]"]');
     const id_vendor = $('#id_vendor').val();
+    const accountType = $('input[name="accountType"]:checked').val();
+    const casualSelected = accountType === 'Casual Customer' && ($('#cusID').val() || $('#genby').val());
+    const customerSelected = !!currentCustomerCategory || !!$('#id_customer').val();
 
-    if (!currentCustomerCategory && itemId !== '0' && !id_vendor) {
+    // Allow item add when a normal customer, vendor, or Casual Customer is selected
+    if (!customerSelected && !casualSelected && itemId !== '0' && !id_vendor) {
         alertify.defaults.glossary.title = "Alert";
         alertify.alert("Please select a customer first before adding items.");
         event.target.value = "0";
         return;
+    }
+
+    // Casual Customer: ensure category is set for pricing (Retail by default)
+    if (casualSelected && !currentCustomerCategory) {
+        currentCustomerCategory = $('#Casual_Customer').data('customer-category') || 'Retail';
     }
 
     const selectElements = document.querySelectorAll('.item-select');
