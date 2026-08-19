@@ -3120,12 +3120,10 @@ def CustomerQuaterlySalesReport(request):
     db = request.user.company_id.db_name
     customer = customer_table.objects.using(db).all()
     now = datetime.now()
-    # Year picker options (report groups Q1–Q4 for a single calendar year)
-    years = list(range(now.year, now.year - 15, -1))
+    years = list(range(2025, now.year + 1))
     selected_year = now.year
 
     def _parse_quarter_year(raw):
-        """Accept YYYY or YYYY-MM-DD; quarterly report uses the year only."""
         if not raw:
             return None
         raw = str(raw).strip()
