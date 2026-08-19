@@ -32,34 +32,36 @@
             <div class="grid gap-6 md:grid-cols-6 xl:grid-cols-4 mb-3">
 
                 <label class="block text-sm">
-                    <span class="text-gray-700">FROM</span>
-                    <input 
-                        type="date"
-                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                        placeholder=""
+                    <span class="text-gray-700">FROM Year</span>
+                    <select
                         name="start_date"
                         id="from"
-                    />
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600"
+                    >
+                        <option value="">Select year</option>
+                        {% for y in years %}
+                        <option value="{{ y }}" {% if selected_start_year == y %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
                 </label>
 
                 <label class="block text-sm">
-                    <span class="text-gray-700">TO</span>
-                    <input 
-                        type="date"
-                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                        placeholder=""
+                    <span class="text-gray-700">TO Year</span>
+                    <select
                         name="end_date"
                         id="to"
-                    />
-                </label> 
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600"
+                    >
+                        <option value="">Select year</option>
+                        {% for y in years %}
+                        <option value="{{ y }}" {% if selected_end_year == y %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
 
-               
-               
-                <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="search2">
+                <button type="submit" class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate {% if not selected_start_year %}hidden{% endif %}" id="search2">
                     Search
-                </button> 
-
-               
+                </button>
 
             </div>
             
@@ -160,6 +162,15 @@
     </div>
 
     <script>
+        $(document).on('change', '#from, #to', function(){
+           let from = $('#from').val()
+           let to = $('#to').val()
+           if(from != '' && to != '' ){
+               $('#search2').removeClass('hidden')
+           }else{
+               $('#search2').addClass('hidden')
+           }
+       })
         $(document).ready(
             setTimeout(function(){
                 //Filter()
