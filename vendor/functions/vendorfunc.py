@@ -30,17 +30,19 @@ from vendor.forms import(
 def add_vendor(request, db):
    
     form = VendorRegistrationForm(request.POST)
-    email = request.POST.get('email')
-    try:
-        vendor_table.objects.using(db).get(email=email)
+    email = (request.POST.get('email') or '').strip()
+    if email and vendor_table.objects.using(db).filter(email__iexact=email).exists():
         messages.error(request, "Email already exists")
-    except vendor_table.DoesNotExist:
-        if form.is_valid():
-            vendor = form.save(commit=False)
-            vendor.Userlogin = request.user.username
-            vendor.save(using=db)
-            messages.success(request, "Vendor Add Successful")
-            return redirect('vendor:register_vendor')
+        return None
+
+    if form.is_valid():
+        vendor = form.save(commit=False)
+        vendor.phone = (vendor.phone or '').strip()
+        vendor.email = email
+        vendor.Userlogin = request.user.username
+        vendor.save(using=db)
+        messages.success(request, "Vendor Add Successful")
+        return redirect('vendor:register_vendor')
 
 
 def edit_vendor(request, id, db):

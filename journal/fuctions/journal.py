@@ -24,7 +24,7 @@ def create_new_journal_enty(request, db):
     vendor_name  = request.POST.get('vendor_name', '').strip()
     phone        = request.POST.get('phone', '').strip()
     party_type   = request.POST.get('party_type', 'vendor')  # 'vendor' or 'customer'
-    narration    = request.POST['narration']
+    narration    = (request.POST.get('narration') or '').strip()
 
     item         = request.POST.getlist('item[]')
     descriptions = request.POST.getlist('desc[]')
@@ -57,6 +57,10 @@ def create_new_journal_enty(request, db):
                     message_displayed = True
                 continue
 
+            line_desc = ''
+            if i < len(descriptions):
+                line_desc = (descriptions[i] or '').strip()
+
             form_data = {
                 'date':             date,
                 'invoice_no':       invoice_no,
@@ -66,7 +70,7 @@ def create_new_journal_enty(request, db):
                 'category':         category,
                 'narration':        narration,
                 'item':             item[i],
-                'description':      descriptions[i],
+                'description':      line_desc,
                 'debit':            amount_paid,
                 'credit':           total_debit,
                 'total':            amount[i],
@@ -82,7 +86,7 @@ def create_new_journal_enty(request, db):
                 if not message_displayed:
                     if vendor_name:
                         
-                        #Resolve or create vendor
+                        # Resolve or create vendor (phone optional)
                         import uuid
                         dummy_email = f"{uuid.uuid4().hex[:8]}@noemail.local"
 
@@ -95,7 +99,7 @@ def create_new_journal_enty(request, db):
                                 
                                 ven = vendor_table.objects.using(db).create(
                                     name      = cus.name,
-                                    phone     = cus.phone or phone or '0000000000',
+                                    phone     = (cus.phone or phone or '').strip(),
                                     email     = dummy_email,
                                     address   = 'N/A',  
                                     Userlogin = request.user.username,
@@ -104,7 +108,7 @@ def create_new_journal_enty(request, db):
 
                                 ven = vendor_table.objects.using(db).create(
                                     name      = vendor_name,
-                                    phone     = phone or '0000000000',
+                                    phone     = phone,
                                     email     = dummy_email,
                                     address   = 'N/A',
                                     Userlogin = request.user.username,

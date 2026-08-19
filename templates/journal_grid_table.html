@@ -24,14 +24,13 @@
         }
     });*/
 
+    // Phone stays optional even when a new vendor name is typed
     var vendorInput = document.getElementById('vendor_name_input');
     if (vendorInput) {
         vendorInput.addEventListener('input', function() {
-            var inputValue = this.value;
-            if (inputValue) {
-                document.getElementById('party_phone').setAttribute('required', true);
-            } else {
-                document.getElementById('party_phone').removeAttribute('required');
+            var phoneEl = document.getElementById('party_phone');
+            if (phoneEl) {
+                phoneEl.removeAttribute('required');
             }
         });
     }
