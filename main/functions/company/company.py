@@ -20,6 +20,8 @@ import psycopg2
 from main.db_router import add_db_connection, ensure_db_connection
 from django.conf import settings
 from django.db import connections
+from customer.models import customer_table
+from customer.utils import generate_customer_id
 
 
 def add_company(request, db_name):
@@ -372,8 +374,23 @@ def create_default_warehouse(db):
             description="Default warehouse — automatically created and cannot be deleted",
             is_default=True,
         )
-        
-        
+
+
+def create_casual_customer(db):
+    """Ensure default walk-in customer 'Casual Customer' exists for this company DB."""
+    existing = customer_table.objects.using(db).filter(name="Casual Customer").first()
+    if existing:
+        return existing
+
+    return customer_table.objects.using(db).create(
+        name="Casual Customer",
+        phone="1234",
+        category="Retail",
+        company_name="Casual Customer",
+        email="casualCustomer@gmail.com",
+        customer_code=generate_customer_id(),
+    )
+
 
 def create_profile(request, loginuser):
     company = loginuser.company_id  # get the related company object, not just ID
@@ -405,6 +422,11 @@ def create_profile(request, loginuser):
     
     #Create default warehouse
     create_default_warehouse(company.db_name)
+
+    # Create default Casual Customer (walk-in)
+    create_casual_customer(company.db_name)
+
+
 
 
 def default_account(request, db):

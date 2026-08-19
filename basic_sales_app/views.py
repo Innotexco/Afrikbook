@@ -65,17 +65,8 @@ def SaleMenu(request):
 
 
 def casual_customer(DB):
-    try:
-        cus = customer_table.objects.using(DB).get(name="Casual Customer")
-    except customer_table.DoesNotExist:
-        cus = customer_table.objects.using(DB).create(
-            name="Casual Customer",
-            phone="1234",
-            category="Retail",
-            company_name= "Casual Customer",
-            email= "casualCustomer@gmail.com",
-            customer_code= generate_customer_id()
-            )
+    from main.functions.company.company import create_casual_customer
+    return create_casual_customer(DB)
 
 @login_required(login_url="/")
 def SalesHistory(request):
