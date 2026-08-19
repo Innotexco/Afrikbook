@@ -1104,63 +1104,108 @@ window.pdfGenerator = {
 
     }
     
-    function Email_PDF(div) {
-        
-            // hide and show elements
+    /**
+     * Build a PDF from #div and email it. Returns a Promise that resolves when
+     * the send request finishes (so callers can submit the form afterward).
+     * options: { email, subject, message, filename, successMessage }
+     */
+    function Email_PDF(div, options) {
+        options = options || {};
+
+        return new Promise(function (resolve, reject) {
             var $section = $(`#${div}`).find('section');
             $section.removeClass('hidden');
-            hide_elements(true)
+            hide_elements(true);
 
             const element = document.getElementById(div);
-            const email = document.getElementById('email').value;
-          
+            if (!element) {
+                hide_elements(false);
+                reject(new Error('PDF source element not found: ' + div));
+                return;
+            }
+
+            const email =
+                options.email ||
+                (document.getElementById('email') && document.getElementById('email').value) ||
+                '';
+            if (!email || email.indexOf('@') === -1) {
+                $section.addClass('hidden');
+                hide_elements(false);
+                reject(new Error('A valid recipient email is required'));
+                return;
+            }
+
+            const filename = options.filename || (div === 'sq' ? 'sales-quote.pdf' : 'document.pdf');
+            const subject =
+                options.subject ||
+                (div === 'sq' ? 'Sales Quote from Afrikbook' : 'Document from Afrikbook');
+            const message =
+                options.message ||
+                (div === 'sq'
+                    ? 'Please find your sales quote attached as a PDF.'
+                    : 'Please find the attached PDF document.');
+
             const opt = {
-                margin: [10, 10, 10, 10],  // [top, left, bottom, right] margins in mm
-                filename: 'document.pdf',
+                margin: [10, 10, 10, 10],
+                filename: filename,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },  // Increase the canvas resolution
+                html2canvas: { scale: 2 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Convert the HTML content to PDF and apply options
-            html2pdf().set(opt).from(element).toPdf().get('pdf').then(function (pdf) {
-                // Convert PDF to Blob
-                const pdfBlob = pdf.output('blob');
+            html2pdf()
+                .set(opt)
+                .from(element)
+                .toPdf()
+                .get('pdf')
+                .then(function (pdf) {
+                    const pdfBlob = pdf.output('blob');
 
-                // Prepare FormData to send PDF via AJAX
-                const formData = new FormData();
-                formData.append('pdf_file', pdfBlob, 'document.pdf');
-                formData.append('email', email );
-                
-                // Send PDF to backend via AJAX
-                fetch('/send_email_with_pdf', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}',  // Add CSRF token
-                    }
+                    // Restore UI as soon as PDF bytes are captured
+                    $section.addClass('hidden');
+                    hide_elements(false);
+
+                    const formData = new FormData();
+                    formData.append('pdf_file', pdfBlob, filename);
+                    formData.append('email', email);
+                    formData.append('subject', subject);
+                    formData.append('message', message);
+                    formData.append('filename', filename);
+
+                    return fetch('/send_email_with_pdf', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                        },
+                    });
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        if (div === "sq"){
+                .then(function (response) {
+                    return response.json().then(function (data) {
+                        if (!response.ok || !data.success) {
+                            var err = (data && data.error) || 'Failed to send PDF';
+                            alert('Error sending PDF: ' + err);
+                            reject(data || new Error(err));
+                            return;
+                        }
+                        if (options.successMessage) {
+                            alert(options.successMessage);
+                        } else if (div === 'sq') {
                             alert('Quote sent successfully!');
                         }
-                    } else {
-                        alert('Error sending PDF: ' + data.error);
-                    }
+                        resolve(data);
+                    });
                 })
-                .catch(error => {
+                .catch(function (error) {
                     console.error('Error:', error);
+                    $section.addClass('hidden');
+                    hide_elements(false);
+                    if (error && error.message) {
+                        alert('Error sending PDF: ' + error.message);
+                    }
+                    reject(error);
                 });
-            });
-
-            //hide and show elements
-            setTimeout(() => {
-                $section.addClass('hidden');
-                hide_elements(false)
-                
-            }, 0);
+        });
     }
 
 

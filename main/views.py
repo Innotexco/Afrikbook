@@ -1690,13 +1690,18 @@ def send_email_with_pdf(request):
 
     pdf_file = request.FILES['pdf_file']
     receipient_email = request.POST.get('email') or request.POST.get('receipient_email')
-    
-    
+
     if not pdf_file or not receipient_email:
-        return JsonResponse({'error': 'Invalid data'}, status=400)
-    
-    subject = "From Afrikbook"
-    message = "welcome to Afrikbook account system"
+        return JsonResponse({'success': False, 'error': 'Invalid data'}, status=400)
+
+    # Prefer caller-supplied subject/body/filename (quotes, invoices, etc.)
+    subject = (request.POST.get('subject') or "").strip() or "Document from Afrikbook"
+    message = (request.POST.get('message') or "").strip() or (
+        "Please find the attached PDF document."
+    )
+    attachment_filename = (request.POST.get('filename') or "").strip() or "document.pdf"
+    if not attachment_filename.lower().endswith(".pdf"):
+        attachment_filename = f"{attachment_filename}.pdf"
 
     try:
         from main.tasks import send_email_with_attachment_task
@@ -1705,7 +1710,7 @@ def send_email_with_pdf(request):
             recipients=[receipient_email],
             subject=subject,
             body=message,
-            attachment_filename="document.pdf",
+            attachment_filename=attachment_filename,
             attachment_b64=pdf_b64,
             attachment_mimetype="application/pdf",
         )
@@ -1720,7 +1725,7 @@ def send_email_with_pdf(request):
                 [receipient_email],
             )
             pdf_file.seek(0)
-            email.attach('document.pdf', pdf_file.read(), 'application/pdf')
+            email.attach(attachment_filename, pdf_file.read(), 'application/pdf')
             email.send(fail_silently=False)
             return JsonResponse({'success': True, 'queued': False})
         except Exception as err:

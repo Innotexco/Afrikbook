@@ -68,11 +68,40 @@
     })
     $("#send").on('click', function(){
         var value = $("#div").val();
-        Email_PDF(value)
-        if($('#submit_form') != null ){
-            customer_exists();
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Sending...');
+
+        var sendPromise;
+        // New Sales Quote: use quote-specific subject/body and await before save
+        if (value === 'sq' && typeof emailQuoteThenSave === 'function') {
+            sendPromise = emailQuoteThenSave(value).finally(function () {
+                $btn.prop('disabled', false).text('Send');
+                try {
+                    if (typeof email_modal !== 'undefined' && email_modal.open) {
+                        email_modal.close();
+                    } else {
+                        $('#close').click();
+                    }
+                } catch (e) {}
+            });
+            return;
         }
-      
+
+        sendPromise = Promise.resolve(Email_PDF(value));
+        Promise.resolve(sendPromise)
+            .then(function () {
+                if ($('#submit_form').length && typeof customer_exists === 'function') {
+                    customer_exists();
+                } else if ($('#submit_form').length && typeof submitQuoteForm === 'function') {
+                    submitQuoteForm();
+                }
+            })
+            .catch(function (err) {
+                console.error(err);
+            })
+            .finally(function () {
+                $btn.prop('disabled', false).text('Send');
+            });
     })
 
 </script>
