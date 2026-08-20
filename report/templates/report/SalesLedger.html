@@ -27,7 +27,7 @@
 
     <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
         <!-- <form action="" method="get"> -->
-            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
 
                 <label class="block text-sm">
                     <span class="text-gray-700">From</span>
@@ -38,7 +38,7 @@
                         id="from"
                     />
                 </label>
-    
+
                 <label class="block text-sm">
                     <span class="text-gray-700">To</span>
                     <input 
@@ -47,34 +47,42 @@
                         placeholder=""
                         id="to"
                     />
-    
                 </label>
-                
+
+                <label class="block text-sm">
+                    <span class="text-gray-700">By Invoice ID</span>
+                    <input 
+                        type="text"
+                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                        placeholder="e.g. 1000005"
+                        id="invoice_id"
+                    />
+                </label>
+
+                <label for="">
+                    <span class="text-gray-700">By Item</span>
+                    <select class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="item" onchange="filterItem(this)">
+                        <option selected disabled=true>Select Item</option>
+                        {% for item in item_name %}
+                        <option>{{item.item_name}}</option>   
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label for="">
+                    <span class="text-gray-700">By Customer</span>
+                    <select class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="customer_id" onchange="filterItem(this)">
+                        <option selected disabled=true>Select Customer</option>
+                        {% for customer in sales %}
+                        <option value="{{customer.cusID}}">{{customer.cusID }}_{{customer.customer_name}}</option>   
+                        {% endfor %}
+                    </select>
+                </label>
+
                 <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="search" onclick="Fetch()">
                     Search
                 </button>
-                <div class="text-sm grid gap-6 grid-cols-2">
-                    
-                    <label for="">
-                        <span class="text-gray-700">By Item</span>
-                        <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="item" required onchange="filterItem(this)">
-                            <option selected disabled=true>Select Item</option>
-                            {% for item in item_name %}
-                               <option>{{item.item_name}}</option>   
-                            {% endfor %}
-                        </select>
-                    </label>
-                   
-                    <label for="">
-                        <span class="text-gray-700">By Customer</span>
-                        <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="customer_id" required onchange="filterItem(this)">
-                            <option selected disabled=true>Select Customer</option>
-                            {% for customer in sales %}
-                               <option value="{{customer.cusID}}">{{customer.cusID }}_{{customer.customer_name}}</option>   
-                            {% endfor %}
-                        </select>
-                    </label>
-                </div>
+
             </div>
         <!-- </form> -->
        
@@ -194,9 +202,10 @@
                 end_date:   $('#to').val(),
                 item:       $('#item').val(),
                 customer:   $('#customer_id').val(),
+                invoice_id: $('#invoice_id').val(),
             };
 
-            if (datas.start_date || datas.end_date || datas.item || datas.customer) {
+            if (datas.start_date || datas.end_date || datas.item || datas.customer || datas.invoice_id) {
                 $.ajax({
                     url:    '{% url "filter:sales-ladger-date" %}',
                     method: 'GET',
