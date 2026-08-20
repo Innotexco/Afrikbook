@@ -85,16 +85,16 @@
                     {% for data in  yearly_sales_data %}
                     <tr class="text-gray-700">
   
-                        <td class="text-[10px]">
+                        <td class="px-4 text-[10px]">
                             {{data.year}}
                         </td>
-                        <td class="text-[10px]">
+                        <td class="px-4 text-[10px]">
                             {{data.total_sales}}
                         </td>
-                        <td class="text-[10px]">
+                        <td class="px-4 text-[10px]">
                             {{data.total_purchase}}
                         </td>
-                        <td class="text-[10px]">
+                        <td class="px-4 text-[10px]">
                             {{data.total}}
                         </td>
                         {% include 'report/viewbtn.html' %}
