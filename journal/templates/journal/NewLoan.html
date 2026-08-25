@@ -163,29 +163,59 @@
                         <span class="py-2 text-red-500 errors">{{form.duration.errors}}</span>
                     </label>
 
-                    <label class="block text-sm">
-                        <span class="text-gray-700">Interest Rate</span>
-                        <input 
-                            type="number"
-                            step="0.01"
-                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
-                            placeholder=""
-                            name="interest"
-                        />
-                        <span class="py-2 text-red-500 errors">{{form.interest.errors}}</span>
-                    </label>
+                    <div class="block text-sm">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                id="applyInterest"
+                                name="apply_interest"
+                                class="text-slate-600 form-checkbox rounded focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                            />
+                            <span class="ml-2 text-gray-700">Apply Interest</span>
+                        </label>
 
-                    <label class="block text-sm">
-                        <span class="text-gray-700">Extended Interest Rate</span>
-                        <input 
-                            type="number"
-                            step="0.01"
-                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
-                            placeholder=""
-                            name="extended_interest"
-                        />
+                        <div id="interestFieldWrap" class="hidden mt-2 relative">
+                            <input 
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max="100"
+                                class="block w-full pl-2 pr-7 py-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                                placeholder="e.g. 5"
+                                name="interest"
+                                id="interestInput"
+                            />
+                            <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm select-none">%</span>
+                        </div>
+                        <span class="py-2 text-red-500 errors">{{form.interest.errors}}</span>
+                    </div>
+
+                    <div class="block text-sm">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                id="applyExtendedInterest"
+                                name="apply_extended_interest"
+                                class="text-slate-600 form-checkbox rounded focus:border-slate-400 focus:outline-none focus:shadow-outline-purple"
+                            />
+                            <span class="ml-2 text-gray-700">Apply Extended Interest</span>
+                        </label>
+
+                        <div id="extendedInterestFieldWrap" class="hidden mt-2 relative">
+                            <input 
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max="100"
+                                class="block w-full pl-2 pr-7 py-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                                placeholder="e.g. 7.5"
+                                name="extended_interest"
+                                id="extendedInterestInput"
+                            />
+                            <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm select-none">%</span>
+                        </div>
                         <span class="py-2 text-red-500 errors">{{form.extended_interest.errors}}</span>
-                    </label>
+                    </div>
 
                     <label class="block text-sm">
                         <span class="text-gray-700">Reference</span>
@@ -280,6 +310,27 @@
             toggleBtn.textContent = isHidden ? "Hide Additional Loan Details" : "Show Additional Loan Details";
         });
     }
+
+    function wireInterestToggle(checkboxId, wrapId, inputId) {
+    const checkbox = document.getElementById(checkboxId);
+    const wrap = document.getElementById(wrapId);
+    const input = document.getElementById(inputId);
+
+    if (!checkbox || !wrap || !input) return;
+
+    checkbox.addEventListener('change', () => {
+        if (checkbox.checked) {
+            wrap.classList.remove('hidden');
+            input.focus();
+        } else {
+            wrap.classList.add('hidden');
+            input.value = "";   // clear so a hidden/unchecked field never submits a stray rate
+        }
+    });
+}
+
+    wireInterestToggle('applyInterest', 'interestFieldWrap', 'interestInput');
+    wireInterestToggle('applyExtendedInterest', 'extendedInterestFieldWrap', 'extendedInterestInput');
     </script>
 
     
