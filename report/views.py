@@ -915,7 +915,7 @@ def AgedReceivables(request):
         invoice_state='Cancelled'
     ).order_by('invoiceID', 'id')
     
-    loan = loan_account.objects.using(db)
+    loan = loan_account.objects.using(db).all()
 
     
     seen = set()
