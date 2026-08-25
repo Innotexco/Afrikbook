@@ -25,6 +25,16 @@ def create_new_loan(request, db):
         description = request.POST.get('description')
         amount_borrowed = request.POST.get('amount_borrowed')
 
+        # New optional fields (Spacesoft-only UI, but harmless for everyone else)
+        duration = request.POST.get('duration') or None
+        interest = request.POST.get('interest') or None
+        extended_interest = request.POST.get('extended_interest') or None
+        reference = request.POST.get('reference') or ""
+        
+        apply_interest = request.POST.get('apply_interest') == 'on'
+        apply_extended_interest = request.POST.get('apply_extended_interest') == 'on'
+
+
         # Basic validation
         if not all([date, description, amount_borrowed]):
             messages.error(request, "All required fields must be filled")
@@ -35,6 +45,30 @@ def create_new_loan(request, db):
         except:
             messages.error(request, "Invalid amount")
             return None
+
+        if apply_interest and not interest:
+            messages.error(request, "Enter an interest rate, or uncheck Apply Interest")
+            return None
+
+        if apply_extended_interest and not extended_interest:
+            messages.error(request, "Enter an extended interest rate, or uncheck Apply Extended Interest")
+            return None
+        
+        if interest and not apply_interest:
+            interest = None
+
+        if extended_interest and not apply_extended_interest:
+            extended_interest = None
+            
+    
+        # Validate interest fields if provided
+        for label, value in (("Interest", interest), ("Extended interest", extended_interest)):
+            if value is not None:
+                try:
+                    decimal.Decimal(value)
+                except:
+                    messages.error(request, f"{label} must be a valid number")
+                    return None
 
         #Get account safely
         try:
@@ -81,7 +115,11 @@ def create_new_loan(request, db):
             "description": description,
             "amount_borrowed": amount_borrowed,
             "balance_left": balance_left,
-            "account_debited": account_debited.account_id
+            "account_debited": account_debited.account_id,
+            "duration": duration,
+            "interest": interest,
+            "extended_interest": extended_interest,
+            "reference": reference,
         }
 
         loan_form = LoanAccountForm(form_data)
@@ -90,7 +128,6 @@ def create_new_loan(request, db):
         if not (loan_form.is_valid() and loan_log_form.is_valid()):
             print("Loan Form Errors:", loan_form.errors)
             print("Loan Log Form Errors:", loan_log_form.errors)
-        
             messages.error(request, f"{loan_form.errors} {loan_log_form.errors}")
             return loan_form
 
@@ -156,5 +193,3 @@ def create_new_loan(request, db):
         print("ERROR:", str(e))  # for debugging
         messages.error(request, "Something went wrong. Please try again.")
         return None
-
-
