@@ -195,8 +195,7 @@ def ViewLoan(request):
 def CreateLoan(request):
     db = request.user.company_id.db_name
     customer = customer_table.objects.using(db).all()
-    company = request.user.company_id
-    profile = CreateProfile.objects.using(db).filter(CompanyName=company.company_name).first()
+    profile = CreateProfile.objects.using(db).get(CompanyName=request.user.company_id.company_name)
     vendor = vendor_table.objects.using(db).all()
     employe = employee.objects.using(db).all()
     #account = chart_of_account.objects.using(db).all()
