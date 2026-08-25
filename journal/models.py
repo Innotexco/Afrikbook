@@ -107,37 +107,57 @@ class new_journal_entry_profit_log(models.Model):
         db_table = "new_journal_entry_profit_log"
 
 
+from django.db import models
+
+class DurationChoices(models.TextChoices):
+    ONE = '1', '1 Month'
+    TWO = '2', '2 Months'
+    THREE = '3', '3 Months'
+    FOUR = '4', '4 Months'
+    FIVE = '5', '5 Months'
+    SIX = '6', '6 Months'
+
 class loan_account(models.Model):
     date = models.DateField()
-    debtor_name	= models.CharField(max_length=200)
-    debtor_id	= models.CharField(max_length=60)
-    description	= models.CharField(max_length=223)
-    amount_borrowed	= models.CharField(max_length=200)
-    # amount_paid	= models.CharField(max_length=200)
-    balance_left	= models.CharField(max_length=200)
-    account_debited	= models.CharField(max_length=200)
-    status	= models.CharField(max_length=200, blank=True, default="unpaid")
-    token_ID	= models.CharField(max_length=200, blank=True)
+    debtor_name = models.CharField(max_length=200)
+    debtor_id = models.CharField(max_length=60)
+    description = models.CharField(max_length=223)
+    amount_borrowed = models.CharField(max_length=200)  # Consider using DecimalField
+    # amount_paid = models.CharField(max_length=200)
+    balance_left = models.CharField(max_length=200)
+    account_debited = models.CharField(max_length=200)
+    status = models.CharField(max_length=200, blank=True, default="unpaid")
+    token_ID = models.CharField(max_length=200, blank=True)
     transaction_id = models.CharField(editable=False, max_length=200)
-    Userlogin	= models.CharField(max_length=60, blank=True)
+    Userlogin = models.CharField(max_length=60, blank=True)
+    reference = models.CharField(max_length=60, blank=True)
+
+    duration = models.CharField(max_length=2, choices=DurationChoices.choices, blank=True, null=True, help_text="Loan duration in months (1–6)")
+    interest = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, help_text="Interest  rate")
+    extended_interest = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, help_text="Extended interest rate")
 
     class Meta:
         db_table = "loan_account"
 
-
 class loan_account_log(models.Model):
     date = models.DateField()
-    debtor_name	= models.CharField(max_length=200)
-    debtor_id	= models.CharField(max_length=60)
-    description	= models.CharField(max_length=223)
-    amount_borrowed	= models.CharField(max_length=200)
-    # amount_paid	= models.CharField(max_length=200)
-    balance_left	= models.CharField(max_length=200)
-    account_debited	= models.CharField(max_length=200)
-    status	= models.CharField(max_length=200, blank=True, default="unpaid")
-    token_ID	= models.CharField(max_length=200, blank=True)
+    debtor_name = models.CharField(max_length=200)
+    debtor_id = models.CharField(max_length=60)
+    description = models.CharField(max_length=223)
+    amount_borrowed = models.CharField(max_length=200)
+    # amount_paid = models.CharField(max_length=200)
+    balance_left = models.CharField(max_length=200)
+    account_debited = models.CharField(max_length=200)
+    status = models.CharField(max_length=200, blank=True, default="unpaid")
+    token_ID = models.CharField(max_length=200, blank=True)
     transaction_id = models.CharField(editable=False, max_length=200)
-    Userlogin	= models.CharField(max_length=60, blank=True)
+    Userlogin = models.CharField(max_length=60, blank=True)
+    reference = models.CharField(max_length=60, blank=True, null=True)
+    
+
+    duration = models.CharField(max_length=2, choices=DurationChoices.choices, blank=True, null=True)
+    interest = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    extended_interest = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
     class Meta:
         db_table = "loan_account_log"

@@ -230,7 +230,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'Afrikbook_proj.wsgi.application'
 
 
-# Cache Configuration - ADD THIS
+# Cache Configuration 
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',

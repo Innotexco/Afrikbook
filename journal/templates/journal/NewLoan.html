@@ -62,25 +62,7 @@
                     <span class="py-2 text-red-500 errors">{{form.amount_paid.errors}}</span>
                 </label> -->
 
-                <label class="block text-sm">
-                    <span class="text-gray-700 dark:text-gray-400">
-                        Debiting Account
-                    </span>
-                    <select class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="account_debited">
-                        <option selected disabled>-- Select Account --</option>
-                        
-                        {% for account in accounts %}
-                           {% comment %} {% if account.series_name == "Assets" %} {% endcomment %}
-                              <option value="{{account.account_id}}">{{account.account_id}}</option>
-                           {% comment %} {% endif %} {% endcomment %}
-                        {% endfor %}
-                            
-                        {% comment %} <option>$5,000</option>
-                        <option>$10,000</option>
-                        <option>$25,000</option> {% endcomment %}
-                    </select>
-                    <span class="py-2 text-red-500 errors">{{form.account_debited.errors}}</span>
-                </label>
+                
                 
             </div>
             
@@ -144,7 +126,7 @@
                     
                 </div>
                 
-                <label class="block text-sm">
+                                <label class="block text-sm">
                     <span class="text-gray-600">Description</span>
                     <textarea
                         class="block w-full mt-1 px-2 text-sm form-textarea border-2 rounded-md focus:border-slate-300  focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg"
@@ -154,6 +136,70 @@
                     ></textarea>
                     <span class="py-2 text-red-500 errors">{{form.description.errors}}</span>
                 </label>
+
+                {% if company.company_name == "Spacesoft Integral System Ltd" %}
+                <div class="md:col-span-2 xl:col-span-4">
+                    <button type="button" id="toggleExtraFields" class="text-sm text-slate-600 underline focus:outline-none">
+                        Show Additional Loan Details
+                    </button>
+                </div>
+
+                <div id="extraLoanFields" class="hidden md:col-span-2 xl:col-span-4 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Duration</span>
+                        <select 
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg"
+                            name="duration"
+                        >
+                            <option value="" selected>Select Duration</option>
+                            <option value="1">1 Month</option>
+                            <option value="2">2 Months</option>
+                            <option value="3">3 Months</option>
+                            <option value="4">4 Months</option>
+                            <option value="5">5 Months</option>
+                            <option value="6">6 Months</option>
+                        </select>
+                        <span class="py-2 text-red-500 errors">{{form.duration.errors}}</span>
+                    </label>
+
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Interest Rate</span>
+                        <input 
+                            type="number"
+                            step="0.01"
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            name="interest"
+                        />
+                        <span class="py-2 text-red-500 errors">{{form.interest.errors}}</span>
+                    </label>
+
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Extended Interest Rate</span>
+                        <input 
+                            type="number"
+                            step="0.01"
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            name="extended_interest"
+                        />
+                        <span class="py-2 text-red-500 errors">{{form.extended_interest.errors}}</span>
+                    </label>
+
+                    <label class="block text-sm">
+                        <span class="text-gray-700">Reference</span>
+                        <input 
+                            type="text"
+                            class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
+                            placeholder=""
+                            name="reference"
+                        />
+                        <span class="py-2 text-red-500 errors">{{form.reference.errors}}</span>
+                    </label>
+
+                </div>
+                {% endif %}
 
                 <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
                     type="submit">
@@ -222,6 +268,18 @@
     
         
        }
+
+
+    const toggleBtn = document.getElementById("toggleExtraFields");
+    const extraFields = document.getElementById("extraLoanFields");
+
+    if (toggleBtn && extraFields) {
+        toggleBtn.addEventListener('click', () => {
+            const isHidden = extraFields.classList.contains('hidden');
+            extraFields.classList.toggle('hidden');
+            toggleBtn.textContent = isHidden ? "Hide Additional Loan Details" : "Show Additional Loan Details";
+        });
+    }
     </script>
 
     
