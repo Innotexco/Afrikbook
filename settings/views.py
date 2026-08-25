@@ -588,12 +588,12 @@ def Create_UpdateNewProfile(request):
             pdf_template          = request.POST.get('pdf_template_preference', 'classic')
             send_email_invoice    = request.POST.get('send_email_invoice') == 'on'
             send_whatsapp_invoice = request.POST.get('send_whatsapp_invoice') == 'on'
-            auto_verify_transfer  = request.POST.get('auto_verify_transfer') == 'on'   # ← added
+            auto_verify_transfer  = request.POST.get('auto_verify_transfer') == 'on'   
 
             logger.debug(
                 f"[Create_UpdateNewProfile] Prefs | pdf={pdf_template} | "
                 f"send_email={send_email_invoice} | send_whatsapp={send_whatsapp_invoice} | "
-                f"auto_verify_transfer={auto_verify_transfer}"                             # ← added
+                f"auto_verify_transfer={auto_verify_transfer}"                             
             )
 
             if profiledata.count() > 0:
@@ -650,7 +650,7 @@ def Create_UpdateNewProfile(request):
                     logger.info(
                         f"[Create_UpdateNewProfile] Profile updated | pdf={pdf_template} | "
                         f"send_email={send_email_invoice} | send_whatsapp={send_whatsapp_invoice} | "
-                        f"auto_verify_transfer={auto_verify_transfer}"                              # ← added
+                        f"auto_verify_transfer={auto_verify_transfer}"                              
                     )
 
             else:
@@ -659,12 +659,12 @@ def Create_UpdateNewProfile(request):
                 profile_instance.pdf_template_preference = pdf_template
                 profile_instance.send_email_invoice      = send_email_invoice
                 profile_instance.send_whatsapp_invoice   = send_whatsapp_invoice
-                profile_instance.auto_verify_transfer    = auto_verify_transfer    # ← added
+                profile_instance.auto_verify_transfer    = auto_verify_transfer    
                 profile_instance.save(using=db)
 
                 # Sync INT session on first create too
-                request.session['INT'] = 'Yes' if auto_verify_transfer else 'No'  # ← added
-                request.session.modified = True                                    # ← added
+                request.session['INT'] = 'Yes' if auto_verify_transfer else 'No'  
+                request.session.modified = True                                    
 
                 SalesInterface.objects.using(db).create(
                     name          = name,

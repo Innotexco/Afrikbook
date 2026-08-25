@@ -22,12 +22,11 @@ def create_new_loan(request, db):
         employee_id = request.POST.get('employee_id')
         customer_id = request.POST.get('customer_id')
         vendor_id = request.POST.get('vendor_id')
-        account = request.POST.get('account_debited')
         description = request.POST.get('description')
         amount_borrowed = request.POST.get('amount_borrowed')
 
         # Basic validation
-        if not all([date, account, description, amount_borrowed]):
+        if not all([date, description, amount_borrowed]):
             messages.error(request, "All required fields must be filled")
             return None
 
@@ -39,7 +38,7 @@ def create_new_loan(request, db):
 
         #Get account safely
         try:
-            account_debited = chart_of_account.objects.using(db).get(account_id=account)
+            account_debited = chart_of_account.objects.using(db).get(account_id="1100-LoanReceivable")
         except chart_of_account.DoesNotExist:
             messages.error(request, "Selected account does not exist")
             return None
@@ -88,9 +87,6 @@ def create_new_loan(request, db):
         loan_form = LoanAccountForm(form_data)
         loan_log_form = LoanAccountLogForm(form_data)
 
-        # if not (loan_form.is_valid() and loan_log_form.is_valid()):
-        #     messages.error(request, "Invalid form data")
-        #     return loan_form
         if not (loan_form.is_valid() and loan_log_form.is_valid()):
             print("Loan Form Errors:", loan_form.errors)
             print("Loan Log Form Errors:", loan_log_form.errors)
@@ -100,7 +96,7 @@ def create_new_loan(request, db):
 
         #ATOMIC TRANSACTION (VERY IMPORTANT)
         with transaction.atomic():
-
+            account = account_debited
             if employee_id:
                 last_record = staff_account.objects.using(db).filter(staff_id=debtor_id).last()
                 initial_bal = last_record.balance if last_record else decimal.Decimal("0.00")

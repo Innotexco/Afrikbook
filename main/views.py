@@ -85,7 +85,14 @@ def register_user(request):
     return render(request, 'register.html', context)
 
 
-
+def set_auto_verify_session(request, user, db_name):
+    company_name = user.company_id.company_name   
+    profile = CreateProfile.objects.using(db_name).filter(CompanyName=company_name).first()
+    if profile:
+        request.session['INT'] = 'Yes' if profile.auto_verify_transfer else 'No'
+    else:
+        request.session['INT'] = 'No'
+    request.session.modified = True
 
 
 @never_cache
@@ -127,7 +134,6 @@ def Login(request):
                             default_account(request, company.db_name)
                         except Exception as e:
                             print(f"Migration error for {db_name}: {e}")
-                            # Don't block login if migrations fail - they might already be done
                             pass
      
                     try:
@@ -135,6 +141,7 @@ def Login(request):
                         if billing.subscription == "Free":
                             create_profile(request, user)
                             login(request, user)
+                            set_auto_verify_session(request, user, company.db_name)
                             return redirect('main:home')
                         else:
                             if int(billing.subscription) > 0 and billing.payment_status == "Verified":
@@ -144,6 +151,7 @@ def Login(request):
                                     return redirect(billing_url)
                                 else:
                                     create_profile(request, user)
+                                    set_auto_verify_session(request, user, company.db_name)
                                     login(request, user)
                                     return redirect('main:home')
                             else:
@@ -154,6 +162,7 @@ def Login(request):
                     except Billing.DoesNotExist:
                         billing_url = reverse('main:Billing', args=[company.id])
                         return redirect(billing_url)
+                    
                         
                 except company_table.DoesNotExist:
                     return redirect('main:NewCompany')

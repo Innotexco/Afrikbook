@@ -393,21 +393,18 @@ def create_casual_customer(db):
 
 
 def create_profile(request, loginuser):
-    company = loginuser.company_id  # get the related company object, not just ID
+    company = loginuser.company_id  
     
-    # Make sure migrations are run for this database
     makemigrations(company.db_name)
 
-    # Check if profile exists
     if not CreateProfile.objects.using(company.db_name).filter(
         CompanyName=company.company_name, email=company.email
     ).exists():
         try:
             cu = currency.objects.get(Country=company.country).Currency
         except currency.DoesNotExist:
-            cu = None  # fallback if currency not found
+            cu = None 
 
-        # Create profile
         CreateProfile.objects.using(company.db_name).create(
             CompanyName=company.company_name,
             phone=company.phone,
@@ -517,6 +514,12 @@ def default_account(request, db):
             'series_name':     'Assets',
             'account_type':    'Cash',
             'account_bankname': 'Stanbic IBTC Bank'
+        },
+        {
+            'account_id':      '1100-LoanReceivable',
+            'series_name':     'Assets',
+            'account_type':    'Receivable',
+            'account_bankname': 'Loan Receivable'
         },
 
         # ── Assets — Receivables & Other ─────────────────────────────────────

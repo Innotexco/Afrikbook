@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect
+
+from settings.models import CreateProfile
 from .models import loan_account, loan_account, new_journal_entry
 from .fuctions.loanaccount import *
 from .fuctions.journal import *
@@ -193,9 +195,11 @@ def ViewLoan(request):
 def CreateLoan(request):
     db = request.user.company_id.db_name
     customer = customer_table.objects.using(db).all()
+    company = request.user.company_id
+    profile = CreateProfile.objects.using(db).filter(CompanyName=company.company_name).first()
     vendor = vendor_table.objects.using(db).all()
     employe = employee.objects.using(db).all()
-    account = chart_of_account.objects.using(db).all()
+    #account = chart_of_account.objects.using(db).all()
     form = None
     if request.method == "POST":
         form = create_new_loan(request, db)  
@@ -204,8 +208,9 @@ def CreateLoan(request):
         "customer": customer,
         "vendor":vendor,
         "employee":employe,
-        "accounts":account,
-        "form": form
+        #"accounts":account,
+        "form": form,
+        "profile": profile
     }   
     return render(request, "journal/NewLoan.html", context)
 
