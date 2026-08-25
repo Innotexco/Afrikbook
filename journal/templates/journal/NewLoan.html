@@ -126,7 +126,7 @@
                     
                 </div>
                 
-                                <label class="block text-sm">
+                <label class="block text-sm">
                     <span class="text-gray-600">Description</span>
                     <textarea
                         class="block w-full mt-1 px-2 text-sm form-textarea border-2 rounded-md focus:border-slate-300  focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg"
@@ -137,7 +137,7 @@
                     <span class="py-2 text-red-500 errors">{{form.description.errors}}</span>
                 </label>
 
-                {% if company.company_name == "Spacesoft Integral System Ltd" %}
+                {% if profile.company_name == "Spacesoft Integral System Ltd" or profile.company_name == "Spacesoft Integral Systems" %}
                 <div class="md:col-span-2 xl:col-span-4">
                     <button type="button" id="toggleExtraFields" class="text-sm text-slate-600 underline focus:outline-none">
                         Show Additional Loan Details
