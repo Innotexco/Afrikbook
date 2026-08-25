@@ -15,6 +15,7 @@ from Stock.models import *
 from .functions.globalFunctions.globalFunctions import *
 from .functions.functionHub.functionHub import *
 from account.models import account_log, chart_of_account
+from journal.models import loan_account
 from customer.functions.generalFunction import *
 from account.models import Expenses_account, Income_account, Assets_account, Liability_account, Equity_account
 
@@ -913,8 +914,10 @@ def AgedReceivables(request):
     ).exclude(
         invoice_state='Cancelled'
     ).order_by('invoiceID', 'id')
+    
+    loan = loan_account.objects.using(db)
 
-
+    
     seen = set()
     aged_list = []
     for inv in raw_aged:
@@ -1100,6 +1103,7 @@ def AgedReceivables(request):
         'accounts':        accounts,
         'today':           date.today(),
         'payment_methods': ["Cash", "Transfer", "Cheque", "Transfer and Cash", "Customer Balance"],
+        'loans':            loan,
     }
     return render(request, 'report/AgedReceivables.html', context)
 
