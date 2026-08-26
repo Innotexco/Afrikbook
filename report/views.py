@@ -917,7 +917,10 @@ def AgedReceivables(request):
     ).order_by('invoiceID', 'id')
     
     loan = loan_account.objects.using(db).all()
-    loan_references = set(loan.values_list('reference', flat=True))
+    loan_id_by_ref = {}
+    for loan_row in loan.exclude(reference__isnull=True).exclude(reference=''):
+        loan_id_by_ref[loan_row.reference] = loan_row.id
+    loan_references = set(loan_id_by_ref.keys())
 
     
     seen = set()
@@ -926,6 +929,7 @@ def AgedReceivables(request):
         if inv.invoiceID not in seen:
             seen.add(inv.invoiceID)
             inv.outstanding = inv.amount_expected - inv.amount_paid
+            inv.loan_id = loan_id_by_ref.get(inv.invoiceID)
             aged_list.append(inv)
 
     amount_total = sum(inv.outstanding for inv in aged_list)

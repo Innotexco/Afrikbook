@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from customer.models import customer_invoice, receivable, sales_order, sales_quote
-from journal.models import new_journal_entry
+from journal.models import new_journal_entry, loan_account
 from django.db.models import Sum, F, Q
 import decimal
 from Stock.models import Item
@@ -227,6 +227,13 @@ def aged_receivable_filter_by_date(request):
         Q(amount_paid__lt=F('amount_expected')) & filter_conditions
     )
 
+    loan_id_by_ref = dict(
+        loan_account.objects.using(db)
+        .exclude(reference__isnull=True)
+        .exclude(reference='')
+        .values_list('reference', 'id')
+    )
+
     # ── Deduplicate by invoiceID at query level ───────────────────────────
     seen        = set()
     unique_data = []
@@ -242,6 +249,7 @@ def aged_receivable_filter_by_date(request):
                 'amount_paid':     str(item.amount_paid),
                 'amount_expected': str(item.amount_expected),
                 'balance':         str(item.amount_expected - item.amount_paid),
+                'loan_id':         loan_id_by_ref.get(item.invoiceID),
             })
 
     # ── Totals — per unique invoice, not per line ─────────────────────────
