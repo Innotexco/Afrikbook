@@ -219,7 +219,7 @@ def ViewLoanItem(request, id):
         amount_paid = None
 
     context = {
-        'loan': loan,
+        'loan_item': loan,
         'logs': logs,
         'amount_paid': amount_paid,
     }
