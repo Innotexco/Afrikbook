@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
 
 from settings.models import CreateProfile
-from .models import loan_account, loan_account, new_journal_entry
+from .models import loan_account, new_journal_entry
 from .fuctions.loanaccount import *
 from .fuctions.journal import *
 from .fuctions.receivepayment import *
@@ -185,10 +186,15 @@ def GetLoanDetails(request, id):
 @login_required(login_url='/')
 @urls_name(name="Loan Manager")
 def ViewLoan(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
-    loan = loan_account.objects.usig(db).all()
-    context = {"loan":loan}       
-    return render(request, "journal/Loan.html", context)
+    loans = loan_account.objects.using(db).all().order_by('-date', '-id')
+    page_obj = paginate_queryset(request, loans)
+    context = {
+        "loan": page_obj,
+        "page_obj": page_obj,
+    }
+    return render(request, "journal/ViewLoan.html", context)
 
 @login_required(login_url='/')
 @urls_name(name="Loan Manager")
@@ -218,17 +224,22 @@ def UpdateLoan(request, id):
     loan = loan_account.objects.using(db).get(id=id)
     if request.method == "POST":
         create_new_loan(request)
-        # return redirect("journal:Loan")
-    
+        return redirect("journal:ViewLoan")
+
     context = {"laon": loan}
     return render(request, "journal/UpdateLoan.html", context)
 
+@login_required(login_url='/')
+@urls_name(name="Loan Manager")
 def DeleteLoan(request, id):
     db = request.user.company_id.db_name
-    loan = loan_account.objects.using(db).get(id=id)
-    loan.delete()
-    messages.error(request, "Loan was deleted successfully")
-    # return redirect("journal:Loan")
+    try:
+        loan = loan_account.objects.using(db).get(id=id)
+        loan.delete()
+        messages.success(request, "Loan was deleted successfully")
+    except loan_account.DoesNotExist:
+        messages.error(request, "Loan not found")
+    return redirect("journal:ViewLoan")
 
 @login_required(login_url='/')
 @urls_name(name="Receive Payment")

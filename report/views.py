@@ -895,6 +895,7 @@ def Receivables(request):
     return render(request, 'report/Receivables.html', context)
 
 
+
 @login_required(login_url='/')
 @urls_name(name="Aged Receivables")
 def AgedReceivables(request):

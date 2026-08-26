@@ -14,10 +14,10 @@ urlpatterns = [
     path('Cancel_journal', views.Cancel_journal, name='Cancel_journal'),
 
 
-    path('', views.ViewLoan, name='Loan'),
+    path('ViewLoan', views.ViewLoan, name='ViewLoan'),
     path('NewLoan', views.CreateLoan, name='NewLoan'),
-    path('update/loan/<int:id>/', views.UpdateLoan, name='update-salesoutlet'),
-    path('delete/loan/<int:id>/', views.DeleteLoan, name='delete-salesoutlet'),
+    path('update/loan/<int:id>/', views.UpdateLoan, name='update-loan'),
+    path('delete/loan/<int:id>/', views.DeleteLoan, name='delete-loan'),
 
     path('ReceivePayment', views.ReceivePayment, name='ReceivePayment'),
 
