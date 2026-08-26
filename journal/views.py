@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 
 from settings.models import CreateProfile
-from .models import loan_account, new_journal_entry
+from .models import loan_account, loan_account_log, new_journal_entry
 from .fuctions.loanaccount import *
 from .fuctions.journal import *
 from .fuctions.receivepayment import *
@@ -12,6 +12,7 @@ from employee.models import employee
 from account.models import *
 from django.http import JsonResponse
 from django.db.models import Sum
+from decimal import Decimal, InvalidOperation
 from customer.utils import generate_invoice_id
 from django.contrib.auth.decorators import login_required
 from routers.page_permission import  urls_name
@@ -195,6 +196,34 @@ def ViewLoan(request):
         "page_obj": page_obj,
     }
     return render(request, "journal/ViewLoan.html", context)
+
+@login_required(login_url='/')
+def ViewLoanItem(request, id):
+    db = request.user.company_id.db_name
+    try:
+        loan = loan_account.objects.using(db).get(id=id)
+    except loan_account.DoesNotExist:
+        messages.error(request, "Loan not found")
+        return redirect('journal:ViewLoan')
+
+    logs = loan_account_log.objects.using(db).filter(
+        transaction_id=loan.transaction_id
+    ).order_by('date', 'id')
+
+    amount_paid = None
+    try:
+        borrowed = Decimal(str(loan.amount_borrowed or 0))
+        balance = Decimal(str(loan.balance_left or 0))
+        amount_paid = borrowed - balance
+    except (InvalidOperation, TypeError, ValueError):
+        amount_paid = None
+
+    context = {
+        'loan': loan,
+        'logs': logs,
+        'amount_paid': amount_paid,
+    }
+    return render(request, "journal/ViewLoanItem.html", context)
 
 @login_required(login_url='/')
 @urls_name(name="Loan Manager")

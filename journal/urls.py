@@ -15,6 +15,7 @@ urlpatterns = [
 
 
     path('ViewLoan', views.ViewLoan, name='ViewLoan'),
+    path('ViewLoanItem/<int:id>/', views.ViewLoanItem, name='ViewLoanItem'),
     path('NewLoan', views.CreateLoan, name='NewLoan'),
     path('update/loan/<int:id>/', views.UpdateLoan, name='update-loan'),
     path('delete/loan/<int:id>/', views.DeleteLoan, name='delete-loan'),
