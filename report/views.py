@@ -916,6 +916,7 @@ def AgedReceivables(request):
     ).order_by('invoiceID', 'id')
     
     loan = loan_account.objects.using(db).all()
+    loan_references = set(loan.values_list('reference', flat=True))
 
     
     seen = set()
@@ -1103,7 +1104,7 @@ def AgedReceivables(request):
         'accounts':        accounts,
         'today':           date.today(),
         'payment_methods': ["Cash", "Transfer", "Cheque", "Transfer and Cash", "Customer Balance"],
-        'loans':            loan,
+        'loan_references': loan_references,
     }
     return render(request, 'report/AgedReceivables.html', context)
 
