@@ -177,7 +177,7 @@ def ViewUnapprovePayroll(request):
     db = request.user.company_id.db_name
     accounts = chart_of_account.objects.using(db).all()
     payrolls = payroll.objects.using(db).values('month_year').distinct()
-    profile = CreateProfile.objects.using(db).get(CompanyName=request.user.company_id.company_name).first()
+    profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
    
     unique_payroll = []
     for pay in payrolls:
