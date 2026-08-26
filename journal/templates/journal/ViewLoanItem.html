@@ -25,23 +25,23 @@
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <div>
                 <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide">Loan Details</h2>
-                <p class="text-xs text-gray-500 mt-0.5">{{ loan.description }}</p>
+                <p class="text-xs text-gray-500 mt-0.5">{{ loan_item.description }}</p>
             </div>
-            {% if loan.status|lower == 'paid' %}
-                <span class="text-xs font-semibold text-green-700 bg-green-100 px-3 py-1 rounded-full">{{ loan.status }}</span>
+            {% if loan_item.status|lower == 'paid' %}
+                <span class="text-xs font-semibold text-green-700 bg-green-100 px-3 py-1 rounded-full">{{ loan_item.status }}</span>
             {% else %}
-                <span class="text-xs font-semibold text-amber-700 bg-amber-100 px-3 py-1 rounded-full">{{ loan.status|default:"unpaid" }}</span>
+                <span class="text-xs font-semibold text-amber-700 bg-amber-100 px-3 py-1 rounded-full">{{ loan_item.status|default:"unpaid" }}</span>
             {% endif %}
         </div>
 
         <div class="p-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3 text-sm">
             <div>
                 <span class="block text-xs text-gray-500">Date</span>
-                <span class="font-medium text-slate-700">{{ loan.date }}</span>
+                <span class="font-medium text-slate-700">{{ loan_item.date }}</span>
             </div>
             <div>
                 <span class="block text-xs text-gray-500">Amount Borrowed</span>
-                <span class="font-medium text-slate-700">{{ loan.amount_borrowed }}</span>
+                <span class="font-medium text-slate-700">{{ loan_item.amount_borrowed }}</span>
             </div>
             <div>
                 <span class="block text-xs text-gray-500">Amount Paid</span>
@@ -49,15 +49,15 @@
             </div>
             <div>
                 <span class="block text-xs text-gray-500">Balance Left</span>
-                <span class="font-medium text-slate-700">{{ loan.balance_left }}</span>
+                <span class="font-medium text-slate-700">{{ loan_item.balance_left }}</span>
             </div>
             <div>
                 <span class="block text-xs text-gray-500">Account Debited</span>
-                <span class="font-medium text-slate-700">{{ loan.account_debited|default:"—" }}</span>
+                <span class="font-medium text-slate-700">{{ loan_item.account_debited|default:"—" }}</span>
             </div>
             <div>
                 <span class="block text-xs text-gray-500">Reference</span>
-                <span class="font-medium text-slate-700">{{ loan.reference|default:"—" }}</span>
+                <span class="font-medium text-slate-700">{{ loan_item.reference|default:"—" }}</span>
             </div>
         </div>
     </div>
@@ -69,11 +69,11 @@
         <div class="p-6 grid gap-6 md:grid-cols-2 text-sm">
             <div>
                 <span class="block text-xs text-gray-500">Name</span>
-                <span class="font-medium text-slate-700">{{ loan.debtor_name }}</span>
+                <span class="font-medium text-slate-700">{{ loan_item.debtor_name }}</span>
             </div>
             <div>
                 <span class="block text-xs text-gray-500">ID</span>
-                <span class="font-medium text-slate-700">{{ loan.debtor_id }}</span>
+                <span class="font-medium text-slate-700">{{ loan_item.debtor_id }}</span>
             </div>
         </div>
     </div>
@@ -85,19 +85,19 @@
         <div class="p-6 grid gap-6 md:grid-cols-2 xl:grid-cols-4 text-sm">
             <div>
                 <span class="block text-xs text-gray-500">Duration</span>
-                <span class="font-medium text-slate-700">{% if loan.duration %}{{ loan.get_duration_display }}{% else %}—{% endif %}</span>
+                <span class="font-medium text-slate-700">{% if loan_item.duration %}{{ loan_item.get_duration_display }}{% else %}—{% endif %}</span>
             </div>
             <div>
                 <span class="block text-xs text-gray-500">Interest</span>
-                <span class="font-medium text-slate-700">{% if loan.interest is not None %}{{ loan.interest }}%{% else %}—{% endif %}</span>
+                <span class="font-medium text-slate-700">{% if loan_item.interest is not None %}{{ loan_item.interest }}%{% else %}—{% endif %}</span>
             </div>
             <div>
                 <span class="block text-xs text-gray-500">Extended Interest</span>
-                <span class="font-medium text-slate-700">{% if loan.extended_interest is not None %}{{ loan.extended_interest }}%{% else %}—{% endif %}</span>
+                <span class="font-medium text-slate-700">{% if loan_item.extended_interest is not None %}{{ loan_item.extended_interest }}%{% else %}—{% endif %}</span>
             </div>
             <div>
                 <span class="block text-xs text-gray-500">Recorded By</span>
-                <span class="font-medium text-slate-700">{{ loan.Userlogin|default:"—" }}</span>
+                <span class="font-medium text-slate-700">{{ loan_item.Userlogin|default:"—" }}</span>
             </div>
         </div>
     </div>
