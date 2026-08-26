@@ -108,6 +108,7 @@ def VerifyTransfer(request):
                         whichtrans  = item_data.get('whichtrans'),
                         quantity    = item_data.get('quantity'),
                         item_code   = item_data.get('item_code'),
+                        change_date = item_data.get('date'),
                     )
                     if result is True:
                         verified_ids.append(item_data.get('id'))
@@ -133,11 +134,17 @@ def VerifyTransfer(request):
     return render(request, 'VerifyTransfer.html', context)
 
 
-def _verify_single(db, item_id, outlet, warehouse, whichtrans, quantity, item_code):
+def _verify_single(db, item_id, outlet, warehouse, whichtrans, quantity, item_code, change_date=None):
     """
     Verify a single transfer. Returns True on success, error string on failure.
     Extracted so both single and bulk verify share the same logic.
+    Optional change_date overrides the transfer log's datetx.
     """
+    try:
+        parsed_date = parse_change_date(change_date)
+    except ValueError:
+        return 'Invalid change date'
+
     try:
         if whichtrans == 'W_W':
             qty_from = CreateStockIn.objects.using(db).get(item_code=item_code, warehouse=warehouse)
@@ -166,6 +173,8 @@ def _verify_single(db, item_id, outlet, warehouse, whichtrans, quantity, item_co
     try:
         log = LogModel.objects.using(db).get(id=item_id)
         log.status = 'Verified'
+        if parsed_date is not None:
+            log.datetx = parsed_date
         log.save()
     except LogModel.DoesNotExist:
         return 'Log entry not found'

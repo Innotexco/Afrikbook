@@ -96,8 +96,9 @@
                                     </button>
                                 </td>
                                 <td class="border border-slate-300 py-0 text-[10px]">
-                                    <input class="block w-full px-2 text-sm bg-slate-200 form-input"
-                                           type="date" name="date"/>
+                                    <input class="block w-full px-2 text-sm bg-slate-200 form-input change-date"
+                                           type="date" name="date" id="date_{{ item.id }}"
+                                           {% if item.datetx %}value="{{ item.datetx|date:'Y-m-d' }}"{% endif %}/>
                                 </td>
                                 <td class="border border-slate-300 py-0 text-[10px]">
                                     <button type="submit" name="delete_btn"
@@ -178,6 +179,7 @@
 
             const items = [];
             selected.each(function () {
+                const $row = $(this).closest('tr');
                 items.push({
                     id:         $(this).val(),
                     outlet:     $(this).data('outlet'),
@@ -185,6 +187,7 @@
                     whichtrans: $(this).data('whichtrans'),
                     quantity:   $(this).data('quantity'),
                     item_code:  $(this).data('item-code'),
+                    date:       $row.find('.change-date').val() || '',
                 });
             });
 
@@ -274,7 +277,8 @@
                 );
                 newRow.append(
                     '<td class="text-[10px] border border-slate-300">' +
-                    '<input class="block w-full px-2 text-sm bg-slate-200 form-input" type="date" name="date"/></td>'
+                    '<input class="block w-full px-2 text-sm bg-slate-200 form-input change-date" type="date" name="date"' +
+                    ' id="date_' + item.id + '" value="' + (item.datetx || '') + '"/></td>'
                 );
 
                 let svg = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">' +
@@ -334,6 +338,7 @@
                     whichtrans: $('#whichtrans' + id).val(),
                     quantity:   $('#quantity'   + id).val(),
                     item_code:  $('#item_code'  + id).val(),
+                    date:       $('#date_'      + id).val() || '',
                     buttonName: 'verify2',
                 },
                 success: function (res) {

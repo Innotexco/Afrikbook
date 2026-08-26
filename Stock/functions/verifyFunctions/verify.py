@@ -1,7 +1,28 @@
+from datetime import date, datetime
+
 from Stock.models import  CreateStockInLog, CreateStockIn, CreateOutletStockIn, CreateOutletStockInLog;
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse,Http404;
 from Stock.functions.verifyFunctions.reverse import *
+
+
+def parse_change_date(value):
+    """Parse optional Change Date (YYYY-MM-DD). Empty keeps the original datetx.
+
+    Returns a date, or None if the field was left blank.
+    Raises ValueError if a non-empty value is not a valid date.
+    """
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    text = str(value).strip()
+    if not text:
+        return None
+    return datetime.strptime(text, '%Y-%m-%d').date()
+
 
 def VerifyStockTransfer(request, context, db):
     itemID     = request.POST.get('itemID')
@@ -46,6 +67,12 @@ def VerifyStockTransfer(request, context, db):
 
     # ── VERIFY ────────────────────────────────────────────────
     if 'Verify' not in request.POST and buttonName != 'verify2':
+        return None
+
+    try:
+        parsed_date = parse_change_date(request.POST.get('date'))
+    except ValueError:
+        context["error_message"] = 'Invalid change date'
         return None
 
     allgood       = False
@@ -108,6 +135,8 @@ def VerifyStockTransfer(request, context, db):
         try:
             updateStatus = LogModel.objects.using(db).get(id=itemID)
             updateStatus.status = 'Verified'
+            if parsed_date is not None:
+                updateStatus.datetx = parsed_date
             updateStatus.save()
         except LogModel.DoesNotExist:
             context["error_message"] = 'Verification Failed — log not found'
