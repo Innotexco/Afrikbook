@@ -140,17 +140,18 @@ def create_new_loan(request, db):
         #ATOMIC TRANSACTION (VERY IMPORTANT)
         with transaction.atomic():
             account = account_debited
+            amount_owed = totals['total_amount']
             if employee_id:
                 last_record = staff_account.objects.using(db).filter(staff_id=debtor_id).last()
                 initial_bal = last_record.balance if last_record else decimal.Decimal("0.00")
 
-                balance = initial_bal + amount_borrowed
+                balance = initial_bal + amount_owed
 
                 staff_account.objects.using(db).create(
                     date=date,
                     staff_id=debtor_id,
                     staff_name=debtor_name,
-                    amount=amount_borrowed,
+                    amount=amount_owed,
                     initial_amount=initial_bal,
                     balance=balance,
                     account_posted=account_debited.account_id,
@@ -162,14 +163,17 @@ def create_new_loan(request, db):
                 )
 
             elif customer_id:
-                DebitReceivable(request, db, cus, date, description, "Cash", account, amount_borrowed)
+                DebitReceivable(request, db, cus, date, description, "Cash", account, amount_owed)
 
             elif vendor_id:
-                DebitPayable(request, db, ven, date, description, "Cash", account, amount_borrowed)
+                DebitPayable(request, db, ven, date, description, "Cash", account, amount_owed)
 
             #Save loan
             loan_instance = loan_form.save(commit=False)
             loan_instance.transaction_id = transaction_id
+            loan_instance.interest_amount = totals['interest_amount']
+            loan_instance.total_amount = totals['total_amount']
+            loan_instance.balance_left = totals['total_amount']
             loan_instance.save(using=db)
             save_installments(db, loan_instance, schedule_rows)
 
@@ -179,13 +183,13 @@ def create_new_loan(request, db):
             loan_log_instance.save(using=db)
 
             #Update account balance
-            account_debited.actual_balance += amount_borrowed
-            CreateLog(db, account_debited, amount_borrowed)
+            account_debited.actual_balance += amount_owed
+            CreateLog(db, account_debited, amount_owed)
 
             #Log entry
             account_log.objects.using(db).create(
                 transaction_source="Loan",
-                amount=amount_borrowed,
+                amount=amount_owed,
                 date=date,
                 account=account_debited.account_id,
                 account_type=account_debited.account_type,
