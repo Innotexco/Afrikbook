@@ -16,7 +16,7 @@
 
     {% if has_payments %}
     <div class="mt-4 px-4 py-3 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg">
-        This loan already has repayments. Amount, duration, and interest are locked so the payment history is not overwritten. You can still update description, borrower, reference, and extended interest.
+        This loan already has repayments. Amount, duration, interest, borrower, and reference are locked so payments stay linked to the same invoice and customer. You can still update description, date, and extended interest.
     </div>
     {% endif %}
 
@@ -81,17 +81,17 @@
 
             <div class="p-6">
 
-                <div id="typeTabs" class="inline-flex rounded-lg border border-gray-300 bg-gray-50 p-1 gap-1 mb-4">
+                <div id="typeTabs" class="inline-flex rounded-lg border border-gray-300 bg-gray-50 p-1 gap-1 mb-4 {% if has_payments %}pointer-events-none opacity-70{% endif %}">
                     <label for="employee_radio" data-tab="employee" class="type-tab cursor-pointer px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 transition-colors">
-                        <input type="radio" id="employee_radio" name="accountType" value="Employee" class="hidden" {% if borrower_type == 'employee' %}checked{% endif %}>
+                        <input type="radio" id="employee_radio" name="accountType" value="Employee" class="hidden" {% if borrower_type == 'employee' %}checked{% endif %} {% if has_payments %}disabled{% endif %}>
                         Employee
                     </label>
                     <label for="customer_radio" data-tab="customer" class="type-tab cursor-pointer px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 transition-colors">
-                        <input type="radio" id="customer_radio" name="accountType" value="Customer" class="hidden" {% if borrower_type == 'customer' %}checked{% endif %}>
+                        <input type="radio" id="customer_radio" name="accountType" value="Customer" class="hidden" {% if borrower_type == 'customer' %}checked{% endif %} {% if has_payments %}disabled{% endif %}>
                         Customer
                     </label>
                     <label for="vendor_radio" data-tab="vendor" class="type-tab cursor-pointer px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 transition-colors">
-                        <input type="radio" id="vendor_radio" name="accountType" value="Vendor" class="hidden" {% if borrower_type == 'vendor' %}checked{% endif %}>
+                        <input type="radio" id="vendor_radio" name="accountType" value="Vendor" class="hidden" {% if borrower_type == 'vendor' %}checked{% endif %} {% if has_payments %}disabled{% endif %}>
                         Vendor
                     </label>
                 </div>
@@ -99,19 +99,19 @@
                 <label class="block text-sm max-w-md">
                     <span class="text-gray-700 font-medium">Select Borrower <span class="text-red-500">*</span></span>
 
-                    <select class="{% if borrower_type != 'employee' %}hidden {% endif %}block w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 text-slate-700" name="employee_id" id="Employee" {% if borrower_type == 'employee' %}required{% endif %}>
+                    <select class="{% if borrower_type != 'employee' %}hidden {% endif %}block w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 text-slate-700" name="employee_id" id="Employee" {% if borrower_type == 'employee' %}required{% endif %} {% if has_payments %}disabled{% endif %}>
                         <option value="" disabled>Select Employee</option>
                         {% for employee in employee %}
                           <option value="{{employee.staff_ID}}" {% if borrower_type == 'employee' and loan_item.debtor_id == employee.staff_ID %}selected{% endif %}>{{employee.fullname}}</option>
                         {% endfor %}
                     </select>
-                    <select class="{% if borrower_type != 'customer' %}hidden {% endif %}block w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 text-slate-700" name="customer_id" id="Customer" {% if borrower_type == 'customer' %}required{% endif %}>
+                    <select class="{% if borrower_type != 'customer' %}hidden {% endif %}block w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 text-slate-700" name="customer_id" id="Customer" {% if borrower_type == 'customer' %}required{% endif %} {% if has_payments %}disabled{% endif %}>
                         <option value="" disabled>Select Customer</option>
                         {% for customer in customer %}
                           <option value="{{customer.customer_code}}" {% if borrower_type == 'customer' and loan_item.debtor_id == customer.customer_code %}selected{% endif %}>{{customer.name}}</option>
                         {% endfor %}
                     </select>
-                    <select class="{% if borrower_type != 'vendor' %}hidden {% endif %}block w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 text-slate-700" name="vendor_id" id="Vendor" {% if borrower_type == 'vendor' %}required{% endif %}>
+                    <select class="{% if borrower_type != 'vendor' %}hidden {% endif %}block w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 text-slate-700" name="vendor_id" id="Vendor" {% if borrower_type == 'vendor' %}required{% endif %} {% if has_payments %}disabled{% endif %}>
                         <option value="" disabled>Select Vendor</option>
                         {% for vendor in vendor %}
                             <option value="{{vendor.custID}}" {% if borrower_type == 'vendor' and loan_item.debtor_id == vendor.custID %}selected{% endif %}>{{vendor.name}}</option>
@@ -210,6 +210,7 @@
                         placeholder="Optional reference"
                         name="reference"
                         value="{{ loan_item.reference }}"
+                        {% if has_payments %}readonly{% endif %}
                     />
                 </label>
 
