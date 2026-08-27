@@ -121,20 +121,19 @@
             </div>
         </div>
 
-        <!-- ── Additional Loan Terms (Spacesoft only) ──────────────────────── -->
-        {% if profile.CompanyName == "Spacesoft Integral System Ltd" or profile.CompanyName == "Spacesoft Integral Systems" %}
+        <!-- ── Additional Loan Terms ────────────────────────────────────── -->
         <div class="bg-white rounded-lg shadow-md overflow-hidden mb-5">
             <button type="button" id="toggleExtraFields" class="w-full flex items-center justify-between px-6 py-4 text-left focus:outline-none">
                 <div>
-                    <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide">Additional Loan Terms</h2>
-                    <p class="text-xs text-gray-500 mt-0.5">Optional — duration, interest, and reference</p>
+                    <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide">Loan Terms</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Duration, interest, and reference</p>
                 </div>
-                <svg id="toggleChevron" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg id="toggleChevron" class="w-4 h-4 text-gray-400 transition-transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
             </button>
 
-            <div id="extraLoanFields" class="hidden border-t border-gray-100 p-6 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <div id="extraLoanFields" class="border-t border-gray-100 p-6 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
 
                 <label class="block text-sm">
                     <span class="text-gray-700 font-medium">Duration</span>
@@ -219,8 +218,29 @@
                 </label>
 
             </div>
+
+            <div id="loanPreview" class="hidden border-t border-gray-100 px-6 py-4 bg-slate-50">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-600 mb-3">Repayment preview</p>
+                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 text-sm">
+                    <div>
+                        <span class="block text-xs text-gray-500">Interest added</span>
+                        <span id="previewInterest" class="font-medium text-slate-800">0.00</span>
+                    </div>
+                    <div>
+                        <span class="block text-xs text-gray-500">Total loaned</span>
+                        <span id="previewTotal" class="font-semibold text-slate-800">0.00</span>
+                    </div>
+                    <div>
+                        <span class="block text-xs text-gray-500">Months</span>
+                        <span id="previewMonths" class="font-medium text-slate-800">1</span>
+                    </div>
+                    <div>
+                        <span class="block text-xs text-gray-500">Amount due each month</span>
+                        <span id="previewMonthly" class="font-medium text-slate-800">0.00</span>
+                    </div>
+                </div>
+            </div>
         </div>
-        {% endif %}
 
         <div class="flex justify-end">
             <button
@@ -310,6 +330,47 @@
 
         wireInterestToggle('applyInterest', 'interestFieldWrap', 'interestInput');
         wireInterestToggle('applyExtendedInterest', 'extendedInterestFieldWrap', 'extendedInterestInput');
+
+
+        function money(value) {
+            const num = Number(value);
+            if (!Number.isFinite(num)) return 0;
+            return Math.round(num * 100) / 100;
+        }
+
+        function formatMoney(value) {
+            return money(value).toFixed(2);
+        }
+
+        function updateLoanPreview() {
+            const preview = document.getElementById('loanPreview');
+            const amount = money(document.querySelector('input[name="amount_borrowed"]').value);
+            const months = Math.max(1, parseInt(document.querySelector('select[name="duration"]').value, 10) || 1);
+            const applyInterest = document.getElementById('applyInterest') && document.getElementById('applyInterest').checked;
+            const rate = applyInterest ? money(document.getElementById('interestInput').value) : 0;
+            const interestAmount = money(amount * rate / 100);
+            const total = money(amount + interestAmount);
+            const monthly = months ? money(total / months) : total;
+
+            if (!amount) {
+                preview.classList.add('hidden');
+                return;
+            }
+
+            document.getElementById('previewInterest').textContent = formatMoney(interestAmount);
+            document.getElementById('previewTotal').textContent = formatMoney(total);
+            document.getElementById('previewMonths').textContent = String(months);
+            document.getElementById('previewMonthly').textContent = formatMoney(monthly);
+            preview.classList.remove('hidden');
+        }
+
+        ['input[name="amount_borrowed"]', 'select[name="duration"]', '#interestInput', '#applyInterest'].forEach(function (selector) {
+            const el = document.querySelector(selector);
+            if (!el) return;
+            el.addEventListener('input', updateLoanPreview);
+            el.addEventListener('change', updateLoanPreview);
+        });
+        updateLoanPreview();
 
     </script>
 

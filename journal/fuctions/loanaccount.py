@@ -13,6 +13,7 @@ from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 import decimal
 import uuid
+from journal.fuctions.loan_schedule import build_schedule, save_installments
 
 
 def create_new_loan(request, db):
@@ -105,7 +106,12 @@ def create_new_loan(request, db):
             messages.error(request, "Selected debtor does not exist")
             return None
 
-        balance_left = amount_borrowed
+        totals, schedule_rows = build_schedule(
+            amount_borrowed, date, duration, interest
+        )
+        if not duration:
+            duration = str(totals['months'])
+        balance_left = totals['total_amount']
         transaction_id = uuid.uuid4()
 
         form_data = {
@@ -165,6 +171,7 @@ def create_new_loan(request, db):
             loan_instance = loan_form.save(commit=False)
             loan_instance.transaction_id = transaction_id
             loan_instance.save(using=db)
+            save_installments(db, loan_instance, schedule_rows)
 
             #Save log
             loan_log_instance = loan_log_form.save(commit=False)

@@ -3,6 +3,7 @@ from django.contrib import messages
 
 from settings.models import CreateProfile
 from .models import loan_account, loan_account_log, new_journal_entry
+from .fuctions.loan_schedule import get_or_create_schedule
 from .fuctions.loanaccount import *
 from .fuctions.journal import *
 from .fuctions.receivepayment import *
@@ -210,18 +211,13 @@ def ViewLoanItem(request, id):
         transaction_id=loan.transaction_id
     ).order_by('date', 'id')
 
-    amount_paid = None
-    try:
-        borrowed = Decimal(str(loan.amount_borrowed or 0))
-        balance = Decimal(str(loan.balance_left or 0))
-        amount_paid = borrowed - balance
-    except (InvalidOperation, TypeError, ValueError):
-        amount_paid = None
+    schedule = get_or_create_schedule(db, loan)
 
     context = {
         'loan_item': loan,
         'logs': logs,
-        'amount_paid': amount_paid,
+        'amount_paid': schedule['paid_total'],
+        'schedule': schedule,
     }
     return render(request, "journal/ViewLoanItem.html", context)
 
