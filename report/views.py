@@ -16,6 +16,7 @@ from .functions.globalFunctions.globalFunctions import *
 from .functions.functionHub.functionHub import *
 from account.models import account_log, chart_of_account
 from journal.models import loan_account
+from journal.fuctions.loan_schedule import allocate_loan_repayment
 from customer.functions.generalFunction import *
 from account.models import Expenses_account, Income_account, Assets_account, Liability_account, Equity_account
 
@@ -1088,6 +1089,24 @@ def AgedReceivables(request):
                 else:
                     cus.Balance = Decimal(str(cus.Balance)) - total_payment
                 cus.save(using=db)
+
+            repay_amount = (cost or Decimal('0')) + (discount or Decimal('0'))
+            if repay_amount > 0:
+                try:
+                    pay_date = today.date() if hasattr(today, 'date') else today
+                    allocate_loan_repayment(
+                        db,
+                        invoice_id=invoice,
+                        amount=repay_amount,
+                        payment_date=pay_date,
+                        source='aged_receivable',
+                        payment_method=payment_method,
+                        userlogin=getattr(request.user, 'username', ''),
+                        customer_id=customer,
+                    )
+                except Exception:
+                    import traceback
+                    traceback.print_exc()
 
             return JsonResponse({"success": True})
 

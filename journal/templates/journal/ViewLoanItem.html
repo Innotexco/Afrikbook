@@ -124,12 +124,18 @@
                 <div class="p-4 space-y-2 text-sm">
                     <div class="flex justify-between">
                         <span class="text-gray-500">Amount due</span>
-                        <span class="font-medium text-slate-800">{{ card.expected_amount|floatformat:2 }}</span>
+                        <span class="font-medium text-slate-800">{{ card.amount_due|floatformat:2 }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-500">Interest</span>
                         <span class="font-medium text-slate-800">{{ card.interest_portion|floatformat:2 }}</span>
                     </div>
+                    {% if card.extended_interest > 0 %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Extended interest</span>
+                        <span class="font-medium text-red-700">{{ card.extended_interest|floatformat:2 }}</span>
+                    </div>
+                    {% endif %}
                     <div class="flex justify-between">
                         <span class="text-gray-500">Amount paid</span>
                         <span class="font-medium text-slate-800">{{ card.amount_paid|floatformat:2 }}</span>
@@ -138,6 +144,21 @@
                         <span class="text-gray-500">Outstanding</span>
                         <span class="font-semibold {% if card.unpaid > 0 %}text-red-600{% else %}text-green-600{% endif %}">{{ card.unpaid|floatformat:2 }}</span>
                     </div>
+                    {% if card.payments %}
+                    <div class="pt-3 mt-2 border-t border-gray-100">
+                        <p class="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-2">Payment timeline</p>
+                        <ol class="space-y-2">
+                            {% for payment in card.payments %}
+                            <li class="relative pl-4 text-xs text-slate-600">
+                                <span class="absolute left-0 top-1.5 w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                <p class="font-medium text-slate-800">{{ payment.amount|floatformat:2 }}</p>
+                                <p>{{ payment.date }}{% if payment.payment_method %} · {{ payment.payment_method }}{% endif %}</p>
+                                {% if payment.invoice_id %}<p class="text-gray-400">Invoice {{ payment.invoice_id }}</p>{% endif %}
+                            </li>
+                            {% endfor %}
+                        </ol>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}

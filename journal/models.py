@@ -134,6 +134,8 @@ class loan_account(models.Model):
     duration = models.CharField(max_length=2, choices=DurationChoices.choices, blank=True, null=True, help_text="Loan duration in months (1–6)")
     interest = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, help_text="Interest  rate")
     extended_interest = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, help_text="Extended interest rate")
+    interest_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
 
     class Meta:
         db_table = "loan_account"
@@ -171,6 +173,22 @@ class loan_installment(models.Model):
     interest_portion = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     expected_amount = models.DecimalField(max_digits=12, decimal_places=2)
     amount_paid = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    extended_interest_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     class Meta:
         db_table = "loan_installment"
+
+
+class loan_repayment(models.Model):
+    loan_id = models.IntegerField()
+    installment_id = models.IntegerField()
+    invoice_id = models.CharField(max_length=200, blank=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    date = models.DateField()
+    source = models.CharField(max_length=60, blank=True, default='aged_receivable')
+    payment_method = models.CharField(max_length=80, blank=True)
+    Userlogin = models.CharField(max_length=60, blank=True)
+    note = models.CharField(max_length=250, blank=True)
+
+    class Meta:
+        db_table = "loan_repayment"
