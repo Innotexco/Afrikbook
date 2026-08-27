@@ -266,6 +266,9 @@ def update_existing_loan(request, db, loan):
         amount_borrowed = _money(loan.amount_borrowed)
         duration = loan.duration
         interest = loan.interest
+        reference = loan.reference or ""
+        debtor_id = loan.debtor_id
+        debtor_name = loan.debtor_name
     else:
         amount_borrowed = request.POST.get('amount_borrowed')
         duration = request.POST.get('duration') or None
@@ -288,25 +291,26 @@ def update_existing_loan(request, db, loan):
                 messages.error(request, "Interest must be a valid number")
                 return None
 
-    try:
-        if employee_id:
-            emp = Employee.objects.using(db).get(staff_ID=employee_id)
-            debtor_id = employee_id
-            debtor_name = emp.fullname
-        elif customer_id:
-            cus = customer_table.objects.using(db).get(customer_code=customer_id)
-            debtor_id = customer_id
-            debtor_name = cus.name
-        elif vendor_id:
-            ven = vendor_table.objects.using(db).get(custID=vendor_id)
-            debtor_id = vendor_id
-            debtor_name = ven.name
-        else:
-            debtor_id = loan.debtor_id
-            debtor_name = loan.debtor_name
-    except ObjectDoesNotExist:
-        messages.error(request, "Selected debtor does not exist")
-        return None
+    if not has_payments:
+        try:
+            if employee_id:
+                emp = Employee.objects.using(db).get(staff_ID=employee_id)
+                debtor_id = employee_id
+                debtor_name = emp.fullname
+            elif customer_id:
+                cus = customer_table.objects.using(db).get(customer_code=customer_id)
+                debtor_id = customer_id
+                debtor_name = cus.name
+            elif vendor_id:
+                ven = vendor_table.objects.using(db).get(custID=vendor_id)
+                debtor_id = vendor_id
+                debtor_name = ven.name
+            else:
+                debtor_id = loan.debtor_id
+                debtor_name = loan.debtor_name
+        except ObjectDoesNotExist:
+            messages.error(request, "Selected debtor does not exist")
+            return None
 
     totals, schedule_rows = build_schedule(amount_borrowed, date, duration, interest)
     if not duration:
