@@ -244,14 +244,37 @@ def CreateLoan(request):
     }   
     return render(request, "journal/NewLoan.html", context)
 
+@login_required(login_url='/')
+@urls_name(name="Loan Manager")
 def UpdateLoan(request, id):
     db = request.user.company_id.db_name
-    loan = loan_account.objects.using(db).get(id=id)
-    if request.method == "POST":
-        create_new_loan(request)
-        return redirect("journal:ViewLoan")
+    try:
+        loan = loan_account.objects.using(db).get(id=id)
+    except loan_account.DoesNotExist:
+        messages.error(request, "Loan not found")
+        return redirect('journal:ViewLoan')
 
-    context = {"laon": loan}
+    form = None
+    if request.method == "POST":
+        form = update_existing_loan(request, db, loan)
+        if form is True:
+            return redirect('journal:ViewLoanItem', id=loan.id)
+        loan = loan_account.objects.using(db).get(id=id)
+
+    customer = customer_table.objects.using(db).all()
+    profile = CreateProfile.objects.using(db).get(CompanyName=request.user.company_id.company_name)
+    vendor = vendor_table.objects.using(db).all()
+    employe = employee.objects.using(db).all()
+    context = {
+        "loan": loan,
+        "customer": customer,
+        "vendor": vendor,
+        "employee": employe,
+        "form": form,
+        "profile": profile,
+        "borrower_type": detect_borrower_type(db, loan.debtor_id),
+        "has_payments": loan_has_payments(db, loan.id),
+    }
     return render(request, "journal/UpdateLoan.html", context)
 
 @login_required(login_url='/')

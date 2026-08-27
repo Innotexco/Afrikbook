@@ -14,10 +14,14 @@
         <span>View Loan &RightArrow;</span>
     </a>
 
-    <div class="w-64">
-        <a class="block w-full px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
+    <div class="flex gap-3 mt-4">
+        <a class="px-4 py-1 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg hover:bg-slate-300"
             href="{% url 'journal:ViewLoan' %}">
             Back to Loans
+        </a>
+        <a class="px-4 py-1 text-sm font-medium leading-5 text-center text-white bg-slate-700 border border-transparent rounded-lg hover:bg-slate-800"
+            href="{% url 'journal:update-loan' loan_item.id %}">
+            Edit Loan
         </a>
     </div>
 

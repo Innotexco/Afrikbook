@@ -37,7 +37,7 @@
                         <th class="px-4 py-3">Interest</th>
                         <th class="px-4 py-3">Reference</th>
                         <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3">View</th>
+                        <th class="px-4 py-3">Action</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y">
@@ -60,12 +60,19 @@
                                 <span class="text-amber-600 font-semibold">{{ display.status|default:"unpaid" }}</span>
                             {% endif %}
                         </td>
-                        <td class="text-[10px] px-4 bg-gray-50 w-3">
-                            <a href="{% url 'journal:ViewLoanItem' display.id %}"
-                                class="flex items-center justify-center text-blue-500 border px-3"
-                                aria-label="View">
-                                View
-                            </a>
+                        <td class="text-[10px] px-4 bg-gray-50">
+                            <div class="flex items-center gap-2">
+                                <a href="{% url 'journal:ViewLoanItem' display.id %}"
+                                    class="flex items-center justify-center text-blue-500 border px-3"
+                                    aria-label="View">
+                                    View
+                                </a>
+                                <a href="{% url 'journal:update-loan' display.id %}"
+                                    class="flex items-center justify-center text-slate-600 border px-3"
+                                    aria-label="Edit">
+                                    Edit
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}

@@ -13,7 +13,13 @@ from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 import decimal
 import uuid
-from journal.fuctions.loan_schedule import build_schedule, save_installments
+from journal.fuctions.loan_schedule import (
+    build_schedule,
+    save_installments,
+    _money,
+    ensure_loan_tables,
+)
+from journal.models import loan_installment, loan_repayment
 
 
 def create_new_loan(request, db):
@@ -204,3 +210,140 @@ def create_new_loan(request, db):
         print("ERROR:", str(e))  # for debugging
         messages.error(request, "Something went wrong. Please try again.")
         return None
+
+
+def loan_has_payments(db, loan_id):
+    ensure_loan_tables(db)
+    if loan_repayment.objects.using(db).filter(loan_id=loan_id).exists():
+        return True
+    return loan_installment.objects.using(db).filter(loan_id=loan_id, amount_paid__gt=0).exists()
+
+
+def detect_borrower_type(db, debtor_id):
+    from employee.models import employee as Employee
+    if not debtor_id:
+        return 'employee'
+    if Employee.objects.using(db).filter(staff_ID=debtor_id).exists():
+        return 'employee'
+    if customer_table.objects.using(db).filter(customer_code=debtor_id).exists():
+        return 'customer'
+    if vendor_table.objects.using(db).filter(custID=debtor_id).exists():
+        return 'vendor'
+    return 'employee'
+
+
+def update_existing_loan(request, db, loan):
+    from employee.models import employee as Employee
+
+    date = request.POST.get('date')
+    employee_id = request.POST.get('employee_id')
+    customer_id = request.POST.get('customer_id')
+    vendor_id = request.POST.get('vendor_id')
+    description = request.POST.get('description')
+    reference = request.POST.get('reference') or ""
+    apply_extended_interest = request.POST.get('apply_extended_interest') == 'on'
+    extended_interest = request.POST.get('extended_interest') or None
+    if extended_interest and not apply_extended_interest:
+        extended_interest = None
+    if apply_extended_interest and not extended_interest:
+        messages.error(request, "Enter an extended interest rate, or uncheck Apply Extended Interest")
+        return None
+
+    if not all([date, description]):
+        messages.error(request, "Date and description are required")
+        return None
+
+    if extended_interest is not None:
+        try:
+            decimal.Decimal(extended_interest)
+        except Exception:
+            messages.error(request, "Extended interest must be a valid number")
+            return None
+
+    has_payments = loan_has_payments(db, loan.id)
+
+    if has_payments:
+        amount_borrowed = _money(loan.amount_borrowed)
+        duration = loan.duration
+        interest = loan.interest
+    else:
+        amount_borrowed = request.POST.get('amount_borrowed')
+        duration = request.POST.get('duration') or None
+        interest = request.POST.get('interest') or None
+        apply_interest = request.POST.get('apply_interest') == 'on'
+        if apply_interest and not interest:
+            messages.error(request, "Enter an interest rate, or uncheck Apply Interest")
+            return None
+        if interest and not apply_interest:
+            interest = None
+        try:
+            amount_borrowed = decimal.Decimal(amount_borrowed)
+        except Exception:
+            messages.error(request, "Invalid amount")
+            return None
+        if interest is not None:
+            try:
+                decimal.Decimal(interest)
+            except Exception:
+                messages.error(request, "Interest must be a valid number")
+                return None
+
+    try:
+        if employee_id:
+            emp = Employee.objects.using(db).get(staff_ID=employee_id)
+            debtor_id = employee_id
+            debtor_name = emp.fullname
+        elif customer_id:
+            cus = customer_table.objects.using(db).get(customer_code=customer_id)
+            debtor_id = customer_id
+            debtor_name = cus.name
+        elif vendor_id:
+            ven = vendor_table.objects.using(db).get(custID=vendor_id)
+            debtor_id = vendor_id
+            debtor_name = ven.name
+        else:
+            debtor_id = loan.debtor_id
+            debtor_name = loan.debtor_name
+    except ObjectDoesNotExist:
+        messages.error(request, "Selected debtor does not exist")
+        return None
+
+    totals, schedule_rows = build_schedule(amount_borrowed, date, duration, interest)
+    if not duration:
+        duration = str(totals['months'])
+
+    old_total = _money(loan.total_amount) if loan.total_amount is not None else _money(loan.amount_borrowed)
+
+    try:
+        account_debited = chart_of_account.objects.using(db).get(account_id=loan.account_debited or "1100-LoanReceivable")
+    except chart_of_account.DoesNotExist:
+        account_debited = None
+
+    with transaction.atomic():
+        loan.date = date
+        loan.description = description
+        loan.debtor_id = debtor_id
+        loan.debtor_name = debtor_name
+        loan.reference = reference
+        loan.extended_interest = extended_interest
+        loan.duration = duration
+        loan.interest = interest
+        loan.amount_borrowed = amount_borrowed
+        loan.interest_amount = totals['interest_amount']
+        loan.total_amount = totals['total_amount']
+
+        if not has_payments:
+            loan.balance_left = totals['total_amount']
+            loan.save(using=db)
+            save_installments(db, loan, schedule_rows)
+            diff = totals['total_amount'] - old_total
+            if account_debited is not None and diff != 0:
+                account_debited.actual_balance += diff
+                account_debited.save(using=db)
+                CreateLog(db, account_debited, diff)
+        else:
+            loan.save(using=db)
+
+    messages.success(request, "Loan updated successfully")
+    return True
+
