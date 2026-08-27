@@ -145,6 +145,7 @@
                 if(response.data.length > 0){
                     my_modal_payroll.showModal()
                     $("#total").val(response.total);
+                    $("#payroll-print-total").text(response.total);
                     //console.log(response.data)
                     response.data.forEach(item => {
                         num++ 

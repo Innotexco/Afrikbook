@@ -23,11 +23,11 @@
 
 <!-- Classic Template -->
 <section class="hidden template-classic">
-    <p class="text-center hhh my-1 text-[#111827] text-2xl font-extrabold whitespace-nowrap">{{profile.CompanyName | upper}}</p>
-    <address class="text-center text-sm font-semibold whitespace-nowrap text-[#1f2937]">{{profile.address}}</address>
-    <p class="text-center text-sm font-semibold whitespace-nowrap text-[#1f2937]">{{profile.email}}, {{profile.phone}}</p>
+    <p class="text-center hhh my-1 text-[#111827] text-2xl font-semibold whitespace-nowrap">{{profile.CompanyName | upper}}</p>
+    <address class="text-center text-sm font-normal whitespace-nowrap text-[#1f2937]">{{profile.address}}</address>
+    <p class="text-center text-sm font-normal whitespace-nowrap text-[#1f2937]">{{profile.email}}, {{profile.phone}}</p>
     <hr class="my-3 border-gray-400">
-    <p class="flex justify-end mb-3 self-center text-sm font-semibold whitespace-nowrap text-[#111827] report_date">Gen. on:</p>
+    <p class="flex justify-end mb-3 self-center text-sm font-normal whitespace-nowrap text-[#111827] report_date">Gen. on:</p>
 </section>
 
 
@@ -47,19 +47,19 @@
             </div>
         {% endif %}
 
-        <p class="font-extrabold text-[#111827] leading-tight break-words"
+        <p class="font-semibold text-[#111827] leading-tight break-words"
            style="font-size: clamp(16px, 3vw, 28px); word-break: break-word; overflow-wrap: break-word; max-width: 100%;">
             {{ profile.CompanyName|upper }}
         </p>
     </div>
     
     <!-- Address Line -->
-    <address class="text-center text-[12px] font-semibold pl-32 -mt-6 not-italic whitespace-nowrap text-[#1f2937]">
+    <address class="text-center text-[12px] font-normal pl-32 -mt-6 not-italic whitespace-nowrap text-[#1f2937]">
         {{ profile.address }}
     </address>
     
     <!-- Contact Bar -->
-    <div class="flex ml-16 justify-center items-center gap-6 text-[12px] font-semibold whitespace-nowrap text-[#1f2937] mt-1.5">
+    <div class="flex ml-16 justify-center items-center gap-6 text-[12px] font-normal whitespace-nowrap text-[#1f2937] mt-1.5">
         <div class="flex items-center gap-1.5">
             <svg class="w-4 h-4 inline-block text-[#1f2937]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v.01L12 13 2 6.01V6z"/>
@@ -74,7 +74,7 @@
             <span>{{ profile.phone }}{% if profile.phone2 %}, {{ profile.phone2 }}{% endif %}</span>
         </div>
         {% if profile.Rc %}
-            <span class="font-bold">RC {{ profile.Rc }}</span>
+            <span class="font-medium">RC {{ profile.Rc }}</span>
         {% endif %}
     </div>
     
@@ -127,23 +127,24 @@
     .pdf-generating address,
     .pdf-generating b,
     .pdf-generating strong {
-        font-weight: 700 !important;
+        font-weight: 400 !important;
     }
     .pdf-generating th {
-        font-weight: 800 !important;
+        font-weight: 600 !important;
         color: #030712 !important;
         background: #e5e7eb !important;
     }
     .pdf-generating .template-classic .hhh,
+    .pdf-generating .template-invoice p.font-semibold,
     .pdf-generating .template-invoice p.font-extrabold {
-        font-weight: 900 !important;
+        font-weight: 600 !important;
         color: #030712 !important;
     }
     .pdf-generating table {
         color: #111827 !important;
     }
     .pdf-generating tfoot td {
-        font-weight: 800 !important;
+        font-weight: 600 !important;
         color: #030712 !important;
     }
 </style>

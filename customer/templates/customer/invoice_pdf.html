@@ -12,7 +12,7 @@
             color: #111827;
             font-family: Arial, Helvetica, sans-serif;
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 400;
         }
 
         .invoice-meta {
@@ -27,12 +27,12 @@
         .invoice-meta .label {
             color: #111827;
             font-size: 11px;
-            font-weight: 800;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
         .invoice-meta .value {
-            font-weight: 800;
+            font-weight: 600;
             font-size: 13px;
             color: #030712;
             margin-top: 2px;
@@ -48,18 +48,18 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: #111827;
-            font-weight: 800;
+            font-weight: 600;
             margin-bottom: 4px;
         }
         .customer-section .block-value {
             font-size: 13px;
             color: #030712;
-            font-weight: 800;
+            font-weight: 600;
         }
         .customer-section .block-sub {
             font-size: 12px;
             color: #1f2937;
-            font-weight: 700;
+            font-weight: 400;
         }
 
         .table-wrap {
@@ -77,7 +77,7 @@
         thead th {
             padding: 8px 12px;
             font-size: 11px;
-            font-weight: 800;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: #030712;
@@ -92,12 +92,12 @@
             padding: 8px 12px;
             font-size: 11px;
             color: #111827;
-            font-weight: 700;
+            font-weight: 400;
         }
         tfoot td {
             padding: 8px 12px;
             font-size: 12px;
-            font-weight: 800;
+            font-weight: 600;
             color: #030712;
         }
         .total-row {
@@ -105,7 +105,7 @@
             border-top: 2px solid #111827;
         }
         .total-row td {
-            font-weight: 900;
+            font-weight: 600;
             font-size: 13px;
             color: #030712;
         }
@@ -113,19 +113,19 @@
             background: #f3f4f6;
             color: #030712;
             font-size: 12px;
-            font-weight: 800;
+            font-weight: 600;
         }
         .divider-row td {
             border-top: 1px solid #9ca3af;
             padding-top: 4px;
             color: #030712;
-            font-weight: 800;
+            font-weight: 600;
         }
 
         hr { border: none; border-top: 2px solid #9ca3af; margin: 16px 0; }
         .footer {
             font-size: 11px;
-            font-weight: 700;
+            font-weight: 400;
             white-space: nowrap;
             color: #111827;
             padding: 0 24px 8px;
@@ -155,16 +155,16 @@
                 No Logo
             </div>
         {% endif %}
-        <p style="font-weight: 700; color: #030712; line-height: 1.2; word-break: break-word; overflow-wrap: break-word; font-size: 18px; max-width: 60%;">
+        <p style="font-weight: 600; color: #030712; line-height: 1.2; word-break: break-word; overflow-wrap: break-word; font-size: 18px; max-width: 60%;">
             {{ company.CompanyName|upper }}
         </p>
     </div>
 
-    <address style="text-align: center; font-size: 12px; font-weight: 700; padding-left: 128px; margin-top: -24px; font-style: normal; white-space: nowrap; color: #1f2937;">
+    <address style="text-align: center; font-size: 12px; font-weight: 400; padding-left: 128px; margin-top: -24px; font-style: normal; white-space: nowrap; color: #1f2937;">
         {{ company.address }}
     </address>
 
-    <div style="display: flex; margin-left: 64px; justify-content: center; align-items: center; gap: 24px; font-size: 12px; font-weight: 700; white-space: nowrap; color: #1f2937; margin-top: 6px;">
+    <div style="display: flex; margin-left: 64px; justify-content: center; align-items: center; gap: 24px; font-size: 12px; font-weight: 400; white-space: nowrap; color: #1f2937; margin-top: 6px;">
         <!-- Email -->
         <div style="display: flex; align-items: center; gap: 6px;">
             <svg style="width: 16px; height: 16px; display: inline-block; text-gray-700;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -283,8 +283,8 @@
                 <!-- VAT Total (only if more than one VAT line) -->
                 {% if vat_items|length > 1 %}
                 <tr class="summary-row divider-row">
-                    <td colspan="4" style="text-align:right; padding-right:12px; color:#6b7280; font-weight:700;">VAT Total</td>
-                    <td colspan="2" style="color:#6b7280; font-weight:700;">{{ company.currency }} {{ vat_total|floatformat:2|intcomma }}</td>
+                    <td colspan="4" style="text-align:right; padding-right:12px; color:#6b7280; font-weight:500;">VAT Total</td>
+                    <td colspan="2" style="color:#6b7280; font-weight:500;">{{ company.currency }} {{ vat_total|floatformat:2|intcomma }}</td>
                 </tr>
                 {% endif %}
 
@@ -297,12 +297,12 @@
                 <!-- Amount Paid / Balance Due -->
                 {% if invoice.amount_paid and invoice.amount_paid != grand_total %}
                 <tr style="background:#fff;">
-                    <td colspan="4" style="text-align:right; padding-right:12px; color:#030712; font-weight:800;">Amount Paid</td>
-                    <td colspan="2" style="color:#030712; font-weight:800;">{{ company.currency }} {{ invoice.amount_paid|floatformat:2|intcomma }}</td>
+                    <td colspan="4" style="text-align:right; padding-right:12px; color:#030712; font-weight:600;">Amount Paid</td>
+                    <td colspan="2" style="color:#030712; font-weight:600;">{{ company.currency }} {{ invoice.amount_paid|floatformat:2|intcomma }}</td>
                 </tr>
                 <tr style="background:#fff;">
-                    <td colspan="4" style="text-align:right; padding-right:12px; color:#030712; font-weight:800;">Balance Due</td>
-                    <td colspan="2" style="color:#030712; font-weight:800;">{{ company.currency }} {{ balance_due|floatformat:2|intcomma }}</td>
+                    <td colspan="4" style="text-align:right; padding-right:12px; color:#030712; font-weight:600;">Balance Due</td>
+                    <td colspan="2" style="color:#030712; font-weight:600;">{{ company.currency }} {{ balance_due|floatformat:2|intcomma }}</td>
                 </tr>
                 {% endif %}
 
