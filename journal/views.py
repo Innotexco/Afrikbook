@@ -266,7 +266,7 @@ def UpdateLoan(request, id):
     vendor = vendor_table.objects.using(db).all()
     employe = employee.objects.using(db).all()
     context = {
-        "loan": loan,
+        "loan_item": loan,
         "customer": customer,
         "vendor": vendor,
         "employee": employe,
