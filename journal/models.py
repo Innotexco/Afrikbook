@@ -122,8 +122,7 @@ class loan_account(models.Model):
     debtor_name = models.CharField(max_length=200)
     debtor_id = models.CharField(max_length=60)
     description = models.CharField(max_length=223)
-    amount_borrowed = models.CharField(max_length=200)  # Consider using DecimalField
-    # amount_paid = models.CharField(max_length=200)
+    amount_borrowed = models.CharField(max_length=200)  
     balance_left = models.CharField(max_length=200)
     account_debited = models.CharField(max_length=200)
     status = models.CharField(max_length=200, blank=True, default="unpaid")
@@ -162,4 +161,16 @@ class loan_account_log(models.Model):
     class Meta:
         db_table = "loan_account_log"
 
-    
+
+class loan_installment(models.Model):
+    loan_id = models.IntegerField()
+    transaction_id = models.CharField(max_length=200)
+    month_number = models.PositiveSmallIntegerField()
+    due_date = models.DateField()
+    principal_portion = models.DecimalField(max_digits=12, decimal_places=2)
+    interest_portion = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    expected_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    amount_paid = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    class Meta:
+        db_table = "loan_installment"

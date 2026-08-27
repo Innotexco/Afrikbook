@@ -21,35 +21,51 @@
         </a>
     </div>
 
-    <div class="bg-white rounded-lg shadow-md overflow-hidden mt-5 mb-5">
-        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+    <div class="bg-slate-800 text-white rounded-lg shadow-md overflow-hidden mt-5 mb-5">
+        <div class="px-6 py-5 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div>
-                <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide">Loan Details</h2>
-                <p class="text-xs text-gray-500 mt-0.5">{{ loan_item.description }}</p>
+                <p class="text-xs uppercase tracking-wide text-slate-300">Total loaned amount</p>
+                <p class="text-3xl font-semibold mt-1">{{ schedule.totals.total_amount|floatformat:2 }}</p>
+                <p class="text-xs text-slate-300 mt-1">{{ loan_item.description }}</p>
             </div>
             {% if loan_item.status|lower == 'paid' %}
-                <span class="text-xs font-semibold text-green-700 bg-green-100 px-3 py-1 rounded-full">{{ loan_item.status }}</span>
+                <span class="text-xs font-semibold text-green-800 bg-green-100 px-3 py-1 rounded-full self-start">{{ loan_item.status }}</span>
             {% else %}
-                <span class="text-xs font-semibold text-amber-700 bg-amber-100 px-3 py-1 rounded-full">{{ loan_item.status|default:"unpaid" }}</span>
+                <span class="text-xs font-semibold text-amber-800 bg-amber-100 px-3 py-1 rounded-full self-start">{{ loan_item.status|default:"unpaid" }}</span>
             {% endif %}
         </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 px-6 py-4 bg-slate-700/60 text-sm">
+            <div>
+                <span class="block text-xs text-slate-300">Principal</span>
+                <span class="font-medium">{{ schedule.totals.principal|floatformat:2 }}</span>
+            </div>
+            <div>
+                <span class="block text-xs text-slate-300">Interest ({{ schedule.totals.interest_rate|floatformat:2 }}%)</span>
+                <span class="font-medium">{{ schedule.totals.interest_amount|floatformat:2 }}</span>
+            </div>
+            <div>
+                <span class="block text-xs text-slate-300">Amount Paid</span>
+                <span class="font-medium">{{ schedule.paid_total|floatformat:2 }}</span>
+            </div>
+            <div>
+                <span class="block text-xs text-slate-300">Balance Left</span>
+                <span class="font-medium">{{ schedule.balance_left|floatformat:2 }}</span>
+            </div>
+        </div>
+    </div>
 
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-5">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide">Loan Details</h2>
+        </div>
         <div class="p-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3 text-sm">
             <div>
                 <span class="block text-xs text-gray-500">Date</span>
                 <span class="font-medium text-slate-700">{{ loan_item.date }}</span>
             </div>
             <div>
-                <span class="block text-xs text-gray-500">Amount Borrowed</span>
-                <span class="font-medium text-slate-700">{{ loan_item.amount_borrowed }}</span>
-            </div>
-            <div>
-                <span class="block text-xs text-gray-500">Amount Paid</span>
-                <span class="font-medium text-slate-700">{% if amount_paid is not None %}{{ amount_paid }}{% else %}—{% endif %}</span>
-            </div>
-            <div>
-                <span class="block text-xs text-gray-500">Balance Left</span>
-                <span class="font-medium text-slate-700">{{ loan_item.balance_left }}</span>
+                <span class="block text-xs text-gray-500">Duration</span>
+                <span class="font-medium text-slate-700">{% if loan_item.duration %}{{ loan_item.get_duration_display }}{% else %}1 Month{% endif %}</span>
             </div>
             <div>
                 <span class="block text-xs text-gray-500">Account Debited</span>
@@ -58,6 +74,10 @@
             <div>
                 <span class="block text-xs text-gray-500">Reference</span>
                 <span class="font-medium text-slate-700">{{ loan_item.reference|default:"—" }}</span>
+            </div>
+            <div>
+                <span class="block text-xs text-gray-500">Recorded By</span>
+                <span class="font-medium text-slate-700">{{ loan_item.Userlogin|default:"—" }}</span>
             </div>
         </div>
     </div>
@@ -78,29 +98,80 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-5">
-        <div class="px-6 py-4 border-b border-gray-100">
-            <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide">Loan Terms</h2>
+    {% if schedule.cards %}
+    <div class="mb-5">
+        <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide mb-3">Monthly repayments</h2>
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {% for card in schedule.cards %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100">
+                <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">Month {{ card.month_number }}</p>
+                        <p class="text-xs text-gray-500">Due {{ card.due_date }}</p>
+                    </div>
+                    {% if card.status == 'paid' %}
+                        <span class="text-[10px] font-semibold uppercase text-green-700 bg-green-100 px-2 py-0.5 rounded-full">Paid</span>
+                    {% elif card.status == 'defaulted' %}
+                        <span class="text-[10px] font-semibold uppercase text-red-700 bg-red-100 px-2 py-0.5 rounded-full">Defaulted</span>
+                    {% elif card.status == 'partial' %}
+                        <span class="text-[10px] font-semibold uppercase text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">Partial</span>
+                    {% elif card.status == 'due' %}
+                        <span class="text-[10px] font-semibold uppercase text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">Due</span>
+                    {% else %}
+                        <span class="text-[10px] font-semibold uppercase text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">Upcoming</span>
+                    {% endif %}
+                </div>
+                <div class="p-4 space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Amount due</span>
+                        <span class="font-medium text-slate-800">{{ card.expected_amount|floatformat:2 }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Interest</span>
+                        <span class="font-medium text-slate-800">{{ card.interest_portion|floatformat:2 }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Amount paid</span>
+                        <span class="font-medium text-slate-800">{{ card.amount_paid|floatformat:2 }}</span>
+                    </div>
+                    <div class="flex justify-between pt-2 border-t border-gray-100">
+                        <span class="text-gray-500">Outstanding</span>
+                        <span class="font-semibold {% if card.unpaid > 0 %}text-red-600{% else %}text-green-600{% endif %}">{{ card.unpaid|floatformat:2 }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
-        <div class="p-6 grid gap-6 md:grid-cols-2 xl:grid-cols-4 text-sm">
-            <div>
-                <span class="block text-xs text-gray-500">Duration</span>
-                <span class="font-medium text-slate-700">{% if loan_item.duration %}{{ loan_item.get_duration_display }}{% else %}—{% endif %}</span>
+    </div>
+    {% endif %}
+
+    {% if schedule.defaulted %}
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-5 border border-red-100">
+        <div class="px-6 py-4 border-b border-red-100 bg-red-50">
+            <h2 class="text-sm font-semibold text-red-800 uppercase tracking-wide">Default charges</h2>
+            <p class="text-xs text-red-600 mt-0.5">
+                Extended interest of {{ schedule.extended_rate|floatformat:2 }}% applied to unpaid defaulted months
+            </p>
+        </div>
+        <div class="p-6">
+            <div class="space-y-3">
+                {% for item in schedule.defaulted %}
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-sm border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+                    <div>
+                        <p class="font-medium text-slate-800">Month {{ item.month_number }} · due {{ item.due_date }}</p>
+                        <p class="text-xs text-gray-500">Unpaid {{ item.unpaid|floatformat:2 }} × {{ item.rate|floatformat:2 }}%</p>
+                    </div>
+                    <p class="font-semibold text-red-700">{{ item.charge|floatformat:2 }}</p>
+                </div>
+                {% endfor %}
             </div>
-            <div>
-                <span class="block text-xs text-gray-500">Interest</span>
-                <span class="font-medium text-slate-700">{% if loan_item.interest is not None %}{{ loan_item.interest }}%{% else %}—{% endif %}</span>
-            </div>
-            <div>
-                <span class="block text-xs text-gray-500">Extended Interest</span>
-                <span class="font-medium text-slate-700">{% if loan_item.extended_interest is not None %}{{ loan_item.extended_interest }}%{% else %}—{% endif %}</span>
-            </div>
-            <div>
-                <span class="block text-xs text-gray-500">Recorded By</span>
-                <span class="font-medium text-slate-700">{{ loan_item.Userlogin|default:"—" }}</span>
+            <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-200 text-sm">
+                <span class="font-medium text-slate-700">Total extended interest</span>
+                <span class="text-lg font-semibold text-red-700">{{ schedule.extended_total|floatformat:2 }}</span>
             </div>
         </div>
     </div>
+    {% endif %}
 
     {% if logs %}
     <div class="bg-white rounded-lg shadow-md overflow-hidden mb-5">
