@@ -331,26 +331,31 @@
                             {% endfor %}
     
                         </tbody>
+                        <tfoot>
+                            <tr class="text-gray-800">
+                                <td colspan="16" class="border border-slate-300 px-2 py-2 text-right text-xs font-semibold">Total Amount</td>
+                                <td class="border border-slate-300 px-2 py-2 text-xs font-semibold">
+                                    <span id="payroll-print-total">0</span>
+                                </td>
+                                <td class="border border-slate-300 payroll-edit-col no-print"></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
-            </div>
 
-            <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
-
-                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-2">
-
-                    <label class="block text-sm">
-                        <span class="text-gray-700">Total Amount</span>
-                        <input 
-                            class="block w-full px-2 mt-1 text-sm bg-slate-100 border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                            placeholder="" disabled
-                            value="0"
-                            id="total"
-                        />
-                    </label>
-
+                <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
+                    <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-2">
+                        <label class="block text-sm">
+                            <span class="text-gray-700">Total Amount</span>
+                            <input
+                                class="block w-full px-2 mt-1 text-sm bg-slate-100 border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
+                                placeholder="" disabled
+                                value="0"
+                                id="total"
+                            />
+                        </label>
+                    </div>
                 </div>
-
             </div>
 
             <!-- Print button — same pattern as View Sales Ledger -->
