@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+    <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+      href="{% url 'journal:ViewLoanItem' loan.id %}">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+            </svg>
+            <span>Edit Loan</span>
+        </div>
+        <span>View Loan &RightArrow;</span>
+    </a>
+
+    {% if has_payments %}
+    <div class="mt-4 px-4 py-3 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg">
+        This loan already has repayments. Amount, duration, and interest are locked so the payment history is not overwritten. You can still update description, borrower, reference, and extended interest.
+    </div>
+    {% endif %}
+
+    <form method="POST" id="loanForm" class="mt-5">
+        {% csrf_token %}
+
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-5">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide">Loan Details</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Update information about this loan</p>
+            </div>
+
+            <div class="p-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 font-medium">Date <span class="text-red-500">*</span></span>
+                    <input
+                        type="date"
+                        required
+                        class="block w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 text-slate-700"
+                        name="date"
+                        value="{{ loan.date|date:'Y-m-d' }}"
+                    />
+                </label>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 font-medium">Amount Borrowed <span class="text-red-500">*</span></span>
+                    <div class="relative mt-1">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm select-none">{{ profile.currency|default:'$' }}</span>
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            required
+                            class="block w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 text-slate-700"
+                            placeholder="0.00"
+                            name="amount_borrowed"
+                            value="{{ loan.amount_borrowed }}"
+                            {% if has_payments %}readonly{% endif %}
+                        />
+                    </div>
+                </label>
+
+                <label class="block text-sm md:col-span-2 xl:col-span-1">
+                    <span class="text-gray-700 font-medium">Description <span class="text-red-500">*</span></span>
+                    <textarea
+                        required
+                        class="block w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 text-slate-700 resize-none"
+                        rows="1"
+                        placeholder="What is this loan for?"
+                        name="description"
+                    >{{ loan.description }}</textarea>
+                </label>
+
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-5">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide">Borrower</h2>
+            </div>
+
+            <div class="p-6">
+
+                <div id="typeTabs" class="inline-flex rounded-lg border border-gray-300 bg-gray-50 p-1 gap-1 mb-4">
+                    <label for="employee_radio" data-tab="employee" class="type-tab cursor-pointer px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 transition-colors">
+                        <input type="radio" id="employee_radio" name="accountType" value="Employee" class="hidden" {% if borrower_type == 'employee' %}checked{% endif %}>
+                        Employee
+                    </label>
+                    <label for="customer_radio" data-tab="customer" class="type-tab cursor-pointer px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 transition-colors">
+                        <input type="radio" id="customer_radio" name="accountType" value="Customer" class="hidden" {% if borrower_type == 'customer' %}checked{% endif %}>
+                        Customer
+                    </label>
+                    <label for="vendor_radio" data-tab="vendor" class="type-tab cursor-pointer px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 transition-colors">
+                        <input type="radio" id="vendor_radio" name="accountType" value="Vendor" class="hidden" {% if borrower_type == 'vendor' %}checked{% endif %}>
+                        Vendor
+                    </label>
+                </div>
+
+                <label class="block text-sm max-w-md">
+                    <span class="text-gray-700 font-medium">Select Borrower <span class="text-red-500">*</span></span>
+
+                    <select class="{% if borrower_type != 'employee' %}hidden {% endif %}block w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 text-slate-700" name="employee_id" id="Employee" {% if borrower_type == 'employee' %}required{% endif %}>
+                        <option value="" disabled>Select Employee</option>
+                        {% for employee in employee %}
+                          <option value="{{employee.staff_ID}}" {% if borrower_type == 'employee' and loan.debtor_id == employee.staff_ID %}selected{% endif %}>{{employee.fullname}}</option>
+                        {% endfor %}
+                    </select>
+                    <select class="{% if borrower_type != 'customer' %}hidden {% endif %}block w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 text-slate-700" name="customer_id" id="Customer" {% if borrower_type == 'customer' %}required{% endif %}>
+                        <option value="" disabled>Select Customer</option>
+                        {% for customer in customer %}
+                          <option value="{{customer.customer_code}}" {% if borrower_type == 'customer' and loan.debtor_id == customer.customer_code %}selected{% endif %}>{{customer.name}}</option>
+                        {% endfor %}
+                    </select>
+                    <select class="{% if borrower_type != 'vendor' %}hidden {% endif %}block w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 text-slate-700" name="vendor_id" id="Vendor" {% if borrower_type == 'vendor' %}required{% endif %}>
+                        <option value="" disabled>Select Vendor</option>
+                        {% for vendor in vendor %}
+                            <option value="{{vendor.custID}}" {% if borrower_type == 'vendor' and loan.debtor_id == vendor.custID %}selected{% endif %}>{{vendor.name}}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-5">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h2 class="text-sm font-semibold text-gray-800 uppercase tracking-wide">Loan Terms</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Duration, interest, and reference</p>
+            </div>
+
+            <div id="extraLoanFields" class="p-6 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 font-medium">Duration</span>
+                    <select
+                        class="block w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 text-slate-700"
+                        name="duration"
+                        {% if has_payments %}disabled{% endif %}
+                    >
+                        <option value="">Select Duration</option>
+                        <option value="1" {% if loan.duration == '1' %}selected{% endif %}>1 Month</option>
+                        <option value="2" {% if loan.duration == '2' %}selected{% endif %}>2 Months</option>
+                        <option value="3" {% if loan.duration == '3' %}selected{% endif %}>3 Months</option>
+                        <option value="4" {% if loan.duration == '4' %}selected{% endif %}>4 Months</option>
+                        <option value="5" {% if loan.duration == '5' %}selected{% endif %}>5 Months</option>
+                        <option value="6" {% if loan.duration == '6' %}selected{% endif %}>6 Months</option>
+                    </select>
+                </label>
+
+                <div class="block text-sm">
+                    <span class="text-gray-700 font-medium">Interest</span>
+                    <label class="flex items-center gap-2 mt-1.5 cursor-pointer select-none">
+                        <span class="relative inline-block w-9 h-5">
+                            <input type="checkbox" id="applyInterest" name="apply_interest" class="peer sr-only" {% if loan.interest %}checked{% endif %} {% if has_payments %}disabled{% endif %}>
+                            <span class="block w-9 h-5 bg-gray-300 rounded-full peer-checked:bg-slate-600 transition-colors"></span>
+                            <span class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4"></span>
+                        </span>
+                        <span class="text-sm text-gray-600">Apply interest</span>
+                    </label>
+
+                    <div id="interestFieldWrap" class="{% if not loan.interest %}hidden {% endif %}mt-2 relative">
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max="100"
+                            class="block w-full pl-3 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 text-slate-700"
+                            placeholder="e.g. 5"
+                            name="interest"
+                            id="interestInput"
+                            value="{{ loan.interest|default_if_none:'' }}"
+                            {% if has_payments %}readonly{% endif %}
+                        />
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm select-none">%</span>
+                    </div>
+                </div>
+
+                <div class="block text-sm">
+                    <span class="text-gray-700 font-medium">Extended Interest</span>
+                    <label class="flex items-center gap-2 mt-1.5 cursor-pointer select-none">
+                        <span class="relative inline-block w-9 h-5">
+                            <input type="checkbox" id="applyExtendedInterest" name="apply_extended_interest" class="peer sr-only" {% if loan.extended_interest %}checked{% endif %}>
+                            <span class="block w-9 h-5 bg-gray-300 rounded-full peer-checked:bg-slate-600 transition-colors"></span>
+                            <span class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4"></span>
+                        </span>
+                        <span class="text-sm text-gray-600">Apply extended interest</span>
+                    </label>
+
+                    <div id="extendedInterestFieldWrap" class="{% if not loan.extended_interest %}hidden {% endif %}mt-2 relative">
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max="100"
+                            class="block w-full pl-3 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 text-slate-700"
+                            placeholder="e.g. 7.5"
+                            name="extended_interest"
+                            id="extendedInterestInput"
+                            value="{{ loan.extended_interest|default_if_none:'' }}"
+                        />
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm select-none">%</span>
+                    </div>
+                </div>
+
+                <label class="block text-sm">
+                    <span class="text-gray-700 font-medium">Reference</span>
+                    <input
+                        type="text"
+                        class="block w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 text-slate-700"
+                        placeholder="Optional reference"
+                        name="reference"
+                        value="{{ loan.reference }}"
+                    />
+                </label>
+
+            </div>
+
+            <div id="loanPreview" class="hidden border-t border-gray-100 px-6 py-4 bg-slate-50">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-600 mb-3">Repayment preview</p>
+                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 text-sm">
+                    <div>
+                        <span class="block text-xs text-gray-500">Interest added</span>
+                        <span id="previewInterest" class="font-medium text-slate-800">0.00</span>
+                    </div>
+                    <div>
+                        <span class="block text-xs text-gray-500">Total loaned</span>
+                        <span id="previewTotal" class="font-semibold text-slate-800">0.00</span>
+                    </div>
+                    <div>
+                        <span class="block text-xs text-gray-500">Months</span>
+                        <span id="previewMonths" class="font-medium text-slate-800">1</span>
+                    </div>
+                    <div>
+                        <span class="block text-xs text-gray-500">Amount due each month</span>
+                        <span id="previewMonthly" class="font-medium text-slate-800">0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3">
+            <a
+                href="{% url 'journal:ViewLoanItem' loan.id %}"
+                class="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-slate-200 rounded-lg hover:bg-slate-300"
+            >
+                Cancel
+            </a>
+            <button
+                type="submit"
+                class="px-6 py-2.5 text-sm font-semibold text-white bg-slate-700 rounded-lg shadow-sm hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1 transition-colors"
+            >
+                Save Changes
+            </button>
+        </div>
+
+    </form>
+
+    <style>
+        .type-tab.active {
+            background: #fff;
+            color: #1e293b;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+        }
+    </style>
+
+    <script>
+        const typeSelects = {
+            employee: document.getElementById("Employee"),
+            customer: document.getElementById("Customer"),
+            vendor:   document.getElementById("Vendor"),
+        };
+
+        function activateTab(tabKey) {
+            document.querySelectorAll('#typeTabs .type-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabKey);
+            });
+            Object.entries(typeSelects).forEach(([key, select]) => {
+                if (!select) return;
+                if (key === tabKey) {
+                    select.classList.remove('hidden');
+                    select.setAttribute('required', 'required');
+                } else {
+                    select.classList.add('hidden');
+                    select.removeAttribute('required');
+                }
+            });
+        }
+
+        document.getElementById("employee_radio").addEventListener('change', () => activateTab('employee'));
+        document.getElementById("customer_radio").addEventListener('change', () => activateTab('customer'));
+        document.getElementById("vendor_radio").addEventListener('change', () => activateTab('vendor'));
+        activateTab('{{ borrower_type|default:"employee" }}');
+
+        function wireInterestToggle(checkboxId, wrapId, inputId) {
+            const checkbox = document.getElementById(checkboxId);
+            const wrap = document.getElementById(wrapId);
+            const input = document.getElementById(inputId);
+            if (!checkbox || !wrap || !input) return;
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    wrap.classList.remove('hidden');
+                    input.focus();
+                } else {
+                    wrap.classList.add('hidden');
+                    input.value = "";
+                }
+            });
+        }
+
+        wireInterestToggle('applyInterest', 'interestFieldWrap', 'interestInput');
+        wireInterestToggle('applyExtendedInterest', 'extendedInterestFieldWrap', 'extendedInterestInput');
+
+        function money(value) {
+            const num = Number(value);
+            if (!Number.isFinite(num)) return 0;
+            return Math.round(num * 100) / 100;
+        }
+
+        function formatMoney(value) {
+            return money(value).toFixed(2);
+        }
+
+        function updateLoanPreview() {
+            const preview = document.getElementById('loanPreview');
+            const amount = money(document.querySelector('input[name="amount_borrowed"]').value);
+            const months = Math.max(1, parseInt(document.querySelector('select[name="duration"]').value, 10) || 1);
+            const applyInterest = document.getElementById('applyInterest') && document.getElementById('applyInterest').checked;
+            const rate = applyInterest ? money(document.getElementById('interestInput').value) : 0;
+            const interestAmount = money(amount * rate / 100);
+            const total = money(amount + interestAmount);
+            const monthly = months ? money(total / months) : total;
+
+            if (!amount) {
+                preview.classList.add('hidden');
+                return;
+            }
+
+            document.getElementById('previewInterest').textContent = formatMoney(interestAmount);
+            document.getElementById('previewTotal').textContent = formatMoney(total);
+            document.getElementById('previewMonths').textContent = String(months);
+            document.getElementById('previewMonthly').textContent = formatMoney(monthly);
+            preview.classList.remove('hidden');
+        }
+
+        ['input[name="amount_borrowed"]', 'select[name="duration"]', '#interestInput', '#applyInterest'].forEach(function (selector) {
+            const el = document.querySelector(selector);
+            if (!el) return;
+            el.addEventListener('input', updateLoanPreview);
+            el.addEventListener('change', updateLoanPreview);
+        });
+        updateLoanPreview();
+    </script>
+
+{% endblock content %}
