@@ -173,5 +173,38 @@
                 
             }
         }
+
+        function fetchName(selected){
+        // preventDefault()
+        const value = selected.value;
+          
+          if(value){   
+          // Assuming you have the start_date and end_date values
+              $.ajax({
+                  url: '/account-name/'+value+'/',
+                  method: 'GET',
+                  success: function(data) {
+                   
+                       if(data){  
+                            $('#vendor_name_input').val(data).trigger('input');
+
+                            const inputValue = document.getElementById('myInput');
+                            inputValue.dispatchEvent(new Event("input"));
+                            
+                        }else{
+                           
+                        }
+                  },
+                  error: function(error) {
+                      // Handle the error
+                    //  console.log(error);
+                  }
+              });
+          }else{
+              alertify.error("Select Operating Account")
+          }
+
+          
+      };
     </script>
     {% endblock content %}
