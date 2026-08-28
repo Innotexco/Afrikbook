@@ -251,16 +251,22 @@ def InterAccountTransfer(request):
 
 
 
+# def fetchaccounts(request, value):
+#     db = request.user.company_id.db_name
+#     # print("/////////////////////",value)
+#     try:
+#         accounts = chart_of_account.objects.using(db).filter(series_name = value.upper()).values()
+        
+#         return JsonResponse(list(accounts), safe=False)
+#     except chart_of_account.DoesNotExist: 
+#         return JsonResponse({'error': 'Item not found'}, status=404)
+   
+   
 def fetchaccounts(request, value):
     db = request.user.company_id.db_name
-    # print("/////////////////////",value)
-    try:
-        accounts = chart_of_account.objects.using(db).filter(series_name = value.upper()).values()
-        
-        return JsonResponse(list(accounts), safe=False)
-    except chart_of_account.DoesNotExist: 
-        return JsonResponse({'error': 'Item not found'}, status=404)
-    
+    accounts = chart_of_account.objects.using(db).filter(series_name__iexact=value).values()
+    return JsonResponse(list(accounts), safe=False)
+ 
     
 def fetchaccountsname(request, value):
     db = request.user.company_id.db_name

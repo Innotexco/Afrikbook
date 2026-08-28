@@ -127,14 +127,14 @@ def create_new_journal_enty(request, db):
         messages.error(request, "Select valid Account")
 
 def transfer_to_bin(request, db, status, invoice_no):
-    
-
     journal = new_journal_entry.objects.using(db).filter(invoice_no=invoice_no)
-    oldj = len(journal)
-    total = journal.aggregate(total_amount=Sum("total"))['total_amount']
+    oldj = journal.count()
 
+    if oldj == 0:
+        return False
+
+    created_count = 0
     for i in journal:
-        # break
         journal_entry_bin.objects.using(db).create(
             date              = i.date,
             invoice_no        = i.invoice_no,
@@ -152,20 +152,20 @@ def transfer_to_bin(request, db, status, invoice_no):
             status            = status,
             Userlogin         = i.Userlogin
         )
-        
-    editj = journal_entry_bin.objects.using(db).filter(invoice_no=invoice_no)
+        created_count += 1
 
-    if editj.count() == oldj:
+    if created_count == oldj:
         account = chart_of_account.objects.using(db).get(account_id=journal.first().account)
         j = journal.first()
 
         if j.vendor_name:
-            ven = vendor_table.objects.using(db).get(name=j.vendor_name)
-            DebitPayable(request, db, ven, j.date, j.narration, account.account_type, "Transfer", account.account_id, j.debit)
+            try:
+                ven = vendor_table.objects.using(db).get(name=j.vendor_name)
+                DebitPayable(request, db, ven, j.date, j.narration, "Transfer", account.account_id, j.debit)
+            except vendor_table.DoesNotExist:
+                pass
 
         journal.delete()
-
-        
         CreateLog(db, account, -abs(decimal.Decimal(j.debit)))
 
         return True
