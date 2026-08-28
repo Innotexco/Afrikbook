@@ -198,7 +198,7 @@
     });
 
      
-     function fetchAccounts(selected){
+   /* function fetchAccounts(selected){
         // preventDefault()
         const value = $("#selector :selected").parent().attr('label');
         //   alert(value)
@@ -234,8 +234,42 @@
           }
 
           
-      };
+    };*/
 
+
+
+
+    function fetchAccounts(selected){
+        const value = $("#selector :selected").parent().attr('label');
+        const currentAccount = $('#accounts').val();  // preserve current pick before repopulating
+
+        if(value){
+            $.ajax({
+                url: '/account/'+value+'/',
+                method: 'GET',
+                success: function(data) {
+                    const select = $('#accounts');
+                    select.empty();
+                    select.append('<option></option>');
+
+                    if (data && data.length > 0) {
+                        data.forEach(item => {
+                            const isSelected = (String(item.account_id) === String(currentAccount)) ? 'selected' : '';
+                            select.append('<option value="'+item.account_id+'" '+isSelected+'>'+ item.account_bankname +'('+item.series_name+')'+'</option>');
+                        });
+                    } else {
+                        alertify.error("No accounts found for this category");
+                    }
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        } else {
+            alertify.error("Select Operating Account")
+        }
+    };
+    
       
      function fetchName(selected){
         // preventDefault()
