@@ -14,24 +14,6 @@
         </span>
     </a>
 
-    {% if aged.loan_id %}
-    <td class="text-[10px] px-4">
-        <a href="{% url 'journal:ViewLoanItem' aged.loan_id %}"
-            class="flex p-9 items-center justify-center text-white" aria-label="View Loan">
-            View Loan  
-        </a>
-    </td>
-    {%else%}
-    <td class="text-[10px] px-4">
-        <a href="#"
-            class="flex items-center p-9 justify-center text-gray-400 cursor-not-allowed pointer-events-none"
-            aria-label="View Loan"
-            aria-disabled="true">
-                View loan
-        </a>
-    </td>
-    {%endif%}
-
 
     <div class="modal-box">
         <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md" id="agrv">
@@ -210,6 +192,18 @@
 
                 <!-- Action buttons -->
                 <div class="flex justify-end gap-2 mt-4">
+                    {% if aged.loan_id %}
+                    <a href="{% url 'journal:ViewLoanItem' aged.loan_id %}"
+                        class="px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg text-sm font-medium transition">
+                        View Loan
+                    </a>
+                    {% else %}
+                    <span class="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg text-sm font-medium cursor-not-allowed select-none"
+                        title="No loan is linked to this invoice">
+                        View Loan
+                    </span>
+                    {% endif %}
+
                     <button type="button" onclick="generatePDF('agrv')"
                         class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition">
                         Print
