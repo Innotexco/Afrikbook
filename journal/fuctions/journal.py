@@ -118,7 +118,7 @@ def create_new_journal_enty(request, db):
                         CreditPayable(request, db, ven, date, narration, "Transfer", account.account_id, total_debit)
 
                     CreateLog(db, account, amount_paid)
-                    messages.success(request, "New Journal Entry was created successfully")
+                    messages.success(request, "Journal Entry was edited successfully")
                     message_displayed = True
             else:
                 messages.error(request, "Please fill all required fields correctly.")

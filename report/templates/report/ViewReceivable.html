@@ -14,6 +14,25 @@
         </span>
     </a>
 
+    {% if aged.loan_id %}
+    <td class="text-[10px] px-4">
+        <a href="{% url 'journal:ViewLoanItem' aged.loan_id %}"
+            class="flex p-9 items-center justify-center text-white" aria-label="View Loan">
+            View Loan  
+        </a>
+    </td>
+    {%else%}
+    <td class="text-[10px] px-4">
+        <a href="#"
+            class="flex items-center p-9 justify-center text-gray-400 cursor-not-allowed pointer-events-none"
+            aria-label="View Loan"
+            aria-disabled="true">
+                View loan
+        </a>
+    </td>
+    {%endif%}
+
+
     <div class="modal-box">
         <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md" id="agrv">
             {% include 'components/Periodheader.html' %}
