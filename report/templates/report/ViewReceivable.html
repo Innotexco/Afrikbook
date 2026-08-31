@@ -192,21 +192,7 @@
 
                 <!-- Action buttons -->
                 <div class="flex justify-end gap-2 mt-4">
-                    {% for aged in aged_recievable %}
-                    
-                    {% if aged.loan_id %}
-                    <a href="{% url 'journal:ViewLoanItem' aged.loan_id %}"
-                        class="px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg text-sm font-medium transition">
-                        View Loan
-                    </a>
-                    {% else %}
-                    <span class="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg text-sm font-medium cursor-not-allowed select-none"
-                        title="No loan is linked to this invoice">
-                        View Loan
-                    </span>
-                    {% endif %}
-
-                    {% endfor %}
+                    <span id="viewLoanBtn"></span>
 
                     <button type="button" onclick="generatePDF('agrv')"
                         class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition">
@@ -442,5 +428,21 @@
             },
             error: function () { location.reload(); }
         });
+    }
+
+    const loanDetailBase = "{% url 'journal:ViewLoanItem' 0 %}";
+    function renderViewLoanButton(loanId) {
+        if (loanId) {
+            $("#viewLoanBtn").html(
+                '<a href="' + loanDetailBase.replace('/0/', '/' + loanId + '/') + '" ' +
+                'class="px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg text-sm font-medium transition">' +
+                'View Loan</a>'
+            );
+        } else {
+            $("#viewLoanBtn").html(
+                '<span class="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg text-sm font-medium cursor-not-allowed select-none" ' +
+                'title="No loan is linked to this invoice">View Loan</span>'
+            );
+        }
     }
 </script>
