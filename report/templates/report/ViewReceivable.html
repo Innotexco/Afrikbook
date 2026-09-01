@@ -191,7 +191,7 @@
                 </div>
 
                 <!-- Action buttons -->
-                <div class="flex justify-end gap-2 mt-6">
+                <div class="flex justify-end gap-2 mt-4">
                     <span id="viewLoanBtn"></span>
 
                     <button type="button" onclick="generatePDF('agrv')"
@@ -435,7 +435,7 @@
         if (loanId) {
             $("#viewLoanBtn").html(
                 '<a href="' + loanDetailBase.replace('/0/', '/' + loanId + '/') + '" ' +
-                'class="px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg text-sm font-medium transition">' +
+                'class="px-5 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg text-sm font-medium transition">' +
                 'View Loan</a>'
             );
         } else {
