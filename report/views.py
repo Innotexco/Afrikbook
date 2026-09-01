@@ -1129,6 +1129,7 @@ def AgedReceivables(request):
         'today':           date.today(),
         'payment_methods': ["Cash", "Transfer", "Cheque", "Transfer and Cash", "Customer Balance"],
         'loan_references': loan_references,
+        'loan_id': loan_id_by_ref.get(inv.invoiceID)
     }
     return render(request, 'report/AgedReceivables.html', context)
 
