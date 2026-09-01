@@ -1129,7 +1129,6 @@ def AgedReceivables(request):
         'today':           date.today(),
         'payment_methods': ["Cash", "Transfer", "Cheque", "Transfer and Cash", "Customer Balance"],
         'loan_references': loan_references,
-        'loan_id': loan_id_by_ref.get(inv.invoiceID)
     }
     return render(request, 'report/AgedReceivables.html', context)
 
@@ -1392,23 +1391,25 @@ def GetCustomerDetailsAndInvoice(request, code, cusID):
             Q(cusID=cusID) & Q(invoiceID=code)
         ).values()
 
+        loan = loan_account.objects.using(db).filter(reference=code).first()
+        loan_id = loan.id if loan else None
 
         serialized_inv = []
         for inv in invoices:
             inv['invoice_date'] = inv['invoice_date'].strftime('%Y-%m-%d') if inv.get('invoice_date') else ''
+            inv['loan_id'] = loan_id  
             serialized_inv.append(inv)
 
         data = {
             "customer": {
                 "company": getattr(customer, 'company_name', customer.name),
                 "code": customer.customer_code,
-                "customer_id": customer.customer_code,   
+                "customer_id": customer.customer_code,
                 "description": getattr(customer, 'description', ''),
                 "phone": customer.phone,
                 "email": customer.email,
                 "address": getattr(customer, 'address', ''),
                 "balance": str(getattr(customer, 'balance', getattr(customer, 'Balance', 0))),
-                
             },
             "invoice": serialized_inv
         }
