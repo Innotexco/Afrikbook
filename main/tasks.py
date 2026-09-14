@@ -13,7 +13,7 @@ import traceback
 
 from celery import shared_task
 from django.conf import settings
-from django.core.mail import EmailMessage, send_mail
+from django.core.mail import EmailMessage, EmailMultiAlternatives, send_mail
 from django.db import connections
 
 logger = logging.getLogger(__name__)
@@ -21,6 +21,146 @@ logger = logging.getLogger(__name__)
 
 def _from_email():
     return getattr(settings, "DEFAULT_FROM_EMAIL", None) or settings.EMAIL_HOST_USER
+
+
+def _fmt_money(currency, value):
+    try:
+        from decimal import Decimal
+        amount = Decimal(str(value or 0))
+    except Exception:
+        amount = 0
+    formatted = f"{amount:,.2f}"
+    currency = (currency or "").strip()
+    return f"{currency} {formatted}".strip() if currency else formatted
+
+
+def _absolute_media_url(file_field, base_url):
+    if not file_field:
+        return ""
+    try:
+        url = file_field.url
+    except Exception:
+        return ""
+    if url.startswith("http://") or url.startswith("https://"):
+        return url
+    return (base_url or "").rstrip("/") + "/" + url.lstrip("/")
+
+
+def _format_short_date(value):
+    if not value:
+        return ""
+    try:
+        return value.strftime("%d %b %Y")
+    except Exception:
+        return str(value)
+
+
+def _invoice_email_copy(invoice, customer_name, company_name, grand_total, balance_due, amount_paid, currency):
+    from datetime import date
+
+    paid = amount_paid or 0
+    due_date = getattr(invoice, "due_date", None)
+    due_str = _format_short_date(due_date)
+    total_display = _fmt_money(currency, grand_total)
+    paid_display = _fmt_money(currency, paid)
+    due_display = _fmt_money(currency, balance_due)
+    invoice_no = invoice.invoiceID
+
+    if paid <= 0:
+        if due_date and due_date < date.today():
+            return {
+                "subject": f"Payment reminder — Invoice {invoice_no} from {company_name}",
+                "heading_kicker": "Payment reminder",
+                "heading": "This invoice is past due",
+                "badge_label": "Overdue",
+                "badge_bg": "#fef2f2",
+                "badge_color": "#b91c1c",
+                "intro": (
+                    f"Invoice {invoice_no} was due on {due_str} and still has an outstanding balance of {due_display}."
+                ),
+                "body": "Please arrange payment at your earliest convenience. The full invoice is attached as a PDF.",
+                "amount_label": "Amount due",
+                "amount_display": due_display,
+                "amount_color": "#b91c1c",
+                "due_line": f"Original due date: {due_str}." if due_str else "",
+                "total_display": total_display,
+                "plain": (
+                    f"Dear {customer_name},\n\n"
+                    f"Invoice {invoice_no} was due on {due_str} and still has an outstanding balance of {due_display}.\n"
+                    f"Please arrange payment at your earliest convenience. The invoice PDF is attached.\n"
+                ),
+            }
+        return {
+            "subject": f"Invoice {invoice_no} from {company_name}",
+            "heading_kicker": "New invoice",
+            "heading": "Your invoice is ready",
+            "badge_label": "Unpaid",
+            "badge_bg": "#fff7ed",
+            "badge_color": "#c2410c",
+            "intro": (
+                f"Please find invoice {invoice_no} for {total_display}. Thank you for choosing {company_name}."
+            ),
+            "body": "Kindly review the attached PDF and settle the amount by the due date. Contact us if you have any questions.",
+            "amount_label": "Amount due",
+            "amount_display": total_display,
+            "amount_color": "#c2410c",
+            "due_line": f"Payment due by {due_str}." if due_str else "",
+            "total_display": total_display,
+            "plain": (
+                f"Dear {customer_name},\n\n"
+                f"Please find invoice {invoice_no} for {total_display}.\n"
+                f"{('Payment is due by ' + due_str + '.') if due_str else ''}\n"
+                f"The invoice PDF is attached.\n"
+            ),
+        }
+
+    if balance_due <= 0:
+        return {
+            "subject": f"Paid invoice {invoice_no} from {company_name}",
+            "heading_kicker": "Payment received",
+            "heading": "Thank you — this invoice is paid",
+            "badge_label": "Paid",
+            "badge_bg": "#ecfdf5",
+            "badge_color": "#047857",
+            "intro": f"We have received payment in full for invoice {invoice_no}. A copy is attached for your records.",
+            "body": "We appreciate your business and look forward to working with you again.",
+            "amount_label": "Amount paid",
+            "amount_display": paid_display,
+            "amount_color": "#047857",
+            "due_line": "",
+            "total_display": total_display,
+            "plain": (
+                f"Dear {customer_name},\n\n"
+                f"Thank you. Invoice {invoice_no} has been paid in full ({paid_display}).\n"
+                f"A copy of the invoice is attached for your records.\n"
+            ),
+        }
+
+    return {
+        "subject": f"Payment received — Invoice {invoice_no} from {company_name}",
+        "heading_kicker": "Partial payment",
+        "heading": "Thank you for your payment",
+        "badge_label": "Part paid",
+        "badge_bg": "#eff6ff",
+        "badge_color": "#1d4ed8",
+        "intro": (
+            f"We have received {paid_display} toward invoice {invoice_no}. "
+            f"A remaining balance of {due_display} is still due."
+        ),
+        "body": "The updated invoice is attached. Please settle the remaining balance by the due date.",
+        "amount_label": "Balance due",
+        "amount_display": due_display,
+        "amount_color": "#1d4ed8",
+        "due_line": f"Payment due by {due_str}." if due_str else "",
+        "total_display": total_display,
+        "plain": (
+            f"Dear {customer_name},\n\n"
+            f"Thank you for your payment of {paid_display} on invoice {invoice_no}.\n"
+            f"A remaining balance of {due_display} is still due"
+            f"{(' by ' + due_str) if due_str else ''}.\n"
+            f"The updated invoice PDF is attached.\n"
+        ),
+    }
 
 
 def ensure_tenant_db(db_name: str) -> str:
@@ -308,7 +448,20 @@ def send_invoice_email_task(
         )
         company_address = company.address if company and company.address else ""
         company_email = company.email if company and company.email else ""
+        company_phone = company.phone if company and company.phone else ""
         company_rc = company.Rc if company and company.Rc else ""
+        currency = company.currency if company and company.currency else ""
+        pdf_base = base_url or getattr(settings, "SITE_URL", "https://console.afrikbook.com")
+        logo_url = _absolute_media_url(getattr(company, "logo", None), pdf_base)
+        copy = _invoice_email_copy(
+            invoice,
+            customer_name or "Customer",
+            company_name,
+            grand_total,
+            balance_due,
+            invoice.amount_paid or 0,
+            currency,
+        )
 
         html_content = render_to_string(
             "customer/invoice_pdf.html",
@@ -323,32 +476,53 @@ def send_invoice_email_task(
                 "balance_due": balance_due,
             },
         )
-
-        pdf_base = base_url or getattr(settings, "SITE_URL", "https://console.afrikbook.com")
         pdf_file = HTML(string=html_content, base_url=pdf_base).write_pdf()
 
+        email_html = render_to_string(
+            "customer/emails/invoice_email.html",
+            {
+                "subject": copy["subject"],
+                "heading_kicker": copy["heading_kicker"],
+                "heading": copy["heading"],
+                "badge_label": copy["badge_label"],
+                "badge_bg": copy["badge_bg"],
+                "badge_color": copy["badge_color"],
+                "intro": copy["intro"],
+                "body": copy["body"],
+                "amount_label": copy["amount_label"],
+                "amount_display": copy["amount_display"],
+                "amount_color": copy["amount_color"],
+                "due_line": copy["due_line"],
+                "total_display": copy["total_display"],
+                "customer_name": customer_name or "Customer",
+                "invoice_id": invoice_id,
+                "invoice_date": _format_short_date(invoice.invoice_date),
+                "company_name": company_name,
+                "company_address": company_address,
+                "company_email": company_email,
+                "company_phone": company_phone,
+                "company_rc": company_rc,
+                "logo_url": logo_url,
+            },
+        )
         footer_lines = [company_name]
         if company_address:
             footer_lines.append(company_address)
         if company_email:
             footer_lines.append(company_email)
+        if company_phone:
+            footer_lines.append(company_phone)
         if company_rc:
             footer_lines.append(f"RC {company_rc}")
-        footer = "\n".join(footer_lines)
+        text_body = copy["plain"] + "\n" + "\n".join(footer_lines)
 
-        email = EmailMessage(
-            subject=f"Invoice {invoice_id} from {company_name}",
-            body=(
-                f"Dear {customer_name},\n\n"
-                f"Here is your invoice {invoice_id}. We appreciate your business!\n"
-                f"Please find the attached document for your invoice details.\n"
-                f"──────────────────────────\n"
-                f"{footer}\n"
-                f"──────────────────────────"
-            ),
+        email = EmailMultiAlternatives(
+            subject=copy["subject"],
+            body=text_body,
             from_email=_from_email(),
             to=[customer_email],
         )
+        email.attach_alternative(email_html, "text/html")
         email.attach(f"Invoice_{invoice_id}.pdf", pdf_file, "application/pdf")
         email.send(fail_silently=False)
 
