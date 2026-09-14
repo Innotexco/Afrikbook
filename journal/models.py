@@ -136,6 +136,7 @@ class loan_account(models.Model):
     extended_interest = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, help_text="Extended interest rate")
     interest_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    invoice_charges_posted = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True, default=0)
 
     class Meta:
         db_table = "loan_account"
