@@ -13,6 +13,7 @@ from employee.models import employee
 from account.models import *
 from django.http import JsonResponse
 from django.db.models import Sum
+from django.db.models.functions import Lower
 from decimal import Decimal, InvalidOperation
 from customer.utils import generate_invoice_id
 from django.contrib.auth.decorators import login_required
@@ -225,10 +226,10 @@ def ViewLoanItem(request, id):
 @urls_name(name="Loan Manager")
 def CreateLoan(request):
     db = request.user.company_id.db_name
-    customer = customer_table.objects.using(db).all()
+    customer = customer_table.objects.using(db).all().order_by(Lower('name'))
     profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
-    vendor = vendor_table.objects.using(db).all()
-    employe = employee.objects.using(db).all()
+    vendor = vendor_table.objects.using(db).all().order_by(Lower('name'))
+    employe = employee.objects.using(db).all().order_by(Lower('fullname'))
     #account = chart_of_account.objects.using(db).all()
     form = None
     if request.method == "POST":
@@ -261,10 +262,10 @@ def UpdateLoan(request, id):
             return redirect('journal:ViewLoanItem', id=loan.id)
         loan = loan_account.objects.using(db).get(id=id)
 
-    customer = customer_table.objects.using(db).all()
+    customer = customer_table.objects.using(db).all().order_by(Lower('name'))
     profile = CreateProfile.objects.using(db).get(CompanyName=request.user.company_id.company_name)
-    vendor = vendor_table.objects.using(db).all()
-    employe = employee.objects.using(db).all()
+    vendor = vendor_table.objects.using(db).all().order_by(Lower('name'))
+    employe = employee.objects.using(db).all().order_by(Lower('fullname'))
     context = {
         "loan_item": loan,
         "customer": customer,
