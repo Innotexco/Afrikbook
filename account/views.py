@@ -117,7 +117,12 @@ def AccountSetup(request):
 @urls_name(name = "Chart of account")
 def ViewChartOfAccount(request):
     from main.utils import paginate_queryset
+    from journal.fuctions.loan_schedule import rebuild_loan_receivable_balance
     db = request.user.company_id.db_name
+    try:
+        rebuild_loan_receivable_balance(db)
+    except Exception:
+        pass
     account_chart = chart_of_account.objects.using(db).all().order_by('account_id')
     page_obj = paginate_queryset(request, account_chart, per_page=20)
 

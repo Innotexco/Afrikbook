@@ -126,6 +126,10 @@ def ensure_loan_tables(db):
             ADD COLUMN IF NOT EXISTS total_amount NUMERIC(12, 2)
         """)
         cursor.execute("""
+            ALTER TABLE loan_account
+            ADD COLUMN IF NOT EXISTS invoice_charges_posted NUMERIC(12, 2) DEFAULT 0
+        """)
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS loan_repayment (
                 id BIGSERIAL PRIMARY KEY,
                 loan_id INTEGER NOT NULL,
@@ -225,7 +229,109 @@ def apply_saved_defaults(db, loan, installments=None):
 
     if added > ZERO:
         refresh_loan_balance(db, loan, installments)
+        increase_loan_receivable(db, loan, added)
+        sync_loan_charges_to_invoice(db, loan)
     return added
+
+
+def loan_invoice_charges(db, loan):
+    interest = _money(getattr(loan, 'interest_amount', 0))
+    extended = ZERO
+    for inst in loan_installment.objects.using(db).filter(loan_id=loan.id):
+        extended += _money(getattr(inst, 'extended_interest_amount', 0))
+    return interest + extended
+
+
+def sync_loan_charges_to_invoice(db, loan):
+    """Add interest and extended interest onto the linked Aged Receivable invoice."""
+    ref = (getattr(loan, 'reference', None) or '').strip()
+    if not ref:
+        return ZERO
+
+    ensure_loan_tables(db)
+    target = loan_invoice_charges(db, loan)
+    posted = _money(getattr(loan, 'invoice_charges_posted', 0))
+    delta = target - posted
+    if delta == ZERO:
+        return ZERO
+
+    from customer.models import customer_invoice
+
+    qs = customer_invoice.objects.using(db).filter(invoiceID=ref)
+    if loan.debtor_id:
+        matched = qs.filter(cusID=loan.debtor_id)
+        if matched.exists():
+            qs = matched
+    if not qs.exists():
+        return ZERO
+
+    for line in qs:
+        line.amount_expected = _money(line.amount_expected) + delta
+        line.save(using=db)
+
+    loan.invoice_charges_posted = target
+    loan.save(using=db)
+    return delta
+
+
+def apply_loan_charges_to_receivables(db):
+    """Apply overdue extended interest and push loan charges onto linked invoices."""
+    ensure_loan_tables(db)
+    loans = loan_account.objects.using(db).exclude(reference__isnull=True).exclude(reference='')
+    for loan in loans:
+        apply_saved_defaults(db, loan)
+        sync_loan_charges_to_invoice(db, loan)
+
+
+def rebuild_loan_receivable_balance(db):
+    """Set Loan Receivable running balance from remaining loan balances."""
+    ensure_loan_tables(db)
+    from collections import defaultdict
+    from account.models import chart_of_account
+
+    totals = defaultdict(lambda: ZERO)
+    for loan in loan_account.objects.using(db).all():
+        account_id = (loan.account_debited or '').strip() or '1100-LoanReceivable'
+        totals[account_id] += _money(loan.balance_left)
+
+    if not totals:
+        totals['1100-LoanReceivable'] = ZERO
+
+    for account_id, total in totals.items():
+        try:
+            account = chart_of_account.objects.using(db).get(account_id=account_id)
+        except chart_of_account.DoesNotExist:
+            continue
+        account.actual_balance = total
+        account.save(using=db)
+
+
+def increase_loan_receivable(db, loan, amount, userlogin=''):
+    amount = _money(amount)
+    if amount <= ZERO:
+        return
+    from account.models import account_log, chart_of_account
+    from customer.functions.generalFunction import CreateLog
+
+    account_id = (loan.account_debited or '').strip() or '1100-LoanReceivable'
+    try:
+        account = chart_of_account.objects.using(db).get(account_id=account_id)
+    except chart_of_account.DoesNotExist:
+        try:
+            account = chart_of_account.objects.using(db).get(account_id='1100-LoanReceivable')
+        except chart_of_account.DoesNotExist:
+            return
+
+    account.actual_balance = _money(account.actual_balance) + amount
+    account.save(using=db)
+    CreateLog(db, account, amount)
+    account_log.objects.using(db).create(
+        transaction_source='Loan Extended Interest',
+        amount=amount,
+        account=account.account_id,
+        account_type=account.account_type,
+        Userlogin=userlogin or '',
+    )
 
 
 def _loan_totals(loan):
@@ -394,5 +500,38 @@ def allocate_loan_repayment(
         remaining -= applied
 
     refresh_loan_balance(db, loan, installments)
+    allocated_total = sum((_money(item.amount) for item in allocations), ZERO)
+    if allocated_total > ZERO:
+        credit_loan_receivable(db, loan, allocated_total, userlogin)
     return allocations
+
+
+def credit_loan_receivable(db, loan, amount, userlogin=''):
+    """Reduce Loan Receivable by a repayment allocated from Aged Receivable."""
+    amount = _money(amount)
+    if amount <= ZERO:
+        return
+
+    from account.models import account_log, chart_of_account
+    from customer.functions.generalFunction import CreateLog
+
+    account_id = (loan.account_debited or "").strip() or "1100-LoanReceivable"
+    try:
+        account = chart_of_account.objects.using(db).get(account_id=account_id)
+    except chart_of_account.DoesNotExist:
+        try:
+            account = chart_of_account.objects.using(db).get(account_id="1100-LoanReceivable")
+        except chart_of_account.DoesNotExist:
+            return
+
+    account.actual_balance = _money(account.actual_balance) - amount
+    account.save(using=db)
+    CreateLog(db, account, -amount)
+    account_log.objects.using(db).create(
+        transaction_source="Loan Repayment",
+        amount=amount,
+        account=account.account_id,
+        account_type=account.account_type,
+        Userlogin=userlogin or "",
+    )
 

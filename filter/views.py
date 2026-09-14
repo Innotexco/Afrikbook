@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from customer.models import customer_invoice, receivable, sales_order, sales_quote
 from journal.models import new_journal_entry, loan_account
+from journal.fuctions.loan_schedule import apply_loan_charges_to_receivables
 from django.db.models import Sum, F, Q
 import decimal
 from Stock.models import Item
@@ -221,6 +222,8 @@ def aged_receivable_filter_by_date(request):
 
     if customer:
         filter_conditions &= Q(cusID=customer)
+
+    apply_loan_charges_to_receivables(db)
 
     # Base queryset — only invoices with outstanding balance
     base_qs = customer_invoice.objects.using(db).filter(

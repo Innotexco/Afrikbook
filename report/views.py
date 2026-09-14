@@ -16,7 +16,7 @@ from .functions.globalFunctions.globalFunctions import *
 from .functions.functionHub.functionHub import *
 from account.models import account_log, chart_of_account
 from journal.models import loan_account
-from journal.fuctions.loan_schedule import allocate_loan_repayment
+from journal.fuctions.loan_schedule import allocate_loan_repayment, apply_loan_charges_to_receivables
 from customer.functions.generalFunction import *
 from account.models import Expenses_account, Income_account, Assets_account, Liability_account, Equity_account
 
@@ -905,6 +905,8 @@ def AgedReceivables(request):
     company = company_table.objects.get(id=request.user.company_id_id)
     bank_accounts = chart_of_account.objects.using(db).filter(account_type="Bank")
     accounts = chart_of_account.objects.using(db).all()
+
+    apply_loan_charges_to_receivables(db)
 
     # ── Deduplicate by invoiceID and pre-calculate outstanding ───────────
     raw_aged = customer_invoice.objects.using(db).filter(

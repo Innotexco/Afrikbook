@@ -18,6 +18,7 @@ from journal.fuctions.loan_schedule import (
     save_installments,
     _money,
     ensure_loan_tables,
+    sync_loan_charges_to_invoice,
 )
 from journal.models import loan_installment, loan_repayment
 
@@ -182,6 +183,7 @@ def create_new_loan(request, db):
             loan_instance.balance_left = totals['total_amount']
             loan_instance.save(using=db)
             save_installments(db, loan_instance, schedule_rows)
+            sync_loan_charges_to_invoice(db, loan_instance)
 
             #Save log
             loan_log_instance = loan_log_form.save(commit=False)
@@ -189,7 +191,8 @@ def create_new_loan(request, db):
             loan_log_instance.save(using=db)
 
             #Update account balance
-            account_debited.actual_balance += amount_owed
+            account_debited.actual_balance = _money(account_debited.actual_balance) + amount_owed
+            account_debited.save(using=db)
             CreateLog(db, account_debited, amount_owed)
 
             #Log entry
@@ -347,6 +350,7 @@ def update_existing_loan(request, db, loan):
                 CreateLog(db, account_debited, diff)
         else:
             loan.save(using=db)
+        sync_loan_charges_to_invoice(db, loan)
 
     messages.success(request, "Loan updated successfully")
     return True
