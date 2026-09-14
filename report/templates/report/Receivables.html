@@ -102,7 +102,7 @@
                 <tbody class="bg-white divide-y mb-8">
 
                     
-                    {% for recievable in recievabless %}
+                    {% for recievable in recievables %}
                     
                     <tr class="text-gray-700">
 
@@ -155,7 +155,7 @@
                             <span class="">Total Debit:</span>
                         </td>
                         <td class="pt-6 text-sm">
-                            <b class="mr-1 currency"></b><span class=" " id="debit">0.00</span>
+                            <b class="mr-1 currency"></b><span class=" " id="debit">{{ debit }}</span>
                         </td>
                     </tr>
                     <tr class="text-gray-700 text-xs">
@@ -163,7 +163,7 @@
                             <span class="">Total Credit:</span>
                         </td>
                         <td class="text-sm">
-                            <b class="mr-1 currency"></b><span class="" id="credit">0.00</span>
+                            <b class="mr-1 currency"></b><span class="" id="credit">{{ credit }}</span>
                         </td>
                     </tr>
                     <tr class="text-gray-700 text-xs">
@@ -171,7 +171,7 @@
                             <span class="">Balance:</span>
                         </td>
                         <td class="text-sm">
-                            <b class="mr-1 currency"></b><span class="" id="balance">0.00</span>
+                            <b class="mr-1 currency"></b><span class="" id="balance">{{ balance }}</span>
                         </td>
                     </tr>
                    

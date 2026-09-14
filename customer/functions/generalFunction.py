@@ -192,7 +192,55 @@ def CreditReceivable(request, db, cus, refund_date, Gdescription, p_method, acco
         Userlogin      = request.user.username,
     )
     create_receivable.save(using=db)
-    
+
+
+def remove_extra_payment_debits(db):
+    """Delete Debit receivable rows that were posted as the other side of a payment Credit.
+
+    Keeps the original invoice/loan Debit (earliest Debit per customer+invoice).
+    Payment Received / Discount Allowed Debits are always removed.
+    """
+    from collections import defaultdict
+
+    credits = list(receivable.objects.using(db).filter(type="Credit").order_by("id"))
+    if not credits:
+        return 0
+
+    debits = list(receivable.objects.using(db).filter(type="Debit").order_by("id"))
+    if not debits:
+        return 0
+
+    earliest = {}
+    by_key = defaultdict(list)
+    for debit in debits:
+        token = debit.token_id or ""
+        by_key[(debit.customer_id, token, debit.description or "")].append(debit)
+        first_key = (debit.customer_id, token)
+        if first_key not in earliest:
+            earliest[first_key] = debit.id
+
+    delete_ids = []
+    used = set()
+    for credit in credits:
+        token = credit.token_id or ""
+        candidates = [
+            debit for debit in by_key.get((credit.customer_id, token, credit.description or ""), [])
+            if debit.id not in used and Decimal(str(debit.amount)) == Decimal(str(credit.amount))
+        ]
+        if not candidates:
+            continue
+        twin = next((debit for debit in candidates if debit.date == credit.date), candidates[0])
+        description = credit.description or ""
+        is_payment_text = description.startswith(("Payment Received", "Discount Allowed"))
+        is_earliest = earliest.get((credit.customer_id, token)) == twin.id
+        if is_payment_text or not is_earliest:
+            delete_ids.append(twin.id)
+            used.add(twin.id)
+
+    if not delete_ids:
+        return 0
+    deleted, _ = receivable.objects.using(db).filter(id__in=delete_ids).delete()
+    return deleted
 
 
 def ReduceOutletStockinItemQuantity(db, outlet, itemcode, qty):

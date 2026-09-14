@@ -192,9 +192,7 @@ def receivable_filter_by_date(request):
     serializer_data = list(data)
    
     def calbalance():
-        # if decimal.Decimal(debit_total) > decimal.Decimal(credit_total):
-        #       return   decimal.Decimal(debit_total) - decimal.Decimal(credit_total)
-        return decimal.Decimal(credit_total) - decimal.Decimal(debit_total)
+        return decimal.Decimal(debit_total) - decimal.Decimal(credit_total)
     
     balance = calbalance()
 
