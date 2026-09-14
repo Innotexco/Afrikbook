@@ -109,13 +109,7 @@ def receive_payment(request, db):
                     invoice_total = amount_decimal
                     current_paid  = decimal.Decimal('0.00')
 
-                # Debit → bank/cash account (money arrives)
-                DebitReceivable(
-                    request, db, customer, date, description,
-                    payment_method, account.account_id, amount_decimal,
-                    invoiceID=invoice_no
-                )
-                # Credit → receivable (debt reduced)
+                # Credit → receivable (debt reduced). Bank/cash is updated below.
                 CreditReceivable(
                     request, db, customer, date, description,
                     payment_method, account.account_id, amount_decimal,

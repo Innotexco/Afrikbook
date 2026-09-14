@@ -872,18 +872,18 @@ def PayrollReport(request):
 @urls_name(name="Receivables")
 def Receivables(request):
     db = AfrikBookDB(request)
-    receivables = receivable.objects.using(db).all()
+    try:
+        remove_extra_payment_debits(db)
+    except Exception:
+        logger.exception("Failed to remove extra payment Debits from receivables")
+
+    receivables = receivable.objects.using(db).all().order_by('date', 'id')
     customers = customer_table.objects.using(db).all()
     company = company_table.objects.get(id=request.user.company_id_id)
 
-    # Calculate total amount where type is "credit"
-    credit_total = receivable.objects.using(db).filter(type="credit").aggregate(total_credit=Sum("amount"))['total_credit'] or 0
-    # Calculate total amount where type is "debit"
-    debit_total = receivable.objects.using(db).filter(type="debit").aggregate(total_debit=Sum("amount"))['total_debit'] or 0
-    
-    
-    
-    balance = Decimal(credit_total) - Decimal(debit_total) 
+    credit_total = receivable.objects.using(db).filter(type="Credit").aggregate(total_credit=Sum("amount"))['total_credit'] or 0
+    debit_total = receivable.objects.using(db).filter(type="Debit").aggregate(total_debit=Sum("amount"))['total_debit'] or 0
+    balance = Decimal(debit_total) - Decimal(credit_total) 
         
     context = {
         'recievables':receivables,
@@ -1017,42 +1017,35 @@ def AgedReceivables(request):
 
                 if cost > 0:  
                     if payment_method == "Transfer":
-                        DebitReceivable(request, db, cus, today, Gdescription, "Transfer", account_ID, cost, invoice)
                         CreditReceivable(request, db, cus, today, Gdescription, "Transfer", account_ID, cost, invoice, invoice_total, current_paid)
                         CreateLog(db, account, cost)
 
                     elif payment_method == "Transfer and Cash":
-                        DebitReceivable(request, db, cus, today, Gdescription, "Transfer", account_ID, transfer_amount, invoice)
                         CreditReceivable(request, db, cus, today, Gdescription, "Transfer", account_ID, transfer_amount, invoice, invoice_total, current_paid)
                         CreateLog(db, account, transfer_amount)
 
                         cash_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
-                        DebitReceivable(request, db, cus, today, Gdescription, "Cash", cash_account.account_id, cash_amount, invoice)
                         CreditReceivable(request, db, cus, today, Gdescription, "Cash", cash_account.account_id, cash_amount, invoice, invoice_total, current_paid + transfer_amount)
                         CreateLog(db, cash_account, cash_amount)
 
                     elif payment_method == "Cheque":
                         ar_account = chart_of_account.objects.using(db).get(account_id='1002-Receivable')
-                        DebitReceivable(request, db, cus, today, Gdescription, "Cheque", ar_account.account_id, cost, invoice)
                         CreditReceivable(request, db, cus, today, Gdescription, "Cheque", ar_account.account_id, cost, invoice, invoice_total, current_paid)
                         CreateLog(db, ar_account, cost)
 
                     elif payment_method == "Cash":
                         sales_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
-                        DebitReceivable(request, db, cus, today, Gdescription, "Cash", sales_account.account_id, cost, invoice)
                         CreditReceivable(request, db, cus, today, Gdescription, "Cash", sales_account.account_id, cost, invoice, invoice_total, current_paid)
                         CreateLog(db, sales_account, cost)
 
                     else:
                         sales_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
-                        DebitReceivable(request, db, cus, today, Gdescription, "Cash", sales_account.account_id, cost, invoice)
                         CreditReceivable(request, db, cus, today, Gdescription, payment_method, sales_account.account_id, cost, invoice, invoice_total, current_paid)
                         CreateLog(db, sales_account, cost)
 
             else:
                 if cost > 0:
                     sales_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
-                    DebitReceivable(request, db, cus, today, Gdescription, "Cash", sales_account.account_id, cost, invoice)
                     CreditReceivable(request, db, cus, today, Gdescription, payment_method, sales_account.account_id, cost, invoice, invoice_total, current_paid)
                     CreateLog(db, sales_account, cost)
 
@@ -1063,10 +1056,6 @@ def AgedReceivables(request):
                 except chart_of_account.DoesNotExist:
                     discount_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
 
-                DebitReceivable(
-                    request, db, cus, today, f"Discount Allowed - Invoice {invoice}",
-                    payment_method, discount_account.account_id, discount, invoice
-                )
                 CreditReceivable(
                     request, db, cus, today, f"Discount Allowed - Invoice {invoice}",
                     payment_method, discount_account.account_id, discount,

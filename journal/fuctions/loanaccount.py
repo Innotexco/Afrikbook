@@ -170,7 +170,10 @@ def create_new_loan(request, db):
                 )
 
             elif customer_id:
-                DebitReceivable(request, db, cus, date, description, "Cash", account, amount_owed)
+                DebitReceivable(
+                    request, db, cus, date, description, "Cash",
+                    account.account_id, amount_owed, invoiceID=reference or None,
+                )
 
             elif vendor_id:
                 DebitPayable(request, db, ven, date, description, "Cash", account, amount_owed)
