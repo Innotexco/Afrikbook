@@ -24,6 +24,7 @@ from main.models import company_table
 from django.contrib.auth.decorators import login_required
 from routers.page_permission import  urls_name
 from datetime import date
+from filter.function.date import convertDate
 
 import logging
 
@@ -1616,32 +1617,48 @@ def CustomerLedger(request):
 @urls_name(name="Customer Ledger")
 def ViewCustomerLedger(request, code, invoice):
     db = AfrikBookDB(request)
+    context = {}
+
     if code:
-        lookups = Q(cusID__iexact=code) | Q(invoiceID__iexact=invoice)
+        cus = customer_table.objects.using(db).filter(customer_code__iexact=code).first()
 
-        invoice1 = customer_invoice.objects.using(db).filter(lookups).first()
-        invoices = customer_invoice.objects.using(db).filter(lookups)
+        entries_qs = receivable.objects.using(db).filter(
+            customer_id__iexact=code
+        ).order_by('date', 'id')
 
-        total_amount = customer_invoice.objects.using(db).filter(lookups).values('invoiceID').distinct().aggregate(a_e=Sum('amount_expected'))['a_e'] or 0
-        total_amount_paid = customer_invoice.objects.using(db).filter(lookups).values('invoiceID').distinct().aggregate(a_p=Sum('amount_paid'))['a_p'] or 0
+        start_date_str = request.GET.get('start_date')
+        end_date_str = request.GET.get('end_date')
 
-        balance = total_amount - total_amount_paid
-        
-      
-        for i in invoices:
-            i.total = i.amount_expected + i.amount_paid
-            i.balance = i.amount_expected - i.amount_paid
+        opening_balance = decimal.Decimal('0.00')
 
-    context = {
-        "invoice": invoice1,
-        "invoices": invoices,
-        'amount':total_amount,
-        'paid':total_amount_paid,
-        'balance':balance
-        
-    }
-   
-    return render(request, 'report/ViewCustomerLedger.html',context)
+        if start_date_str:
+            start_date = convertDate(start_date_str, start_date_str)[0]
+            prior_entry = entries_qs.filter(date__lt=start_date).last()
+            opening_balance = prior_entry.balance if prior_entry else decimal.Decimal('0.00')
+            entries_qs = entries_qs.filter(date__gte=start_date)
+
+        if end_date_str:
+            end_date = convertDate(end_date_str, end_date_str)[0]
+            entries_qs = entries_qs.filter(date__lte=end_date)
+
+        entries = list(entries_qs)
+
+        total_debit = sum((e.amount for e in entries if e.type == "Debit"), decimal.Decimal('0.00'))
+        total_credit = sum((e.amount for e in entries if e.type == "Credit"), decimal.Decimal('0.00'))
+        closing_balance = entries[-1].balance if entries else opening_balance
+
+        context = {
+            "customer": cus,
+            "code": code,
+            "entries": entries,
+            "opening_balance": opening_balance,
+            "total_debit": total_debit,
+            "total_credit": total_credit,
+            "closing_balance": closing_balance,
+        }
+
+    return render(request, 'report/ViewCustomerLedger.html', context)
+
 
 from settings.models import CreateProfile
 @login_required(login_url='/')
