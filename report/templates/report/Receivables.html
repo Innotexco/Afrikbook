@@ -102,7 +102,7 @@
                 <tbody class="bg-white divide-y mb-8">
 
                     
-                    {% for recievable in recievables %}
+                    {% comment %} {% for recievable in recievables %}
                     
                     <tr class="text-gray-700">
 
@@ -136,13 +136,10 @@
                         <td class="text-[10px]">
                             {{recievable.balance}}
                         </td>
-                        {% comment %} <td class="text-[10px]">
-                            none
-                        </td> {% endcomment %}
-
+                       
                     </tr>
 
-                    {% endfor %}
+                    {% endfor %} {% endcomment %}
 
                 </tbody>
 
