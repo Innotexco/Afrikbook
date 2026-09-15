@@ -95,7 +95,7 @@
                         <th class="px-4 py-3">Date</th>
                         <th class="px-4 py-3">Invoice ID</th>
                         <th class="px-4 py-3">Customer Name</th>
-                        <th class="px-4 py-3">Item Name</th>
+                        {% comment %} <th class="px-4 py-3">Item Name</th> {% endcomment %}
                         <th class="px-4 py-3">Total Amount</th>
                         <th class="px-4 py-3 text-center">View</th>
                         <th class="px-4 py-3 text-center">Edit</th>
@@ -120,9 +120,9 @@
                         <td class="px-4 text-[10px]">
                             {{display.customer_name}}
                         </td>
-                        <td class="px-4 text-[10px]">
+                        {% comment %} <td class="px-4 text-[10px]">
                             {{display.item_name}}
-                        </td>
+                        </td> {% endcomment %}
                         <td class="px-4 text-[10px]">
                             {{display.amount_expected}}
                         </td>
