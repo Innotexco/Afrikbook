@@ -383,7 +383,44 @@ def profit_loss_filter_by_date(request):
     return JsonResponse(data)
 
 def customers_ledger_filter_by_date(request):
+    db = request.user.company_id.db_name 
+   
+    start_date_str = request.GET.get('start_date')
+    end_date_str = request.GET.get('end_date')
+
+    filter_conditions = Q()
+    
+    if start_date_str and end_date_str:
+        filter_conditions  &= Q(invoice_date__range=(convertDate(start_date_str, end_date_str)))
+
+
+    data = []
+    if filter_conditions:
+        filtered_data =  customer_invoice.objects.using(db).filter(filter_conditions).values()
+
+        for item in filtered_data:
+            if item['invoiceID'] not in [d['invoiceID'] for d in data]:
+                data.append(item)
+       
+
+
+    amount_tatal = customer_invoice.objects.using(db).filter(filter_conditions).values("invoiceID").distinct().aggregate(total_amount=Sum("amount_expected"))['total_amount'] or 0
+    amount_paid_tatal = customer_invoice.objects.using(db).filter(filter_conditions).values("invoiceID").distinct().aggregate(total_amount_paid=Sum("amount_paid"))['total_amount_paid'] or 0
+   
+    if amount_tatal and amount_paid_tatal:
+       balance = amount_tatal - amount_paid_tatal
+    else:
+        amount_tatal = "0.00"
+        amount_paid_tatal = "0.00"
+        balance = "0.00"
+ 
+    serializer_data = list(data)
+    data = {'serializer_data':serializer_data, 'amount_total':amount_tatal,'amount_paid_total':amount_paid_tatal,'balance':balance}
+    return JsonResponse(data)
+
+def customer_ledger_filter_by_date(request):
     db = request.user.company_id.db_name
+
     cusID = request.GET.get('cusID')
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
@@ -430,81 +467,6 @@ def customers_ledger_filter_by_date(request):
         "total_credit": str(total_credit),
         "closing_balance": str(closing_balance),
     })
-    
-    
-def customer_ledger_filter_by_date(request):
-    db = request.user.company_id.db_name
-
-    start_date_str = request.GET.get('start_date')
-    end_date_str = request.GET.get('end_date')
-    cusID = request.GET.get('cusID')
-
-    filter_conditions = Q(cusID=cusID)
-    
-    if start_date_str and end_date_str:
-        filter_conditions  &= Q(invoice_date__range=(convertDate(start_date_str, end_date_str)))
-
-
-    
-    if filter_conditions:
-        filtered_data =  customer_invoice.objects.using(db).filter(filter_conditions).values()
-
-    
-
-    amount_tatal = customer_invoice.objects.using(db).filter(filter_conditions).values("invoiceID").distinct().aggregate(total_amount=Sum("amount_expected"))['total_amount'] or 0
-    amount_paid_tatal = customer_invoice.objects.using(db).filter(filter_conditions).values("invoiceID").distinct().aggregate(total_amount_paid=Sum("amount_paid"))['total_amount_paid'] or 0
-   
-    if amount_tatal and amount_paid_tatal:
-       balance = amount_tatal - amount_paid_tatal
-    else:
-        amount_tatal = "0.00"
-        amount_paid_tatal = "0.00"
-        balance = "0.00"
-
-    serializer_data = list(filtered_data)
-    data = {'serializer_data':serializer_data, 'amount_total':amount_tatal,'amount_paid_total':amount_paid_tatal,'balance':balance}
-    return JsonResponse(data)
-
-def sales_ladger_filter_by_date(request):
-    db = request.user.company_id.db_name
-
-    start_date_str = request.GET.get('start_date')
-    end_date_str = request.GET.get('end_date')
-    customer = request.GET.get('customer')
-    item = request.GET.get('item')
-    invoice_id = request.GET.get('invoice_id')   
-
-    filter_conditions = Q()
-
-    if start_date_str and end_date_str:
-        filter_conditions &= Q(invoice_date__range=(convertDate(start_date_str, end_date_str)))
-
-    if item:
-        filter_conditions &= Q(item_name=item)
-
-    if customer:
-        filter_conditions &= Q(cusID=customer)
-
-    if invoice_id:                                  
-        filter_conditions &= Q(invoiceID__icontains=invoice_id)
-
-    data = []
-    amount_total = 0   
-    if filter_conditions:
-        filtered_data = customer_invoice.objects.using(db).filter(filter_conditions).values()
-        for item in filtered_data:
-            if item['invoiceID'] not in [d['invoiceID'] for d in data]:
-                data.append(item)
-
-        amount_total = customer_invoice.objects.using(db).filter(filter_conditions).values("invoiceID").distinct().aggregate(total_amount=Sum("amount_expected"))['total_amount'] or 0
-
-    serializer_data = list(data)
-    data = {
-        'serializer_data': serializer_data,
-        'amount_total': amount_total,
-    }
-
-    return JsonResponse(data)
 
 def sales_order_filter_by_date(request):
     db = request.user.company_id.db_name
