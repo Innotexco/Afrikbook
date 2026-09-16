@@ -194,11 +194,12 @@ def CreditReceivable(request, db, cus, refund_date, Gdescription, p_method, acco
     create_receivable.save(using=db)
 
 
-def remove_extra_payment_debits(db):
-    """Delete Debit receivable rows that were posted as the other side of a payment Credit.
+def restore_extra_payment_debits(db):
+    """Recreate Debit twins that remove_extra_payment_debits deleted.
 
-    Keeps the original invoice/loan Debit (earliest Debit per customer+invoice).
-    Payment Received / Discount Allowed Debits are always removed.
+    For each Credit, if there is no unused Debit with the same customer,
+    invoice, description and amount, insert a Debit copied from that Credit.
+    Safe to run more than once.
     """
     from collections import defaultdict
 
@@ -207,40 +208,55 @@ def remove_extra_payment_debits(db):
         return 0
 
     debits = list(receivable.objects.using(db).filter(type="Debit").order_by("id"))
-    if not debits:
-        return 0
 
-    earliest = {}
+    used = set()
     by_key = defaultdict(list)
+    has_debit_for = set()
     for debit in debits:
         token = debit.token_id or ""
         by_key[(debit.customer_id, token, debit.description or "")].append(debit)
-        first_key = (debit.customer_id, token)
-        if first_key not in earliest:
-            earliest[first_key] = debit.id
+        has_debit_for.add((debit.customer_id, token))
 
-    delete_ids = []
-    used = set()
+    to_create = []
     for credit in credits:
         token = credit.token_id or ""
+        desc = credit.description or ""
         candidates = [
-            debit for debit in by_key.get((credit.customer_id, token, credit.description or ""), [])
+            debit for debit in by_key.get((credit.customer_id, token, desc), [])
             if debit.id not in used and Decimal(str(debit.amount)) == Decimal(str(credit.amount))
         ]
-        if not candidates:
-            continue
-        twin = next((debit for debit in candidates if debit.date == credit.date), candidates[0])
-        description = credit.description or ""
-        is_payment_text = description.startswith(("Payment Received", "Discount Allowed"))
-        is_earliest = earliest.get((credit.customer_id, token)) == twin.id
-        if is_payment_text or not is_earliest:
-            delete_ids.append(twin.id)
+        if candidates:
+            twin = next((d for d in candidates if d.date == credit.date), candidates[0])
             used.add(twin.id)
+            continue
 
-    if not delete_ids:
+        is_payment_text = desc.startswith(("Payment Received", "Discount Allowed"))
+        has_original_debit = (credit.customer_id, token) in has_debit_for
+        if not (is_payment_text or has_original_debit):
+            continue
+
+        to_create.append(receivable(
+            date=credit.date,
+            description=credit.description,
+            type="Debit",
+            amount=credit.amount,
+            payment_method=credit.payment_method,
+            invoice_status=credit.invoice_status or "Unused",
+            customer_id=credit.customer_id,
+            customer_name=credit.customer_name,
+            initial_amount=credit.amount,
+            balance=Decimal('0.00'),
+            account_posted=credit.account_posted,
+            transaction_id=str(uuid.uuid4()),
+            token_id=credit.token_id,
+            Userlogin=credit.Userlogin,
+        ))
+        has_debit_for.add((credit.customer_id, token))
+
+    if not to_create:
         return 0
-    deleted, _ = receivable.objects.using(db).filter(id__in=delete_ids).delete()
-    return deleted
+    receivable.objects.using(db).bulk_create(to_create)
+    return len(to_create)
 
 
 def ReduceOutletStockinItemQuantity(db, outlet, itemcode, qty):
