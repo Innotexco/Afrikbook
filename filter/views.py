@@ -150,7 +150,9 @@ def _empty_receivable_page():
         "total_amount": 0,
         "credit_total": 0,
         "debit_total": 0,
+        "opening_balance": 0,
         "balance": 0,
+        "closing_balance": 0,
         "page": 1,
         "num_pages": 1,
         "count": 0,
@@ -179,22 +181,30 @@ def receivable_filter_by_date(request):
     if not start_date_str or not end_date_str:
         return JsonResponse(_empty_receivable_page(), safe=False)
 
-    filter_conditions = Q(date__range=(convertDate(start_date_str, end_date_str)))
+    start_date, end_date = convertDate(start_date_str, end_date_str)
 
-    if tx_type and tx_type != "Debit&Credit":
-        filter_conditions &= Q(type=tx_type)
-
+    prior_qs = receivable.objects.using(db).filter(date__lt=start_date)
+    period_qs = receivable.objects.using(db).filter(date__range=(start_date, end_date))
     if customer:
-        filter_conditions &= Q(customer_id=customer)
+        prior_qs = prior_qs.filter(customer_id=customer)
+        period_qs = period_qs.filter(customer_id=customer)
 
-    qs = receivable.objects.using(db).filter(filter_conditions).order_by('date', 'id')
+    prior_debit = prior_qs.filter(type="Debit").aggregate(total=Sum("amount"))["total"] or 0
+    prior_credit = prior_qs.filter(type="Credit").aggregate(total=Sum("amount"))["total"] or 0
+    opening_balance = decimal.Decimal(prior_debit) - decimal.Decimal(prior_credit)
 
-    total_amount = qs.aggregate(total_amount=Sum('amount'))['total_amount'] or 0
-    credit_total = qs.filter(type="Credit").aggregate(total_credit=Sum("amount"))['total_credit'] or 0
-    debit_total = qs.filter(type="Debit").aggregate(total_debit=Sum("amount"))['total_debit'] or 0
-    balance = decimal.Decimal(debit_total) - decimal.Decimal(credit_total)
+    debit_total = period_qs.filter(type="Debit").aggregate(total_debit=Sum("amount"))["total_debit"] or 0
+    credit_total = period_qs.filter(type="Credit").aggregate(total_credit=Sum("amount"))["total_credit"] or 0
+    debit_total = decimal.Decimal(debit_total)
+    credit_total = decimal.Decimal(credit_total)
+    closing_balance = opening_balance + debit_total - credit_total
 
-    page_obj = paginate_queryset(request, qs)
+    table_qs = period_qs
+    if tx_type and tx_type != "Debit&Credit":
+        table_qs = table_qs.filter(type=tx_type)
+    table_qs = table_qs.order_by('date', 'id')
+
+    page_obj = paginate_queryset(request, table_qs)
     serializer_data = list(page_obj.object_list.values(
         'date', 'customer_name', 'description', 'customer_id',
         'transaction_id', 'type', 'amount', 'initial_amount', 'balance',
@@ -202,10 +212,12 @@ def receivable_filter_by_date(request):
 
     return JsonResponse({
         "serializer_data": serializer_data,
-        "total_amount": total_amount,
+        "total_amount": debit_total + credit_total,
         "credit_total": credit_total,
         "debit_total": debit_total,
-        "balance": balance,
+        "opening_balance": opening_balance,
+        "balance": closing_balance,
+        "closing_balance": closing_balance,
         "page": page_obj.number,
         "num_pages": page_obj.paginator.num_pages,
         "count": page_obj.paginator.count,

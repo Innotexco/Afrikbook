@@ -149,10 +149,18 @@
                     </tr>
                     <tr class="text-gray-700 text-xs ">
                         <td class="pt-6 text-right pr-3" colspan="9">
-                            <span class="">Total Debit:</span>
+                            <span class="">Opening Balance:</span>
                         </td>
                         <td class="pt-6 text-sm">
-                            <b class="mr-1 currency"></b><span class=" " id="debit">0.00</span>
+                            <b class="mr-1 currency"></b><span id="opening">0.00</span>
+                        </td>
+                    </tr>
+                    <tr class="text-gray-700 text-xs ">
+                        <td class="text-right pr-3" colspan="9">
+                            <span class="">Total Debit:</span>
+                        </td>
+                        <td class="text-sm">
+                            <b class="mr-1 currency"></b><span id="debit">0.00</span>
                         </td>
                     </tr>
                     <tr class="text-gray-700 text-xs">
@@ -160,15 +168,15 @@
                             <span class="">Total Credit:</span>
                         </td>
                         <td class="text-sm">
-                            <b class="mr-1 currency"></b><span class="" id="credit">0.00</span>
+                            <b class="mr-1 currency"></b><span id="credit">0.00</span>
                         </td>
                     </tr>
                     <tr class="text-gray-700 text-xs">
                         <td class="text-right pr-3" colspan="9">
-                            <span class="">Balance:</span>
+                            <span class="">Closing Balance:</span>
                         </td>
                         <td class="text-sm">
-                            <b class="mr-1 currency"></b><span class="" id="balance">0.00</span>
+                            <b class="mr-1 currency"></b><span id="balance">0.00</span>
                         </td>
                     </tr>
                    
@@ -275,12 +283,12 @@
                 success: function(response) {
                     const table = $('#receivables-table tbody');
                     table.empty();
+                    $("#opening").html(NCFormat(response.opening_balance));
+                    $("#debit").html(NCFormat(response.debit_total));
+                    $("#credit").html(NCFormat(response.credit_total));
+                    $("#balance").html(NCFormat(response.closing_balance != null ? response.closing_balance : response.balance));
 
                     if (response.serializer_data && response.serializer_data.length > 0) {
-                        $("#credit").html(NCFormat(response.credit_total));
-                        $("#debit").html(NCFormat(response.debit_total));
-                        $("#balance").html(NCFormat(response.balance));
-
                         let num = response.start_index || 1;
                         response.serializer_data.forEach(function(item) {
                             const row = $('<tr>').append(
@@ -301,9 +309,6 @@
                         $("#no-data").css('display', 'none');
                         renderReceivablePagination(response);
                     } else {
-                        $("#credit").html("0.00");
-                        $("#debit").html("0.00");
-                        $("#balance").html("0.00");
                         $("#no-data").css('display', 'block');
                         renderReceivablePagination(null);
                         alertify.error("No Return data between selected category");
