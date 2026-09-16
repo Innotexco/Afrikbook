@@ -54,12 +54,13 @@
         </div>
         <div class="w-full overflow-x-auto table-responsive mt-4" id="cl">
             {% include 'components/Periodheader.html' %}
-          <table id="example" class="display" style="width:100%">
+          <table id="customer-ledger-table" class="display" style="width:100%">
                 <thead>
                     <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
                         <th class="px-4 py-3">SN</th>
                         <th class="px-4 py-3">Customer ID</th>
                         <th class="px-4 py-3">Customer Name</th>
+                        <th class="px-4 py-3">Total Amount</th>
                         <th class="px-4 py-3">Amount Paid</th>
                         <th class="px-4 py-3">Balance</th>
                         <th class="px-4 py-3">View</th>
@@ -146,33 +147,19 @@
             </button>
         </div> -->
         <!-- Print Export To Excel and Export to Pdf template -->
-        {% include 'modalBoxx/printbtn.html' with container="cl" table="example" table_no="" %}
+        {% include 'modalBoxx/printbtn.html' with container="cl" table="customer-ledger-table" table_no="" %}
     </div>
     <script>
-  document.getElementById('openNewTabButton').addEventListener('click', function() {
-    // Replace 'https://www.example.com' with the URL you want to open
-    window.open('https://www.example.com', '_blank');
-  });
-</script>
-    <script>
-        $(document).on('change', function(){
-            const from = $('#from').val()
-            const to = $('#to').val()
-            setTimeout(function() {
-                if(from != '' && to != ''){
-                    Filter()
-                }
-            }, 500)
-          }
-        )
-            
         function Filter(){
-           // e.preventDefault()
             const from = $('#from').val()
             const to = $('#to').val()
-            //console.log(from)
-            //console.log(to)
-            if(from && to){
+            const table = $('#customer-ledger-table tbody')
+
+            if(!from || !to){
+                alertify.error("Select start_date and end_date")
+                return
+            }
+
             $.ajax({
                 url: '{% url "filter:customers-ledger" %}',
                 method: 'GET',
@@ -181,27 +168,22 @@
                     'end_date': to,
                 },
                 success: function(data) {
-                   // console.log(data)
+                    table.empty()
                     if(data.serializer_data && data.serializer_data.length > 0){
-                        // Handle the response data
-                        const table = $('#example tbody')
-                        table.empty()
                         let num = 0;
                         data.serializer_data.forEach(item => {
-                            num++ 
-                            //console.log(item.invoiceID)
-                            const row = $('<tr id="row">').append(
-                                $('<td class="text-[10px]">').html(num),
+                            num++
+                            const row = $('<tr>').append(
+                                $('<td class="text-[10px]">').text(num),
                                 $('<td class="text-[10px]">').text(item.cusID),
                                 $('<td class="text-[10px]">').text(item.customer_name),
+                                $('<td class="text-[10px]">').text(item.amount_expected),
                                 $('<td class="text-[10px]">').text(item.amount_paid),
-                                $('<td class="text-[10px]">').text(item.amount_expected - item.amount_paid ),
-                                //$('<td class="text-[10px]">').text(item.Gdescription)
-                                $('<td class="text-[10px] bg-gray-50 w-3 text-center">').append('<a href="/view-customer-ledger/'+item.cusID+'/'+item.invoiceID+'" target="_blank" class="text-blue-500 border px-4"  aria-label="Edit">View</a>'),
-                            
-                            
+                                $('<td class="text-[10px]">').text(item.balance),
+                                $('<td class="text-[10px] bg-gray-50 w-3 text-center">').append(
+                                    '<a href="/view-customer-ledger/'+item.cusID+'/'+item.invoiceID+'" target="_blank" class="text-blue-500 border px-4" aria-label="View">View</a>'
+                                ),
                             );
-                            //table.animate({left:"100px"}, "slow");
                             table.append(row);
                         });
                         $("#total-amount").html(NCFormat(data.amount_total));
@@ -212,21 +194,13 @@
                         $("#amount-paid").html("0.00");
                         $("#balance").html("0.00");
                         alertify.error("No Return data between selected date")
-                        
                     }
                 },
-                error: function(error) {
-                    // Handle the error
+                error: function() {
                     console.log('error')
                 }
             });
-            }else{
-                alertify.error("Select start_date and end_date")
-            }
-
-            
         }
-
         </script>
        
 

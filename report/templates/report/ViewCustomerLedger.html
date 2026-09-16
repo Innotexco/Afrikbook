@@ -31,7 +31,7 @@
 
         <div class="w-full overflow-x-auto table-responsive mt-4" id="vcl">
             {% include 'components/Periodheader.html' %}
-            <table id="example" class="display" style="width:100%">
+            <table id="view-customer-ledger-table" class="display" style="width:100%">
                 <thead>
                     <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 bg-gray-50">
                         <th class="px-4 py-3">SN</th>
@@ -58,7 +58,7 @@
                         <td class="px-4 text-[10px]">{{ entry.payment_method|default:"—" }}</td>
                         <td class="px-4 text-[10px] text-right">{% if entry.type == "Debit" %}{{ entry.amount|floatformat:2|intcomma }}{% endif %}</td>
                         <td class="px-4 text-[10px] text-right">{% if entry.type == "Credit" %}{{ entry.amount|floatformat:2|intcomma }}{% endif %}</td>
-                        <td class="px-4 text-[10px] text-right font-medium">{{ entry.balance|floatformat:2|intcomma }}</td>
+                        <td class="px-4 text-[10px] text-right font-medium">{{ entry.running_balance|floatformat:2|intcomma }}</td>
                     </tr>
                     {% empty %}
                     <tr><td colspan="8" class="px-4 py-3 text-center text-gray-400 text-xs">No ledger entries for this period</td></tr>
@@ -79,7 +79,7 @@
     <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
         <div class="flex justify-between items-center gap-6">
             <button class="block w-full px-4 py-1 mt-4 text-sm font-medium text-gray-600 bg-slate-200 rounded-lg hover:bg-slate-300" type="button" onclick="generatePDF('vcl')">Print</button>
-            <button class="block w-full px-4 py-1 mt-4 text-sm font-medium text-gray-600 bg-slate-200 rounded-lg hover:bg-slate-300" type="button" onclick="exportTableToExcel('example')">Export to Excel</button>
+            <button class="block w-full px-4 py-1 mt-4 text-sm font-medium text-gray-600 bg-slate-200 rounded-lg hover:bg-slate-300" type="button" onclick="exportTableToExcel('view-customer-ledger-table')">Export to Excel</button>
             <button class="block w-full px-4 py-1 mt-4 text-sm font-medium text-gray-600 bg-slate-200 rounded-lg hover:bg-slate-300" type="button" onclick="generatePDF('vcl')">Export to PDF</button>
         </div>
     </div>

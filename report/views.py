@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.db.models import Sum, F, Q
+from django.db.models.functions import Lower
 from customer.models import *
 from vendor.models import *
 from django.contrib import messages
@@ -878,21 +879,16 @@ def Receivables(request):
     except Exception:
         logger.exception("Failed to remove extra payment Debits from receivables")
 
-    receivables = receivable.objects.using(db).all().order_by('date', 'id')
-    customers = customer_table.objects.using(db).all()
+    customers = customer_table.objects.using(db).all().order_by(Lower('name'), 'name')
     company = company_table.objects.get(id=request.user.company_id_id)
 
-    credit_total = receivable.objects.using(db).filter(type="Credit").aggregate(total_credit=Sum("amount"))['total_credit'] or 0
-    debit_total = receivable.objects.using(db).filter(type="Debit").aggregate(total_debit=Sum("amount"))['total_debit'] or 0
-    balance = Decimal(debit_total) - Decimal(credit_total) 
-        
     context = {
-        'recievables':receivables,
-        'credit':credit_total,
-        'debit':debit_total,
-        'balance':balance,
-        'customers':customers,
-        'company':company    
+        'recievables': [],
+        'credit': 0,
+        'debit': 0,
+        'balance': 0,
+        'customers': customers,
+        'company': company,
     }
     return render(request, 'report/Receivables.html', context)
 
@@ -1616,61 +1612,39 @@ def CustomerLedger(request):
 @login_required(login_url='/')
 @urls_name(name="Customer Ledger")
 def ViewCustomerLedger(request, code, invoice):
+    from filter.views import compute_customer_ledger
+    from settings.models import CreateProfile
+
     db = AfrikBookDB(request)
-    context = {}
+    context = {
+        'code': code,
+        'company': company_table.objects.get(id=request.user.company_id_id),
+        'profile': CreateProfile.objects.using(db).filter(
+            CompanyName=request.user.company_id.company_name
+        ).first(),
+    }
 
     if code:
         cus = customer_table.objects.using(db).filter(customer_code__iexact=code).first()
 
-        all_qs = receivable.objects.using(db).filter(
+        start_date_str = request.GET.get('start_date')
+        end_date_str = request.GET.get('end_date')
+        start_date = convertDate(start_date_str, start_date_str)[0] if start_date_str else None
+        end_date = convertDate(end_date_str, end_date_str)[0] if end_date_str else None
+
+        entries_qs = receivable.objects.using(db).filter(
             customer_id__iexact=code
         ).order_by('date', 'id')
+        ledger = compute_customer_ledger(entries_qs, start_date, end_date)
 
-        start_date_str = request.GET.get('start_date')
-        end_date_str   = request.GET.get('end_date')
-
-        start_date = convertDate(start_date_str, start_date_str)[0] if start_date_str else None
-        end_date   = convertDate(end_date_str, end_date_str)[0]   if end_date_str   else None
-
-        opening_balance = decimal.Decimal('0.00')
-        running = decimal.Decimal('0.00')
-        entries = []
-
-        for e in all_qs:
-            amt = decimal.Decimal(str(e.amount or 0))
-            signed = amt if e.type == "Debit" else -amt
-            running += signed
-
-            if start_date and e.date < start_date:
-                opening_balance = running
-                continue
-
-            if end_date and e.date > end_date:
-                break
-
-            e.running_balance = running
-            entries.append(e)
-
-        total_debit  = sum(
-            (decimal.Decimal(str(e.amount or 0)) for e in entries if e.type == "Debit"),
-            decimal.Decimal('0.00')
-        )
-        total_credit = sum(
-            (decimal.Decimal(str(e.amount or 0)) for e in entries if e.type == "Credit"),
-            decimal.Decimal('0.00')
-        )
-
-        closing_balance = running if entries else opening_balance
-
-        context = {
-            "customer":        cus,
-            "code":            code,
-            "entries":         entries,
-            "opening_balance": opening_balance,
-            "total_debit":     total_debit,
-            "total_credit":    total_credit,
-            "closing_balance": closing_balance,
-        }
+        context.update({
+            "customer": cus,
+            "entries": ledger['entries'],
+            "opening_balance": ledger['opening_balance'],
+            "total_debit": ledger['total_debit'],
+            "total_credit": ledger['total_credit'],
+            "closing_balance": ledger['closing_balance'],
+        })
 
     return render(request, 'report/ViewCustomerLedger.html', context)
 
