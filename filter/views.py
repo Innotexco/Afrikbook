@@ -8,6 +8,7 @@ import decimal
 from Stock.models import Item
 from .function.date import convertDate
 from decimal import Decimal
+from main.utils import paginate_queryset
 
 
 
@@ -143,67 +144,78 @@ def sales_report_filter_by_date(request):
 
 
     
+def _empty_receivable_page():
+    return {
+        "serializer_data": [],
+        "total_amount": 0,
+        "credit_total": 0,
+        "debit_total": 0,
+        "balance": 0,
+        "page": 1,
+        "num_pages": 1,
+        "count": 0,
+        "start_index": 0,
+        "end_index": 0,
+        "has_previous": False,
+        "has_next": False,
+        "previous_page": None,
+        "next_page": None,
+    }
+
+
 def receivable_filter_by_date(request):
     db = request.user.company_id.db_name
 
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
-    type = request.GET.get('type')
+    tx_type = request.GET.get('type')
     customer = request.GET.get('customer')
-    
-    filter_conditions = Q()
-    
-    if start_date_str and end_date_str:
-        pass
-        filter_conditions &= Q(cur_datetime__date__range=(convertDate(start_date_str, end_date_str)))
 
-    if type:
-        if type == "Debit&Credit":
-           filter_conditions &= Q(type="Debit") | Q(type="Credit")
-        else:
-           filter_conditions &= Q(type=type)
-           
+    if tx_type in (None, '', 'Select type'):
+        tx_type = None
+    if customer in (None, '', 'Select Customer'):
+        customer = None
+
+    if not start_date_str or not end_date_str:
+        return JsonResponse(_empty_receivable_page(), safe=False)
+
+    filter_conditions = Q(date__range=(convertDate(start_date_str, end_date_str)))
+
+    if tx_type and tx_type != "Debit&Credit":
+        filter_conditions &= Q(type=tx_type)
+
     if customer:
-       
         filter_conditions &= Q(customer_id=customer)
-    
-    data = []
-    if filter_conditions:   
-        # Perform filtering based on the date range
-        filtered_data = receivable.objects.using(db).filter(filter_conditions).values() 
-        for item in filtered_data:
-            if item not in  data:
-                data.append(item)
-            
 
-    total_amount = receivable.objects.using(db).filter(filter_conditions).values().aggregate(total_amount=Sum('amount'))['total_amount'] or 0
+    qs = receivable.objects.using(db).filter(filter_conditions).order_by('date', 'id')
 
-    # Calculate total amount where type is "Credit"
-    credit_total = receivable.objects.using(db).filter(Q(type="Credit"), filter_conditions).aggregate(total_credit=Sum("amount"))['total_credit'] or 0
-    
-    # Calculate total amount where type is "debit"
-    debit_total = receivable.objects.using(db).filter(Q(type="Debit"),  filter_conditions).aggregate(total_debit=Sum("amount"))['total_debit'] or 0
-    
-    # if credit_total is None:
-    #         credit_total = '0.00'
-    # if debit_total is None:
-    #     debit_total = '0.00'
+    total_amount = qs.aggregate(total_amount=Sum('amount'))['total_amount'] or 0
+    credit_total = qs.filter(type="Credit").aggregate(total_credit=Sum("amount"))['total_credit'] or 0
+    debit_total = qs.filter(type="Debit").aggregate(total_debit=Sum("amount"))['total_debit'] or 0
+    balance = decimal.Decimal(debit_total) - decimal.Decimal(credit_total)
 
-    serializer_data = list(data)
-   
-    def calbalance():
-        return decimal.Decimal(debit_total) - decimal.Decimal(credit_total)
-    
-    balance = calbalance()
+    page_obj = paginate_queryset(request, qs)
+    serializer_data = list(page_obj.object_list.values(
+        'date', 'customer_name', 'description', 'customer_id',
+        'transaction_id', 'type', 'amount', 'initial_amount', 'balance',
+    ))
 
-    response ={
-        "serializer_data":serializer_data,
-        "total_amount":total_amount,
-        'credit_total':credit_total,
-        'debit_total':debit_total,
-        'balance':balance,
-    }
-    return JsonResponse(response, safe=False)
+    return JsonResponse({
+        "serializer_data": serializer_data,
+        "total_amount": total_amount,
+        "credit_total": credit_total,
+        "debit_total": debit_total,
+        "balance": balance,
+        "page": page_obj.number,
+        "num_pages": page_obj.paginator.num_pages,
+        "count": page_obj.paginator.count,
+        "start_index": page_obj.start_index() if page_obj.paginator.count else 0,
+        "end_index": page_obj.end_index() if page_obj.paginator.count else 0,
+        "has_previous": page_obj.has_previous(),
+        "has_next": page_obj.has_next(),
+        "previous_page": page_obj.previous_page_number() if page_obj.has_previous() else None,
+        "next_page": page_obj.next_page_number() if page_obj.has_next() else None,
+    }, safe=False)
 
 def aged_receivable_filter_by_date(request):
     db = request.user.company_id.db_name
@@ -382,41 +394,121 @@ def profit_loss_filter_by_date(request):
 
     return JsonResponse(data)
 
+def compute_customer_ledger(entries_qs, start_date=None, end_date=None):
+    """Build a customer AR ledger: Debit increases what is owed, Credit reduces it.
+
+    Stored receivable.balance is not used — Debit rows store a customer running
+    figure while Credit rows store the invoice remainder, so a true ledger
+    balance is recomputed in date order.
+    """
+    opening_balance = decimal.Decimal('0.00')
+    running = decimal.Decimal('0.00')
+    entries = []
+
+    for entry in entries_qs:
+        amount = decimal.Decimal(str(entry.amount or 0))
+        running += amount if entry.type == "Debit" else -amount
+
+        if start_date and entry.date < start_date:
+            opening_balance = running
+            continue
+        if end_date and entry.date > end_date:
+            break
+
+        entry.running_balance = running
+        entries.append(entry)
+
+    total_debit = sum(
+        (decimal.Decimal(str(e.amount or 0)) for e in entries if e.type == "Debit"),
+        decimal.Decimal('0.00'),
+    )
+    total_credit = sum(
+        (decimal.Decimal(str(e.amount or 0)) for e in entries if e.type == "Credit"),
+        decimal.Decimal('0.00'),
+    )
+    closing_balance = entries[-1].running_balance if entries else opening_balance
+
+    return {
+        'entries': entries,
+        'opening_balance': opening_balance,
+        'total_debit': total_debit,
+        'total_credit': total_credit,
+        'closing_balance': closing_balance,
+    }
+
+
 def customers_ledger_filter_by_date(request):
-    db = request.user.company_id.db_name 
-   
+    db = request.user.company_id.db_name
+
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
 
-    filter_conditions = Q()
-    
-    if start_date_str and end_date_str:
-        filter_conditions  &= Q(invoice_date__range=(convertDate(start_date_str, end_date_str)))
+    if not start_date_str or not end_date_str:
+        return JsonResponse({
+            'serializer_data': [],
+            'amount_total': '0.00',
+            'amount_paid_total': '0.00',
+            'balance': '0.00',
+        })
 
+    qs = customer_invoice.objects.using(db).filter(
+        invoice_date__range=convertDate(start_date_str, end_date_str)
+    ).order_by('invoiceID', 'id')
 
-    data = []
-    if filter_conditions:
-        filtered_data =  customer_invoice.objects.using(db).filter(filter_conditions).values()
+    unique_invoices = {}
+    for item in qs:
+        if item.invoiceID in unique_invoices:
+            continue
+        expected = decimal.Decimal(str(item.amount_expected or 0))
+        paid = decimal.Decimal(str(item.amount_paid or 0))
+        unique_invoices[item.invoiceID] = {
+            'cusID': item.cusID,
+            'customer_name': item.customer_name,
+            'invoiceID': item.invoiceID,
+            'amount_expected': expected,
+            'amount_paid': paid,
+            'balance': expected - paid,
+        }
 
-        for item in filtered_data:
-            if item['invoiceID'] not in [d['invoiceID'] for d in data]:
-                data.append(item)
-       
+    customers = {}
+    for inv in unique_invoices.values():
+        key = inv['cusID']
+        if key not in customers:
+            customers[key] = {
+                'cusID': inv['cusID'],
+                'customer_name': inv['customer_name'],
+                'invoiceID': inv['invoiceID'],
+                'amount_expected': decimal.Decimal('0.00'),
+                'amount_paid': decimal.Decimal('0.00'),
+                'balance': decimal.Decimal('0.00'),
+            }
+        customers[key]['amount_expected'] += inv['amount_expected']
+        customers[key]['amount_paid'] += inv['amount_paid']
+        customers[key]['balance'] += inv['balance']
 
+    rows = sorted(customers.values(), key=lambda row: (row['customer_name'] or '').lower())
+    amount_total = sum((row['amount_expected'] for row in rows), decimal.Decimal('0.00'))
+    amount_paid_total = sum((row['amount_paid'] for row in rows), decimal.Decimal('0.00'))
+    balance = amount_total - amount_paid_total
 
-    amount_tatal = customer_invoice.objects.using(db).filter(filter_conditions).values("invoiceID").distinct().aggregate(total_amount=Sum("amount_expected"))['total_amount'] or 0
-    amount_paid_tatal = customer_invoice.objects.using(db).filter(filter_conditions).values("invoiceID").distinct().aggregate(total_amount_paid=Sum("amount_paid"))['total_amount_paid'] or 0
-   
-    if amount_tatal and amount_paid_tatal:
-       balance = amount_tatal - amount_paid_tatal
-    else:
-        amount_tatal = "0.00"
-        amount_paid_tatal = "0.00"
-        balance = "0.00"
- 
-    serializer_data = list(data)
-    data = {'serializer_data':serializer_data, 'amount_total':amount_tatal,'amount_paid_total':amount_paid_tatal,'balance':balance}
-    return JsonResponse(data)
+    serializer_data = [
+        {
+            'cusID': row['cusID'],
+            'customer_name': row['customer_name'],
+            'invoiceID': row['invoiceID'],
+            'amount_expected': str(row['amount_expected']),
+            'amount_paid': str(row['amount_paid']),
+            'balance': str(row['balance']),
+        }
+        for row in rows
+    ]
+
+    return JsonResponse({
+        'serializer_data': serializer_data,
+        'amount_total': str(amount_total),
+        'amount_paid_total': str(amount_paid_total),
+        'balance': str(balance),
+    })
 
 def customer_ledger_filter_by_date(request):
     db = request.user.company_id.db_name
@@ -428,24 +520,14 @@ def customer_ledger_filter_by_date(request):
     if not cusID:
         return JsonResponse({"error": "Missing customer"}, status=400)
 
-    entries_qs = receivable.objects.using(db).filter(customer_id__iexact=cusID).order_by('date', 'id')
+    start_date = convertDate(start_date_str, start_date_str)[0] if start_date_str else None
+    end_date = convertDate(end_date_str, end_date_str)[0] if end_date_str else None
 
-    opening_balance = decimal.Decimal('0.00')
-    if start_date_str:
-        start_date = convertDate(start_date_str, start_date_str)[0]
-        prior_entry = entries_qs.filter(date__lt=start_date).last()
-        opening_balance = prior_entry.balance if prior_entry else decimal.Decimal('0.00')
-        entries_qs = entries_qs.filter(date__gte=start_date)
+    entries_qs = receivable.objects.using(db).filter(
+        customer_id__iexact=cusID
+    ).order_by('date', 'id')
 
-    if end_date_str:
-        end_date = convertDate(end_date_str, end_date_str)[0]
-        entries_qs = entries_qs.filter(date__lte=end_date)
-
-    entries = list(entries_qs)
-
-    total_debit = sum((e.amount for e in entries if e.type == "Debit"), decimal.Decimal('0.00'))
-    total_credit = sum((e.amount for e in entries if e.type == "Credit"), decimal.Decimal('0.00'))
-    closing_balance = entries[-1].balance if entries else opening_balance
+    ledger = compute_customer_ledger(entries_qs, start_date, end_date)
 
     serialized = [
         {
@@ -455,17 +537,17 @@ def customer_ledger_filter_by_date(request):
             "payment_method": e.payment_method,
             "type": e.type,
             "amount": str(e.amount),
-            "balance": str(e.balance),
+            "balance": str(e.running_balance),
         }
-        for e in entries
+        for e in ledger['entries']
     ]
 
     return JsonResponse({
         "entries": serialized,
-        "opening_balance": str(opening_balance),
-        "total_debit": str(total_debit),
-        "total_credit": str(total_credit),
-        "closing_balance": str(closing_balance),
+        "opening_balance": str(ledger['opening_balance']),
+        "total_debit": str(ledger['total_debit']),
+        "total_credit": str(ledger['total_credit']),
+        "closing_balance": str(ledger['closing_balance']),
     })
 
 def sales_ladger_filter_by_date(request):

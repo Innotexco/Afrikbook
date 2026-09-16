@@ -48,14 +48,14 @@
                     />
                 </label>
 
-                    <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="search2" onclick="Filter()">
+                    <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="search2" onclick="Filter(1)">
                     Search
                 </button> 
 
                 <div class="text-sm grid gap-6 grid-cols-2">
                     <label >
                         <span class="text-gray-700">By Type</span>
-                        <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="type" required onchange="filterItem(this)">
+                        <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="type">
                             <option selected disabled=true>Select type</option>
                            
                                <option>Debit</option>   
@@ -67,10 +67,10 @@
                     
                     <label >
                         <span class="text-gray-700">By Customer</span>
-                        <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="customer_id" required onchange="filterItem(this)">
+                        <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="customer_id">
                             <option selected disabled=true>Select Customer</option>
                             {% for customer in customers %}
-                               <option value="{{customer.customer_code}}">{{customer.customer_code }}_{{customer.name}}</option>   
+                               <option value="{{customer.customer_code}}">{{ customer.name }} ({{ customer.customer_code }})</option>   
                             {% endfor %}
                         </select>
                     </label>
@@ -83,7 +83,7 @@
         
         {% include 'components/Periodheader.html' %}
 
-          <table id="example" class="recievable" style="width:100%">
+          <table id="receivables-table" class="recievable" style="width:100%">
                 <thead>
                     <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
                         <th class="px-4 py-3">SN</th>
@@ -175,6 +175,7 @@
                 </tfoot>
             </table>
             <div class="text-center  text-gray-500 py-2 font-semibold" id="no-data" style="display: none;">No data found</div>
+            <div id="receivables-pagination"></div>
         </div>
     </div>
 
@@ -191,7 +192,7 @@
                 Export to excel
             </button > -->
             <button type="button" class="block w-full px-1 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
-                onclick="exportTableToExcel('example')">
+                onclick="exportTableToExcel('receivables-table')">
                 Export to excel
             </button >
             <button type="button" class="block w-full px-1 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
@@ -202,40 +203,88 @@
 
     </div>
     <script>
-        $(document).ready(
-            setTimeout(function(){
-                //Filter()
-            }, 500)
-        )
-        //serach by date
-        function Filter(){
-            
+        function selectVal(selector, placeholder) {
+            const value = $(selector).val();
+            if (!value || value === placeholder) return '';
+            return value;
+        }
+
+        function renderReceivablePagination(meta) {
+            const el = $('#receivables-pagination');
+            el.empty();
+            if (!meta || !meta.num_pages || meta.num_pages <= 1) return;
+
+            const btn = function(label, page, enabled, current) {
+                if (current) {
+                    return $('<span class="px-2.5 py-1 rounded-md bg-slate-700 text-white font-semibold">').text(label);
+                }
+                if (!enabled) {
+                    return $('<span class="px-2.5 py-1 rounded-md bg-slate-50 text-slate-300 cursor-not-allowed">').text(label);
+                }
+                return $('<a href="#" class="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700">')
+                    .text(label)
+                    .on('click', function(e) {
+                        e.preventDefault();
+                        Filter(page);
+                    });
+            };
+
+            const wrap = $('<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 my-3 text-xs text-gray-600 bg-white border border-gray-100 rounded-lg shadow-sm">');
+            wrap.append(
+                $('<span class="font-medium tracking-wide">').text(
+                    'Showing ' + meta.start_index + '–' + meta.end_index +
+                    ' of ' + meta.count +
+                    ' (page ' + meta.page + ' / ' + meta.num_pages + ')'
+                )
+            );
+
+            const nav = $('<nav class="inline-flex flex-wrap items-center gap-1" aria-label="Pagination">');
+            nav.append(btn('«', 1, meta.has_previous, false));
+            nav.append(btn('Prev', meta.previous_page, meta.has_previous, false));
+
+            for (let num = 1; num <= meta.num_pages; num++) {
+                if (num === meta.page || (num > meta.page - 3 && num < meta.page + 3)) {
+                    nav.append(btn(String(num), num, true, num === meta.page));
+                }
+            }
+
+            nav.append(btn('Next', meta.next_page, meta.has_next, false));
+            nav.append(btn('»', meta.num_pages, meta.has_next, false));
+            wrap.append(nav);
+            el.append(wrap);
+        }
+
+        function Filter(page) {
             const datas = {
                 start_date: $('#from').val(),
                 end_date: $('#to').val(),
-                type: $('#type').val(),
-                customer: $('#customer_id').val(),
+                type: selectVal('#type', 'Select type'),
+                customer: selectVal('#customer_id', 'Select Customer'),
+                page: page || 1,
+            };
+
+            if (!datas.start_date || !datas.end_date) {
+                alertify.error("Select start date and end date to search");
+                return;
             }
-            if(datas.start_date || datas.end_date || datas.type || datas.customer){
+
             $.ajax({
                 url: '{% url "filter:receivable-date" %}',
                 method: 'GET',
                 data: datas,
                 success: function(response) {
-                    if(response.serializer_data && response.serializer_data.length > 0){
-                        // Handle the response data
-                       // console.log(response.serializer_data) console.log(response.credit_total) console.log(response.debit_total)
+                    const table = $('#receivables-table tbody');
+                    table.empty();
+
+                    if (response.serializer_data && response.serializer_data.length > 0) {
                         $("#credit").html(NCFormat(response.credit_total));
                         $("#debit").html(NCFormat(response.debit_total));
                         $("#balance").html(NCFormat(response.balance));
-                        const table = $('#example tbody')
-                        table.empty()
-                        let num = 0;
-                        response.serializer_data.forEach(item => {
-                            num++  
-    
-                            const row = $('<tr id="row">').append(
-                                $('<td class="text-[10px]">').html(num),
+
+                        let num = response.start_index || 1;
+                        response.serializer_data.forEach(function(item) {
+                            const row = $('<tr>').append(
+                                $('<td class="text-[10px]">').text(num),
                                 $('<td class="text-[10px]">').text(item.date),
                                 $('<td class="text-[10px]">').text(item.customer_name),
                                 $('<td class="text-[10px]">').text(item.description),
@@ -244,101 +293,27 @@
                                 $('<td class="text-[10px]">').text(item.type),
                                 $('<td class="text-[10px]">').text(item.amount),
                                 $('<td class="text-[10px]">').text(item.initial_amount),
-                                $('<td class="text-[10px]">').text(item.balance),   
-                                );
-                                table.append(row);
-                            
+                                $('<td class="text-[10px]">').text(item.balance)
+                            );
+                            table.append(row);
+                            num++;
                         });
-                        $("#no-data").css('display', 'none')
-                    }else{
+                        $("#no-data").css('display', 'none');
+                        renderReceivablePagination(response);
+                    } else {
                         $("#credit").html("0.00");
                         $("#debit").html("0.00");
-                        $("#balance").html(".00");
-                        $("#example tbody").empty();
+                        $("#balance").html("0.00");
                         $("#no-data").css('display', 'block');
+                        renderReceivablePagination(null);
                         alertify.error("No Return data between selected category");
-                        //alertify.error("Select start_date and end_date")
                     }
                 },
-                error: function(error) {
-                    // Handle the error
-                    console.log('error')
+                error: function() {
+                    console.log('error');
                 }
             });
-            }else{
-                alertify.error("Select category to fetch data from")
-            }
-
-            
         }
-
-    
-        //multiple filter
-        function filterItem(selected){
-            const value = ""
-            //const value = selected.value
-           
-            if(value){
-                $.ajax({
-                    url: 'receivable/'+value+'/',
-                    method: 'GET',
-                    success: function(data) {
-                    if(data.item && data.item.length > 0){
-                        //console.log(data.item);
-                        //console.log(data.credit_total)
-                        //console.log(data.debit_total)
-                        $("#credit").val("#"+data.credit_total);
-                        $("#debit").val("#"+data.debit_total);
-                        $("#balance").val("#"+data.balance);
-                            const table = $('#example tbody')
-                            table.empty()
-                            let num = 0;
-                            data.item.forEach(item => {
-                                num++ 
-                                const uniqueInvoiceIDs = []; // To store unique invoice IDs
-                                //console.log(item.invoiceID)
-                                //if (!uniqueInvoiceIDs.includes(item.invoiceID)) {
-                                //    uniqueInvoiceIDs.push(item.invoiceID);
-        
-                                    const row = $('<tr id="row">').append(
-                                        $('<td class="text-[10px]">').html(num),
-                                        $('<td class="text-[10px]">').text(item.date),
-                                        $('<td class="text-[10px]">').text(item.customer_name),
-                                        $('<td class="text-[10px]">').text(item.description),
-                                        $('<td class="text-[10px]">').text(item.customer_id),
-                                        $('<td class="text-[10px]">').text(item.transaction_id),
-                                        $('<td class="text-[10px]">').text(item.type),
-                                        $('<td class="text-[10px]">').text(item.amount),
-                                        $('<td class="text-[10px]">').text(item.initial_amount),
-                                        $('<td class="text-[10px]">').text(item.balance),
-                                        //$('<td class="text-[10px]">').text("view"),
-                                        
-                                    
-                                    );
-                                    table.append(row);
-                                //}
-                            });
-                            $("#no-data").css('display', 'none');
-                        }else{
-                            $("#credit").val("#0.00");
-                            $("#debit").val("#0.00");
-                            $("#balance").val("#.00");
-                            $('#example tbody').empty();
-                            $("#no-data").css('display', 'block');
-                            alertify.error("No Recivable yet");
-                        }
-                    },
-                    error: function(error) {
-                        // Handle the error
-                        console.log(error)
-                    }
-                });
-            }else{
-                //alertify.error("Select start_date and end_date")
-            }
-
-            
-        };
     </script>
 
 
