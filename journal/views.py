@@ -191,11 +191,26 @@ def GetLoanDetails(request, id):
 def ViewLoan(request):
     from main.utils import paginate_queryset
     db = request.user.company_id.db_name
-    loans = loan_account.objects.using(db).all().order_by('-date', '-id')
-    page_obj = paginate_queryset(request, loans)
+
+    # Date filter support via GET params
+    fromdate = request.GET.get('fromdate', '').strip()
+    todate = request.GET.get('todate', '').strip()
+
+    loans_qs = loan_account.objects.using(db).all().order_by('-date', '-id')
+
+    if fromdate and todate:
+        try:
+            loans_qs = loans_qs.filter(date__gte=fromdate, date__lte=todate)
+        except Exception:
+            # If direct filter fails, ignore and keep unfiltered queryset
+            pass
+
+    page_obj = paginate_queryset(request, loans_qs)
     context = {
         "loan": page_obj,
         "page_obj": page_obj,
+        "fromdate": fromdate,
+        "todate": todate,
     }
     return render(request, "journal/ViewLoan.html", context)
 
