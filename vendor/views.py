@@ -880,22 +880,22 @@ def viewCanclePurchase(request):
    
    # get function
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-        stockinlog = getStockAdjustmentDate2(request, context, db, Q(cancellation=1))
-        if stockinlog:
-            if is_ajax:
-                if isinstance(stockinlog, dict) and stockinlog.get('failed'):
-                    return JsonResponse({'failed': stockinlog['failed']})
-                paginator = Paginator(stockinlog, ITEMS_PER_PAGE)
-                page_number = request.GET.get('page', 1)
-                page_obj = paginator.get_page(page_number)
-                return JsonResponse({
-                    'stockin':      list(page_obj),
-                    'total_pages':  paginator.num_pages,
-                    'current_page': page_obj.number,
-                    'has_next':     page_obj.has_next(),
-                    'has_prev':     page_obj.has_previous(),
-                    'total_count':  paginator.count,
-                })
+    stockinlog = getStockAdjustmentDate2(request, context, db, Q(cancellation=1))
+    if stockinlog:
+        if is_ajax:
+            if isinstance(stockinlog, dict) and stockinlog.get('failed'):
+                return JsonResponse({'failed': stockinlog['failed']})
+            paginator = Paginator(stockinlog, ITEMS_PER_PAGE)
+            page_number = request.GET.get('page', 1)
+            page_obj = paginator.get_page(page_number)
+            return JsonResponse({
+                'stockin':      list(page_obj),
+                'total_pages':  paginator.num_pages,
+                'current_page': page_obj.number,
+                'has_next':     page_obj.has_next(),
+                'has_prev':     page_obj.has_previous(),
+                'total_count':  paginator.count,
+            })
             # non-AJAX request: fall through to render below
 
         # Default page load — paginate queryset for server-side rendering
