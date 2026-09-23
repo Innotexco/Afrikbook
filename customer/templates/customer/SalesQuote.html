@@ -47,13 +47,13 @@
                 <tbody class="bg-white divide-y">
                     {% for quote in quotes %}
                     <tr class="text-gray-700">
-                        <td class="text-[10px] px-4 py-2">{{ forloop.counter }}</td>
-                        <td class="text-[10px] px-4 py-2">{{ quote.quote_date }}</td>
-                        <td class="text-[10px] px-4 py-2 font-mono">{{ quote.referenceID }}</td>
-                        <td class="text-[10px] px-4 py-2">{{ quote.genby }}</td>
-                        <td class="text-[10px] px-4 py-2">{{ quote.Gdescription|default:"—" }}</td>
-                        <td class="text-[10px] px-4 py-2">{{ quote.total }}</td>
-                        <td class="text-[10px] px-4 py-2 text-center">
+                        <td class="text-[10px] px-4">{{ forloop.counter }}</td>
+                        <td class="text-[10px] px-4">{{ quote.quote_date }}</td>
+                        <td class="text-[10px] px-4 font-mono">{{ quote.referenceID }}</td>
+                        <td class="text-[10px] px-4">{{ quote.genby }}</td>
+                        <td class="text-[10px] px-4">{{ quote.Gdescription|default:"—" }}</td>
+                        <td class="text-[10px] px-4">{{ quote.total }}</td>
+                        <td class="text-[10px] px-4 text-center">
                             <a onclick="showQuoteModal('{{ quote.referenceID }}')"
                             class="inline-flex items-center justify-center mx-auto text-green-600 cursor-pointer"
                             aria-label="View">
