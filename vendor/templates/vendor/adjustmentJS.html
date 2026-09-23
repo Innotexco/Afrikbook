@@ -107,19 +107,18 @@
         }
     }
     $(document).ready(function() {
-        for_view_cancle_purchase = $('#type_cancle').val();
-        if(for_view_cancle_purchase == 'viewcancle'){
-            url = "{% url 'vendor:viewCanclePurchase' %}"
-        }else{
-            url = "{% url 'vendor:PurchaseAdjustment' %}"
-        }
+        let pageType = $('#type_cancle').val();
+        let ajaxUrl = (pageType === 'viewcancle')
+            ? "{% url 'vendor:viewCanclePurchase' %}"
+            : "{% url 'vendor:PurchaseAdjustment' %}";
+
         $(document).on('click', '#getDate', function(){
-            let fromdate    =  $('#fromdate').val();
-            let todate   =  $('#todate').val();
+            let fromdate = $('#fromdate').val();
+            let todate = $('#todate').val();
 
             $.ajax({
                 type: 'GET',
-                url: "{% url 'vendor:PurchaseAdjustment' %}",
+                url: ajaxUrl,
                 data: {
                     fromdate: fromdate,
                     todate: todate,
@@ -130,13 +129,12 @@
             })
         })
         $(document).on('change', '.commonClass', function(){
-            let invoice    =  $('#invoice').val();
-            let sortbyItem   =  $('#sortbyItem').val();
+            let invoice = $('#invoice').val();
+            let sortbyItem = $('#sortbyItem').val();
             $.ajax({
                 type: 'GET',
-                url: url,
+                url: ajaxUrl,
                 data: {
-                    // 'csrfmiddlewaretoken': '{{ csrf_token }}',
                     invoice: invoice,
                     sortbyItem: sortbyItem,
                 },

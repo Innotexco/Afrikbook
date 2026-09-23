@@ -3,6 +3,8 @@
 
 {% block content %}
 
+    <input type="hidden" id="type_cancle" value="{{ type|default:'purchase' }}">
+
     {% include "vendor/EditStock.html" %}
 
     <a class="flex items-center justify-between bg-slate-200 py-1 px-2 text-sm font-semibold text-slate-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
