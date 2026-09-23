@@ -73,7 +73,7 @@
                         <th class="py-3">Item Name</th>
                         <th class="py-3">Qty</th>
                         <th class="py-3">Amount</th>
-                        <th class="py-3">Token ID</th>
+                        {% comment %} <th class="py-3">Token ID</th> {% endcomment %}
                      </tr>
                 </thead>
                 <tbody class="bg-white divide-y default">
@@ -86,7 +86,7 @@
                         <td class="text-[10px]">{{ invoice.item_name }}</td>
                         <td class="text-[10px]">{{ invoice.qty }}</td>
                         <td class="text-[10px]">{{ invoice.amount }}</td>
-                        <td class="text-[10px]">{{ invoice.token_id }}</td>
+                        {% comment %} <td class="text-[10px]">{{ invoice.token_id }}</td> {% endcomment %}
                     </tr>
                     {% empty %}
                     <tr><td colspan="8" class="text-center py-4">No cancelled sales invoices found.</td></tr>
