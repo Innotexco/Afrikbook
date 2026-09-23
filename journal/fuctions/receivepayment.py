@@ -1,4 +1,4 @@
-from customer.models import customer_table, payable, receivable
+from customer.models import customer_table, payable, receivable, customer_invoice
 from customer.forms import ReceivableForm, PayableForm
 from account.models import chart_of_account, account_log
 from vendor.models import vendor_table
@@ -99,15 +99,20 @@ def receive_payment(request, db):
                 customer_code  = customer.customer_code
 
                 # ── Resolve the invoice to get invoice_total and current_paid ─
-                try:
-                    inv = customer_invoice.objects.using(db).filter(
-                        invoiceID=invoice_no, cusID=customer.customer_code
-                    ).first()
-                    invoice_total = decimal.Decimal(str(inv.amount_expected)) if inv else amount_decimal
-                    current_paid  = decimal.Decimal(str(inv.amount_paid))     if inv else decimal.Decimal('0.00')
-                except Exception:
-                    invoice_total = amount_decimal
-                    current_paid  = decimal.Decimal('0.00')
+                invs = customer_invoice.objects.using(db).filter(
+                    invoiceID=invoice_no, cusID=customer.customer_code
+                )
+                inv = invs.first()
+                invoice_total = decimal.Decimal(str(inv.amount_expected)) if inv else amount_decimal
+                current_paid  = decimal.Decimal(str(inv.amount_paid))     if inv else decimal.Decimal('0.00')
+                remaining     = invoice_total - current_paid
+
+                if inv and amount_decimal > remaining:
+                    messages.error(
+                        request,
+                        f"Payment (₦{amount_decimal:,.2f}) exceeds remaining balance (₦{remaining:,.2f})."
+                    )
+                    return receivable_form
 
                 # Credit → receivable (debt reduced). Bank/cash is updated below.
                 CreditReceivable(
@@ -116,13 +121,12 @@ def receive_payment(request, db):
                     invoice_no, invoice_total, current_paid
                 )
 
-                # ── Update invoice amount_paid ────────────────────────────
+                # ── Update every invoice line so Aged Receivables stays in sync ─
                 if inv:
-                    inv.amount_paid = min(
-                        current_paid + amount_decimal,
-                        invoice_total
-                    )
-                    inv.save(using=db)
+                    new_paid = current_paid + amount_decimal
+                    for line in invs:
+                        line.amount_paid = new_paid
+                        line.save(using=db)
 
             elif accountype == "Vendor":
                 try:

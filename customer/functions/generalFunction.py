@@ -274,6 +274,273 @@ def repair_spurious_payment_debits(db, dry_run=False):
     }
 
 
+def _d(value):
+    return Decimal(str(value or 0)).quantize(Decimal('0.01'))
+
+
+def _sum_amounts(rows):
+    total = Decimal('0.00')
+    for row in rows:
+        total += _d(row.amount)
+    return total
+
+
+def _is_later_credit(row):
+    desc = row.description or ''
+    return row.type == 'Credit' and desc.startswith(PAYMENT_DEBIT_PREFIXES)
+
+
+def _invoice_date(value):
+    if value is None:
+        return None
+    if hasattr(value, 'date'):
+        return value.date()
+    return value
+
+
+def _reduce_rows_to(rows, target, db, dry_run):
+    """Cut newest rows first so their amounts sum to target. Returns (rows, actions)."""
+    actions = []
+    current = _sum_amounts(rows)
+    excess = current - target
+    if excess <= 0:
+        return rows, actions
+
+    kept = list(rows)
+    for row in sorted(rows, key=lambda r: r.id, reverse=True):
+        if excess <= 0:
+            break
+        amount = _d(row.amount)
+        if amount <= excess:
+            actions.append({
+                'op': 'delete',
+                'id': row.id,
+                'type': row.type,
+                'amount': str(amount),
+                'description': row.description or '',
+            })
+            if not dry_run:
+                row.delete(using=db)
+            kept = [r for r in kept if r.id != row.id]
+            excess -= amount
+        else:
+            new_amount = amount - excess
+            actions.append({
+                'op': 'update',
+                'id': row.id,
+                'type': row.type,
+                'from': str(amount),
+                'to': str(new_amount),
+                'description': row.description or '',
+            })
+            if not dry_run:
+                row.amount = new_amount
+                row.save(using=db, update_fields=['amount'])
+            row.amount = new_amount
+            excess = Decimal('0.00')
+    return kept, actions
+
+
+def _raise_rows_to(rows, target, db, dry_run, create_defaults):
+    """Increase the oldest row, or create one, so amounts sum to target. Returns (rows, actions)."""
+    actions = []
+    current = _sum_amounts(rows)
+    if current >= target:
+        return rows, actions
+
+    delta = target - current
+    if rows:
+        row = sorted(rows, key=lambda r: r.id)[0]
+        new_amount = _d(row.amount) + delta
+        actions.append({
+            'op': 'update',
+            'id': row.id,
+            'type': row.type,
+            'from': str(_d(row.amount)),
+            'to': str(new_amount),
+            'description': row.description or '',
+        })
+        if not dry_run:
+            row.amount = new_amount
+            row.save(using=db, update_fields=['amount'])
+        row.amount = new_amount
+    else:
+        payload = dict(create_defaults)
+        payload['amount'] = delta
+        actions.append({
+            'op': 'create',
+            'type': payload.get('type'),
+            'amount': str(delta),
+            'description': payload.get('description') or '',
+            'token_id': payload.get('token_id'),
+        })
+        if not dry_run:
+            created = receivable(**payload)
+            created.save(using=db)
+            rows = [created]
+    return rows, actions
+
+
+def _set_rows_total(rows, target, db, dry_run, create_defaults):
+    if target < 0:
+        target = Decimal('0.00')
+    current = _sum_amounts(rows)
+    actions = []
+    if current > target:
+        rows, actions = _reduce_rows_to(rows, target, db, dry_run)
+    elif current < target:
+        rows, actions = _raise_rows_to(rows, target, db, dry_run, create_defaults)
+    return rows, actions
+
+
+def repair_receivable_invoice_alignment(db, dry_run=False):
+    """Make AR debit/credit totals match invoice.amount_expected / amount_paid.
+
+    Trusts the invoice as the collection record:
+      sale debit  = amount_expected
+      all credits = amount_paid
+    Later "Payment Received" / "Discount Allowed" credits are kept; the original
+    sale credit is rewritten so the pieces add up. Extra sale debits are trimmed.
+    """
+    # .values() avoids columns some older tenant DBs do not have yet (e.g. payment_account).
+    invoices = (
+        customer_invoice.objects.using(db)
+        .exclude(invoiceID__icontains='returned')
+        .exclude(cancellation_status='1')
+        .exclude(invoice_state='Cancelled')
+        .order_by('invoiceID', 'id')
+        .values(
+            'id', 'invoiceID', 'cusID', 'customer_name', 'amount_paid',
+            'amount_expected', 'invoice_date', 'Gdescription', 'payment_method',
+        )
+    )
+
+    grouped = {}
+    for line in invoices:
+        grouped.setdefault(line['invoiceID'], []).append(line)
+
+    reports = []
+    affected_customers = set()
+
+    def _apply():
+        for invoice_id, lines in grouped.items():
+            expected = _d(lines[0]['amount_expected'])
+            paid = max(_d(line['amount_paid']) for line in lines)
+            first = lines[0]
+
+            ar_rows = list(
+                receivable.objects.using(db)
+                .filter(token_id=invoice_id)
+                .order_by('id')
+            )
+            debits = [r for r in ar_rows if r.type == 'Debit']
+            later_credits = [r for r in ar_rows if _is_later_credit(r)]
+            sale_credits = [
+                r for r in ar_rows
+                if r.type == 'Credit' and not _is_later_credit(r)
+            ]
+
+            later_sum = _sum_amounts(later_credits)
+            debit_before = _sum_amounts(debits)
+            credit_before = later_sum + _sum_amounts(sale_credits)
+
+            target_later = later_sum if later_sum <= paid else paid
+            target_sale_credit = paid - target_later
+
+            customer_code = first.get('cusID') or (ar_rows[0].customer_id if ar_rows else '')
+            customer_name = first.get('customer_name') or (ar_rows[0].customer_name if ar_rows else '')
+            payment_method = first.get('payment_method') or 'Cash'
+            account_posted = (
+                (ar_rows[0].account_posted if ar_rows and ar_rows[0].account_posted else '')
+                or '4001-Sales'
+            )
+            inv_date = _invoice_date(first.get('invoice_date'))
+            description = first.get('Gdescription') or ''
+
+            create_debit = dict(
+                date=inv_date,
+                description=description,
+                type='Debit',
+                payment_method=payment_method,
+                invoice_status='Unused',
+                customer_id=customer_code,
+                customer_name=customer_name or '',
+                initial_amount=Decimal('0.00'),
+                balance=Decimal('0.00'),
+                account_posted=account_posted,
+                transaction_id=str(uuid.uuid4()),
+                token_id=invoice_id,
+                Userlogin='repair',
+            )
+            create_credit = dict(create_debit)
+            create_credit['type'] = 'Credit'
+            create_credit['transaction_id'] = str(uuid.uuid4())
+
+            actions = []
+            later_credits, later_actions = _set_rows_total(
+                later_credits, target_later, db, dry_run, create_credit
+            )
+            actions.extend(later_actions)
+            sale_credits, sale_actions = _set_rows_total(
+                sale_credits, target_sale_credit, db, dry_run, create_credit
+            )
+            actions.extend(sale_actions)
+            debits, debit_actions = _set_rows_total(
+                debits, expected, db, dry_run, create_debit
+            )
+            actions.extend(debit_actions)
+
+            lines_need_sync = any(_d(line['amount_paid']) != paid for line in lines)
+            if lines_need_sync:
+                actions.append({
+                    'op': 'sync_lines',
+                    'invoiceID': invoice_id,
+                    'to': str(paid),
+                    'line_count': len(lines),
+                })
+                if not dry_run:
+                    customer_invoice.objects.using(db).filter(invoiceID=invoice_id).update(amount_paid=paid)
+
+            debit_after = expected
+            credit_after = paid
+            changed = bool(actions) or debit_before != debit_after or credit_before != credit_after
+            if not changed:
+                continue
+
+            if customer_code:
+                affected_customers.add(customer_code)
+
+            reports.append({
+                'invoiceID': invoice_id,
+                'customer_id': customer_code,
+                'customer_name': customer_name,
+                'expected': str(expected),
+                'paid': str(paid),
+                'ar_debit_before': str(debit_before),
+                'ar_credit_before': str(credit_before),
+                'ar_debit_after': str(debit_after),
+                'ar_credit_after': str(credit_after),
+                'actions': actions,
+            })
+
+        recomputed = 0
+        if not dry_run:
+            recomputed = recompute_receivable_running_balances(db, affected_customers or None)
+        return recomputed
+
+    if dry_run:
+        recomputed = _apply()
+    else:
+        with transaction.atomic(using=db):
+            recomputed = _apply()
+
+    return {
+        'changed': len(reports),
+        'recomputed': recomputed,
+        'invoices': reports,
+    }
+
+
 def ReduceOutletStockinItemQuantity(db, outlet, itemcode, qty):
    
     stock = CreateOutletStockIn.objects.using(db).filter(outlet=outlet, item_code=itemcode).first()

@@ -139,6 +139,13 @@ class SalesInvoiceSerializer(serializers.Serializer):
     vat = serializers.DecimalField(required=False, max_digits=10, decimal_places=2, default=0)
     sub_total = serializers.DecimalField(required=True, max_digits=10, decimal_places=2)
     total = serializers.DecimalField(required=True, max_digits=10, decimal_places=2)
+    amount_paid = serializers.DecimalField(
+        required=False,
+        max_digits=12,
+        decimal_places=2,
+        allow_null=True,
+        default=None,
+    )
     
     # Items
     items = SalesInvoiceItemSerializer(many=True, required=True)

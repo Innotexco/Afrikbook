@@ -1430,9 +1430,13 @@ def create_sales_invoice_api(request):
             status_flag = 1 if instant_stockout == "Yes" else 0
             invoice_state = "Pending" if invoice_state_bool else "Supplied"
             
-            # Determine amount paid
+            # Determine amount paid — credit AR only for money actually received
+            posted_paid = validated_data.get('amount_paid')
             if credit_sales:
                 amount_paid = Decimal('0.00')
+                amount_expected = total
+            elif posted_paid is not None:
+                amount_paid = Decimal(str(posted_paid))
                 amount_expected = total
             else:
                 amount_paid = total
@@ -1527,6 +1531,7 @@ def create_sales_invoice_api(request):
                 vendor.save(using=db)
             
             # Handle receivable/payable entries
+            pay_credit = amount_paid
             if not credit_sales:
                 if account_ID:
                     account = chart_of_account.objects.using(db).get(account_id=account_ID)
@@ -1537,49 +1542,67 @@ def create_sales_invoice_api(request):
                         DebitPayable(request, db, vendor, invoice_date, Gdescription, payment_method, account_ID, total, invoiceID=invoiceID)
 
                     if payment_method == "Transfer":
-                        if accountType == "Customer":
-                            CreditReceivable(request, db, customer, invoice_date, Gdescription, payment_method, account_ID, total, invoiceID, total, Decimal('0.00'))
-                        elif accountType == "Vendor":
-                            CreditPayable(request, db, vendor, invoice_date, Gdescription, payment_method, account_ID, total)
-                        CreateLog(db, account, total)
+                        if pay_credit > 0:
+                            if accountType == "Customer":
+                                CreditReceivable(request, db, customer, invoice_date, Gdescription, payment_method, account_ID, pay_credit, invoiceID, total, Decimal('0.00'))
+                            elif accountType == "Vendor":
+                                CreditPayable(request, db, vendor, invoice_date, Gdescription, payment_method, account_ID, pay_credit)
+                            CreateLog(db, account, pay_credit)
 
                     elif payment_method == "Transfer and Cash":
-                        if accountType == "Customer":
-                            CreditReceivable(request, db, customer, invoice_date, Gdescription, "Transfer", account_ID, transfer, invoiceID, total, Decimal('0.00'))
-                        elif accountType == "Vendor":
-                            CreditPayable(request, db, vendor, invoice_date, Gdescription, "Transfer", account_ID, transfer)
-                        CreateLog(db, account, transfer)
+                        t_amt = transfer if transfer > 0 else (pay_credit if pay_credit > 0 else Decimal('0.00'))
+                        c_amt = cash_amount if cash_amount > 0 else Decimal('0.00')
+                        if transfer <= 0 and cash_amount <= 0 and pay_credit > 0:
+                            t_amt = pay_credit
+                            c_amt = Decimal('0.00')
+                        if t_amt > 0:
+                            if accountType == "Customer":
+                                CreditReceivable(request, db, customer, invoice_date, Gdescription, "Transfer", account_ID, t_amt, invoiceID, total, Decimal('0.00'))
+                            elif accountType == "Vendor":
+                                CreditPayable(request, db, vendor, invoice_date, Gdescription, "Transfer", account_ID, t_amt)
+                            CreateLog(db, account, t_amt)
 
-                        cash_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
-                        if accountType == "Customer":
-                            CreditReceivable(request, db, customer, invoice_date, Gdescription, "Cash", cash_account.account_id, cash_amount, invoiceID, total, transfer)
-                        elif accountType == "Vendor":
-                            CreditPayable(request, db, vendor, invoice_date, Gdescription, "Cash", cash_account.account_id, cash_amount)
-                        CreateLog(db, cash_account, cash_amount)
+                        if c_amt > 0:
+                            cash_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
+                            if accountType == "Customer":
+                                CreditReceivable(request, db, customer, invoice_date, Gdescription, "Cash", cash_account.account_id, c_amt, invoiceID, total, t_amt)
+                            elif accountType == "Vendor":
+                                CreditPayable(request, db, vendor, invoice_date, Gdescription, "Cash", cash_account.account_id, c_amt)
+                            CreateLog(db, cash_account, c_amt)
 
                     elif payment_method == "Cheque":
                         ar_account = chart_of_account.objects.using(db).get(account_id='1002-Receivable')
-                        CreateLog(db, ar_account, total)
+                        account = ar_account
+                        if pay_credit > 0:
+                            if accountType == "Customer":
+                                CreditReceivable(request, db, customer, invoice_date, Gdescription, payment_method, ar_account.account_id, pay_credit, invoiceID, total, Decimal('0.00'))
+                            elif accountType == "Vendor":
+                                CreditPayable(request, db, vendor, invoice_date, Gdescription, payment_method, ar_account.account_id, pay_credit)
+                            CreateLog(db, ar_account, pay_credit)
 
                     else:
                         # Cash / fallback
                         sales_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
-                        if accountType == "Customer":
-                            CreditReceivable(request, db, customer, invoice_date, Gdescription, payment_method, sales_account.account_id, total, invoiceID, total, Decimal('0.00'))
-                        elif accountType == "Vendor":
-                            CreditPayable(request, db, vendor, invoice_date, Gdescription, payment_method, sales_account.account_id, total)
-                        CreateLog(db, sales_account, total)
+                        if pay_credit > 0:
+                            if accountType == "Customer":
+                                CreditReceivable(request, db, customer, invoice_date, Gdescription, payment_method, sales_account.account_id, pay_credit, invoiceID, total, Decimal('0.00'))
+                            elif accountType == "Vendor":
+                                CreditPayable(request, db, vendor, invoice_date, Gdescription, payment_method, sales_account.account_id, pay_credit)
+                            CreateLog(db, sales_account, pay_credit)
 
                 else:
                     # No account_ID — fall back to Sales Account
                     sales_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
                     if accountType == "Customer":
                         DebitReceivable(request, db, customer, invoice_date, Gdescription, payment_method, sales_account.account_id, total, invoiceID=invoiceID)
-                        CreditReceivable(request, db, customer, invoice_date, Gdescription, payment_method, sales_account.account_id, total, invoiceID, total, Decimal('0.00'))
+                        if pay_credit > 0:
+                            CreditReceivable(request, db, customer, invoice_date, Gdescription, payment_method, sales_account.account_id, pay_credit, invoiceID, total, Decimal('0.00'))
                     elif accountType == "Vendor":
                         DebitPayable(request, db, vendor, invoice_date, Gdescription, payment_method, sales_account.account_id, total)
-                        CreditPayable(request, db, vendor, invoice_date, Gdescription, payment_method, sales_account.account_id, total)
-                    CreateLog(db, sales_account, total)
+                        if pay_credit > 0:
+                            CreditPayable(request, db, vendor, invoice_date, Gdescription, payment_method, sales_account.account_id, pay_credit)
+                    if pay_credit > 0:
+                        CreateLog(db, sales_account, pay_credit)
                     account = sales_account  # needed for acc_log below
 
             else:
