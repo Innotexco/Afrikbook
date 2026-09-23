@@ -540,7 +540,7 @@ def add_new_sales(request, db):
 
                         # ── Accounting entries ───────────────────────────────
                         try:
-                            if credit_sales is None:
+                            if not credit_sales:
                                 if account_ID:
                                     account = chart_of_account.objects.using(db).get(account_id=account_ID)
                                     logger.debug(
@@ -611,6 +611,14 @@ def add_new_sales(request, db):
                                         payment_account_used = '1002-Receivable'
                                         account = chart_of_account.objects.using(db).get(account_id='1002-Receivable')
                                         if pay_credit > 0:
+                                            if acountType == "Customer":
+                                                CreditReceivable(
+                                                    request, db, cus, invoice_date, Gdescription,
+                                                    payment_method, account.account_id, pay_credit,
+                                                    invoiceID, total_decimal, decimal.Decimal('0.00')
+                                                )
+                                            elif acountType == "Vendor":
+                                                CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, pay_credit)
                                             CreateLog(db, account, pay_credit)
                                         logger.debug(f"[add_new_sales] Cheque posted | paid={pay_credit} | total={total_decimal}")
 
