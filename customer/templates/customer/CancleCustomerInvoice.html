@@ -113,6 +113,7 @@
                 <tbody class="bg-white divide-y result"></tbody>
             </table>
         </div>
+        {% include 'components/pagination.html' with page_obj=page_obj %}
     </div>
 
     <script>
@@ -215,7 +216,7 @@
                 row.append('<td class="text-[10px] px-2">' + item.qty             + '</td>');
                 row.append('<td class="text-[10px] px-2">' + item.amount          + '</td>');
                 row.append('<td class="text-[10px] px-2">' + item.outlet          + '</td>');
-                row.append('<td class="text-[10px] px-2">' + item.token_id        + '</td>');
+                //row.append('<td class="text-[10px] px-2">' + item.token_id        + '</td>');
                 row.append(
                     '<td class="text-[10px] px-2">' +
                     '<button type="button" ' +

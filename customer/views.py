@@ -1416,10 +1416,12 @@ def Verify(request):
 
 
 def CancleCustomerInvoicePage(request):
+    from main.utils import paginate_queryset
+
     db              = request.user.company_id.db_name
     customerInvoice = customer_invoice.objects.using(db).filter(
         cancellation_status="0"
-    ).exclude(invoice_state="Cancelled")
+    ).exclude(invoice_state="Cancelled").order_by('-invoice_date', '-id')
     getitem = Item.objects.using(db).all()
 
     # ── AJAX GET — filter ────────────────────────────────────────────────
@@ -1457,9 +1459,11 @@ def CancleCustomerInvoicePage(request):
 
         return JsonResponse({'invoices': data})
 
+    page_obj = paginate_queryset(request, customerInvoice)
     context = {
-        'allinvoice': customerInvoice,
+        'allinvoice': page_obj,
         'items':      getitem,
+        'page_obj':   page_obj,
     }
     return render(request, 'customer/CancleCustomerInvoice.html', context)
 
@@ -1574,17 +1578,12 @@ def getCancelledSalesFilter(request, db, con):
         return result
 
 def viewCancleSales(request):
+    from main.utils import paginate_queryset
+
     db = request.user.company_id.db_name
     con = Q(cancellation_status="1") | Q(invoice_state="Cancelled")
-    cancelled_invoices = customer_invoice.objects.using(db).filter(con).distinct()
+    cancelled_invoices = customer_invoice.objects.using(db).filter(con).distinct().order_by('-invoice_date', '-id')
     getitem = Item.objects.using(db).all()
-
-    context = {
-        'allinvoice': cancelled_invoices,
-        'items':      getitem,
-        'title':      'Cancelled Sales Invoices',
-        'type':       'viewsalescancelled',
-    }
 
     # Only run AJAX filter if at least one filter param is present
     has_filter = any([
@@ -1599,6 +1598,15 @@ def viewCancleSales(request):
         if isinstance(stockinlog, dict) and 'failed' in stockinlog:
             return JsonResponse(stockinlog)
         return JsonResponse({'stockin': stockinlog})
+
+    page_obj = paginate_queryset(request, cancelled_invoices)
+    context = {
+        'allinvoice': page_obj,
+        'items':      getitem,
+        'title':      'Cancelled Sales Invoices',
+        'type':       'viewsalescancelled',
+        'page_obj':   page_obj,
+    }
 
     return render(request, 'customer/viewCancleSales.html', context)
 

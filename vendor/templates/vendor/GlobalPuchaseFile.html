@@ -70,7 +70,7 @@
                         <span class="text-gray-700">Select by InvoiceID</span>
                         <select class="commonClass block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg"
                             id="invoice" name="">
-                            <option>_ _Choose Item_ _</option>
+                            <option>_ _Choose Invoice_ _</option>
                             {% for vendorInvoice in allinvoice %}
                                 <option value="{{vendorInvoice.invoiceID}}">{{vendorInvoice.invoiceID}}</option>
                             {% endfor %}
