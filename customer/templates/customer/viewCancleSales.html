@@ -98,6 +98,7 @@
         <div id="default-pagination">
             {% include 'components/pagination.html' with page_obj=page_obj %}
         </div>
+        <div id="ajax-pagination" class="mt-4 hidden"></div>
     </div>
 
     <script>
@@ -146,6 +147,7 @@
                             $('.result').html('<tr><td colspan="8" class="text-center py-4 text-red-500">' + response.failed + '</td></tr>');
                             $('.default').hide();
                         }
+                        renderAjaxPagination(response);
                     },
                     error: function() {
                         alert('Error fetching data');
@@ -159,6 +161,84 @@
 
             $('#getDate').click(fetchFilteredData);
             $('#sortbyItem, #invoice').change(fetchFilteredData);
+
+            // AJAX pagination helper functions for cancelled sales
+            function getFilterParamsSales() {
+                    return {
+                        fromdate: $('#fromdate').val(),
+                        todate: $('#todate').val(),
+                        invoice: $('#invoice').val(),
+                        sortbyItem: $('#sortbyItem').val()
+                    };
+            }
+
+            function loadAjaxPageSales(page) {
+                    var data = getFilterParamsSales();
+                    data.page = page;
+                    $.ajax({
+                        url: "{% url 'customer:viewCancledSales' %}",
+                        type: 'GET',
+                        data: data,
+                        success: function(response) {
+                            $('#default-pagination').addClass('hidden');
+
+                            if (response.stockin) {
+                                var tbody = $('.result');
+                                tbody.empty();
+                                $.each(response.stockin, function(index, item) {
+                                    var row = `<tr class="text-gray-700">
+                                        <td class="text-[10px]">${index+1}</td>
+                                        <td class="text-[10px]">${item.datetx || ''}</td>
+                                        <td class="text-[10px]">${item.invoiceID || ''}</td>
+                                        <td class="text-[10px]">${item.customer_name || ''}</td>
+                                        <td class="text-[10px]">${item.item || ''}</td>
+                                        <td class="text-[10px]">${item.quantity || ''}</td>
+                                        <td class="text-[10px]">${item.amount || ''}</td>
+                                        <td class="text-[10px]">${item.token_id || ''}</td>
+                                    </tr>`;
+                                    tbody.append(row);
+                                });
+                                $('.default').hide();
+                            } else if (response.failed) {
+                                $('.result').html('<tr><td colspan="8" class="text-center py-4 text-red-500">' + response.failed + '</td></tr>');
+                                $('.default').hide();
+                            }
+                            renderAjaxPagination(response);
+                        }
+                    });
+            }
+
+            function renderAjaxPagination(res) {
+                    $('#ajax-pagination').empty();
+                    if (!res.total_pages || res.total_pages <= 1) { $('#ajax-pagination').addClass('hidden'); return; }
+                    $('#ajax-pagination').removeClass('hidden');
+                    var current = res.current_page || 1;
+                    var total = res.total_pages || 1;
+                    var container = $('<div class="flex items-center gap-2"></div>');
+                    function addBtn(text, page, disabled) {
+                        var btn = $('<button class="px-2 py-1 border rounded text-sm"></button>').text(text);
+                        if (disabled) { btn.attr('disabled','disabled').addClass('opacity-50 cursor-not-allowed'); }
+                        else { btn.on('click', function(){ loadAjaxPageSales(page); }); }
+                        container.append(btn);
+                    }
+                    addBtn('<<', 1, current==1);
+                    addBtn('<', Math.max(1, current-1), current==1);
+                    var start = Math.max(1, current-2);
+                    var end = Math.min(total, current+2);
+                    if (start>1) { container.append($('<span class="px-2">...</span>')); }
+                    for (var p=start;p<=end;p++) {
+                        (function(pp){
+                            var btn = $('<button class="px-2 py-1 border rounded text-sm"></button>').text(pp);
+                            if (pp==current) btn.addClass('bg-slate-200 font-semibold').attr('disabled','disabled');
+                            else btn.on('click', function(){ loadAjaxPageSales(pp); });
+                            container.append(btn);
+                        })(p);
+                    }
+                    if (end<total) { container.append($('<span class="px-2">...</span>')); }
+                    addBtn('>', Math.min(total, current+1), current==total);
+                    addBtn('>>', total, current==total);
+                    $('#ajax-pagination').append(container);
+            }
         });
     </script>
 {% endblock %}

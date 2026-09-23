@@ -1424,12 +1424,14 @@ def CancleCustomerInvoicePage(request):
     ).exclude(invoice_state="Cancelled").order_by('-invoice_date', '-id')
     getitem = Item.objects.using(db).all()
 
-    # ── AJAX GET — filter ────────────────────────────────────────────────
+    # ── AJAX GET — filter with server-side pagination ───────────────────
     if request.method == 'GET' and any([
         request.GET.get('fromdate'),
         request.GET.get('invoice'),
         request.GET.get('sortbyItem'),
     ]):
+        from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
         qs = customerInvoice
 
         fromdate   = request.GET.get('fromdate')
@@ -1447,17 +1449,41 @@ def CancleCustomerInvoicePage(request):
         if not qs.exists():
             return JsonResponse({'failed': 'No records found'})
 
-        data = []
-        for row in qs.values('id', 'invoiceID', 'cusID', 'invoice_date',
-                              'customer_name', 'item_name', 'qty',
-                              'amount', 'outlet', 'token_id'):
-            row['invoice_date'] = (
-                row['invoice_date'].strftime('%d %b %Y')
-                if row['invoice_date'] else ''
-            )
-            data.append(row)
+        # Pagination parameters
+        try:
+            per_page = int(request.GET.get('per_page', 25))
+        except (TypeError, ValueError):
+            per_page = 25
+        per_page = max(5, min(per_page, 200))
+        page_number = request.GET.get('page', 1)
 
-        return JsonResponse({'invoices': data})
+        paginator = Paginator(qs.order_by('-invoice_date', '-id'), per_page)
+        try:
+            page_obj = paginator.page(page_number)
+        except PageNotAnInteger:
+            page_obj = paginator.page(1)
+        except EmptyPage:
+            page_obj = paginator.page(paginator.num_pages)
+
+        invoices = []
+        for row in page_obj.object_list.values('id', 'invoiceID', 'cusID', 'invoice_date',
+                                              'customer_name', 'item_name', 'qty',
+                                              'amount', 'outlet', 'token_id'):
+            if row.get('invoice_date'):
+                try:
+                    row['invoice_date'] = row['invoice_date'].strftime('%d %b %Y')
+                except Exception:
+                    row['invoice_date'] = str(row['invoice_date'])
+            invoices.append(row)
+
+        return JsonResponse({
+            'invoices': list(invoices),
+            'total_pages': paginator.num_pages,
+            'current_page': page_obj.number,
+            'has_next': page_obj.has_next(),
+            'has_prev': page_obj.has_previous(),
+            'total_count': paginator.count,
+        })
 
     page_obj = paginate_queryset(request, customerInvoice)
     context = {
@@ -1594,10 +1620,66 @@ def viewCancleSales(request):
     ])
 
     if request.method == 'GET' and has_filter:
-        stockinlog = getCancelledSalesFilter(request, db, con)
-        if isinstance(stockinlog, dict) and 'failed' in stockinlog:
-            return JsonResponse(stockinlog)
-        return JsonResponse({'stockin': stockinlog})
+        # Server-side paginate filtered results for AJAX
+        from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+        qs = customer_invoice.objects.using(db).filter(con)
+
+        fromdate = request.GET.get('fromdate')
+        todate = request.GET.get('todate')
+        invoice = request.GET.get('invoice')
+        sortbyItem = request.GET.get('sortbyItem')
+
+        if fromdate and todate:
+            from_date, to_date = getdate(fromdate, todate)
+            qs = qs.filter(invoice_date__date__range=(from_date, to_date))
+        if sortbyItem and sortbyItem != '_ _Choose Item_ _':
+            qs = qs.filter(itemcode=sortbyItem)
+        if invoice and invoice != '_ _Choose Invoice_ _':
+            qs = qs.filter(invoiceID=invoice)
+
+        if not qs.exists():
+            return JsonResponse({'failed': 'No Data Found'})
+
+        # Pagination params
+        try:
+            per_page = int(request.GET.get('per_page', 25))
+        except (TypeError, ValueError):
+            per_page = 25
+        per_page = max(5, min(per_page, 200))
+        page_number = request.GET.get('page', 1)
+
+        paginator = Paginator(qs.order_by('-invoice_date', '-id'), per_page)
+        try:
+            page_obj = paginator.page(page_number)
+        except PageNotAnInteger:
+            page_obj = paginator.page(1)
+        except EmptyPage:
+            page_obj = paginator.page(paginator.num_pages)
+
+        # Build serializable data
+        stockin = []
+        for obj in page_obj.object_list:
+            stockin.append({
+                'id': obj.id,
+                'datetx': obj.invoice_date.strftime('%Y-%m-%d %H:%M:%S') if obj.invoice_date else '',
+                'invoice_no': obj.invoiceID,
+                'item': obj.item_name,
+                'quantity': str(obj.qty),
+                'item_decription': obj.item_description if hasattr(obj, 'item_description') else getattr(obj, 'item_descriptions', ''),
+                'token_id': obj.token_id,
+                'customer_name': obj.customer_name,
+                'amount': str(obj.amount) if obj.amount is not None else '',
+            })
+
+        return JsonResponse({
+            'stockin': list(stockin),
+            'total_pages': paginator.num_pages,
+            'current_page': page_obj.number,
+            'has_next': page_obj.has_next(),
+            'has_prev': page_obj.has_previous(),
+            'total_count': paginator.count,
+        })
 
     page_obj = paginate_queryset(request, cancelled_invoices)
     context = {
