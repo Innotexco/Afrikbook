@@ -92,7 +92,7 @@
                         <th class="py-3">Item Name</th>
                         <th class="py-3">Qty</th>
                         <th class="py-3">Description</th>
-                        <th class="py-3">TokenID</th>
+                        {% comment %} <th class="py-3">TokenID</th> {% endcomment %}
                         {% if type != 'viewcancle' %}
                             <th class="py-3">Action</th>
                         {% endif %}
@@ -111,7 +111,7 @@
                             <td class="text-[10px]">{{vendorInvoice.item_name}}</td>
                             <td class="text-[10px]">{{vendorInvoice.qty}}</td>
                             <td class="text-[10px]">{{vendorInvoice.item_descriptions}}</td>
-                            <td class="text-[10px]">{{vendorInvoice.token_id}}</td>
+                            {% comment %} <td class="text-[10px]">{{vendorInvoice.token_id}}</td> {% endcomment %}
 
                             {% if type != 'viewcancle' %}
                             <td class="text-[10px]">
