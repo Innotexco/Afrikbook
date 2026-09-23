@@ -1334,12 +1334,19 @@ def update_vendor(request, id):
 def view_vendor(request):
     from main.utils import paginate_queryset
     db = request.user.company_id.db_name
-    display_vendor = vendor_table.objects.using(db).all().order_by('name')
-    page_obj = paginate_queryset(request, display_vendor)
+
+    # Text search by vendor name (GET param 'q')
+    q = request.GET.get('q', '').strip()
+    queryset = vendor_table.objects.using(db).all().order_by('name')
+    if q:
+        queryset = queryset.filter(name__icontains=q)
+
+    page_obj = paginate_queryset(request, queryset)
 
     context = {
         "display_vendor": page_obj,
         "page_obj": page_obj,
+        "q": q,
     }
     return render(request, 'vendor/ViewVendor.html', context)
 
