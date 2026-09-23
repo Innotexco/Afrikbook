@@ -151,32 +151,32 @@
                         <td class="pt-6 text-right pr-3" colspan="9">
                             <span class="">Opening Balance:</span>
                         </td>
-                        <td class="pt-6 text-sm">
-                            <b class="mr-1 currency"></b><span id="opening">0.00</span>
+                        <td class="pt-6 text-sm whitespace-nowrap">
+                            <b class="mr-1 currency"></b><span id="recv-opening">0.00</span>
                         </td>
                     </tr>
                     <tr class="text-gray-700 text-xs ">
                         <td class="text-right pr-3" colspan="9">
                             <span class="">Total Debit:</span>
                         </td>
-                        <td class="text-sm">
-                            <b class="mr-1 currency"></b><span id="debit">0.00</span>
+                        <td class="text-sm whitespace-nowrap">
+                            <b class="mr-1 currency"></b><span id="recv-debit">0.00</span>
                         </td>
                     </tr>
                     <tr class="text-gray-700 text-xs">
                         <td class="text-right pr-3" colspan="9">
                             <span class="">Total Credit:</span>
                         </td>
-                        <td class="text-sm">
-                            <b class="mr-1 currency"></b><span id="credit">0.00</span>
+                        <td class="text-sm whitespace-nowrap">
+                            <b class="mr-1 currency"></b><span id="recv-credit">0.00</span>
                         </td>
                     </tr>
                     <tr class="text-gray-700 text-xs">
                         <td class="text-right pr-3" colspan="9">
                             <span class="">Closing Balance:</span>
                         </td>
-                        <td class="text-sm">
-                            <b class="mr-1 currency"></b><span id="balance">0.00</span>
+                        <td class="text-sm whitespace-nowrap">
+                            <b class="mr-1 currency"></b><span id="recv-closing">0.00</span>
                         </td>
                     </tr>
                    
@@ -283,10 +283,25 @@
                 success: function(response) {
                     const table = $('#receivables-table tbody');
                     table.empty();
-                    $("#opening").html(NCFormat(response.opening_balance));
-                    $("#debit").html(NCFormat(response.debit_total));
-                    $("#credit").html(NCFormat(response.credit_total));
-                    $("#balance").html(NCFormat(response.closing_balance != null ? response.closing_balance : response.balance));
+                    const toNum = function(v) {
+                        if (typeof parseMoney === 'function') return parseMoney(v);
+                        const n = parseFloat(String(v == null ? 0 : v).replace(/,/g, ''));
+                        return isFinite(n) ? n : 0;
+                    };
+                    const opening = toNum(response.opening_balance);
+                    const debit = toNum(response.debit_total);
+                    const credit = toNum(response.credit_total);
+                    let closing = response.closing_balance;
+                    if (closing === null || closing === undefined || closing === '') {
+                        closing = response.balance;
+                    }
+                    if (closing === null || closing === undefined || closing === '') {
+                        closing = opening + debit - credit;
+                    }
+                    $('#recv-opening').text(NCFormat(opening));
+                    $('#recv-debit').text(NCFormat(debit));
+                    $('#recv-credit').text(NCFormat(credit));
+                    $('#recv-closing').text(NCFormat(closing));
 
                     if (response.serializer_data && response.serializer_data.length > 0) {
                         let num = response.start_index || 1;
