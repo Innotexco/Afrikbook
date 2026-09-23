@@ -761,6 +761,9 @@ def OutletStockLevel(request):
     todate         = request.GET.get('todate',         '').strip()
     outlet         = request.GET.get('store',          '').strip()
 
+    from main.utils import paginate_queryset
+    from django.core.paginator import Paginator
+
     if Itemcode or searchItem or searchCategory or fromdate or outlet:
 
         filter_conditions       = Q()
@@ -789,9 +792,20 @@ def OutletStockLevel(request):
         )
 
         if data is not None:
+            # Paginate the resulting list so AJAX responses support pages
+            ITEMS_PER_PAGE = 25
+            page_number = request.GET.get('page', 1)
+            paginator = Paginator(data, ITEMS_PER_PAGE)
+            page = paginator.get_page(page_number)
+            totalqty = sum(d['qty'] for d in data)
             return JsonResponse({
-                'data':     list(data),
-                'totalqty': sum(d['qty'] for d in data),
+                'data':     list(page),
+                'total_pages': paginator.num_pages,
+                'current_page': page.number,
+                'has_next': page.has_next(),
+                'has_prev': page.has_previous(),
+                'total_count': paginator.count,
+                'totalqty': totalqty,
             })
 
     else:
@@ -802,10 +816,14 @@ def OutletStockLevel(request):
             request, request.user.outlet, filter_conditions, filter_sales_conditions
         )
 
+    # Paginate the default (non-filtered) stock list for server-side rendering
+    page_obj = paginate_queryset(request, stock)
+
     context = {
         'shop':   shop,
-        'outlet': stock,
+        'outlet': page_obj,
         'items':  items,
+        'page_obj': page_obj,
     }
     return render(request, 'OutletStockLevel.html', context)
 

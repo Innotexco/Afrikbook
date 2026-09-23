@@ -52,18 +52,23 @@
                         />
                     </label> {% endcomment %}
 
-                    <label class="block text-sm">
+                    <label class="block text-sm relative">
                         <span class="text-gray-700">Search(item)</span>
+
+                        <!-- search input that shows a custom dropdown below -->
                         <input type="text"
+                            autocomplete="off"
                             class="block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
                             placeholder="Type or select item"
-                            id="searchItem"
-                            list="itemList">
-                        <datalist id="itemList">
+                            id="searchItem">
+
+                        <!-- custom dropdown populated from template items -->
+                        <div id="itemDropdown" class="hidden absolute left-0 right-0 mt-1 max-h-60 overflow-auto bg-white border rounded shadow z-50">
                             {% for item in items %}
-                                <option value="{{ item.item_name }}">{{ item.item_name }}</option>
+                                <div class="item-option px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" data-value="{{ item.item_name }}">{{ item.item_name }}</div>
                             {% endfor %}
-                        </datalist>
+                        </div>
+
                     </label>
 
                     <label class="block text-sm">
@@ -214,6 +219,7 @@
         </div>
     </div>
 
+    {% include 'components/pagination.html' with page_obj=page_obj %}
 
     <div class="grid grid-cols-2 gap-4">
         <div class="col-span-1 p-2 ">
@@ -270,6 +276,51 @@
         $(document).on('change', '.commonClas', function(){
             getStocklevel("{% url 'Stock:OutletStockLevel' %}")
         }) 
+
+        // Custom searchable dropdown for items
+        (function(){
+        var input = document.getElementById('searchItem');
+        var dropdown = document.getElementById('itemDropdown');
+        if (!input || !dropdown) return;
+
+        // show dropdown on focus
+        input.addEventListener('focus', function(){
+            dropdown.classList.remove('hidden');
+        });
+        // hide dropdown on outside click
+        document.addEventListener('click', function(e){
+            if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // filter options as user types
+        input.addEventListener('input', function(){
+            var q = input.value.toLowerCase();
+            var opts = dropdown.querySelectorAll('.item-option');
+            var any = false;
+            opts.forEach(function(el){
+                var txt = el.textContent.toLowerCase();
+                if (q === '' || txt.indexOf(q) !== -1) {
+                    el.style.display = '';
+                    any = true;
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+            if (any) dropdown.classList.remove('hidden'); else dropdown.classList.add('hidden');
+        });
+
+        // clicking an option sets input and triggers search
+        dropdown.addEventListener('click', function(e){
+            var opt = e.target.closest('.item-option');
+            if (!opt) return;
+            input.value = opt.getAttribute('data-value') || opt.textContent.trim();
+            dropdown.classList.add('hidden');
+            getStocklevel("{% url 'Stock:OutletStockLevel' %}")
+        });
+        })();
+
     // });
 </script>
 
