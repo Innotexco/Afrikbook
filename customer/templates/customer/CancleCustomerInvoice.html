@@ -84,7 +84,7 @@
                         <th class="py-3 px-2">Qty</th>
                         <th class="py-3 px-2">Amount</th>
                         <th class="py-3 px-2">Outlet</th>
-                        <th class="py-3 px-2">Token ID</th>
+                        {% comment %} <th class="py-3 px-2">Token ID</th> {% endcomment %}
                         <th class="py-3 px-2">Action</th>
                     </tr>
                 </thead>
@@ -99,7 +99,7 @@
                         <td class="text-[10px] px-2">{{ inv.qty }}</td>
                         <td class="text-[10px] px-2">{{ inv.amount }}</td>
                         <td class="text-[10px] px-2">{{ inv.outlet }}</td>
-                        <td class="text-[10px] px-2">{{ inv.token_id }}</td>
+                        {% comment %} <td class="text-[10px] px-2">{{ inv.token_id }}</td> {% endcomment %}
                         <td class="text-[10px] px-2">
                             <button type="button"
                                 onclick="cancelInvoice('{{ inv.invoiceID }}', '{{ inv.cusID }}', '{{ inv.id }}')"
