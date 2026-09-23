@@ -9,6 +9,7 @@ from Stock.models import Item
 from .function.date import convertDate
 from decimal import Decimal
 from main.utils import paginate_queryset
+from customer.functions.generalFunction import exclude_returned_or_cancelled_invoices
 
 
 
@@ -247,9 +248,11 @@ def aged_receivable_filter_by_date(request):
 
     apply_loan_charges_to_receivables(db)
 
-    # Base queryset — only invoices with outstanding balance
-    base_qs = customer_invoice.objects.using(db).filter(
-        Q(amount_paid__lt=F('amount_expected')) & filter_conditions
+    # Open invoices only — hide returns and cancellations (same rules as page load)
+    base_qs = exclude_returned_or_cancelled_invoices(
+        customer_invoice.objects.using(db).filter(
+            Q(amount_paid__lt=F('amount_expected')) & filter_conditions
+        )
     )
 
     loan_id_by_ref = dict(
