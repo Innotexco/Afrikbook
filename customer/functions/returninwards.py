@@ -267,25 +267,12 @@ def new_return_inwards(request, db):
                                     account_id='4001-Sales'
                                 )
 
-                            if accountType == "Customer":
-                                CreditReceivable(
-                                    request, db, cus, refund_date,
-                                    Gdescription, p_method,
-                                    pay_account.account_id,
-                                    initial_total_decimal,
-                                    returned_invoiceID,
-                                    initial_total_decimal,
-                                    decimal.Decimal('0.00'),
-                                )
-                            elif accountType == "Vendor":
+                            if accountType == "Vendor":
                                 CreditPayable(
                                     request, db, ven, refund_date,
                                     Gdescription, p_method,
                                     pay_account.account_id,
                                     initial_total_decimal,
-                                    returned_invoiceID,
-                                    initial_total_decimal,
-                                    decimal.Decimal('0.00'),
                                 )
 
                             # Reverse the balance on the original payment account
@@ -300,6 +287,21 @@ def new_return_inwards(request, db):
                                 account            = pay_account.account_id,
                                 account_type       = pay_account.account_type,
                                 Userlogin          = request.user.username,
+                            )
+
+                        # AR must net to zero for the returned invoice so Receivables
+                        # matches Customer Ledger (which excludes cancelled invoices).
+                        if accountType == "Customer":
+                            receivable.objects.using(db).filter(
+                                token_id=invoiceID, customer_id=customer_id
+                            ).update(token_id=returned_invoiceID)
+                            reverse_invoice_ar(
+                                request, db, cus, refund_date,
+                                Gdescription or f"Return Inward - Invoice {invoiceID}",
+                                p_method or 'Cash',
+                                original_payment_account,
+                                [returned_invoiceID],
+                                returned_invoiceID,
                             )
 
                     except chart_of_account.DoesNotExist as e:

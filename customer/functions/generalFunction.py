@@ -403,6 +403,166 @@ def _set_rows_total(rows, target, db, dry_run, create_defaults):
     return rows, actions
 
 
+def invoice_ar_net(db, token_ids):
+    """Debits minus credits for the given receivable token_ids."""
+    tokens = [t for t in token_ids if t]
+    if not tokens:
+        return Decimal('0.00')
+    net = Decimal('0.00')
+    for row in receivable.objects.using(db).filter(token_id__in=tokens):
+        amount = _d(row.amount)
+        if (row.type or '').lower() == 'debit':
+            net += amount
+        else:
+            net -= amount
+    return net
+
+
+def reverse_invoice_ar(request, db, cus, entry_date, description, p_method, account, token_ids, posting_token_id):
+    """Post one AR Debit or Credit so the listed invoice tokens net to zero.
+
+    Used on return inward: a returned invoice must not change customer AR,
+    matching Customer Ledger which excludes cancelled/returned invoices.
+    """
+    net = invoice_ar_net(db, token_ids)
+    if net > 0:
+        CreditReceivable(
+            request, db, cus, entry_date, description, p_method, account,
+            net, posting_token_id, net, Decimal('0.00'),
+        )
+    elif net < 0:
+        DebitReceivable(
+            request, db, cus, entry_date, description, p_method, account,
+            -net, invoiceID=posting_token_id,
+        )
+    return net
+
+
+def _returned_invoice_tokens(invoice_id):
+    invoice_id = str(invoice_id or '')
+    orig = invoice_id[:-9] if invoice_id.endswith('_returned') else invoice_id
+    returned = orig + '_returned' if orig else invoice_id
+    tokens = []
+    for token in (orig, returned, invoice_id):
+        if token and token not in tokens:
+            tokens.append(token)
+    return orig, returned, tokens
+
+
+def repair_returned_invoice_receivables(db, dry_run=False):
+    """Zero AR for cancelled/returned invoices so they drop out of customer AR.
+
+    Customer Ledger lists only open invoices. Receivables was still carrying
+    leftover sale debits (unpaid returns) or extra return credits (paid returns).
+    """
+    returned_invoices = (
+        customer_invoice.objects.using(db)
+        .filter(
+            Q(invoiceID__icontains='returned')
+            | Q(cancellation_status='1')
+            | Q(invoice_state__iexact='Cancelled')
+            | Q(invoice_state__iexact='Returned')
+        )
+        .order_by('invoiceID', 'id')
+        .values(
+            'id', 'invoiceID', 'cusID', 'customer_name', 'invoice_date',
+            'Gdescription', 'payment_method',
+        )
+    )
+
+    grouped = {}
+    for line in returned_invoices:
+        orig, returned, _tokens = _returned_invoice_tokens(line['invoiceID'])
+        grouped.setdefault(orig or line['invoiceID'], []).append(line)
+
+    reports = []
+    affected_customers = set()
+
+    def _apply():
+        for orig_id, lines in grouped.items():
+            first = lines[0]
+            orig, returned, tokens = _returned_invoice_tokens(first['invoiceID'])
+            net_before = invoice_ar_net(db, tokens)
+            if net_before == 0:
+                continue
+
+            customer_code = first.get('cusID') or ''
+            customer_name = first.get('customer_name') or ''
+            if not customer_code:
+                ar_row = receivable.objects.using(db).filter(token_id__in=tokens).order_by('id').first()
+                if ar_row:
+                    customer_code = ar_row.customer_id
+                    customer_name = customer_name or ar_row.customer_name
+
+            posting_token = returned or orig_id
+            description = f"Return Inward - Invoice {orig or orig_id}"
+            entry_date = _invoice_date(first.get('invoice_date'))
+            payment_method = first.get('payment_method') or 'Cash'
+            ar_row = receivable.objects.using(db).filter(token_id__in=tokens).order_by('id').first()
+            account_posted = (ar_row.account_posted if ar_row and ar_row.account_posted else '') or '4001-Sales'
+
+            if net_before > 0:
+                typ, amount = 'Credit', net_before
+            else:
+                typ, amount = 'Debit', -net_before
+
+            actions = [{
+                'op': 'create',
+                'type': typ,
+                'amount': str(amount),
+                'token_id': posting_token,
+                'description': description,
+            }]
+            if not dry_run:
+                if orig and orig != posting_token:
+                    receivable.objects.using(db).filter(token_id=orig).update(token_id=posting_token)
+                receivable.objects.using(db).create(
+                    date=entry_date,
+                    description=description,
+                    type=typ,
+                    amount=amount,
+                    payment_method=payment_method,
+                    invoice_status='Unused',
+                    customer_id=customer_code,
+                    customer_name=customer_name or '',
+                    initial_amount=Decimal('0.00'),
+                    balance=Decimal('0.00'),
+                    account_posted=account_posted,
+                    transaction_id=str(uuid.uuid4()),
+                    token_id=posting_token,
+                    Userlogin='repair',
+                )
+
+            if customer_code:
+                affected_customers.add(customer_code)
+
+            reports.append({
+                'invoiceID': orig or orig_id,
+                'customer_id': customer_code,
+                'customer_name': customer_name,
+                'net_before': str(net_before),
+                'net_after': '0.00',
+                'actions': actions,
+            })
+
+        recomputed = 0
+        if not dry_run and affected_customers:
+            recomputed = recompute_receivable_running_balances(db, affected_customers)
+        return recomputed
+
+    if dry_run:
+        recomputed = _apply()
+    else:
+        with transaction.atomic(using=db):
+            recomputed = _apply()
+
+    return {
+        'changed': len(reports),
+        'recomputed': recomputed,
+        'invoices': reports,
+    }
+
+
 def repair_receivable_invoice_alignment(db, dry_run=False):
     """Make AR debit/credit totals match invoice.amount_expected / amount_paid.
 
