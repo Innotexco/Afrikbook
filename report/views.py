@@ -901,14 +901,10 @@ def AgedReceivables(request):
     apply_loan_charges_to_receivables(db)
 
     # ── Deduplicate by invoiceID and pre-calculate outstanding ───────────
-    raw_aged = customer_invoice.objects.using(db).filter(
-        amount_paid__lt=F('amount_expected')
-    ).exclude(
-        invoiceID__icontains='returned'
-    ).exclude(
-        cancellation_status=1
-    ).exclude(
-        invoice_state='Cancelled'
+    raw_aged = exclude_returned_or_cancelled_invoices(
+        customer_invoice.objects.using(db).filter(
+            amount_paid__lt=F('amount_expected')
+        )
     ).order_by('invoiceID', 'id')
     
     loan = loan_account.objects.using(db).all()

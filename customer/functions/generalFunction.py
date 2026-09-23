@@ -6,6 +6,16 @@ from django.db.models import Q
 from django.db import transaction
 
 
+def exclude_returned_or_cancelled_invoices(qs):
+    """Drop return-inward and cancelled invoices from AR / sales lists."""
+    return qs.exclude(
+        Q(invoiceID__icontains='returned')
+        | Q(cancellation_status='1')
+        | Q(invoice_state__iexact='Cancelled')
+        | Q(invoice_state__iexact='Returned')
+    )
+
+
 
 # def CreditReceivable(request, db, cus, refund_date, Gdescription, p_method, account, total):
 
