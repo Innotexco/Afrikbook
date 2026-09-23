@@ -228,9 +228,9 @@
                         response.serializer_data.forEach(function(item) {
                             num++;
                             const outstanding = (parseFloat(item.amount_expected) - parseFloat(item.amount_paid)).toFixed(2);
-                            const viewLoanHtml = item.loan_id
-                                ? '<a href="' + loanDetailBase.replace('/0/', '/' + item.loan_id + '/') + '" class="flex items-center justify-center text-green-500" aria-label="View Loan">' + loanEye + '</a>'
-                                : '<a href="#" class="flex items-center justify-center text-gray-400 cursor-not-allowed pointer-events-none" aria-label="View Loan" aria-disabled="true">' + loanEye + '</a>';
+                            //const viewLoanHtml = item.loan_id
+                               // ? '<a href="' + loanDetailBase.replace('/0/', '/' + item.loan_id + '/') + '" class="flex items-center justify-center text-green-500" aria-label="View Loan">' + loanEye + '</a>'
+                               // : '<a href="#" class="flex items-center justify-center text-gray-400 cursor-not-allowed pointer-events-none" aria-label="View Loan" aria-disabled="true">' + loanEye + '</a>';
                             const row = $('<tr>').append(
                                 $('<td class="text-[10px]">').text(num),
                                 $('<td class="text-[10px]">').text(item.invoice_date),
