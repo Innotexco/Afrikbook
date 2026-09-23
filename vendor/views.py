@@ -1229,12 +1229,35 @@ def ReturnItems(request):
 def ViewReturnOutwards(request):
     from main.utils import paginate_queryset
     db = request.user.company_id.db_name
-    return_outwards = Vendor_Return.objects.using(db).all().order_by('-id')
-    page_obj = paginate_queryset(request, return_outwards)
-    return render(request, 'vendor/ViewReturnOutwards.html', {
+
+    # Date filter (expects YYYY-MM-DD from GET parameters)
+    fromdate = request.GET.get('fromdate')
+    todate = request.GET.get('todate')
+
+    return_outwards_qs = Vendor_Return.objects.using(db).all().order_by('-id')
+
+    if fromdate and todate:
+        # Filter by refund_date — handle both date and datetime fields
+        try:
+            return_outwards_qs = return_outwards_qs.filter(refund_date__date__gte=fromdate,
+                                                           refund_date__date__lte=todate)
+        except Exception:
+            # Fallback: try direct comparison if __date lookup not supported
+            try:
+                return_outwards_qs = return_outwards_qs.filter(refund_date__gte=fromdate,
+                                                               refund_date__lte=todate)
+            except Exception:
+                # If filtering fails for any reason, keep the unfiltered queryset
+                pass
+
+    page_obj = paginate_queryset(request, return_outwards_qs)
+    context = {
         'return_outwards': page_obj,
         'page_obj': page_obj,
-    })
+        'fromdate': fromdate or '',
+        'todate': todate or '',
+    }
+    return render(request, 'vendor/ViewReturnOutwards.html', context)
 
 @login_required(login_url='/')
 @urls_name(name = "Returns Outwards")
