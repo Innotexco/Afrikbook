@@ -422,7 +422,7 @@ def compute_customer_ledger(entries_qs, start_date=None, end_date=None):
 
     for entry in entries_qs:
         amount = decimal.Decimal(str(entry.amount or 0))
-        running += amount if entry.type == "Debit" else -amount
+        running += amount if (entry.type or "").lower() == "debit" else -amount
 
         if start_date and entry.date < start_date:
             opening_balance = running
@@ -434,11 +434,11 @@ def compute_customer_ledger(entries_qs, start_date=None, end_date=None):
         entries.append(entry)
 
     total_debit = sum(
-        (decimal.Decimal(str(e.amount or 0)) for e in entries if e.type == "Debit"),
+        (decimal.Decimal(str(e.amount or 0)) for e in entries if (e.type or "").lower() == "debit"),
         decimal.Decimal('0.00'),
     )
     total_credit = sum(
-        (decimal.Decimal(str(e.amount or 0)) for e in entries if e.type == "Credit"),
+        (decimal.Decimal(str(e.amount or 0)) for e in entries if (e.type or "").lower() == "credit"),
         decimal.Decimal('0.00'),
     )
     closing_balance = entries[-1].running_balance if entries else opening_balance
@@ -466,8 +466,10 @@ def customers_ledger_filter_by_date(request):
             'balance': '0.00',
         })
 
-    qs = customer_invoice.objects.using(db).filter(
-        invoice_date__range=convertDate(start_date_str, end_date_str)
+    qs = exclude_returned_or_cancelled_invoices(
+        customer_invoice.objects.using(db).filter(
+            invoice_date__range=convertDate(start_date_str, end_date_str)
+        )
     ).order_by('invoiceID', 'id')
 
     unique_invoices = {}
