@@ -1484,7 +1484,10 @@ def EditItemCategory(request, id):
 def category_details(request, category_id):
     db = request.user.company_id.db_name
     category = Category.objects.using(db).get(id=category_id)
-    subcategories = Sub_Category.objects.using(db).filter(main_category=category).values('name')
+    subcategories = Sub_Category.objects.using(db).filter(main_category=category).values('id','name')
+
+    # include items in this category so the modal can list them directly
+    items = Item.objects.using(db).filter(category=category).values('id', 'item_name', 'generated_code')
 
     category_data = {
         'id': category.id,
@@ -1492,8 +1495,8 @@ def category_details(request, category_id):
         'description': category.description,
         'cat_img': category.cat_img.url if category.cat_img else None,
         'subcategories': list(subcategories),
+        'items': list(items),
     }
-
 
     return JsonResponse({'category': category_data})
 

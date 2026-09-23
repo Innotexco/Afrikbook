@@ -175,11 +175,11 @@ function fetchSubcategories(id) {
     var tokenValue = document.getElementById('tokenValue');
     var subCount = document.getElementById('subCount');
     var editBtn = document.getElementById('editCategoryBtn');
-    var viewItemsBtn = document.getElementById('viewItemsBtn');
-    var addSubBtn = document.getElementById('addSubBtn');
+    var itemsList = document.getElementById('itemsList');
 
     // Clear previous content
     subcategoriesList.innerHTML = 'Loading...';
+    if (itemsList) itemsList.innerHTML = '';
 
     // Fetch subcategories using AJAX
     var xhr = new XMLHttpRequest();
@@ -239,10 +239,23 @@ function fetchSubcategories(id) {
                         subcategoriesList.innerHTML = '<p class="text-gray-500 text-sm">No subcategories available</p>';
                     }
 
-                    // Set action links if present
+                    // Render items list
+                    var items = (data.category.items || []);
+                    if (itemsList) {
+                        if (items.length > 0) {
+                            items.forEach(function(it) {
+                                var div = document.createElement('div');
+                                div.className = 'p-3 border rounded bg-white flex items-center justify-between';
+                                div.innerHTML = `<div class="text-sm text-gray-800">${it.item_name || it.name}</div><div class="text-xs text-gray-500">${it.generated_code || ''}</div>`;
+                                itemsList.appendChild(div);
+                            });
+                        } else {
+                            itemsList.innerHTML = '<p class="text-gray-500 text-sm">No items in this category</p>';
+                        }
+                    }
+
+                    // Set edit link if present
                     if (editBtn) editBtn.href = `/stock/category/edit/${id}/`;
-                    if (viewItemsBtn) viewItemsBtn.href = `/stock/items/?category=${id}`;
-                    if (addSubBtn) addSubBtn.href = `/stock/category/${id}/add-subcategory/`;
 
                     // SHOW THE MODAL
                     if (typeof my_modal_view_category !== 'undefined' && my_modal_view_category.showModal) {
