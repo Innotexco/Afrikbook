@@ -132,14 +132,16 @@
         </div>
     </div>
 
-    <script>
-        {% if type == 'outlet' %}
-            var url = "{% url 'Stock:StockAdjustmentOutlet' %}";
-        {% else %}
-            var url = "{% url 'Stock:StockAdjustment' %}";
-        {% endif %}
+        {% include 'components/pagination.html' with page_obj=page_obj %}
 
-        // ── Loading helpers ──────────────────────────────────────────────────
+        <script>
+            {% if type == 'outlet' %}
+                var url = "{% url 'Stock:StockAdjustmentOutlet' %}";
+            {% else %}
+                var url = "{% url 'Stock:StockAdjustment' %}";
+            {% endif %}
+
+            // ── Loading helpers ──────────────────────────────────────────────────
         function setSearchLoading(isLoading) {
             var btn     = $('#getDate');
             var spinner = $('#searchSpinner');

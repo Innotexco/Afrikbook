@@ -527,14 +527,19 @@ def OutletToOutlet(request):
 @login_required(login_url='/')
 @urls_name(name = "Stock Adjustment")
 def StockAdjustment(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
-    stockinlog = CreateStockInLog.objects.using(db).filter(~Q(status='Cancelled'))
+    stockinlog_qs = CreateStockInLog.objects.using(db).filter(~Q(status='Cancelled')).order_by('-datetx', '-id')
     warehouse  = Warehouse.objects.using(db).all()
     getitem    = Item.objects.using(db).all()
+
+    # Paginate default page load
+    page_obj = paginate_queryset(request, stockinlog_qs)
     context = {
-        'allinvoice': stockinlog,
+        'allinvoice': page_obj,
         'items':      getitem,
         'store':      warehouse,
+        'page_obj':   page_obj,
     }
 
     # ── Edit button clicked: fetch single record for modal 
@@ -545,9 +550,26 @@ def StockAdjustment(request):
     # ── Update submitted
     updateStockAdjustmentData(request, CreateStockInLog, CreateStockIn, 'warehouse', context, db)
 
+    # Filtered AJAX search: return paginated JSON
     stockadjustmentdata = getStockAdjustmentDate(request, CreateStockInLog, db)
     if stockadjustmentdata:
-        return JsonResponse({'data': stockadjustmentdata})
+        # stockadjustmentdata can be {'failed':...} or a list
+        if isinstance(stockadjustmentdata, dict) and stockadjustmentdata.get('failed'):
+            return JsonResponse({'data': stockadjustmentdata})
+        # paginate the list of dicts
+        from django.core.paginator import Paginator
+        ITEMS_PER_PAGE = 20
+        page_number = request.GET.get('page', 1)
+        paginator = Paginator(stockadjustmentdata, ITEMS_PER_PAGE)
+        page = paginator.get_page(page_number)
+        return JsonResponse({
+            'data': list(page),
+            'total_pages': paginator.num_pages,
+            'current_page': page.number,
+            'has_next': page.has_next(),
+            'has_prev': page.has_previous(),
+            'total_count': paginator.count,
+        })
 
     #    return empty JSON instead of falling through to render HTML 
     is_ajax = (
@@ -559,6 +581,7 @@ def StockAdjustment(request):
         request.GET.get('idcode')
     )
     if is_ajax:
+        # If filters present but getStockAdjustmentDate returned None, return empty
         return JsonResponse({'data': []})
 
     return render(request, 'StockAdjustment_warehouse.html', context)
@@ -568,16 +591,20 @@ def StockAdjustment(request):
 @login_required(login_url='/')
 @urls_name(name = "Stock Adjustment Outlet")
 def StockAdjustmentOutlet(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
-    stockinlog = CreateOutletStockInLog.objects.using(db).filter(~Q(status='Cancelled'))
+    stockinlog_qs = CreateOutletStockInLog.objects.using(db).filter(~Q(status='Cancelled')).order_by('-datetx', '-id')
     outlet     = sales_outlet.objects.using(db).all()
     getitem    = Item.objects.using(db).all()
 
+    # Paginate default page load
+    page_obj = paginate_queryset(request, stockinlog_qs)
     context = {
-        'allinvoice': stockinlog,
+        'allinvoice': page_obj,
         'items':      getitem,
         'store':      outlet,
         'type':       'outlet',
+        'page_obj':   page_obj,
     }
 
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -591,7 +618,21 @@ def StockAdjustmentOutlet(request):
     if is_ajax:
         stockadjustmentdata = getStockAdjustmentDate(request, CreateOutletStockInLog, db)
         if stockadjustmentdata:
-            return JsonResponse({'data': stockadjustmentdata})
+            if isinstance(stockadjustmentdata, dict) and stockadjustmentdata.get('failed'):
+                return JsonResponse({'data': stockadjustmentdata})
+            from django.core.paginator import Paginator
+            ITEMS_PER_PAGE = 20
+            page_number = request.GET.get('page', 1)
+            paginator = Paginator(stockadjustmentdata, ITEMS_PER_PAGE)
+            page = paginator.get_page(page_number)
+            return JsonResponse({
+                'data': list(page),
+                'total_pages': paginator.num_pages,
+                'current_page': page.number,
+                'has_next': page.has_next(),
+                'has_prev': page.has_previous(),
+                'total_count': paginator.count,
+            })
         return JsonResponse({'data': {'failed': 'No Data Found'}})
 
     return render(request, 'StockAdjustment_Outlet.html', context)
