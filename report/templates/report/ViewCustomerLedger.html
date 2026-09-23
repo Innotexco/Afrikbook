@@ -56,8 +56,8 @@
                         <td class="px-4 text-[10px]">{{ entry.token_id|default:"—" }}</td>
                         <td class="px-4 text-[10px]">{{ entry.description|default:"—" }}</td>
                         <td class="px-4 text-[10px]">{{ entry.payment_method|default:"—" }}</td>
-                        <td class="px-4 text-[10px] text-right">{% if entry.type == "Debit" %}{{ entry.amount|floatformat:2|intcomma }}{% endif %}</td>
-                        <td class="px-4 text-[10px] text-right">{% if entry.type == "Credit" %}{{ entry.amount|floatformat:2|intcomma }}{% endif %}</td>
+                        <td class="px-4 text-[10px] text-right">{% if entry.type|lower == "debit" %}{{ entry.amount|floatformat:2|intcomma }}{% endif %}</td>
+                        <td class="px-4 text-[10px] text-right">{% if entry.type|lower == "credit" %}{{ entry.amount|floatformat:2|intcomma }}{% endif %}</td>
                         <td class="px-4 text-[10px] text-right font-medium">{{ entry.running_balance|floatformat:2|intcomma }}</td>
                     </tr>
                     {% empty %}
@@ -120,8 +120,8 @@
                                     $('<td class="px-4 text-[10px]">').text(entry.token_id || '—'),
                                     $('<td class="px-4 text-[10px]">').text(entry.description || '—'),
                                     $('<td class="px-4 text-[10px]">').text(entry.payment_method || '—'),
-                                    $('<td class="px-4 text-[10px] text-right">').text(entry.type === 'Debit' ? NCFormat(entry.amount) : ''),
-                                    $('<td class="px-4 text-[10px] text-right">').text(entry.type === 'Credit' ? NCFormat(entry.amount) : ''),
+                                    $('<td class="px-4 text-[10px] text-right">').text((entry.type || '').toLowerCase() === 'debit' ? NCFormat(entry.amount) : ''),
+                                    $('<td class="px-4 text-[10px] text-right">').text((entry.type || '').toLowerCase() === 'credit' ? NCFormat(entry.amount) : ''),
                                     $('<td class="px-4 text-[10px] text-right font-medium">').text(NCFormat(entry.balance)),
                                 )
                             );
