@@ -246,7 +246,7 @@ function fetchSubcategories(id) {
                             items.forEach(function(it) {
                                 var div = document.createElement('div');
                                 div.className = 'p-3 border rounded bg-white flex items-center justify-between';
-                                div.innerHTML = `<div class="text-sm text-gray-800">${it.item_name || it.name}</div><div class="text-xs text-gray-500">${it.generated_code || ''}</div>`;
+                                div.innerHTML = `<div class="text-sm text-gray-800">${it.item_name || it.name}</div>`;
                                 itemsList.appendChild(div);
                             });
                         } else {
