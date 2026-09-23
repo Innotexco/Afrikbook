@@ -263,7 +263,7 @@ def UpdateLoan(request, id):
         loan = loan_account.objects.using(db).get(id=id)
 
     customer = customer_table.objects.using(db).all().order_by(Lower('name'))
-    profile = CreateProfile.objects.using(db).get(CompanyName=request.user.company_id.company_name)
+    profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
     vendor = vendor_table.objects.using(db).all().order_by(Lower('name'))
     employe = employee.objects.using(db).all().order_by(Lower('fullname'))
     context = {
