@@ -187,38 +187,64 @@ def receivable_filter_by_date(request):
     prior_qs = receivable.objects.using(db).filter(date__lt=start_date)
     period_qs = receivable.objects.using(db).filter(date__range=(start_date, end_date))
     if customer:
-        prior_qs = prior_qs.filter(customer_id=customer)
-        period_qs = period_qs.filter(customer_id=customer)
+        prior_qs = prior_qs.filter(customer_id__iexact=customer)
+        period_qs = period_qs.filter(customer_id__iexact=customer)
 
-    prior_debit = prior_qs.filter(type="Debit").aggregate(total=Sum("amount"))["total"] or 0
-    prior_credit = prior_qs.filter(type="Credit").aggregate(total=Sum("amount"))["total"] or 0
-    opening_balance = decimal.Decimal(prior_debit) - decimal.Decimal(prior_credit)
+    prior_debit = prior_qs.filter(type__iexact="Debit").aggregate(total=Sum("amount"))["total"] or 0
+    prior_credit = prior_qs.filter(type__iexact="Credit").aggregate(total=Sum("amount"))["total"] or 0
+    opening_balance = decimal.Decimal(str(prior_debit)) - decimal.Decimal(str(prior_credit))
 
-    debit_total = period_qs.filter(type="Debit").aggregate(total_debit=Sum("amount"))["total_debit"] or 0
-    credit_total = period_qs.filter(type="Credit").aggregate(total_credit=Sum("amount"))["total_credit"] or 0
-    debit_total = decimal.Decimal(debit_total)
-    credit_total = decimal.Decimal(credit_total)
+    debit_total = period_qs.filter(type__iexact="Debit").aggregate(total_debit=Sum("amount"))["total_debit"] or 0
+    credit_total = period_qs.filter(type__iexact="Credit").aggregate(total_credit=Sum("amount"))["total_credit"] or 0
+    debit_total = decimal.Decimal(str(debit_total))
+    credit_total = decimal.Decimal(str(credit_total))
     closing_balance = opening_balance + debit_total - credit_total
 
     table_qs = period_qs
     if tx_type and tx_type != "Debit&Credit":
-        table_qs = table_qs.filter(type=tx_type)
+        table_qs = table_qs.filter(type__iexact=tx_type)
     table_qs = table_qs.order_by('date', 'id')
 
     page_obj = paginate_queryset(request, table_qs)
-    serializer_data = list(page_obj.object_list.values(
-        'date', 'customer_name', 'description', 'customer_id',
-        'transaction_id', 'type', 'amount', 'initial_amount', 'balance',
-    ))
+
+    running = opening_balance
+    earlier_count = (page_obj.start_index() - 1) if page_obj.paginator.count else 0
+    if earlier_count > 0:
+        for prior_row in table_qs.values('type', 'amount')[:earlier_count]:
+            amount = decimal.Decimal(str(prior_row['amount'] or 0))
+            if (prior_row['type'] or '').lower() == 'debit':
+                running += amount
+            else:
+                running -= amount
+
+    serializer_data = []
+    for row in page_obj.object_list:
+        amount = decimal.Decimal(str(row.amount or 0))
+        initial = running
+        if (row.type or "").lower() == "debit":
+            running += amount
+        else:
+            running -= amount
+        serializer_data.append({
+            'date': str(row.date) if row.date else '',
+            'customer_name': row.customer_name,
+            'description': row.description,
+            'customer_id': row.customer_id,
+            'transaction_id': str(row.transaction_id) if row.transaction_id else '',
+            'type': row.type,
+            'amount': str(amount),
+            'initial_amount': str(initial),
+            'balance': str(running),
+        })
 
     return JsonResponse({
         "serializer_data": serializer_data,
-        "total_amount": debit_total + credit_total,
-        "credit_total": credit_total,
-        "debit_total": debit_total,
-        "opening_balance": opening_balance,
-        "balance": closing_balance,
-        "closing_balance": closing_balance,
+        "total_amount": str(debit_total + credit_total),
+        "credit_total": str(credit_total),
+        "debit_total": str(debit_total),
+        "opening_balance": str(opening_balance),
+        "balance": str(closing_balance),
+        "closing_balance": str(closing_balance),
         "page": page_obj.number,
         "num_pages": page_obj.paginator.num_pages,
         "count": page_obj.paginator.count,
