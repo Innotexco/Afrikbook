@@ -95,7 +95,9 @@
                 <tbody class="bg-white divide-y result"></tbody>
              </table>
         </div>
-        {% include 'components/pagination.html' with page_obj=page_obj %}
+        <div id="default-pagination">
+            {% include 'components/pagination.html' with page_obj=page_obj %}
+        </div>
     </div>
 
     <script>
@@ -121,6 +123,8 @@
                         $('#searchBtnText').text('Searching...');
                     },
                     success: function(response) {
+                        $('#default-pagination').addClass('hidden');
+
                         if (response.stockin) {
                             var tbody = $('.result');
                             tbody.empty();
