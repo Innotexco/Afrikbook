@@ -407,7 +407,13 @@
     
                                     const row = $('<tr class="text-gray-700">').append(
                                         $('<td class="text-[10px]">').text(num),
-                                        $('<td class="text-[10px]">').text(item.invoice_date),
+                                        $('<td class="text-[10px]">').text(
+                                            new Date(item.invoice_date).toLocaleDateString('en-GB', {
+                                                day: '2-digit',
+                                                month: 'short',
+                                                year: 'numeric'
+                                            })
+                                        ),
                                         //$('<td class="text-[10px]">').text(item.cusID),
                                         $('<td class="text-[10px]">').text(item.item_name),
                                         $('<td class="text-[10px]">').text(item.unit_p),
