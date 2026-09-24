@@ -114,25 +114,31 @@
                     <tr class="text-gray-700" >
 
                         <td class="text-[10px]">
-                            {{display.id}}
+                            {% if page_obj %}{{ forloop.counter0|add:page_obj.start_index }}{% else %}{{ forloop.counter }}{% endif %}
                         </td>
                         <td class="text-[10px]">
-                            {{display.email}}
+                            {{ display.invoiceID }}
                         </td>
                         <td class="text-[10px]">
-                            {{display.address}}
+                            {{ display.invoice_date|date:"Y-m-d" }}
                         </td>
                         <td class="text-[10px]">
-                            {{display.company_name}}
+                            {{ display.item_name }}
                         </td>
                         <td class="text-[10px]">
-                            {{display.email}}
+                            {{ display.vendor_name }}
                         </td>
                         <td class="text-[10px]">
-                            {{display.address}}
+                            {{ display.qty }}
                         </td>
                         <td class="text-[10px]">
-                            {{display.company_name}}
+                            {{ display.amount_expected|floatformat:2 }}
+                        </td>
+                        <td class="text-[10px]">
+                            {{ display.Userlogin }}
+                        </td>
+                        <td class="text-[10px]">
+                            <a onclick="showModal('{{ display.invoiceID }}', '{{ display.cusID }}')" class="flex items-center justify-center text-blue-500 border px-3 bg-gray-50 cursor-pointer" aria-label="View">View</a>
                         </td>
 
                     </tr>
