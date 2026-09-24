@@ -253,7 +253,8 @@
         
         var iv = $("#invoice").val();
         sessionStorage.setItem("edit_invoice", iv)
-        window.location.href = "{% url 'customer:EditSalesInvoice' %}"
+        window.location.href = "{% url 'customer:EditSalesInvoice' 'INVOICE_ID' %}"
+        .replace("INVOICE_ID", iv);
     }
 
 
