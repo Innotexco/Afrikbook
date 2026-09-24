@@ -2993,8 +2993,13 @@ def DailySalesReport(request):
         daily_sales_data, total_sales, total_purchase, total = daily_sales_report(request, start, None)
          
     
+    # Paginate the day-level results so searches with long ranges don't render huge pages
+    from main.utils import paginate_queryset
+    page_obj = paginate_queryset(request, daily_sales_data)
+
     context = {
-        'daily_sales_data':daily_sales_data,
+        'daily_sales_data': page_obj,
+        'page_obj': page_obj,
         'total_sales': total_sales,
         'total_purchase': total_purchase,
         'total': total,

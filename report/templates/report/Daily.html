@@ -229,6 +229,8 @@
     </div>
 </div>
 
+    {% include 'components/pagination.html' with page_obj=page_obj %}
+
 {# Print/Export #}
 <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
     {% include 'modalBoxx/printbtn.html' with container="sumdaily" table="example2" table_no="sumdaily" %}
