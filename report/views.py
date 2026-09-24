@@ -3293,40 +3293,52 @@ def CustomerYearlySalesReport(request):
     company = company_table.objects.get(id=request.user.company_id_id)
     db = request.user.company_id.db_name
     customer = customer_table.objects.using(db)
+
+    now = datetime.now()
+    years = list(range(2025, now.year + 1))
+    selected_year = now.year
+
     if request.method == "POST":
         start = request.POST.get("start_date")
-        end = request.POST.get("end_date")
+        # start is expected as a year (e.g., '2026')
         if start:
-            start_date = datetime.strptime(start, '%Y-%m-%d') #.date()
-            end_date = datetime.strptime(end, '%Y-%m-%d') #.date()
+            try:
+                year = int(start)
+                selected_year = year
+            except Exception:
+                # fallback to current year on parse failure
+                year = now.year
+                selected_year = year
+                messages.error(request, 'Enter a valid year')
+
+            start_date = datetime(year, 1, 1)
+            end_date = datetime(year, 12, 31)
             yearly_sales_data, total_sales, total_qty = customer_yearly_sales_report(request, start_date, end_date, customer, 1)
         else:
-            start =  datetime.now() #.date()
-    
-            yearly_sales_data, total_sales, total_qty = customer_yearly_sales_report(request, start, start_date, customer, 1)
-       
-            messages.error(request, 'Enter valid date')
-        
-        
-        
-        # JsonResponse({'data':daily_sales_data, 'total_sales': total_sales, 'total_qty':total_qty})
-        
+            # default to current year
+            start_date = datetime(now.year, 1, 1)
+            end_date = datetime(now.year, 12, 31)
+            yearly_sales_data, total_sales, total_qty = customer_yearly_sales_report(request, start_date, end_date, customer, 1)
+            messages.error(request, 'Enter valid year')
+
     else:
-        start =  datetime.now() #.date()
-    
-        yearly_sales_data, total_sales, total_qty = customer_yearly_sales_report(request, start, start, customer, 1)
-        
+        # default view: current year
+        start_date = datetime(now.year, 1, 1)
+        end_date = datetime(now.year, 12, 31)
+        yearly_sales_data, total_sales, total_qty = customer_yearly_sales_report(request, start_date, end_date, customer, 1)
+
     context = {
-        'customer':customer.all(),
-        'customers':customer,
-        'yearly_sales_data':yearly_sales_data,
+        'customer': customer.all(),
+        'customers': customer,
+        'yearly_sales_data': yearly_sales_data,
         'total_sales': total_sales,
         'total_qty': total_qty,
         'company': company,
-        'cols': customer.count() + 1
-        
-        }
-    
+        'cols': customer.count() + 1,
+        'years': years,
+        'selected_year': selected_year,
+    }
+
     return render(request, 'customer_sales/Yearly.html', context)
 
 
