@@ -3122,42 +3122,71 @@ def YearlySalesReport(request):
     db = AfrikBookDB(request)
     profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
     company = company_table.objects.get(id=request.user.company_id_id)
+
+    # Determine company signup year: prefer Billing.created_at, fallback to earliest invoice date, else current year
+    now = datetime.now()
+    signup_year = now.year
+    try:
+        from main.models import Billing
+        billing = Billing.objects.using(db).filter(company=company).order_by('created_at').first()
+        if billing and getattr(billing, 'created_at', None):
+            signup_year = billing.created_at.year
+        else:
+            # fallback: earliest invoice date in this company's DB
+            earliest_inv = customer_invoice.objects.using(db).order_by('invoice_date').first()
+            if earliest_inv and getattr(earliest_inv, 'invoice_date', None):
+                signup_year = earliest_inv.invoice_date.year
+    except Exception:
+        # If Billing model lookup fails for some reason, keep current year as fallback
+        signup_year = now.year
+
+    years = list(range(signup_year, now.year + 1))
+    selected_year = now.year
+
     if request.method == "POST":
         start = request.POST.get("start_date")
-        end = request.POST.get("end_date")
-        if start and end:
-            start_date = datetime.strptime(start, '%Y-%m-%d').date()
-            end_date = datetime.strptime(end, '%Y-%m-%d').date()
-            start = start_date
-            end = end
+        # start is expected as a year (e.g., '2026') or a date string; accept both
+        if start:
+            try:
+                year = int(start)
+                selected_year = year
+            except Exception:
+                try:
+                    parsed = datetime.strptime(start, '%Y-%m-%d')
+                    year = parsed.year
+                    selected_year = year
+                except Exception:
+                    year = now.year
+                    selected_year = now.year
+            # Build start/end of the year and return monthly breakdown for that year
+            start_date = datetime(year, 1, 1)
+            end_date = datetime(year, 12, 31)
             yearly_sales_data, total_sales, total_purchase, total = yearly_sales_report(request, start_date, end_date)
         else:
-            start =  datetime.now().date()
-            end = None
-            yearly_sales_data, total_sales, total_purchase, total = yearly_sales_report(request, start, None)
-       
+            # if no start provided use current year
+            start_date = datetime(now.year, 1, 1)
+            end_date = datetime(now.year, 12, 31)
+            yearly_sales_data, total_sales, total_purchase, total = yearly_sales_report(request, start_date, end_date)
             messages.error(request, 'Enter valid Year')
-        
-        
-        
-        # JsonResponse({'data':daily_sales_data, 'total_sales': total_sales, 'total_purchase, total':total_purchase, total})
-        
     else:
-        start =  datetime.now().date()
-        end = None
-        yearly_sales_data, total_sales, total_purchase, total = yearly_sales_report(request, start, None)
-        
+        # Default view shows report for the current year
+        start_date = datetime(now.year, 1, 1)
+        end_date = datetime(now.year, 12, 31)
+        yearly_sales_data, total_sales, total_purchase, total = yearly_sales_report(request, start_date, end_date)
+
     context = {
-        'yearly_sales_data':yearly_sales_data,
+        'yearly_sales_data': yearly_sales_data,
         'total_sales': total_sales,
         'total_purchase': total_purchase,
         'total': total,
-        'company': company, 
-        'start': start,
-        'end': end,
-        'profile':profile
-        }
-    
+        'company': company,
+        'start': selected_year,
+        'end': None,
+        'profile': profile,
+        'years': years,
+        'selected_year': selected_year,
+    }
+
     return render(request, 'report/Yearly.html', context)
 
 
