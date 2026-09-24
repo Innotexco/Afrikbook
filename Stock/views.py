@@ -543,7 +543,7 @@ def StockAdjustment(request):
     }
 
     # ── Edit button clicked: fetch single record for modal 
-    data = getStockAdjustmentData(request, db, CreateStockInLog)
+    data = getStockAdjustmentData(request, CreateStockInLog, db)
     if data:
         return JsonResponse({'data': data})
 

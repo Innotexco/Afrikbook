@@ -597,20 +597,22 @@ def getStockAdjustmentDate(request, db, value):
 
         failed = {'failed': 'No Data Found'}
 
+        filters = Q(type=value)
+
+        # Filter by invoice ID if supplied
         if invoiceid:
-            getstock = StockAdjustmentLog.objects.using(db).filter(
-                Q(invoice_no=invoiceid) & Q(type=value)
-            )
+            filters &= Q(invoice_no=invoiceid)
 
-        elif getfromdate and gettodate:
+        # Filter by date range if both dates are supplied
+        if getfromdate and gettodate:
             from_date, to_date = getdate(getfromdate, gettodate)
+            filters &= Q(datetx__range=(from_date, to_date))
 
-            getstock = StockAdjustmentLog.objects.using(db).filter(
-                Q(datetx__range=(from_date, to_date)) & Q(type=value)
-            )
-
-        else:
+        # If neither invoice nor date range was supplied
+        if not invoiceid and not (getfromdate and gettodate):
             return failed
+
+        getstock = StockAdjustmentLog.objects.using(db).filter(filters)
 
         if getstock.exists():
             result = [
@@ -629,6 +631,7 @@ def getStockAdjustmentDate(request, db, value):
             return result
 
         return failed
+            
          
             
 def getStockAdjustmentHistoryData(request, db, log_type):
