@@ -649,7 +649,7 @@
         });
 
         // Handle form submission with AJAX === ADD COUPON
-        $('#AddCoupon').on('click', function (e) {
+        $(document).on('click', '#AddCoupon', function (e) {
             e.preventDefault();
             
             var code = $.trim($('#randomCode').val() || '');
@@ -689,7 +689,7 @@
             });
         });
         // Handle form submission with AJAX === EDIT COUPON
-        $('#EditCoupon').on('click', function (e) {
+        $(document).on('click', '#EditCoupon', function (e) {
             e.preventDefault();
             
             $id = $('#id').val();
