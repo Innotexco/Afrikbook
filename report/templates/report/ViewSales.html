@@ -33,7 +33,7 @@
                             <tr class="text-xs font-semibold tracking-wide text-left text-gray-500  bg-gray-50">
                                 <th class="px-0 py-3">SN</th>
                                 <th class="px-0 py-3">Date</th>
-                                <th class="px-0 py-3">Customer ID</th>
+                                {% comment %} <th class="px-0 py-3">Customer ID</th> {% endcomment %}
                                 <th class="px-0 py-3">Item Name</th>
                                 <th class="px-0 py-3">Price</th>
                                 <th class="px-0 py-3">Quantity</th>
@@ -253,7 +253,7 @@
         
         var iv = $("#invoice").val();
         sessionStorage.setItem("edit_invoice", iv)
-        window.location.href = "{% url 'customer:ReturnInward' %}"
+        window.location.href = "{% url 'customer:EditSalesInvoice' %}"
     }
 
 
