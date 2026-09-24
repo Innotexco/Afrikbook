@@ -1357,9 +1357,13 @@ def add_item_color(request):
 
 def coupon(request):
     db = request.user.company_id.db_name
-    coupons = Coupon.objects.using(db).all()
-    
-    return render(request, 'stock/Coupon.html', {'coupons': coupons})
+    from main.utils import paginate_queryset
+
+    coupons_qs = Coupon.objects.using(db).all().order_by('-id')
+    page_obj = paginate_queryset(request, coupons_qs)
+
+    # pass page_obj as 'coupons' for the template loop compatibility
+    return render(request, 'stock/Coupon.html', {'coupons': page_obj, 'page_obj': page_obj})
 
 def AddCoupon(request):
     db = request.user.company_id.db_name

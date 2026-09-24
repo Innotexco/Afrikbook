@@ -652,36 +652,41 @@
         $('#AddCoupon').on('click', function (e) {
             e.preventDefault();
             
-            $code = $('#randomCode').val();
-            $amount = $('#amount').val();
-            $limit = $('#limit').val();
-            $usage = $('#usage').val();
+            var code = $.trim($('#randomCode').val() || '');
+            var amount = $.trim($('#amount').val() || '');
+            var limit = $.trim($('#limit').val() || '');
+            var usage = $.trim($('#usage').val() || '');
     
-            if($code == "" || $amount == " " || $limit ==" " || $usage == " "){
-                alert("Please complete the required fields");
+            if (code === '' || amount === '' || limit === '' || usage === ''){
+                alert('Please complete the required fields');
+                return;
             }
-            else{
-                $.ajax({
-                    url: '{% url "Stock:add_coupon" %}',
-                    type: "POST",
-                    data: {
-                        code: $code,
-                        amount: $amount,
-                        limit: $limit,
-                        usage: $usage,
-                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
-                    },
-                    success: function () {
-                        //Read();
-                        $('#randomCode').val("");
-                        $('#amount').val("");
-                        $('#limit').val("");
-                        $('#usage').val("");
-                        alertify.success("New Coupon Was Successfully Added")
-                        location.reload();
-                    }
-                });
-            }
+
+            $.ajax({
+                url: '{% url "Stock:add_coupon" %}',
+                type: 'POST',
+                data: {
+                    code: code,
+                    amount: amount,
+                    limit: limit,
+                    usage: usage,
+                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                },
+                success: function (res) {
+                    // handle JSON response if available
+                    $('#randomCode').val('');
+                    $('#amount').val('');
+                    $('#limit').val('');
+                    $('#usage').val('');
+                    try{ alertify.success(res.message || 'New Coupon Was Successfully Added'); }catch(e){ alert('New Coupon Was Successfully Added'); }
+                    location.reload();
+                },
+                error: function(xhr){
+                    var msg = 'Failed to add coupon';
+                    if (xhr && xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                    alert(msg);
+                }
+            });
         });
         // Handle form submission with AJAX === EDIT COUPON
         $('#EditCoupon').on('click', function (e) {
