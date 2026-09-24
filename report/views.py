@@ -2934,27 +2934,30 @@ def HourlySalesReport(request):
     db = AfrikBookDB(request)
     company = company_table.objects.get(id=request.user.company_id_id)
     profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
+
+    # Ensure we pass a YYYY-MM-DD string to the template so the date input keeps its value
     if request.method == "POST":
-        day = request.POST.get("day")
-        start_date = datetime.strptime(day, '%Y-%m-%d').date()
-       
+        day_str = request.POST.get("day")
+        # fallback to today if missing
+        if not day_str:
+            day_date = datetime.now().date()
+            day_str = day_date.strftime('%Y-%m-%d')
+        start_date = datetime.strptime(day_str, '%Y-%m-%d').date()
         hourly_sales_data, total_sales, total_qty = hourly_sales_func(request, start_date, start_date)
     else:
-        day =  datetime.now().date()
-       
-        hourly_sales_data, total_sales, total_qty = hourly_sales_func(request, day, day)
-    
-    
-    
+        day_date = datetime.now().date()
+        day_str = day_date.strftime('%Y-%m-%d')
+        hourly_sales_data, total_sales, total_qty = hourly_sales_func(request, day_date, day_date)
+
     context = {
         'hourly_sales_data': hourly_sales_data,
         'total_sales': total_sales,
         'total_qty': total_qty,
-        'day': day,
+        'day': day_str,
         'company': company,
-        'profile':profile
+        'profile': profile
     }
-  
+
     return render(request, 'report/Hourly.html', context)
 
 
