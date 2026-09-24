@@ -3392,38 +3392,52 @@ def SalesPersonQuaterlySalesReport(request):
     company = company_table.objects.get(id=request.user.company_id_id)
     db = request.user.company_id.db_name
     customer = customer_invoice.objects.using(db).values('Userlogin').distinct()
+
+    now = datetime.now()
+    years = list(range(2025, now.year + 1))
+    selected_year = now.year
+
     if request.method == "POST":
         start = request.POST.get("start_date")
         if start:
-            start_date = datetime.strptime(start, '%Y-%m-%d') #.date()
+            # Accept a year (e.g., '2026') or a date string — prefer year
+            try:
+                year = int(start)
+                selected_year = year
+            except Exception:
+                try:
+                    parsed = datetime.strptime(start, '%Y-%m-%d')
+                    year = parsed.year
+                    selected_year = year
+                except Exception:
+                    year = now.year
+                    selected_year = now.year
+                    messages.error(request, 'Enter valid year')
+
+            start_date = datetime(year, 1, 1)
             quarterly_sales_data, total_sales, total_qty = customer_quaterly_sales_report(request, start_date, customer, 2)
         else:
-            start =  datetime.now() #.date()
-    
-            quarterly_sales_data, total_sales, total_qty = customer_quaterly_sales_report(request, start, customer, 2)
-       
-            messages.error(request, 'Enter valid date')
-        
-        
-        
-        # JsonResponse({'data':daily_sales_data, 'total_sales': total_sales, 'total_qty':total_qty})
-        
+            start_date = datetime(now.year, 1, 1)
+            quarterly_sales_data, total_sales, total_qty = customer_quaterly_sales_report(request, start_date, customer, 2)
+            messages.error(request, 'Enter valid year')
+
     else:
-        start =  datetime.now() #.date()
-    
-        quarterly_sales_data, total_sales, total_qty = customer_quaterly_sales_report(request, start, customer, 2)
-        
+        start_date = datetime(now.year, 1, 1)
+        quarterly_sales_data, total_sales, total_qty = customer_quaterly_sales_report(request, start_date, customer, 2)
+
     context = {
-        'customer':customer.all(),
-        'customers':customer,
-        'quarterly_sales_data':quarterly_sales_data,
+        'customer': customer.all(),
+        'customers': customer,
+        'quarterly_sales_data': quarterly_sales_data,
         'total_sales': total_sales,
         'total_qty': total_qty,
         'company': company,
-        'cols': customer.count() + 1
-        
+        'cols': customer.count() + 1,
+        'years': years,
+        'selected_year': selected_year,
+
         }
-    
+
     return render(request, 'sales_person/Quaterly.html', context)
 
 @login_required(login_url='/')
