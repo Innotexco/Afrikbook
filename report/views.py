@@ -594,54 +594,41 @@ def getStockAdjustmentDate(request, db, value):
         getfromdate = request.GET.get('fromdate')
         gettodate = request.GET.get('todate')
         invoiceid = request.GET.get('invoiceid')
-        #   sortbyItem = request.GET.get('sortbyItem')
-        failed = {'failed': "No Data Found"}
-        if getfromdate and gettodate:
-                from_date, to_date = getdate(getfromdate, gettodate)
-                getstock = StockAdjustmentLog.objects.using(db).filter(Q(datetx__range=(from_date, to_date)) & Q(type=value))
-                
+
+        failed = {'failed': 'No Data Found'}
+
         if invoiceid:
-            getstock = StockAdjustmentLog.objects.using(db).filter(Q(invoice_no=invoiceid) & Q(type=value))
+            getstock = StockAdjustmentLog.objects.using(db).filter(
+                Q(invoice_no=invoiceid) & Q(type=value)
+            )
+
         elif getfromdate and gettodate:
             from_date, to_date = getdate(getfromdate, gettodate)
-            getstock = StockAdjustmentLog.objects.using(db).filter(Q(datetx__range=(from_date, to_date)) & Q(type=value))
+
+            getstock = StockAdjustmentLog.objects.using(db).filter(
+                Q(datetx__range=(from_date, to_date)) & Q(type=value)
+            )
+
         else:
             return failed
 
-        if getstock:
-            result = [({
-                'id': data.id if data and data.id is not None else None,
-                'datetx': data.datetx if data and data.datetx is not None else None,
-                'invoice_no': data.invoice_no if data and data.invoice_no is not None else None,
-                'item_code': data.item_code if data and data.item_code is not None else None,
-                'initial_qty': data.initial_qty if data and data.initial_qty is not None else None,
-                'new_qty': data.new_qty if data and data.new_qty is not None else None,
-                'Userlogin': data.Userlogin if data and data.Userlogin is not None else None,
-                })
+        if getstock.exists():
+            result = [
+                {
+                    'id': data.id,
+                    'datetx': data.datetx,
+                    'invoice_no': data.invoice_no,
+                    'item_code': data.item_code,
+                    'initial_qty': data.initial_qty,
+                    'new_qty': data.new_qty,
+                    'Userlogin': data.Userlogin,
+                }
                 for data in getstock
             ]
+
             return result
+
         return failed
-            
-        # if invoiceid  is not None or getfromdate and gettodate is not None:
-        #     # whatever is in outlet is what i have in stock(installed) so i sort by outlet, that is == warehouse(sortby)
-        #     getstock = StockAdjustmentLog.objects.using(db).filter(Q(invoice_no=invoiceid) & Q(type=value))
-        #     if getstock:
-        #         result = [({
-        #             'id': data.id if data and data.id is not None else None,
-        #             'datetx': data.datetx if data and data.datetx is not None else None,
-        #             'invoice_no': data.invoice_no if data and data.invoice_no is not None else None,
-        #             'item_code': data.item_code if data and data.item_code is not None else None,
-        #             'initial_qty': data.initial_qty if data and data.initial_qty is not None else None,
-        #             'new_qty': data.new_qty if data and data.new_qty is not None else None,
-        #             'Userlogin': data.Userlogin if data and data.Userlogin is not None else None,
-        #             })
-        #             for data in getstock
-        #         ]
-        #         return result
-        #     else:
-        #         return failed
-            
          
             
 def getStockAdjustmentHistoryData(request, db, log_type):
