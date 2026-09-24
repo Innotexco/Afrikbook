@@ -114,31 +114,25 @@
                     <tr class="text-gray-700" >
 
                         <td class="text-[10px]">
-                            {% if page_obj %}{{ forloop.counter0|add:page_obj.start_index }}{% else %}{{ forloop.counter }}{% endif %}
+                            {{display.id}}
                         </td>
                         <td class="text-[10px]">
-                            {{ display.invoiceID }}
+                            {{display.email}}
                         </td>
                         <td class="text-[10px]">
-                            {{ display.invoice_date|date:"Y-m-d" }}
+                            {{display.address}}
                         </td>
                         <td class="text-[10px]">
-                            {{ display.item_name }}
+                            {{display.company_name}}
                         </td>
                         <td class="text-[10px]">
-                            {{ display.vendor_name }}
+                            {{display.email}}
                         </td>
                         <td class="text-[10px]">
-                            {{ display.qty }}
+                            {{display.address}}
                         </td>
                         <td class="text-[10px]">
-                            {{ display.amount_expected|floatformat:2 }}
-                        </td>
-                        <td class="text-[10px]">
-                            {{ display.Userlogin }}
-                        </td>
-                        <td class="text-[10px]">
-                            <a onclick="showModal('{{ display.invoiceID }}', '{{ display.cusID }}')" class="flex items-center justify-center text-blue-500 border px-3 bg-gray-50 cursor-pointer" aria-label="View">View</a>
+                            {{display.company_name}}
                         </td>
 
                     </tr>
@@ -147,14 +141,7 @@
 
                 </tbody>
             </table>
-
-        {% if page_obj %}
-            <div class="mt-4">
-                {% include 'components/pagination.html' with page_obj=page_obj %}
-            </div>
-        {% endif %}
-
-        <div class="text-center  text-gray-500 py-2 font-semibold" id="no-data" style="display: none;">No data found</div>
+            <div class="text-center  text-gray-500 py-2 font-semibold" id="no-data" style="display: none;">No data found</div>
         </div>
     </div>
 

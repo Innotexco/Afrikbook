@@ -826,21 +826,14 @@ def PurchaseInvoice(request):
     operator = Vendor_invoice.objects.using(db).values("Userlogin").distinct()
     sales_total = Vendor_invoice.objects.using(db).values("invoiceID").distinct().count()
     qty_total = Vendor_invoice.objects.using(db).aggregate(total_qty=Sum("qty"))['total_qty']
-    # Paginate unique_invoices for server-side pagination
-    from main.utils import paginate_queryset
-    page_obj = paginate_queryset(request, list(unique_invoices))
-
     context = {
-        'sales': unique_invoices,
-        'sales_total': sales_total,
-        'qty_total': qty_total,
-        'item_name': item_name,
+        'sales':unique_invoices,
+        'sales_total':sales_total,
+        'qty_total':qty_total,
+        'item_name':item_name,
         'company': company,
         'supplier': supplier,
-        'operator': operator,
-        # legacy template expects display_vendor — provide paginated page_obj
-        'display_vendor': page_obj,
-        'page_obj': page_obj,
+        'operator': operator
     }
    
     return render(request, 'report/PurchaseInvoice.html', context)
