@@ -704,20 +704,34 @@ def StockAdjustmentHistory(request):
 @login_required(login_url='/')
 @urls_name(name="Purchase Adjustment")
 def PurchaseAdjustmentHistory(request):
-   db = request.user.company_id.db_name
-   stockinadjustmentlog = StockAdjustmentLog.objects.using(db).filter(type='purchase')
+    db = request.user.company_id.db_name
 
-   context = {
-      'adjustmentlog': stockinadjustmentlog,
-   }
+    stockinadjustmentlog = StockAdjustmentLog.objects.using(db).filter(
+        type='purchase'
+    )
 
- 
-   # get function
-   stockadjustmentdata =getStockAdjustmentDate(request, db, 'purchase')
-   if stockadjustmentdata:
-     return JsonResponse({'data':stockadjustmentdata})
+    context = {
+        'adjustmentlog': stockinadjustmentlog,
+    }
 
-   return render(request, 'report/PurchaseAdjustmentHistory.html', context)
+    # Check if filtering was requested
+    fromdate = request.GET.get('fromdate')
+    todate = request.GET.get('todate')
+    invoiceid = request.GET.get('invoiceid')
+
+    if fromdate or todate or invoiceid:
+        stockadjustmentdata = getStockAdjustmentDate(
+            request, db, 'purchase'
+        )
+
+        return JsonResponse({'data': stockadjustmentdata})
+
+    # Normal page load
+    return render(
+        request,
+        'report/PurchaseAdjustmentHistory.html',
+        context
+    )
 
 
 
