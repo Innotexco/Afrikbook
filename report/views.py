@@ -3062,38 +3062,58 @@ def QuaterlySalesReport(request):
     db = AfrikBookDB(request)
     company = company_table.objects.get(id=request.user.company_id_id)
     profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
+
+    now = datetime.now()
+    years = list(range(2025, now.year + 1))
+
+    # Default to current year
+    selected_year = now.year
+
     if request.method == "POST":
         start = request.POST.get("start_date")
         if start:
-            start_date = datetime.strptime(start, '%Y-%m-%d') 
-            start = start_date
-            quaterly_sales_data, total_sales, total_purchase, total = quaterly_sales_report(request, start_date)
+            # Accept either a year (e.g. '2026') or a full date; prefer year-only
+            try:
+                year = int(start)
+                selected_year = year
+                start_date = datetime(year, 1, 1)
+                end_date = datetime(year, 12, 31)
+            except Exception:
+                try:
+                    parsed = datetime.strptime(start, '%Y-%m-%d')
+                    selected_year = parsed.year
+                    start_date = datetime(parsed.year, 1, 1)
+                    end_date = datetime(parsed.year, 12, 31)
+                except Exception:
+                    start_date = datetime(now.year, 1, 1)
+                    end_date = datetime(now.year, 12, 31)
+                    messages.error(request, 'Enter valid year')
+
+            # For the year selected, produce a monthly breakdown
+            quaterly_sales_data, total_sales, total_purchase, total = monthly_sales_report(request, start_date, end_date)
         else:
-            start =  datetime.now() #.date()
-          
-            quaterly_sales_data, total_sales, total_purchase, total = quaterly_sales_report(request, start)
-       
-            messages.error(request, 'Enter valid date')
-        
-        
-        
-        # JsonResponse({'data':daily_sales_data, 'total_sales': total_sales, 'total_purchase, total':total_purchase, total})
-        
+            start_date = datetime(now.year, 1, 1)
+            end_date = datetime(now.year, 12, 31)
+            quaterly_sales_data, total_sales, total_purchase, total = monthly_sales_report(request, start_date, end_date)
+            messages.error(request, 'Enter valid year')
     else:
-        start =  datetime.now() #.date()
-        
-        quaterly_sales_data, total_sales, total_purchase, total = quaterly_sales_report(request, start)
-       
+        start_date = datetime(now.year, 1, 1)
+        end_date = datetime(now.year, 12, 31)
+        quaterly_sales_data, total_sales, total_purchase, total = monthly_sales_report(request, start_date, end_date)
+
+    # quaterly_sales_data now contains monthly entries when a year is selected
     context = {
-        'quaterly_sales_data':quaterly_sales_data,
+        'quaterly_sales_data': quaterly_sales_data,
         'total_sales': total_sales,
         'total_purchase': total_purchase,
         'total': total,
         'company': company,
-        'start': start.year,
-        'profile':profile,
-        }
-    
+        'start': selected_year,
+        'profile': profile,
+        'years': years,
+        'selected_year': selected_year,
+    }
+
     return render(request, 'report/Quaterly.html', context)
 
 @login_required(login_url='/')

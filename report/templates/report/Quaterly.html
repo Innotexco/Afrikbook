@@ -32,14 +32,12 @@
             <div class="grid gap-6 md:grid-cols-6 xl:grid-cols-4 mb-3">
 
                 <label class="block text-sm">
-                    <span class="text-gray-700">FROM</span>
-                    <input 
-                        type="date"
-                        class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input"
-                        placeholder=""
-                        name="start_date"
-                        id="from"
-                    />
+                    <span class="text-gray-700">YEAR</span>
+                    <select name="start_date" id="from" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-select">
+                        {% for y in years %}
+                            <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
                 </label>
 
                 {% comment %} <label class="block text-sm">
@@ -86,7 +84,11 @@
                     <tr class="text-gray-700">
   
                         <td class="px-4 text-[10px]">
-                            {{data.quarter_start}} - {{data.quarter_end}}
+                            {% if data.month %}
+                                {{ data.month }} {% if data.year %}{{ data.year }}{% endif %}
+                            {% else %}
+                                {{data.quarter_start}} - {{data.quarter_end}}
+                            {% endif %}
                         </td>
                         <td class="px-4 text-[10px]">
                             {{data.total_sales}}
