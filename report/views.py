@@ -3089,17 +3089,15 @@ def QuaterlySalesReport(request):
                     end_date = datetime(now.year, 12, 31)
                     messages.error(request, 'Enter valid year')
 
-            # For the year selected, produce a monthly breakdown
-            quaterly_sales_data, total_sales, total_purchase, total = monthly_sales_report(request, start_date, end_date)
+            # For the year selected, produce quarterly breakdown (3-month ranges)
+            quaterly_sales_data, total_sales, total_purchase, total = quaterly_sales_report(request, start_date)
         else:
             start_date = datetime(now.year, 1, 1)
-            end_date = datetime(now.year, 12, 31)
-            quaterly_sales_data, total_sales, total_purchase, total = monthly_sales_report(request, start_date, end_date)
+            quaterly_sales_data, total_sales, total_purchase, total = quaterly_sales_report(request, start_date)
             messages.error(request, 'Enter valid year')
     else:
         start_date = datetime(now.year, 1, 1)
-        end_date = datetime(now.year, 12, 31)
-        quaterly_sales_data, total_sales, total_purchase, total = monthly_sales_report(request, start_date, end_date)
+        quaterly_sales_data, total_sales, total_purchase, total = quaterly_sales_report(request, start_date)
 
     # quaterly_sales_data now contains monthly entries when a year is selected
     context = {
