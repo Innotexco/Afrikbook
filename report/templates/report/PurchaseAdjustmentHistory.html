@@ -162,7 +162,7 @@
 
                 $.ajax({
                     type: 'GET',
-                    url: "{% url 'Stock:StockAdjustment' %}",
+                    url: "{% url 'Stock:PurchaseAdjustmentHistory' %}",
                     data: {
                         fromdate: fromdate,
                         todate: todate,
@@ -176,7 +176,7 @@
                 let invoiceid    =  $('#invoiceid').val();
                 $.ajax({
                     type: 'GET',
-                    url: "{% url 'Stock:StockAdjustment' %}",
+                    url: "{% url 'Stock:PurchaseAdjustmentHistory' %}",
                     data: {
                         invoiceid: invoiceid,
                     },
