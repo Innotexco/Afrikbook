@@ -552,7 +552,7 @@ def StockAdjustment(request):
     updateStockAdjustmentData(request, CreateStockInLog, CreateStockIn, 'warehouse', context, db)
 
     # Filtered AJAX search: return paginated JSON
-    stockadjustmentdata = PurchaseAdjustmentDate(request, db, CreateStockInLog)
+    stockadjustmentdata = PurchaseAdjustmentDate(request, db, 'purchase')
     if stockadjustmentdata:
         # stockadjustmentdata can be {'failed':...} or a list
         if isinstance(stockadjustmentdata, dict) and stockadjustmentdata.get('failed'):
