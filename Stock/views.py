@@ -32,6 +32,7 @@ from .functions.stockout import *
 from .setCurrentUsers import *
 from django.contrib.auth.decorators import login_required
 from routers.page_permission import  urls_name
+from report.views import getStockAdjustmentDate as PurchaseAdjustmentDate
 
 
 # Create your views here.
@@ -551,7 +552,7 @@ def StockAdjustment(request):
     updateStockAdjustmentData(request, CreateStockInLog, CreateStockIn, 'warehouse', context, db)
 
     # Filtered AJAX search: return paginated JSON
-    stockadjustmentdata = getStockAdjustmentDate(request, CreateStockInLog, db)
+    stockadjustmentdata = PurchaseAdjustmentDate(request, CreateStockInLog, db)
     if stockadjustmentdata:
         # stockadjustmentdata can be {'failed':...} or a list
         if isinstance(stockadjustmentdata, dict) and stockadjustmentdata.get('failed'):
