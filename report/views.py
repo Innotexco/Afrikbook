@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.db.models import Sum, F, Q
 from django.db.models.functions import Lower
+from django.utils.timezone import now
 from customer.models import *
 from vendor.models import *
 from django.contrib import messages
@@ -870,8 +871,11 @@ def PurchaseInvoice(request):
 def PayrollReport(request):
     company = company_table.objects.get(id=request.user.company_id_id)
     db = AfrikBookDB(request)
-    year = datetime.today().year
-    years = range(year, year - 10, -1)
+
+    current_year = datetime.today().year
+    registration_year = request.user.date_joined.year
+    years = range(current_year, registration_year - 1, -1)
+
     payrolls = payroll.objects.using(db).values('month_year').distinct()
    
     unique_payroll = []
@@ -888,14 +892,13 @@ def PayrollReport(request):
     total_amount = payroll.objects.using(db).aggregate(total=Sum('net_pay'))['total'] or 0.00
     
     context = {
-        'payrolls':unique_payroll,
-        'total_amount':total_amount,
-        'years':years,
+        'payrolls': unique_payroll,
+        'total_amount': total_amount,
+        'years': years,
         'company': company
     }
    
     return render(request, 'report/PayrollReport.html', context)
-
 
 @login_required(login_url='/')
 @urls_name(name="Receivables")
@@ -3321,19 +3324,17 @@ def CustomerYearlySalesReport(request):
     db = request.user.company_id.db_name
     customer = customer_table.objects.using(db)
 
-    now = datetime.now()
-    years = list(range(2025, now.year + 1))
+    registration_year = request.user.date_joined.year   # or company's own created_at, per the question from last time
+    years = list(range(registration_year, now.year + 1))
     selected_year = now.year
 
     if request.method == "POST":
         start = request.POST.get("start_date")
-        # start is expected as a year (e.g., '2026')
         if start:
             try:
                 year = int(start)
                 selected_year = year
             except Exception:
-                # fallback to current year on parse failure
                 year = now.year
                 selected_year = year
                 messages.error(request, 'Enter a valid year')
@@ -3342,18 +3343,15 @@ def CustomerYearlySalesReport(request):
             end_date = datetime(year, 12, 31)
             yearly_sales_data, total_sales, total_qty = customer_yearly_sales_report(request, start_date, end_date, customer, 1)
         else:
-            # default to current year
             start_date = datetime(now.year, 1, 1)
             end_date = datetime(now.year, 12, 31)
             yearly_sales_data, total_sales, total_qty = customer_yearly_sales_report(request, start_date, end_date, customer, 1)
-            messages.error(request, 'Enter valid year')
-
+            
     else:
-        # default view: current year
         start_date = datetime(now.year, 1, 1)
         end_date = datetime(now.year, 12, 31)
         yearly_sales_data, total_sales, total_qty = customer_yearly_sales_report(request, start_date, end_date, customer, 1)
-
+        
     context = {
         'customer': customer.all(),
         'customers': customer,
