@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.db.models import Sum, F, Q
 from django.db.models.functions import Lower
-from django.utils.timezone import now
 from customer.models import *
 from vendor.models import *
 from django.contrib import messages
@@ -3323,7 +3322,7 @@ def CustomerYearlySalesReport(request):
     company = company_table.objects.get(id=request.user.company_id_id)
     db = request.user.company_id.db_name
     customer = customer_table.objects.using(db)
-
+    now = datetime.now()
     registration_year = request.user.date_joined.year   # or company's own created_at, per the question from last time
     years = list(range(registration_year, now.year + 1))
     selected_year = now.year
