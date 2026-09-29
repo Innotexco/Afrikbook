@@ -253,11 +253,9 @@ function ExpiryDateInput(){
         } else if (manufacturingDate < expiryDate) {
             ManuDateInput()
             ExpiryDateInput()
-        } elif(manufacturingDate.getTime() === expiryDate.getTime()) {
+        } else {
             $(this).addClass('border border-red-500')
             alertify.error('Manufacturing date is equal to expiry date');
-        } else {
-            $(this).addClass('border border-red-500');
         }
    })
    $(document).on('change', '#expiry', function() {
@@ -275,11 +273,9 @@ function ExpiryDateInput(){
         } else if (manufacturingDate < expiryDate) {
             ManuDateInput()
             ExpiryDateInput()
-        } elif(expiryDate.getTime()===manufacturingDate.getTime()){
+        } else {
             $(this).addClass('border border-red-500')
             alertify.error('Manufacturing date is equal to expiry date');
-        } else {
-            $(this).addClass('border border-red-500');
         }
    })
      
