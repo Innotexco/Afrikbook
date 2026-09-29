@@ -1619,10 +1619,14 @@ def ViewPurchaseLadger(request, code):
     except customer_table.DoesNotExist: 
         return JsonResponse({'error': 'Item not found'}, status=404)
     
-
+from settings.models import ExpiryDate
+@login_required(login_url='/')
 def ExpiredItems(request):
-   
-    return render(request, 'report/ExpiredItems.html')
+    db = AfrikBookDB(request)
+    expired = ExpiryDate.objects.using(db).all()
+    
+    return render(request, 'report/ExpiredItems.html', {'expired': expired})
+
 
 @login_required(login_url='/')
 @urls_name(name="Customer Ledger")

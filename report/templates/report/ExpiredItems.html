@@ -32,41 +32,36 @@
                         <th class="px-4 py-3">Manufacture Date</th>
                         <th class="px-4 py-3">Expiry Date</th>
                         <th class="px-4 py-3">Item ID</th>
-                        <th class="px-4 py-3">Token ID</th>
-                        <th class="px-4 py-3">Action</th>
+                        {% comment %} <th class="px-4 py-3">Token ID</th> {% endcomment %}
+                        {% comment %} <th class="px-4 py-3">Action</th> {% endcomment %}
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y">
 
                     
-                    {% for display in display_vendor %}
+                    {% for display in expired %}
                     
                     <tr class="text-gray-700">
 
-                        <td class="text-[10px]">
+                        <td class="text-[10px] px-4">
                             {{display.id}}
                         </td>
-                        <td class="text-[10px]">
-                            {{display.address}}
+                        <td class="text-[10px] px-4">
+                            {{display.item}}
                         </td>
-                        <td class="text-[10px]">
-                            {{display.company_name}}
+                        <td class="text-[10px] px-4">
+                            {{display.manufacture_date}}
                         </td>
-                        <td class="text-[10px]">
-                            {{display.company_name}}
+                        <td class="text-[10px] px-4">
+                            {{display.expiry_date}}
                         </td>
-                        <td class="text-[10px]">
-                            {{display.custID}}
+                        <td class="text-[10px] px-4">
+                            {{display.item_code}}
                         </td>
-                        <td class="text-[10px]">
-                            {{display.company_name}}
-                        </td>
-                        <td class="text-[10px]">
-                            {{display.custID}}
-                        </td>
-                        <td class="text-[10px]">
+                        
+                        {% comment %} <td class="text-[10px] px-4">
                             none
-                        </td>
+                        </td> {% endcomment %}
 
                     </tr>
 
