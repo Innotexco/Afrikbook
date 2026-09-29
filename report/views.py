@@ -543,8 +543,9 @@ def ProfitLossStatement(request):
     db = AfrikBookDB(request)
     fromdate = request.GET.get('fromdate')
     todate   = request.GET.get('todate')
-    if from_date and  to_date:
+    if fromdate and  todate:
         from_date, to_date = getdate(fromdate, todate)
+        
         sales                           = ammountSummer(request,  Assets_account, (Q(account_type='Cash') & Q(date__range=(from_date, to_date))))
         get_salesReturn                 = ammountSummer(request, Liability_account, (Q(account_type='Cash') & Q(account_bankname__icontains='Return Inward') & Q(date__range=(from_date, to_date))))
         get_discountallowed_Sum         = ammountSummer(request, Expenses_account, (Q(account_type='Cash') & Q(account_bankname__icontains='Discount Allowed') & Q(date__range=(from_date, to_date))))
