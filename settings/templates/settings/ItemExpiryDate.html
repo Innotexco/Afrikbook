@@ -336,36 +336,6 @@ function ExpiryDateInput(){
 
     button.classList.toggle("hidden", hasEmpty || invalidDateRows.size > 0);
 }
-$(document).on('change', '#manu', function() {
-    const e_date = $(this).closest('tr').find('input[name="e_date[]"]').val();
-    const m_date = $(this).val();
-
-    const manufacturingDate = new Date(m_date);
-    const expiryDate = new Date(e_date);
-
-    if (manufacturingDate >= expiryDate && e_date) {
-        $(this).addClass('border border-red-500');
-        alertify.error('Expiry date must be after the manufacturing date.');
-    } else {
-        ManuDateInput();
-        ExpiryDateInput();
-    }
-})
-$(document).on('change', '#expiry', function() {
-    const m_date = $(this).closest('tr').find('input[name="m_date[]"]').val();
-    const e_date = $(this).val();
-
-    const manufacturingDate = new Date(m_date);
-    const expiryDate = new Date(e_date);
-
-    if (manufacturingDate >= expiryDate && m_date) {
-        $(this).addClass('border border-red-500');
-        alertify.error('Expiry date must be after the manufacturing date.');
-    } else {
-        ManuDateInput();
-        ExpiryDateInput();
-    }
-})
 
 $(document).on('change', '#manu, #expiry', function() {
     checkRowDateOrder($(this).closest('tr'));
