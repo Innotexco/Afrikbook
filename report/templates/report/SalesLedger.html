@@ -224,12 +224,12 @@
                                 num++;
                                 const editUrl = "{% url 'customer:EditSalesInvoice' 0 %}".replace('0', item.invoiceID);
                                 const row = $('<tr>').append(
-                                    $('<td class="text-[10px]">').html(num),
-                                    $('<td class="text-[10px]">').text(formatInvoiceDate(item.invoice_date)),
-                                    $('<td class="text-[10px]">').text(item.invoiceID),
-                                    $('<td class="text-[10px]">').text(item.customer_name),
-                                    $('<td class="text-[10px]">').text(item.amount_expected),
-                                    $('<td class="text-[10px] text-center">').append(`
+                                    $('<td class="text-[10px] px-4">').html(num),
+                                    $('<td class="text-[10px] px-4">').text(formatInvoiceDate(item.invoice_date)),
+                                    $('<td class="text-[10px] px-4">').text(item.invoiceID),
+                                    $('<td class="text-[10px] px-4">').text(item.customer_name),
+                                    $('<td class="text-[10px] px-4">').text(item.amount_expected),
+                                    $('<td class="text-[10px] px-4 text-center">').append(`
                                         <a onclick="showModal('${item.invoiceID}')"
                                         class="inline-flex items-center justify-center mx-auto text-green-600 cursor-pointer"
                                         aria-label="View">
