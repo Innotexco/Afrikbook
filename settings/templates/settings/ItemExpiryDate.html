@@ -189,7 +189,7 @@
             
             
 };
-function ManuDateInput(){
+/*function ManuDateInput(){
        
 
         // Find all select elements with the class 'item-select'
@@ -236,49 +236,142 @@ function ExpiryDateInput(){
                button.classList.remove("hidden")
             }
         }
-   }
+    }
 
-   $(document).on('change', '#manu', function() {
-       
-       const e_date = $(this).closest('tr').find('input[name="e_date[]"]').val();
-       const m_date = $(this).val();
+$(document).on('change', '#manu', function() {
+    
+    const e_date = $(this).closest('tr').find('input[name="e_date[]"]').val();
+    const m_date = $(this).val();
 
-       const manufacturingDate = new Date(m_date);
-       const expiryDate = new Date(e_date);
+    const manufacturingDate = new Date(m_date);
+    const expiryDate = new Date(e_date);
+    
+
+    if (manufacturingDate > expiryDate) {
+        $(this).addClass('border border-red-500')
+        alertify.error('Manufacturing date is greater than expiry date');
+    } else if (manufacturingDate < expiryDate) {
+        ManuDateInput()
+        ExpiryDateInput()
+    } else {
+        $(this).addClass('border border-red-500')
+        alertify.error('Manufacturing date is equal to expiry date');
+    }
+})
+$(document).on('change', '#expiry', function() {
+    
+    const m_date = $(this).closest('tr').find('input[name="m_date[]"]').val();
+    const e_date = $(this).val();
+
+    const manufacturingDate = new Date(m_date);
+    const expiryDate = new Date(e_date);
+    
+
+    if (manufacturingDate > expiryDate) {
+        $(this).addClass('border border-red-500')
+        alertify.error('Manufacturing date is greater than expiry date');
+    } else if (manufacturingDate < expiryDate) {
+        ManuDateInput()
+        ExpiryDateInput()
+    } else {
+        $(this).addClass('border border-red-500')
+        alertify.error('Manufacturing date is equal to expiry date');
+    }
+})*/
+
      
 
-        if (manufacturingDate > expiryDate) {
-            $(this).addClass('border border-red-500')
-            alertify.error('Manufacturing date is greater than expiry date');
-        } else if (manufacturingDate < expiryDate) {
-            ManuDateInput()
-            ExpiryDateInput()
+
+const invalidDateRows = new Set();
+
+function checkRowDateOrder(row) {
+    const m_date = row.find('input[name="m_date[]"]').val();
+    const e_date = row.find('input[name="e_date[]"]').val();
+    if (!m_date || !e_date) return; // empty-field styling is handled separately
+
+    const manufacturingDate = new Date(m_date);
+    const expiryDate = new Date(e_date);
+    const rowId = row.attr('id');
+
+    if (manufacturingDate >= expiryDate) {
+        invalidDateRows.add(rowId);
+        alertify.error('Expiry date must be after the manufacturing date.');
+    } else {
+        invalidDateRows.delete(rowId);
+    }
+}
+
+function ManuDateInput(){
+    const dateElements = document.querySelectorAll('.m_dates');
+    const button = document.getElementById('submit');
+    let hasEmpty = false;
+
+    for (let i = 0; i < dateElements.length; i++) {
+        const date = dateElements[i];
+        if (date.value === "") {
+            date.classList.add("border", "border-red-500");
+            hasEmpty = true;
         } else {
-            $(this).addClass('border border-red-500')
-            alertify.error('Manufacturing date is equal to expiry date');
+            date.classList.remove("border", "border-red-500");
         }
-   })
-   $(document).on('change', '#expiry', function() {
-       
-       const m_date = $(this).closest('tr').find('input[name="m_date[]"]').val();
-       const e_date = $(this).val();
+    }
 
-       const manufacturingDate = new Date(m_date);
-       const expiryDate = new Date(e_date);
-     
+    button.classList.toggle("hidden", hasEmpty || invalidDateRows.size > 0);
+}
 
-        if (manufacturingDate > expiryDate) {
-            $(this).addClass('border border-red-500')
-            alertify.error('Manufacturing date is greater than expiry date');
-        } else if (manufacturingDate < expiryDate) {
-            ManuDateInput()
-            ExpiryDateInput()
+function ExpiryDateInput(){
+    const dateElements = document.querySelectorAll('.e_dates');
+    const button = document.getElementById('submit');
+    let hasEmpty = false;
+
+    for (let i = 0; i < dateElements.length; i++) {
+        const date = dateElements[i];
+        if (date.value === "") {
+            date.classList.add("border", "border-red-500");
+            hasEmpty = true;
         } else {
-            $(this).addClass('border border-red-500')
-            alertify.error('Manufacturing date is equal to expiry date');
+            date.classList.remove("border", "border-red-500");
         }
-   })
-     
+    }
+
+    button.classList.toggle("hidden", hasEmpty || invalidDateRows.size > 0);
+}
+$(document).on('change', '#manu', function() {
+    const e_date = $(this).closest('tr').find('input[name="e_date[]"]').val();
+    const m_date = $(this).val();
+
+    const manufacturingDate = new Date(m_date);
+    const expiryDate = new Date(e_date);
+
+    if (manufacturingDate >= expiryDate && e_date) {
+        $(this).addClass('border border-red-500');
+        alertify.error('Expiry date must be after the manufacturing date.');
+    } else {
+        ManuDateInput();
+        ExpiryDateInput();
+    }
+})
+$(document).on('change', '#expiry', function() {
+    const m_date = $(this).closest('tr').find('input[name="m_date[]"]').val();
+    const e_date = $(this).val();
+
+    const manufacturingDate = new Date(m_date);
+    const expiryDate = new Date(e_date);
+
+    if (manufacturingDate >= expiryDate && m_date) {
+        $(this).addClass('border border-red-500');
+        alertify.error('Expiry date must be after the manufacturing date.');
+    } else {
+        ManuDateInput();
+        ExpiryDateInput();
+    }
+})
+
+$(document).on('change', '#manu, #expiry', function() {
+    checkRowDateOrder($(this).closest('tr'));
+    ManuDateInput();
+    ExpiryDateInput();
+})
 </script>    
 
 {% endblock %}
