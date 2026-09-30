@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from django.db.models import Sum, F, Q, Max
+from django.db.models import Sum, F, Q
 from django.db.models.functions import Lower
 from customer.models import *
 from vendor.models import *
@@ -19,6 +19,7 @@ from account.models import account_log, chart_of_account
 from journal.models import loan_account
 from journal.fuctions.loan_schedule import allocate_loan_repayment, apply_loan_charges_to_receivables
 from customer.functions.generalFunction import *
+from customer.functions.gl import SALES_ID, RETURN_IN_ID, VAT_ID
 from account.models import Expenses_account, Income_account, Assets_account, Liability_account, Equity_account
 
 from main.models import company_table
@@ -481,17 +482,14 @@ def AfrikBookDB(request):
     db = request.user.company_id.db_name
     return db
 
+_PL_CENT = decimal.Decimal('0.01')
+
+
 def _pl_decimal(value):
     try:
-        return decimal.Decimal(str(value or 0))
+        return decimal.Decimal(str(value or 0)).quantize(_PL_CENT)
     except Exception:
         return decimal.Decimal('0.00')
-
-
-def _pl_unique_invoice_total(qs):
-    """One amount_expected per invoiceID, then sum."""
-    grouped = qs.values('invoiceID').annotate(amt=Max('amount_expected'))
-    return _pl_decimal(grouped.aggregate(t=Sum('amt'))['t'])
 
 
 def _pl_cogs(db, live_qs):
@@ -509,33 +507,53 @@ def _pl_cogs(db, live_qs):
             item = Item.objects.using(db).filter(generated_code=code).only('purchase_price').first()
             item_cost[code] = _pl_decimal(item.purchase_price) if item else decimal.Decimal('0.00')
         extra += _pl_decimal(line.qty) * item_cost[code]
-    return cogs + extra
+    return _pl_decimal(cogs + extra)
 
 
 def _pl_account_sum(model, db, q_obj):
     return _pl_decimal(model.objects.using(db).filter(q_obj).aggregate(t=Sum('amount'))['t'])
 
 
-def compute_profit_loss(db, from_date, to_date):
-    """P&L for a date range.
+def _pl_credit_activity(model, db, q_obj):
+    """Credits posted to a credit-normal account (positive series-log amounts)."""
+    return _pl_account_sum(model, db, q_obj & Q(amount__gt=0))
 
-    Sales − returns − discounts − COGS = gross profit.
-    Gross profit − operating expenses + other income − tax = net profit.
-    """
-    start_dt = datetime.combine(from_date, time.min)
-    end_dt = datetime.combine(to_date, time.max)
-    invoices = customer_invoice.objects.using(db).filter(invoice_date__range=(start_dt, end_dt))
-    live = exclude_returned_or_cancelled_invoices(invoices)
-    returned = invoices.filter(
-        Q(invoiceID__icontains='returned')
-        | Q(cancellation_status='1')
-        | Q(invoice_state__iexact='Cancelled')
-        | Q(invoice_state__iexact='Returned')
+
+def _pl_vat_q():
+    return (
+        Q(account_id=VAT_ID)
+        | Q(account_id__icontains='Vat')
+        | Q(account_bankname__icontains='Vat')
     )
-    date_q = Q(date__range=(from_date, to_date))
 
-    sales = _pl_unique_invoice_total(invoices)
-    sales_return = _pl_unique_invoice_total(returned)
+
+def compute_profit_loss(db, from_date, to_date):
+    """P&L for a date range from the GL plus invoice-line COGS.
+
+    Sales are VAT-exclusive credits to 4001-Sales. Returns are the debit
+    on 2001-ReturnInward. Output VAT is a liability and is omitted from Tax.
+    """
+    live = exclude_returned_or_cancelled_invoices(
+        customer_invoice.objects.using(db).filter(
+            invoice_date__date__gte=from_date,
+            invoice_date__date__lte=to_date,
+        )
+    )
+    date_q = Q(date__gte=from_date, date__lte=to_date)
+    sales_q = date_q & Q(account_id=SALES_ID)
+    return_q = date_q & (
+        Q(account_id=RETURN_IN_ID)
+        | Q(account_bankname__icontains='Return Inward')
+    )
+    vat_q = _pl_vat_q()
+    tax_like_q = (
+        Q(account_type__iexact='Tax')
+        | Q(account_bankname__icontains='Tax')
+        | Q(account_id__icontains='Tax')
+    )
+
+    sales = _pl_credit_activity(Income_account, db, sales_q)
+    sales_return = -_pl_account_sum(Liability_account, db, return_q)
     discounts = _pl_account_sum(
         Expenses_account, db,
         date_q & Q(account_bankname__icontains='Discount Allowed'),
@@ -544,24 +562,21 @@ def compute_profit_loss(db, from_date, to_date):
     expenses = _pl_account_sum(
         Expenses_account, db,
         date_q
-        & ~Q(account_bankname__icontains='Tax')
-        & ~Q(account_bankname__icontains='Vat')
+        & ~tax_like_q
+        & ~vat_q
         & ~Q(account_bankname__icontains='Discount Allowed')
-        & ~Q(account_bankname__icontains='prepaid'),
+        & ~Q(account_bankname__icontains='prepaid')
+        & ~Q(account_id__icontains='prepaid'),
     )
     other_income = _pl_account_sum(
         Income_account, db,
         date_q
-        & ~Q(account_bankname__icontains='Sales')
-        & ~Q(account_id__icontains='4001-Sales'),
+        & ~Q(account_id=SALES_ID)
+        & ~Q(account_bankname__icontains='Sales'),
     )
     tax = _pl_account_sum(
         Expenses_account, db,
-        date_q & (
-            Q(account_bankname__icontains='Tax')
-            | Q(account_bankname__icontains='Vat')
-            | Q(account_type__iexact='Tax')
-        ),
+        date_q & tax_like_q & ~vat_q,
     )
 
     gross_profit = sales - sales_return - discounts - cogs
