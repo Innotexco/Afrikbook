@@ -67,7 +67,7 @@
                         <span class="text-gray-700">By Vendor</span>
                         <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="vendor_id" required onchange="filterItem(this)">
                             <option selected disabled=true>Select Vendor</option>
-                            {% for vendor in purchase %}
+                            {% for vendor in vendor_options %}
                                <option value="{{vendor.cusID}}">{{vendor.cusID }}_{{vendor.vendor_name}}</option>   
                             {% endfor %}
                         </select>
@@ -92,27 +92,27 @@
                 <tbody class="bg-white divide-y" id="'+i+'">
 
                     
-                    {% for display in purchases %}
+                    {% for display in purchase %}
                     
                     <tr class="text-gray-700">
 
                         <td class="text-[10px]">
-                            {{forloop.counter}}
+                            {{ page_obj.start_index|add:forloop.counter0 }}
                         </td>
                         <td class="text-[10px]">
-                            {{display.cusID}}
+                            {{display.invoiceID}}
                         </td>
                         <td class="text-[10px]">
                             {{display.vendor_name}}
                         </td>
                         <td class="text-[10px]">
-                            {{display.amount_expected}}
+                            {{display.amount}}
                         </td>
                         <td class="text-[10px]">
                             {{display.amount_paid}}
                         </td>
                         <td class="text-[10px]">
-                            {{display.amount_expected}}
+                            {{display.amount_expected|default:0}}
                         </td>
                         <td class="text-[10px]">
                             <a onclick="showModal('{{display.invoiceID}}')" 
@@ -190,7 +190,10 @@
             
                 </tfoot>
             </table>
-            {% include 'components/pagination.html' with page_obj=page_obj %}
+            <div id="default-pagination">
+                {% include 'components/pagination.html' with page_obj=page_obj %}
+            </div>
+            {% include 'components/ajax_pagination.html' %}
             <!-- <div class="flex justify-end py-3 my-5 bg-white rounded-lg shadow-md">
 
                 <div class="">
@@ -248,16 +251,9 @@
                 //Fetch();
             }, 500)
         )
-        //serach by date
-        function Fetch(){
-            const datas = {
-                start_date: $('#from').val(),
-                end_date: $('#to').val(),
-                vendor: $('#vendor_id').val(),
-                item: $('#item').val(),
-            }
-       
-            if(datas.start_date || datas.end_date || datas.vendor  || datas.item){
+        var purchaseLedgerFilters = {};
+        function loadPurchaseLedgerPage(page) {
+            var datas = $.extend({}, purchaseLedgerFilters, { page: page });
             $.ajax({
                 url: '{% url "filter:purchase-ladger-date" %}',
                 method: 'GET',
@@ -266,14 +262,13 @@
                     $("#total-amount").html(NCFormat(response.amount_total));
                     $("#amount-paid").html(NCFormat(response.amount_paid_total));
                     $("#balance").html(NCFormat(response.balance));
+                    const table = $('#example tbody');
+                    table.empty();
+                    $('#default-pagination').addClass('hidden');
                     if(response.serializer_data && response.serializer_data.length > 0){
-                        // Handle the response data
-                     
-                        const table = $('#example tbody')
-                        table.empty()
-                        let num = 0;
-                        response.serializer_data.forEach(item => {
-                            num++
+                        var start = parseInt(response.start_index, 10) || 1;
+                        response.serializer_data.forEach(function(item, index) {
+                            var num = start + index;
                             const row = $('<tr id="row">').append(
                                 $('<td class="text-[10px]">').html(num),
                                 $('<td class="text-[10px]">').text(item.invoiceID),
@@ -289,34 +284,38 @@
                                     <path\
                                     d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"\
                                     ></path>\
-                                </svg></a>'),
-                                    
-                                
+                                </svg></a>')
                             );
                             table.append(row);
-                            
                             $("#no-data").css('display', 'none');
                         });
+                        renderAjaxPagination(response, loadPurchaseLedgerPage);
                     }else{
+                        hideAjaxPagination();
                         $("#total-amount").html("0.00");
                         $("#amount-paid").html("0.00");
                         $("#balance").html("0.00");
-                        $("#example tbody").empty();
                         $("#no-data").css('display', 'block');
                         alertify.error("No Return data between selected category")
-                        //alertify.error("Select start_date and end_date")
                     }
                 },
-                error: function(error) {
-                    // Handle the error
+                error: function() {
                     console.log('error')
                 }
             });
+        }
+        function Fetch(){
+            purchaseLedgerFilters = {
+                start_date: $('#from').val(),
+                end_date: $('#to').val(),
+                vendor: $('#vendor_id').val(),
+                item: $('#item').val(),
+            }
+            if(purchaseLedgerFilters.start_date || purchaseLedgerFilters.end_date || purchaseLedgerFilters.vendor  || purchaseLedgerFilters.item){
+                loadPurchaseLedgerPage(1);
             }else{
                 alertify.error("Select category to fetch data from")
             }
-
-            
         }
 
     

@@ -117,7 +117,7 @@
                     <tr class="text-gray-700">
 
                         <td class="text-[10px]">
-                            {{forloop.counter}}
+                            {{ page_obj.start_index|add:forloop.counter0 }}
                         </td>
                         <td class="text-[10px]">
                             {{stock.item}}
@@ -144,6 +144,7 @@
 
                 </tbody>
             </table>
+            {% include 'components/pagination.html' with page_obj=page_obj %}
             <div class="col-span-1 mt-4">
                 <div class="grid gap-6 ">
                     <div class="block justify-end items-center w-full">

@@ -392,7 +392,7 @@ def getStockAdjustmentDate2(request, context, db, con):
     if sortbyItem and sortbyItem not in ('', '_ _Choose Item_ _'):
         qs = qs.filter(itemcode=sortbyItem)
 
-    if invoice and invoice not in ('', '_ _Choose Item_ _'):
+    if invoice and invoice not in ('', '_ _Choose Item_ _', '_ _Choose Invoice_ _'):
         qs = qs.filter(invoiceID=invoice)
 
     if not qs.exists():
@@ -651,6 +651,34 @@ from django.core.paginator import Paginator
 ITEMS_PER_PAGE = 20
 
 
+def json_paginated_stockin(request, stockinlog):
+    if isinstance(stockinlog, dict) and stockinlog.get('failed'):
+        return JsonResponse({'failed': stockinlog['failed']})
+    if not stockinlog:
+        return JsonResponse({'failed': 'No data found'})
+    paginator = Paginator(stockinlog, ITEMS_PER_PAGE)
+    page_obj = paginator.get_page(request.GET.get('page', 1))
+    return JsonResponse({
+        'stockin': list(page_obj),
+        'total_pages': paginator.num_pages,
+        'current_page': page_obj.number,
+        'has_next': page_obj.has_next(),
+        'has_prev': page_obj.has_previous(),
+        'total_count': paginator.count,
+        'per_page': ITEMS_PER_PAGE,
+    })
+
+
+def paginate_vendor_invoices(request, vendor_qs, context):
+    context['invoice_options'] = vendor_qs
+    paginator = Paginator(vendor_qs.order_by('-invoice_date'), ITEMS_PER_PAGE)
+    page_obj = paginator.get_page(request.GET.get('page', 1))
+    context['allinvoice'] = page_obj
+    context['page_obj'] = page_obj
+    context['paginator'] = paginator
+    return context
+
+
 @login_required(login_url="/")
 @urls_name(name = "Purchase Adjustment")
 def PurchaseAdjustment(request):
@@ -678,30 +706,10 @@ def PurchaseAdjustment(request):
 
     # AJAX search/filter
     if is_ajax:
-        page_number = request.GET.get('page', 1)
-        stockinlog  = getStockAdjustmentDate2(request, context, db, ~Q(cancellation=1))
-        if stockinlog:
-            if isinstance(stockinlog, dict) and stockinlog.get('failed'):
-                return JsonResponse({'failed': stockinlog['failed']})
-            paginator   = Paginator(stockinlog, ITEMS_PER_PAGE)
-            page_obj    = paginator.get_page(page_number)
-            return JsonResponse({
-                'stockin':      list(page_obj),
-                'total_pages':  paginator.num_pages,
-                'current_page': page_obj.number,
-                'has_next':     page_obj.has_next(),
-                'has_prev':     page_obj.has_previous(),
-                'total_count':  paginator.count,
-            })
-        return JsonResponse({'failed': 'No data found'})
+        stockinlog = getStockAdjustmentDate2(request, context, db, ~Q(cancellation=1))
+        return json_paginated_stockin(request, stockinlog)
 
-    # Default page load — paginate queryset
-    page_number   = request.GET.get('page', 1)
-    paginator     = Paginator(vendorInvoice.order_by('-invoice_date'), ITEMS_PER_PAGE)
-    page_obj      = paginator.get_page(page_number)
-    context['allinvoice']    = page_obj
-    context['paginator']     = paginator
-    context['page_obj']      = page_obj
+    paginate_vendor_invoices(request, vendorInvoice, context)
     return render(request, 'vendor/PurchaseAdjustment.html', context)
 
 
@@ -822,36 +830,14 @@ def CanclePurchaseInvoice(request):
     }
 
    
-#     # update function
     updateStockAdjustmentData(request, context, db)
 
-#    # get function
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-    stockinlog = getStockAdjustmentDate2(request, context, db, ~Q(cancellation=1))
-    if stockinlog:
-        if is_ajax:
-            if isinstance(stockinlog, dict) and stockinlog.get('failed'):
-                return JsonResponse({'failed': stockinlog['failed']})
-            paginator = Paginator(stockinlog, ITEMS_PER_PAGE)
-            page_number = request.GET.get('page', 1)
-            page_obj = paginator.get_page(page_number)
-            return JsonResponse({
-                'stockin':      list(page_obj),
-                'total_pages':  paginator.num_pages,
-                'current_page': page_obj.number,
-                'has_next':     page_obj.has_next(),
-                'has_prev':     page_obj.has_previous(),
-                'total_count':  paginator.count,
-            })
-        # non-AJAX request: fall through to render below
+    if is_ajax:
+        stockinlog = getStockAdjustmentDate2(request, context, db, ~Q(cancellation=1))
+        return json_paginated_stockin(request, stockinlog)
 
-    # Default page load — paginate queryset for server-side rendering
-    page_number = request.GET.get('page', 1)
-    paginator = Paginator(vendorInvoice.order_by('-invoice_date'), ITEMS_PER_PAGE)
-    page_obj = paginator.get_page(page_number)
-    context['allinvoice'] = page_obj
-    context['page_obj'] = page_obj
-    context['paginator'] = paginator
+    paginate_vendor_invoices(request, vendorInvoice, context)
     return render(request, 'vendor/CanclePurchaseInvoice.html', context)
 
 # ********************************************************************************************************
@@ -877,35 +863,13 @@ def viewCanclePurchase(request):
       'outlet': outlet,
     }
 
-   
-   # get function
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-    stockinlog = getStockAdjustmentDate2(request, context, db, Q(cancellation=1))
-    if stockinlog:
-        if is_ajax:
-            if isinstance(stockinlog, dict) and stockinlog.get('failed'):
-                return JsonResponse({'failed': stockinlog['failed']})
-            paginator = Paginator(stockinlog, ITEMS_PER_PAGE)
-            page_number = request.GET.get('page', 1)
-            page_obj = paginator.get_page(page_number)
-            return JsonResponse({
-                'stockin':      list(page_obj),
-                'total_pages':  paginator.num_pages,
-                'current_page': page_obj.number,
-                'has_next':     page_obj.has_next(),
-                'has_prev':     page_obj.has_previous(),
-                'total_count':  paginator.count,
-            })
-            # non-AJAX request: fall through to render below
+    if is_ajax:
+        stockinlog = getStockAdjustmentDate2(request, context, db, Q(cancellation=1))
+        return json_paginated_stockin(request, stockinlog)
 
-        # Default page load — paginate queryset for server-side rendering
-        page_number = request.GET.get('page', 1)
-        paginator = Paginator(vendorInvoice.order_by('-invoice_date'), ITEMS_PER_PAGE)
-        page_obj = paginator.get_page(page_number)
-        context['allinvoice'] = page_obj
-        context['page_obj'] = page_obj
-        context['paginator'] = paginator
-        return render(request, 'vendor/viewCanclePurchase.html', context)
+    paginate_vendor_invoices(request, vendorInvoice, context)
+    return render(request, 'vendor/viewCanclePurchase.html', context)
 
 # ********************************************************************************************************
 

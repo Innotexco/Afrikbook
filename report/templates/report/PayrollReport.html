@@ -80,7 +80,7 @@
                     <tr class="text-gray-700">
 
                         <td class="text-[10px]">
-                            {{forloop.counter}}
+                            {{ page_obj.start_index|add:forloop.counter0 }}
                         </td>
                         <td class="text-[10px]">
                             {{display.month_year}}
@@ -107,6 +107,10 @@
 
                 </tbody>
             </table>
+            <div id="default-pagination">
+                {% include 'components/pagination.html' with page_obj=page_obj %}
+            </div>
+            {% include 'components/ajax_pagination.html' %}
             <div class="text-center  text-gray-500 py-2 font-semibold" id="no-data" style="display: none;">No data</div>
             <div class="flex justify-end  py-3 my-5 bg-white rounded-lg shadow-md">
 
@@ -177,62 +181,56 @@
     <script>
         
         //serach by date
+        var payrollFilters = {};
+        function loadPayrollPage(page) {
+            $.ajax({
+                url: '{% url "report:report-payroll-date" %}',
+                method: 'GET',
+                data: $.extend({}, payrollFilters, { page: page }),
+                success: function(response) {
+                    $('#total_amount').text(response.amount_total);
+                    $('#net_pay').text(response.amount_total);
+                    const table = $('#example tbody')
+                    table.empty()
+                    $('#default-pagination').addClass('hidden');
+                    if(response.payroll && response.payroll.length > 0){
+                        var start = parseInt(response.start_index, 10) || 1;
+                        response.payroll.forEach(function(item, index) {
+                            var num = start + index;
+                            const row = $('<tr id="row">').append(
+                                $('<td class="text-[10px]">').html(num),
+                                $('<td class="text-[10px]">').text(item.month_year),
+                                $('<td class="text-[10px]">').text(item.employee),
+                                $('<td class="text-[10px]">').text(item.gross_pay),
+                                $('<td class="text-[10px]">').text(item.total_due),
+                                $('<td class="text-[10px]">').text(item.net_pay),
+                                $('<td class="text-[10px] bg-gray-50 w-3">').append('<a onclick="showPayroll(\''+ item.month_year + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">View</a>')
+                            );
+                            table.append(row);
+                        });
+                        $("#no-data").css('display', 'none')
+                        renderAjaxPagination(response, loadPayrollPage);
+                    }else{
+                        hideAjaxPagination();
+                        $("#no-data").css('display', 'block');
+                        alertify.error("No payroll between selected month and year");
+                    }
+                },
+                error: function() {
+                    console.log('error')
+                }
+            });
+        }
         $("#search-2").on('click', function(e){
            e.preventDefault()
            const month = $('#month').val();
            const year = $('#year').val();
-           //console.log(from)
-           //console.log(to)
            if(month && year){
-               $.ajax({
-                   url: '{% url "report:report-payroll-date" %}',
-                   method: 'GET',
-                   data: {
-                       'month': month,
-                       'year': year,
-                   },
-                   success: function(response) {
-                       console.log(response.payroll)
-                       console.log(response.amount_total)
-                       if(response.payroll && response.payroll.length > 0){
-                           $('#total_amount').val(response.amount_total);
-                           $('#net_pay').val(response.amount_total);
-                           const table = $('#example tbody')
-                           table.empty()
-                           let num = 0;
-                           response.payroll.forEach(item => {
-                               num++ 
-                                   const row = $('<tr id="row">').append(
-                                       $('<td class="text-[10px]">').html(num),
-                                       $('<td class="text-[10px]">').text(item.month_year),
-                                       $('<td class="text-[10px]">').text(item.employee),
-                                       $('<td class="text-[10px]">').text(item.gross_pay),
-                                       $('<td class="text-[10px]">').text(item.total_due),
-                                       $('<td class="text-[10px]">').text(item.net_pay),  
-                                       $('<td class="text-[10px] bg-gray-50 w-3">').append('<a onclick="showPayroll(\''+ item.month_year + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">View</a>') 
-                                   );
-                                   table.append(row);
-                               //}
-                           });
-                           $("#no-data").css('display', 'none')
-                       }else{
-                           $("#example tbody").empty();
-                           $('#total').val(0)
-                           $("#no-data").css('display', 'block');
-                           alertify.error("No payroll between selected month and year");
-                           //alertify.error("Select start_date and end_date")
-                       }
-                   },
-                   error: function(error) {
-                       // Handle the error
-                       console.log('error')
-                   }
-               });
+               payrollFilters = { month: month, year: year };
+               loadPayrollPage(1);
            }else{
                alertify.error("Select a valid month and year")
            }
-   
-           
        })
 
        function showPayroll(data){

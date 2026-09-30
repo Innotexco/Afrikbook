@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from django.db.models import Sum, F, Q
+from django.db.models import Sum, F, Q, Max
 from django.db.models.functions import Lower
 from customer.models import *
 from vendor.models import *
@@ -498,6 +498,123 @@ def AfrikBookDB(request):
     db = request.user.company_id.db_name
     return db
 
+def _pl_decimal(value):
+    try:
+        return decimal.Decimal(str(value or 0))
+    except Exception:
+        return decimal.Decimal('0.00')
+
+
+def _pl_unique_invoice_total(qs):
+    """One amount_expected per invoiceID, then sum."""
+    grouped = qs.values('invoiceID').annotate(amt=Max('amount_expected'))
+    return _pl_decimal(grouped.aggregate(t=Sum('amt'))['t'])
+
+
+def _pl_cogs(db, live_qs):
+    """Qty × purchase cost on live invoice lines. Item.purchase_price fills a zero purchaseP."""
+    priced = live_qs.filter(purchaseP__gt=0)
+    cogs = _pl_decimal(priced.aggregate(t=Sum(F('qty') * F('purchaseP')))['t'])
+    missing = live_qs.filter(Q(purchaseP__isnull=True) | Q(purchaseP=0))
+    item_cost = {}
+    extra = decimal.Decimal('0.00')
+    for line in missing.only('itemcode', 'qty'):
+        code = line.itemcode
+        if not code:
+            continue
+        if code not in item_cost:
+            item = Item.objects.using(db).filter(generated_code=code).only('purchase_price').first()
+            item_cost[code] = _pl_decimal(item.purchase_price) if item else decimal.Decimal('0.00')
+        extra += _pl_decimal(line.qty) * item_cost[code]
+    return cogs + extra
+
+
+def _pl_account_sum(model, db, q_obj):
+    return _pl_decimal(model.objects.using(db).filter(q_obj).aggregate(t=Sum('amount'))['t'])
+
+
+def compute_profit_loss(db, from_date, to_date):
+    """P&L for a date range.
+
+    Sales − returns − discounts − COGS = gross profit.
+    Gross profit − operating expenses + other income − tax = net profit.
+    """
+    start_dt = datetime.combine(from_date, time.min)
+    end_dt = datetime.combine(to_date, time.max)
+    invoices = customer_invoice.objects.using(db).filter(invoice_date__range=(start_dt, end_dt))
+    live = exclude_returned_or_cancelled_invoices(invoices)
+    returned = invoices.filter(
+        Q(invoiceID__icontains='returned')
+        | Q(cancellation_status='1')
+        | Q(invoice_state__iexact='Cancelled')
+        | Q(invoice_state__iexact='Returned')
+    )
+    date_q = Q(date__range=(from_date, to_date))
+
+    sales = _pl_unique_invoice_total(invoices)
+    sales_return = _pl_unique_invoice_total(returned)
+    discounts = _pl_account_sum(
+        Expenses_account, db,
+        date_q & Q(account_bankname__icontains='Discount Allowed'),
+    )
+    cogs = _pl_cogs(db, live)
+    expenses = _pl_account_sum(
+        Expenses_account, db,
+        date_q
+        & ~Q(account_bankname__icontains='Tax')
+        & ~Q(account_bankname__icontains='Vat')
+        & ~Q(account_bankname__icontains='Discount Allowed')
+        & ~Q(account_bankname__icontains='prepaid'),
+    )
+    other_income = _pl_account_sum(
+        Income_account, db,
+        date_q
+        & ~Q(account_bankname__icontains='Sales')
+        & ~Q(account_id__icontains='4001-Sales'),
+    )
+    tax = _pl_account_sum(
+        Expenses_account, db,
+        date_q & (
+            Q(account_bankname__icontains='Tax')
+            | Q(account_bankname__icontains='Vat')
+            | Q(account_type__iexact='Tax')
+        ),
+    )
+
+    gross_profit = sales - sales_return - discounts - cogs
+    operating_income = gross_profit - expenses
+    net_profit = operating_income + other_income - tax
+
+    return {
+        'sales': sales,
+        'salesReturn': sales_return,
+        'discountallowed_Sum': discounts,
+        'COGS': cogs,
+        'TotalGrossProfit': gross_profit,
+        'expenses': expenses,
+        'operatingIncome': operating_income,
+        'other_income': other_income,
+        'tax': tax,
+        'totalNetProfit': net_profit,
+    }
+
+
+def profit_loss_empty():
+    zero = decimal.Decimal('0.00')
+    return {
+        'sales': zero,
+        'salesReturn': zero,
+        'discountallowed_Sum': zero,
+        'COGS': zero,
+        'TotalGrossProfit': zero,
+        'expenses': zero,
+        'operatingIncome': zero,
+        'other_income': zero,
+        'tax': zero,
+        'totalNetProfit': zero,
+    }
+
+
 def Sumfunction(getFiltered):
     getFilteredSum1 = sum(amt.amount for amt in getFiltered)
     return getFilteredSum1
@@ -539,49 +656,22 @@ def ammountSummer(request, model, query_kwargs):
 @login_required(login_url='/')
 @urls_name(name="Profit / Loss")
 def ProfitLossStatement(request):
-    context = None
     db = AfrikBookDB(request)
-    fromdate = request.GET.get('fromdate')
-    todate   = request.GET.get('todate')
-    if fromdate and  todate:
-        from_date, to_date = getdate(fromdate, todate)
-        
-        sales                           = ammountSummer(request,  Assets_account, (Q(account_type='Cash') & Q(date__range=(from_date, to_date))))
-        get_salesReturn                 = ammountSummer(request, Liability_account, (Q(account_type='Cash') & Q(account_bankname__icontains='Return Inward') & Q(date__range=(from_date, to_date))))
-        get_discountallowed_Sum         = ammountSummer(request, Expenses_account, (Q(account_type='Cash') & Q(account_bankname__icontains='Discount Allowed') & Q(date__range=(from_date, to_date))))
-        get_cost_of_goods               = getCOGSSum(request, customer_invoice, 'itemcode')
-        get_expenses                    = ammountSummer(request, Expenses_account,  (~Q(account_bankname__icontains='Tax')  & ~Q(account_bankname__icontains='Discount Allowed') &  Q(date__range=(from_date, to_date))))
+    fromdate = (request.GET.get('fromDate') or request.GET.get('fromdate') or '').strip()
+    todate = (request.GET.get('toDate') or request.GET.get('todate') or '').strip()
 
-        getOperatingExpensesSum         = ammountSummer(request, Expenses_account, Q(date__range=(from_date, to_date)))
-        get_other_income                = ammountSummer(request, Income_account,  (Q(account_type='Cash') & Q(date__range=(from_date, to_date))))
+    context = profit_loss_empty()
+    context['fromDate'] = fromdate
+    context['toDate'] = todate
 
-        
-        totalSales                      = sales - get_salesReturn 
-        totalLiability                  = get_discountallowed_Sum +  get_cost_of_goods
-        # TotalGrossProfit = totalSales - totalLiability
-        TotalGrossProfit                = totalSales
+    if fromdate and todate:
+        try:
+            from_date, to_date = getdate(fromdate, todate)
+        except (ValueError, TypeError):
+            from_date = to_date = None
+        if from_date and to_date:
+            context.update(compute_profit_loss(db, from_date, to_date))
 
-        
-        get_operatong_income            = TotalGrossProfit - getOperatingExpensesSum
-        getNetProfit                    = totalSales + get_operatong_income + get_other_income
-        get_totalNetProfit              = getNetProfit - getOperatingExpensesSum
-
-
-        getTax                          = Expenses_account.objects.using(db).filter(Q(account_bankname__icontains='Tax') & Q(date__range=(from_date, to_date)))
-        getTaxSum                       = sum(amt.amount for amt in getTax)
-
-        context={
-            'sales' : sales,
-            'salesReturn' : get_salesReturn,
-            'discountallowed_Sum' : get_discountallowed_Sum,
-            'COGS' : get_cost_of_goods,
-            'TotalGrossProfit' : TotalGrossProfit,
-            'expenses' : get_expenses,
-            'operatingIncome' : get_operatong_income,
-            'other_income' : get_other_income,
-            'tax' : getTaxSum,
-            'totalNetProfit' : get_totalNetProfit,
-        }
     return render(request, 'report/ProfitLossStatement.html', context)
 
 
@@ -794,8 +884,9 @@ def StockInReport(request):
 
 
 def OutletStockinReport(request):
+    from main.utils import paginate_queryset
     db = AfrikBookDB(request)
-    getstock = CreateOutletStockIn.objects.using(db).all()
+    getstock = CreateOutletStockIn.objects.using(db).all().order_by('-datetx', '-id')
     items = Encountered(getstock,'item')
     outlet = Encountered(getstock,'outlet')
     total_quantity = sum(item.quantity for item in getstock)
@@ -808,6 +899,12 @@ def OutletStockinReport(request):
     }
     
     ForOutletStockinReport(request, context, db)
+    stock_qs = context.get('stock') or getstock
+    if hasattr(stock_qs, 'order_by'):
+        stock_qs = stock_qs.order_by('-datetx', '-id')
+    page_obj = paginate_queryset(request, stock_qs)
+    context['stock'] = page_obj
+    context['page_obj'] = page_obj
     return render(request, 'report/OutletStockinReport.html', context)
 
 
@@ -847,17 +944,24 @@ def StockIn(request):
 @login_required(login_url='/')
 @urls_name(name="Purchase Invoices")
 def PurchaseInvoice(request):
+    from main.utils import paginate_queryset
     db = AfrikBookDB(request)
     item_name = Item.objects.using(db).values("item_name")
-    sales = Vendor_invoice.objects.using(db).all().exclude(invoiceID__icontains=str('returned')) #.distinct()
-    unique_invoices = {sale.invoiceID: sale for sale in sales}.values()
+    sales = Vendor_invoice.objects.using(db).all().exclude(invoiceID__icontains=str('returned')).order_by('-invoice_date', '-id')
+    unique = {}
+    for sale in sales:
+        if sale.invoiceID not in unique:
+            unique[sale.invoiceID] = sale
+    unique_invoices = list(unique.values())
     company = company_table.objects.get(id=request.user.company_id_id)
     supplier = vendor_table.objects.using(db).all()
     operator = Vendor_invoice.objects.using(db).values("Userlogin").distinct()
     sales_total = Vendor_invoice.objects.using(db).values("invoiceID").distinct().count()
     qty_total = Vendor_invoice.objects.using(db).aggregate(total_qty=Sum("qty"))['total_qty']
+    page_obj = paginate_queryset(request, unique_invoices)
     context = {
-        'sales':unique_invoices,
+        'sales': page_obj,
+        'page_obj': page_obj,
         'sales_total':sales_total,
         'qty_total':qty_total,
         'item_name':item_name,
@@ -892,9 +996,11 @@ def PayrollReport(request):
         i.net_pay = payroll.objects.using(db).filter(month_year=i.month_year).aggregate(total=Sum('net_pay'))['total']
 
     total_amount = payroll.objects.using(db).aggregate(total=Sum('net_pay'))['total'] or 0.00
-    
+    from main.utils import paginate_queryset
+    page_obj = paginate_queryset(request, unique_payroll)
     context = {
-        'payrolls': unique_payroll,
+        'payrolls': page_obj,
+        'page_obj': page_obj,
         'total_amount': total_amount,
         'years': years,
         'company': company
@@ -1801,9 +1907,18 @@ def PurchaseLedger(request):
     from main.utils import paginate_queryset
     db = AfrikBookDB(request)
     item_name = Item.objects.using(db).values("item_name")
-    sales = Vendor_invoice.objects.using(db).all() #.distinct()
-    # sales = Vendor_invoice.objects.filter(invoice_state="Supplied").exclude(invoiceID__icontains=str('returned')) #.distinct()
-    unique_invoices = list({sale.invoiceID: sale for sale in sales}.values())
+    sales = Vendor_invoice.objects.using(db).all().order_by('-invoice_date', '-id')
+    unique = {}
+    for sale in sales:
+        if sale.invoiceID not in unique:
+            unique[sale.invoiceID] = sale
+    unique_invoices = list(unique.values())
+    seen_vendors = set()
+    vendor_options = []
+    for inv in unique_invoices:
+        if inv.cusID not in seen_vendors:
+            seen_vendors.add(inv.cusID)
+            vendor_options.append(inv)
     company = company_table.objects.get(id=request.user.company_id_id)
 
     sales_total = Vendor_invoice.objects.using(db).values("invoiceID").distinct().count()
@@ -1816,6 +1931,8 @@ def PurchaseLedger(request):
     page_obj = paginate_queryset(request, unique_invoices)
     context = {
         'purchase': page_obj,
+        'purchases': page_obj,
+        'vendor_options': vendor_options,
         'page_obj': page_obj,
         'amount_total':amount_total,
         'item_name':item_name,
@@ -2784,11 +2901,13 @@ def report_payroll_filter_by_date(request):
     amount_total = payroll.objects.using(db).filter(month_year=month_year).aggregate(total_amount=Sum("net_pay"))['total_amount']
     
     serializer_data = list(unique_payroll)
-
+    from main.utils import paginate_queryset, pagination_meta
+    page_obj = paginate_queryset(request, serializer_data)
     data ={
         'amount_total':amount_total,
-        'payroll':serializer_data
+        'payroll': list(page_obj)
     }
+    data.update(pagination_meta(page_obj))
 
     return JsonResponse(data, safe=False)
 

@@ -70,9 +70,13 @@
                         <span class="text-gray-700">Select by InvoiceID</span>
                         <select class="commonClass block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg"
                             id="invoice" name="">
-                            <option>_ _Choose Invoice_ _</option>
-                            {% for vendorInvoice in allinvoice %}
+                            <option>_ _Choose Item_ _</option>
+                            {% for vendorInvoice in invoice_options %}
                                 <option value="{{vendorInvoice.invoiceID}}">{{vendorInvoice.invoiceID}}</option>
+                            {% empty %}
+                                {% for vendorInvoice in allinvoice %}
+                                    <option value="{{vendorInvoice.invoiceID}}">{{vendorInvoice.invoiceID}}</option>
+                                {% endfor %}
                             {% endfor %}
                         </select>
                     </label>
@@ -101,7 +105,7 @@
                 <tbody class="bg-white divide-y default">
                     {% for vendorInvoice in allinvoice %}
                         <tr class="text-gray-700">
-                            <td class="text-[10px]">{{forloop.counter}}</td>
+                            <td class="text-[10px]">{% if page_obj %}{{ page_obj.start_index|add:forloop.counter0 }}{% else %}{{ forloop.counter }}{% endif %}</td>
                             <td class="text-[10px]">{{ vendorInvoice.invoice_date|date:"d M Y" }}</td>
                             <td class="text-[10px]">
                                 {{vendorInvoice.invoiceID}}
@@ -148,7 +152,7 @@
             </table>
 
             {# ── Default page load pagination ── #}
-            {% if page_obj.paginator.num_pages > 1 %}
+            {% if page_obj %}
             <div class="flex items-center justify-between px-4 py-3 bg-white border-t" id="default-pagination">
                 <span class="text-xs text-gray-500">
                     Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} records

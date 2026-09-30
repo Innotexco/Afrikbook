@@ -8,7 +8,7 @@ import decimal
 from Stock.models import Item
 from .function.date import convertDate
 from decimal import Decimal
-from main.utils import paginate_queryset
+from main.utils import paginate_queryset, pagination_meta
 from customer.functions.generalFunction import exclude_returned_or_cancelled_invoices
 
 
@@ -415,25 +415,18 @@ def aged_recievable_filter(request, value):
     return JsonResponse(data)
 
 def profit_loss_filter_by_date(request):
-    db = request.user.company_id.db_name 
+    from report.views import compute_profit_loss, profit_loss_empty
 
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
+    if not start_date_str or not end_date_str:
+        data = profit_loss_empty()
+        return JsonResponse({key: str(value) for key, value in data.items()})
 
-   
-
-    sales_total = customer_invoice.objects.using(db).filter(invoice_date__range=(convertDate(start_date_str, end_date_str))).values("invoiceID").distinct().count()
-    sales_return = customer_invoice.objects.using(db).filter(invoice_date__range=(convertDate(start_date_str, end_date_str)), invoice_state="Cancelled").values("invoiceID").distinct().count()
-    goods_sold = customer_invoice.objects.using(db).filter(invoice_date__range=(convertDate(start_date_str, end_date_str)), invoice_state="Supplied").values("invoiceID").aggregate(total_goods_sold=Sum("amount_paid"))['total_goods_sold']
-
-   
-    data = {
-        'sales_total':sales_total,
-        'sales_return':sales_return,
-        'goods_sold':goods_sold
-    }
-
-    return JsonResponse(data)
+    db = request.user.company_id.db_name
+    from_date, to_date = convertDate(start_date_str, end_date_str)
+    data = compute_profit_loss(db, from_date, to_date)
+    return JsonResponse({key: str(value) for key, value in data.items()})
 
 def compute_customer_ledger(entries_qs, start_date=None, end_date=None):
     """Build a customer AR ledger: Debit increases what is owed, Credit reduces it.
@@ -534,6 +527,7 @@ def customers_ledger_filter_by_date(request):
     amount_paid_total = sum((row['amount_paid'] for row in rows), decimal.Decimal('0.00'))
     balance = amount_total - amount_paid_total
 
+    page_obj = paginate_queryset(request, rows)
     serializer_data = [
         {
             'cusID': row['cusID'],
@@ -543,15 +537,17 @@ def customers_ledger_filter_by_date(request):
             'amount_paid': str(row['amount_paid']),
             'balance': str(row['balance']),
         }
-        for row in rows
+        for row in page_obj
     ]
 
-    return JsonResponse({
+    payload = {
         'serializer_data': serializer_data,
         'amount_total': str(amount_total),
         'amount_paid_total': str(amount_paid_total),
         'balance': str(balance),
-    })
+    }
+    payload.update(pagination_meta(page_obj))
+    return JsonResponse(payload)
 
 def customer_ledger_filter_by_date(request):
     db = request.user.company_id.db_name
@@ -600,9 +596,9 @@ def sales_ladger_filter_by_date(request):
     end_date_str = request.GET.get('end_date')
     customer = request.GET.get('customer')
     item = request.GET.get('item')
-    invoice_id = request.GET.get('invoice_id')   
+    invoice_id = request.GET.get('invoice_id')
 
-    filter_conditions = Q()
+    filter_conditions = Q(invoice_state="Supplied") & ~Q(invoiceID__icontains="returned") & ~Q(invoiceID__icontains="cancelled")
 
     if start_date_str and end_date_str:
         filter_conditions &= Q(invoice_date__range=(convertDate(start_date_str, end_date_str)))
@@ -613,16 +609,16 @@ def sales_ladger_filter_by_date(request):
     if customer:
         filter_conditions &= Q(cusID=customer)
 
-    if invoice_id:                                  
+    if invoice_id:
         filter_conditions &= Q(invoiceID__icontains=invoice_id)
 
     data = []
-    amount_total = 0   
+    amount_total = 0
     if filter_conditions:
         filtered_data = customer_invoice.objects.using(db).filter(filter_conditions).values()
-        for item in filtered_data:
-            if item['invoiceID'] not in [d['invoiceID'] for d in data]:
-                data.append(item)
+        for item_row in filtered_data:
+            if item_row['invoiceID'] not in [d['invoiceID'] for d in data]:
+                data.append(item_row)
 
         amount_total = customer_invoice.objects.using(db).filter(filter_conditions).values("invoiceID").distinct().aggregate(total_amount=Sum("amount_expected"))['total_amount'] or 0
 

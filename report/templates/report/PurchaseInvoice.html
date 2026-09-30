@@ -107,40 +107,32 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y" id="'+i+'">
-
-                    
-                    {% for display in display_vendor %}
-                    
+                    {% for display in sales %}
                     <tr class="text-gray-700" >
-
-                        <td class="text-[10px]">
-                            {{display.id}}
+                        <td class="text-[10px]">{{ page_obj.start_index|add:forloop.counter0 }}</td>
+                        <td class="text-[10px]">{{ display.invoiceID }}</td>
+                        <td class="text-[10px]">{{ display.invoice_date|date:"Y-m-d" }}</td>
+                        <td class="text-[10px]">{{ display.item_name }}</td>
+                        <td class="text-[10px]">{{ display.vendor_name }}</td>
+                        <td class="text-[10px]">{{ display.qty }}</td>
+                        <td class="text-[10px]">{{ display.amount }}</td>
+                        <td class="text-[10px]">{{ display.Userlogin }}</td>
+                        <td class="text-[10px] flex gap-2">
+                            <a onclick="showModal('{{ display.invoiceID }}', '{{ display.cusID }}')"
+                               class="flex items-center justify-center text-blue-500 border px-2 py-1 bg-gray-50 cursor-pointer rounded"
+                               aria-label="View">View</a>
+                            <a href="/purchase/edit/{{ display.invoiceID }}/"
+                               class="flex items-center justify-center text-green-600 border px-2 py-1 bg-gray-50 cursor-pointer rounded"
+                               aria-label="Edit">Edit</a>
                         </td>
-                        <td class="text-[10px]">
-                            {{display.email}}
-                        </td>
-                        <td class="text-[10px]">
-                            {{display.address}}
-                        </td>
-                        <td class="text-[10px]">
-                            {{display.company_name}}
-                        </td>
-                        <td class="text-[10px]">
-                            {{display.email}}
-                        </td>
-                        <td class="text-[10px]">
-                            {{display.address}}
-                        </td>
-                        <td class="text-[10px]">
-                            {{display.company_name}}
-                        </td>
-
                     </tr>
-
                     {% endfor %}
-
                 </tbody>
             </table>
+            <div id="default-pagination">
+                {% include 'components/pagination.html' with page_obj=page_obj %}
+            </div>
+            {% include 'components/ajax_pagination.html' %}
             <div class="text-center  text-gray-500 py-2 font-semibold" id="no-data" style="display: none;">No data found</div>
         </div>
     </div>
@@ -171,87 +163,72 @@
                 //Filter()
             }, 500)
         )
-        //serach by date
+        var purchaseInvoiceFilters = {};
+        function loadPurchaseInvoicePage(page) {
+            var datas = $.extend({}, purchaseInvoiceFilters, { page: page });
+            $.ajax({
+                url: '{% url "filter:purchase-report-date" %}',
+                method: 'GET',
+                data: datas,
+                success: function(response) {
+                    var rows = response.serializer_data || [];
+                    const table = $('#purchase-report tbody');
+                    table.empty();
+                    $('#default-pagination').addClass('hidden');
+                    if(rows.length > 0){
+                        var start = parseInt(response.start_index, 10) || 1;
+                        rows.forEach(function(item, index) {
+                            var num = start + index;
+                            const row = $('<tr id="row">').append(
+                                $('<td class="text-[10px]">').html(num),
+                                $('<td class="text-[10px]">').text(item.invoiceID),
+                                $('<td class="text-[10px]">').text(item.invoice_date),
+                                $('<td class="text-[10px]">').text(item.item_name),
+                                $('<td class="text-[10px]">').text(item.vendor_name),
+                                $('<td class="text-[10px]">').text(item.qty),
+                                $('<td class="text-[10px]">').text(item.amount),
+                                $('<td class="text-[10px]">').text(item.Userlogin),
+                                $('<td class="text-[10px] flex gap-2">')
+                                .append(
+                                    '<a onclick="showModal(\'' + item.invoiceID + '\', \'' + item.cusID + '\')" ' +
+                                    'class="flex items-center justify-center text-blue-500 border px-2 py-1 bg-gray-50 cursor-pointer rounded" ' +
+                                    'aria-label="View">View</a>'
+                                )
+                                .append(
+                                    '<a href="/purchase/edit/' + item.invoiceID + '/" ' +
+                                    'class="flex items-center justify-center text-green-600 border px-2 py-1 bg-gray-50 cursor-pointer rounded" ' +
+                                    'aria-label="Edit">Edit</a>'
+                                )
+                            );
+                            table.append(row);
+                        });
+                        $("#no-data").css('display', 'none');
+                        renderAjaxPagination(response, loadPurchaseInvoicePage);
+                    }else{
+                        hideAjaxPagination();
+                        alertify.error("No data between selected category")
+                    }
+                },
+                error: function() {
+                    console.log('error')
+                }
+            });
+        }
         function Filter(){
-            
             const from = $('#from').val()
             const to = $('#to').val()
-
-            const datas = {
+            purchaseInvoiceFilters = {
                 start_date: from,
                 end_date: to,
                 supplier: $('#Supplier').val(),
                 operator: $('#Operator').val(),
                 item: $('#item').val(),
             }
-           
-            if(from || to || datas.supplier || datas.operator || datas.item){   
-                // Assuming you have the start_date and end_date values
-                $.ajax({
-                    url: '{% url "filter:purchase-report-date" %}',
-                    method: 'GET',
-                    data: datas,
-                    success: function(response) {
-                      
-                        if(response && response.length > 0){
-                            // Handle the response data
-                        
-                            // $("#sales_total").val(response.sales_total);
-                            // $("#qty_total").val(response.qty_total);
-                            const table = $('#purchase-report tbody')
-                            table.empty()
-                            let num = 0;
-                            response.forEach(item => {
-                                num++ 
-                                const uniqueInvoiceIDs = []; // To store unique invoice IDs
-                                //console.log(item.invoiceID)
-                                //if (!uniqueInvoiceIDs.includes(item.invoiceID)) {
-                                //    uniqueInvoiceIDs.push(item.invoiceID);
-        
-                                    const row = $('<tr id="row">').append(
-                                        $('<td class="text-[10px]">').html(num),
-                                        $('<td class="text-[10px]">').text(item.invoiceID),
-                                        $('<td class="text-[10px]">').text(item.invoice_date),
-                                        $('<td class="text-[10px]">').text(item.item_name),
-                                        $('<td class="text-[10px]">').text(item.vendor_name),
-                                        $('<td class="text-[10px]">').text(item.qty),
-                                        $('<td class="text-[10px]">').text(item.amount),
-                                        $('<td class="text-[10px]">').text(item.Userlogin),
-                                        $('<td class="text-[10px] flex gap-2">')
-                                        .append(
-                                            '<a onclick="showModal(\'' + item.invoiceID + '\', \'' + item.cusID + '\')" ' +
-                                            'class="flex items-center justify-center text-blue-500 border px-2 py-1 bg-gray-50 cursor-pointer rounded" ' +
-                                            'aria-label="View">View</a>'
-                                        )
-                                        .append(
-                                            '<a href="/purchase/edit/' + item.invoiceID + '/" ' +
-                                            'class="flex items-center justify-center text-green-600 border px-2 py-1 bg-gray-50 cursor-pointer rounded" ' +
-                                            'aria-label="Edit">Edit</a>'
-                                        ),
-                                        
-                                    
-                                    );
-                                    table.append(row);
-                                //}
-                                $("#no-data").css('display', 'none');
-                            });
-                        }else{
-                            // $("#example2 tbody").empty();
-                            // $("#no-data").css('display', 'block');
-                            alertify.error("No data between selected category")
-                            //alertify.error("Select start_date and end_date")
-                        }
-                    },
-                    error: function(error) {
-                        // Handle the error
-                        console.log('error')
-                    }
-                });
+            if(from || to || purchaseInvoiceFilters.supplier || purchaseInvoiceFilters.operator || purchaseInvoiceFilters.item){
+                loadPurchaseInvoicePage(1);
             }else{
                 alertify.error("Select category  to fetch data from")
             }
-
-            
         };
 
     

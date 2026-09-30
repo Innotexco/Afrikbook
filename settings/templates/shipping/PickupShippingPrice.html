@@ -83,7 +83,7 @@
                             {% for shipping in shipping %}
                             <tr class="text-gray-700 dark:text-gray-400">
                                 <td class="px-4">
-                                {{forloop.counter}}
+                                {{ page_obj.start_index|add:forloop.counter0 }}
                                 </td>
                                 <td class="px-4 text-sm">
                                 {{shipping.item_name}}
@@ -140,6 +140,7 @@
                         </tbody>
                     </table>
                 </div>
+                {% include 'components/pagination.html' with page_obj=page_obj %}
                 <button class="block w-2/12 px-4 py-1 my-5 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate"
                 type="submit">
                 Create

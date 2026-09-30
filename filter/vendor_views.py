@@ -6,6 +6,7 @@ from django.db.models import Sum, F, Q
 import decimal
 from Stock.models import Item
 from .function.date import convertDate
+from main.utils import paginate_queryset, pagination_meta
 
 
 # Create your views here.
@@ -46,8 +47,12 @@ def purchase_report_filter_by_date(request):
 
     
     serializer_data = list(data)
-
-    return JsonResponse(serializer_data, safe=False)
+    page_obj = paginate_queryset(request, serializer_data)
+    payload = {
+        'serializer_data': list(page_obj),
+    }
+    payload.update(pagination_meta(page_obj))
+    return JsonResponse(payload)
 
 
 
@@ -319,14 +324,15 @@ def purchase_ladger_filter_by_date(request):
         balance = "0.00"
    
     serializer_data = list(data)
-    data = {
-        'serializer_data': serializer_data,
+    page_obj = paginate_queryset(request, serializer_data)
+    payload = {
+        'serializer_data': list(page_obj),
         'amount_total':amount_total,
         'amount_paid_total':amount_paid_tatal,
         'balance':balance
     }
-
-    return JsonResponse(data)
+    payload.update(pagination_meta(page_obj))
+    return JsonResponse(payload)
 from datetime import datetime
 
 
@@ -367,8 +373,15 @@ def vendors_ledger_filter_by_date(request):
         balance = "0.00"
  
     serializer_data = list(data)
-    data = {'serializer_data':serializer_data, 'amount_total':amount_tatal,'amount_paid_total':amount_paid_tatal,'balance':balance}
-    return JsonResponse(data)
+    page_obj = paginate_queryset(request, serializer_data)
+    payload = {
+        'serializer_data': list(page_obj),
+        'amount_total': amount_tatal,
+        'amount_paid_total': amount_paid_tatal,
+        'balance': balance,
+    }
+    payload.update(pagination_meta(page_obj))
+    return JsonResponse(payload)
 
 def vendor_ledger_filter_by_date(request):
     db = request.user.company_id.db_name

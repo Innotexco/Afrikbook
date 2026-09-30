@@ -31,6 +31,34 @@ def paginate_queryset(request, queryset, per_page=DEFAULT_PAGE_SIZE):
         return paginator.page(paginator.num_pages)
 
 
+def pagination_meta(page_obj):
+    """JSON-safe pager fields for AJAX list endpoints."""
+    if not page_obj:
+        return {
+            'page': 1,
+            'num_pages': 1,
+            'count': 0,
+            'start_index': 0,
+            'end_index': 0,
+            'has_previous': False,
+            'has_next': False,
+            'previous_page': None,
+            'next_page': None,
+        }
+    count = page_obj.paginator.count
+    return {
+        'page': page_obj.number,
+        'num_pages': page_obj.paginator.num_pages,
+        'count': count,
+        'start_index': page_obj.start_index() if count else 0,
+        'end_index': page_obj.end_index() if count else 0,
+        'has_previous': page_obj.has_previous(),
+        'has_next': page_obj.has_next(),
+        'previous_page': page_obj.previous_page_number() if page_obj.has_previous() else None,
+        'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
+    }
+
+
 def cookieCart(request):
 
 	#Create empty cart for now for non-logged in user

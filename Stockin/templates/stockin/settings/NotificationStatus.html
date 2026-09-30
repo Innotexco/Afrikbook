@@ -119,8 +119,12 @@ input:checked + .slider:before {
                     <span class="text-gray-700">By Invoice</span>
                     <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="" required onchange="filterItem(this)">
                         <option selected disabled=true>Select status</option>
+                          {% for log in invoice_options %}
+                           <option>{{log.invoice_no}}</option>
+                          {% empty %}
                           {% for log in logs %}
-                           <option>{{log.invoice_no}}</option>   
+                           <option>{{log.invoice_no}}</option>
+                          {% endfor %}
                           {% endfor %}   
                         
                     </select>
@@ -240,6 +244,7 @@ input:checked + .slider:before {
   </div>
   {% endfor %}
 </div>
+{% include 'components/pagination.html' with page_obj=page_obj %}
  </div>
 <script>
         {% comment %} $(document).ready(

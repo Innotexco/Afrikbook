@@ -33,6 +33,7 @@
                         class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
                         placeholder=""
                         name="fromDate"
+                        value="{{ fromDate }}"
                     />
                 </label>
 
@@ -43,6 +44,7 @@
                         class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 focus:outline-none focus:shadow-outline-green text-slate-600 form-input shadow-lg"
                         placeholder=""
                         name="toDate"
+                        value="{{ toDate }}"
                     />
 
                 </label>
@@ -57,6 +59,9 @@
         
         <div class=""  id="printContent">
             <h1 class="font-extrabold text-center text-lg m-4">PROFIT AND LOSS REPORT</h1>
+            {% if fromDate and toDate %}
+            <p class="text-center text-sm text-slate-500 mb-2">{{ fromDate }} to {{ toDate }}</p>
+            {% endif %}
             <div class="w-full my-5 overflow-hidden rounded-lg shadow-xs">
                 <div class="w-full overflow-x-auto">
                     <table class="w-full whitespace-no-wrap">
@@ -157,7 +162,7 @@
                                     Tax
                                 </td>
                                 <td class="px-4 py-1 text-sm">
-                                    {{ tax }}
+                                    {% if tax %}  {{ tax|floatformat:2|intcomma }} {% else %} 0 {% endif %}
                                 </td>
 
                             </tr>

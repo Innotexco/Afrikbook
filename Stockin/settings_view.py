@@ -30,6 +30,7 @@ def SetItemNotify(request):
 
 
 def NotificationStatus(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
     invoice = CreateStockInLog.objects.using(db).values('invoice_no').distinct()
     items = CreateStockInLog.objects.using(db).all()
@@ -41,7 +42,13 @@ def NotificationStatus(request):
         if new_data.exists():
             logs.append(new_data.first())
 
-    return render(request, "stockin/settings/NotificationStatus.html", {'items':items, 'logs':logs})
+    page_obj = paginate_queryset(request, logs)
+    return render(request, "stockin/settings/NotificationStatus.html", {
+        'items': items,
+        'logs': page_obj,
+        'page_obj': page_obj,
+        'invoice_options': logs,
+    })
 
 from django.template.loader import render_to_string
 

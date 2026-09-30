@@ -1,0 +1,64 @@
+<div id="ajax-pagination" class="hidden flex items-center justify-between px-4 py-3 my-3 text-xs text-gray-600 bg-white border border-gray-100 rounded-lg shadow-sm">
+    <span class="font-medium tracking-wide" id="ajax-count-label"></span>
+    <div class="flex flex-wrap items-center gap-1" id="ajax-page-buttons"></div>
+</div>
+<script>
+    function hideAjaxPagination() {
+        $('#ajax-pagination').addClass('hidden');
+        $('#ajax-page-buttons').empty();
+        $('#ajax-count-label').text('');
+    }
+
+    function renderAjaxPagination(meta, onPage) {
+        var page = parseInt(meta && meta.page, 10) || 1;
+        var numPages = parseInt(meta && meta.num_pages, 10) || 1;
+        var count = parseInt(meta && meta.count, 10);
+        if (isNaN(count)) count = 0;
+        var startIndex = parseInt(meta && meta.start_index, 10);
+        var endIndex = parseInt(meta && meta.end_index, 10);
+        if (isNaN(startIndex)) startIndex = count ? 1 : 0;
+        if (isNaN(endIndex)) endIndex = count;
+
+        if (!count) {
+            hideAjaxPagination();
+            return;
+        }
+
+        $('#ajax-pagination').removeClass('hidden');
+        $('#ajax-count-label').text(
+            'Showing ' + startIndex + '–' + endIndex +
+            ' of ' + count + ' (page ' + page + ' / ' + numPages + ')'
+        );
+        var $buttons = $('#ajax-page-buttons').empty();
+
+        if (meta.has_previous) {
+            $buttons.append(
+                $('<button type="button" class="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700">')
+                    .text('Prev')
+                    .on('click', function() { onPage(page - 1); })
+            );
+        }
+
+        var start = Math.max(1, page - 2);
+        var end = Math.min(numPages, page + 2);
+        for (var p = start; p <= end; p++) {
+            var $btn = $('<button type="button" class="px-2.5 py-1 rounded-md">').text(p);
+            if (p === page) {
+                $btn.addClass('bg-slate-700 text-white font-semibold');
+            } else {
+                $btn.addClass('bg-slate-100 hover:bg-slate-200 text-slate-700')
+                    .data('page', p)
+                    .on('click', function() { onPage($(this).data('page')); });
+            }
+            $buttons.append($btn);
+        }
+
+        if (meta.has_next) {
+            $buttons.append(
+                $('<button type="button" class="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700">')
+                    .text('Next')
+                    .on('click', function() { onPage(page + 1); })
+            );
+        }
+    }
+</script>

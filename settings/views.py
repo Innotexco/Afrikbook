@@ -42,13 +42,15 @@ def PriceChangeHistory(request):
 @login_required(login_url='/')
 @urls_name(name="Price Management")
 def AddPriceChangeHistory(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
-    history = pricechange_history.objects.using(db).all()
     if request.method == "POST":
         add_price_management(request, db)
-
+    history = pricechange_history.objects.using(db).all().order_by('-id')
+    page_obj = paginate_queryset(request, history)
     context = {
-        'history': history
+        'history': page_obj,
+        'page_obj': page_obj,
     }
     return render(request, "settings/PriceManagement.html", context)
 
@@ -121,10 +123,13 @@ def DeleteCompanyDetails(request, id):
 @login_required(login_url='/')
 @urls_name(name="Sales Unit")
 def SalesOutlet(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
-    outlets = sales_outlet.objects.using(db).all()
+    outlets = sales_outlet.objects.using(db).all().order_by('outlet_name', 'id')
+    page_obj = paginate_queryset(request, outlets)
     context = {
-        'outlets': outlets
+        'outlets': page_obj,
+        'page_obj': page_obj,
     }
     return render(request, "settings/ViewSalesUnit.html", context)
 
@@ -860,6 +865,7 @@ def SetItemNotify(request):
 
 
 def NotificationStatus(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
     invoice = CreateStockInLog.objects.using(db).values('invoice_no').distinct()
     items = CreateStockInLog.objects.using(db).all()
@@ -871,7 +877,13 @@ def NotificationStatus(request):
         if new_data.exists():
             logs.append(new_data.first())
 
-    return render(request, "settings/NotificationStatus.html", {'items':items, 'logs':logs})
+    page_obj = paginate_queryset(request, logs)
+    return render(request, "settings/NotificationStatus.html", {
+        'items': items,
+        'logs': page_obj,
+        'page_obj': page_obj,
+        'invoice_options': logs,
+    })
 
 from django.template.loader import render_to_string
 
@@ -1271,9 +1283,8 @@ def ShippingMethod(request):
 @login_required(login_url='/')
 @urls_name(name="Customer")
 def PickupStation(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
-
-    stations = pickupstation.objects.using(db).all()
 
     if request.method == "POST":
         id = request.POST['id']
@@ -1296,24 +1307,26 @@ def PickupStation(request):
                 pickupstation.objects.using(db).create(addr=addr)
                 messages.success(request, 'Pickup Station created successfully')
 
-         
+    stations = pickupstation.objects.using(db).all().order_by('addr', 'id')
+    page_obj = paginate_queryset(request, stations)
     context ={
-        'stations' : stations,
+        'stations' : page_obj,
+        'page_obj': page_obj,
     }
     return render(request, "shipping/PickupStation.html", context)
 
 @login_required(login_url='/')
 @urls_name(name="Customer")
 def AddCity(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
 
-    cities = city.objects.using(db).all()
-    country = currency.objects.all() 
+    countries = currency.objects.all()
 
     if request.method == "POST":
         id = request.POST['id']
         City = request.POST['city']
-        country = request.POST['country']
+        country_name = request.POST['country']
         delete = request.POST['delete']
         
         if id:
@@ -1323,20 +1336,22 @@ def AddCity(request):
                 messages.success(request, 'City deleted successfully')
             else:
                 query.city = City
-                query.country = country
+                query.country = country_name
                 query.save()
                 messages.success(request, 'City Updated successfully')
         else:
             if city.objects.using(db).filter(city=City).exists():
                 messages.error(request, 'City already exists')
             else:
-                city.objects.using(db).create(country=country, city=City)
+                city.objects.using(db).create(country=country_name, city=City)
                 messages.success(request, 'City created successfully')
 
-         
+    cities = city.objects.using(db).all().order_by('country', 'city', 'id')
+    page_obj = paginate_queryset(request, cities)
     context ={
-        'cities' : cities,
-        'country': country
+        'cities' : page_obj,
+        'page_obj': page_obj,
+        'country': countries
     }
     return render(request, "shipping/Cities.html", context)
 
@@ -1346,7 +1361,6 @@ def AddCity(request):
 def PickupShippingPrice(request):
     db = request.user.company_id.db_name
 
-    shipping = pickUpShippingPrice.objects.using(db).all()
     items = Item.objects.using(db).all()
     locations = pickupstation.objects.using(db).all()
 
@@ -1375,11 +1389,13 @@ def PickupShippingPrice(request):
             
         else:
             messages.error(request, 'Please select item')
-   
 
-         
+    shipping = pickUpShippingPrice.objects.using(db).all().order_by('item_name', 'id')
+    from main.utils import paginate_queryset
+    page_obj = paginate_queryset(request, shipping)
     context ={
-        'shipping': shipping,
+        'shipping': page_obj,
+        'page_obj': page_obj,
         'items' : items,
         'locations': locations
     }

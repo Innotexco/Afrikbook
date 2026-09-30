@@ -50,7 +50,7 @@
                         <tr class="text-gray-700" id="{{outlet.id}}">
 
                             <td class="text-[10px]">
-                                {{forloop.counter}}
+                                {{ page_obj.start_index|add:forloop.counter0 }}
                             </td>
                             <td class="text-[10px]">
                                 {{outlet.outlet_name}}
@@ -111,6 +111,7 @@
                 </tbody>
             </table>
         </div>
+        {% include 'components/pagination.html' with page_obj=page_obj %}
     </div>
     
 {% endblock content %}
