@@ -839,20 +839,86 @@ def PurchaseAdjustmentHistory(request):
 
 
 
-def seriesReport(data, db):
-    getaccttype = chart_of_account.objects.using(db).values('account_id', 'actual_balance', 'account_type').filter(Q(series_name=data) )
-    return getaccttype
+def _series_decimal(value):
+    try:
+        return decimal.Decimal(str(value or 0)).quantize(decimal.Decimal('0.01'))
+    except Exception:
+        return decimal.Decimal('0.00')
 
+
+SERIES_REPORT_GROUPS = (
+    ('Assets', Assets_account, ('Assets', 'Asset')),
+    ('Liabilities', Liability_account, ('Liability', 'Liabilities', 'Liablity')),
+    ('Equity', Equity_account, ('Equity',)),
+    ('Income', Income_account, ('Income', 'Revenue')),
+    ('Expenses', Expenses_account, ('Expenses', 'Expense')),
+)
+
+
+def series_name_q(names):
+    q = Q()
+    for name in names:
+        q |= Q(series_name__iexact=name)
+    return q
+
+
+def series_log_totals(model, db, to_date=None):
+    qs = model.objects.using(db).all()
+    if to_date:
+        qs = qs.filter(date__lte=to_date)
+    grouped = qs.values('account_id').annotate(t=Sum('amount'))
+    return {row['account_id']: _series_decimal(row['t']) for row in grouped}
+
+
+def build_series_block(title, model, names, db, to_date=None):
+    accounts = chart_of_account.objects.using(db).filter(series_name_q(names)).order_by('account_id')
+    log_by_id = series_log_totals(model, db, to_date) if to_date else None
+    rows = []
+    total = decimal.Decimal('0.00')
+    for acc in accounts:
+        if log_by_id is not None:
+            amount = log_by_id.get(acc.account_id, decimal.Decimal('0.00'))
+        else:
+            amount = _series_decimal(acc.actual_balance)
+        rows.append({
+            'account_id': acc.account_id,
+            'account_bankname': acc.account_bankname or '',
+            'account_type': acc.account_type or '',
+            'amount': amount,
+        })
+        total += amount
+    return {'title': title, 'rows': rows, 'total': total}
+
+
+@login_required(login_url='/')
+@urls_name(name="Other Series")
 def AccountSeriesReport(request):
     db = AfrikBookDB(request)
-    get_all_assets = seriesReport('Assets', db)
-    get_all_liability = seriesReport('Liability', db)
-    get_all_equity = seriesReport('Equity', db)
-    
-    context  = {
-        'allassets': get_all_assets,
-        'allliabilities': get_all_liability,
-        'equities': get_all_equity,
+    toDate = (request.GET.get('toDate') or request.GET.get('todate') or '').strip()
+    to_date = None
+    if toDate:
+        try:
+            _, to_date = getdate(toDate, toDate)
+        except (ValueError, TypeError):
+            to_date = None
+            toDate = ''
+
+    series_blocks = [
+        build_series_block(title, model, names, db, to_date)
+        for title, model, names in SERIES_REPORT_GROUPS
+    ]
+
+    company = None
+    try:
+        company = company_table.objects.get(id=request.user.company_id_id)
+    except Exception:
+        pass
+
+    context = {
+        'series_blocks': series_blocks,
+        'toDate': toDate,
+        'as_of': toDate if to_date else 'Live',
+        'company': company,
     }
     return render(request, 'report/AccountSeriesReport.html', context)
 
