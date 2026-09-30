@@ -232,12 +232,12 @@
                         data.serializer_data.forEach(function(item, index) {
                             var num = start + index;
                             const row = $('<tr>').append(
-                                $('<td class="text-[10px]">').html(num),
-                                $('<td class="text-[10px]">').text(item.cusID),
-                                $('<td class="text-[10px]">').text(item.vendor_name),
-                                $('<td class="text-[10px]">').text(item.amount_paid),
-                                $('<td class="text-[10px]">').text(item.amount_expected - item.amount_paid),
-                                $('<td class="text-[10px] bg-gray-50 text-center">').append(
+                                $('<td class="text-[10px] px-4">').html(num),
+                                $('<td class="text-[10px] px-4">').text(item.cusID),
+                                $('<td class="text-[10px] px-4">').text(item.vendor_name),
+                                $('<td class="text-[10px] px-4">').text(item.amount_paid),
+                                $('<td class="text-[10px] px-4">').text(item.amount_expected - item.amount_paid),
+                                $('<td class="text-[10px] px-4 bg-gray-50 text-center">').append(
                                     '<a href="/view-vendor-ledger/' + item.cusID + '/' + item.invoiceID + '" class="text-blue-500 border px-4" aria-label="View">View</a>'
                                 )
                             );

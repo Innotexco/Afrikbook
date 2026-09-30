@@ -1973,7 +1973,10 @@ def PurchaseLedger(request):
     from main.utils import paginate_queryset
     db = AfrikBookDB(request)
     item_name = Item.objects.using(db).values("item_name")
-    sales = Vendor_invoice.objects.using(db).all().order_by('-invoice_date', '-id')
+
+    base_filter = ~Q(invoiceID__icontains="returned") & ~Q(invoiceID__icontains="cancelled")
+
+    sales = Vendor_invoice.objects.using(db).filter(base_filter).order_by('-invoice_date', '-id')
     unique = {}
     for sale in sales:
         if sale.invoiceID not in unique:
@@ -1987,28 +1990,28 @@ def PurchaseLedger(request):
             vendor_options.append(inv)
     company = company_table.objects.get(id=request.user.company_id_id)
 
-    sales_total = Vendor_invoice.objects.using(db).values("invoiceID").distinct().count()
-    amount_total = Vendor_invoice.objects.using(db).values("invoiceID").distinct().aggregate(total_amount=Sum("amount"))['total_amount']
-    amount_paid_total = Vendor_invoice.objects.using(db).values("invoiceID").distinct().aggregate(total_amount_paid=Sum("amount_paid"))['total_amount_paid'] or 0
-    amount_expected_total = Vendor_invoice.objects.using(db).values("invoiceID").distinct().aggregate(total_amount_expected=Sum("amount_expected"))['total_amount_expected'] or 0
+    sales_total = Vendor_invoice.objects.using(db).filter(base_filter).values("invoiceID").distinct().count()
+    amount_total = Vendor_invoice.objects.using(db).filter(base_filter).values("invoiceID").distinct().aggregate(total_amount=Sum("amount"))['total_amount']
+    amount_paid_total = Vendor_invoice.objects.using(db).filter(base_filter).values("invoiceID").distinct().aggregate(total_amount_paid=Sum("amount_paid"))['total_amount_paid'] or 0
+    amount_expected_total = Vendor_invoice.objects.using(db).filter(base_filter).values("invoiceID").distinct().aggregate(total_amount_expected=Sum("amount_expected"))['total_amount_expected'] or 0
     profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
-    
-    balance= amount_expected_total - amount_paid_total
+
+    balance = amount_expected_total - amount_paid_total
     page_obj = paginate_queryset(request, unique_invoices)
     context = {
         'purchase': page_obj,
         'purchases': page_obj,
         'vendor_options': vendor_options,
         'page_obj': page_obj,
-        'amount_total':amount_total,
-        'item_name':item_name,
-        'amount_paid_total':amount_paid_total,
-        'amount_expected_total':amount_expected_total,
-        'balance':balance,
+        'amount_total': amount_total,
+        'item_name': item_name,
+        'amount_paid_total': amount_paid_total,
+        'amount_expected_total': amount_expected_total,
+        'balance': balance,
         'company': company,
-        'profile':profile
+        'profile': profile
     }
-   
+
     return render(request, 'report/PurchaseLedger.html', context)
 
 def EditPurchaseLedgerDate(request):
