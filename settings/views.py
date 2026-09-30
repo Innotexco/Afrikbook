@@ -1076,7 +1076,7 @@ def UpdateItemExpiryDate_filter(request, value):
     return JsonResponse(data, safe=False)
 
 
-def InspirationControl(request):
+def ExpirationControl(request):
     db = request.user.company_id.db_name
 
     products = Item.objects.using(db).count()
@@ -1110,10 +1110,10 @@ def InspirationControl(request):
         'expired': expired,
         'items' : items,
     }
-    return render(request, "InspirationControl.html", context)
+    return render(request, "ExpirationControl.html", context)
 
 
-def InspirationControlFilter(request, value):
+def ExpirationControlFilter(request, value):
     db = request.user.company_id.db_name
   
     items = ExpiryDate.objects.using(db).values()
