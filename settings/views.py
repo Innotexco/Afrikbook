@@ -1110,7 +1110,7 @@ def ExpirationControl(request):
         'expired': expired,
         'items' : items,
     }
-    return render(request, "ExpirationControl.html", context)
+    return render(request, "settings/ExpirationControl.html", context)
 
 
 def ExpirationControlFilter(request, value):
