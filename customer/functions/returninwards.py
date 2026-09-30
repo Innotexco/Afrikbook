@@ -11,6 +11,7 @@ from django.db.models import Q
 
 from customer.functions.generalFunction import *
 from customer.functions.newsalesfunc import create_add_vat, create_minus_vat
+from customer.functions.gl import post_sale_return
 
 from django.db import transaction
 import logging
@@ -232,62 +233,53 @@ def new_return_inwards(request, db):
                     try:
                         was_fully_paid = invoice2.amount_paid >= invoice2.amount_expected
 
-                        if not was_fully_paid:
-                            # Unpaid/partial — debit the return account only
-                            if accountType == "Customer":
-                                debtor_account = chart_of_account.objects.using(db).get(
-                                    account_id='2001-ReturnInward'
-                                )
-                            else:
-                                debtor_account = chart_of_account.objects.using(db).get(
-                                    account_id='1001-ReturnOutward'
-                                )
-                            debtor_account.actual_balance += total_decimal
-                            debtor_account.save(using=db)
-                            CreateLog(db, debtor_account, total_decimal)
+                        paid_to_refund = decimal.Decimal(str(invoice2.amount_paid or 0))
+                        if paid_to_refund > total_decimal:
+                            paid_to_refund = total_decimal
 
-                            account_log.objects.using(db).create(
-                                transaction_source = "Return Inward",
-                                amount             = total_decimal,
-                                date               = refund_date,
-                                account            = debtor_account.account_id,
-                                account_type       = debtor_account.account_type,
-                                Userlogin          = request.user.username,
-                            )
-
-                        else:
-                            # Fully paid — reverse using the exact account from the original sale
+                        if accountType == "Vendor" and was_fully_paid:
                             try:
                                 pay_account = chart_of_account.objects.using(db).get(
                                     account_id=original_payment_account
                                 )
                             except chart_of_account.DoesNotExist:
-                                # Fallback if stored account no longer exists
                                 pay_account = chart_of_account.objects.using(db).get(
                                     account_id='4001-Sales'
                                 )
-
-                            if accountType == "Vendor":
-                                CreditPayable(
-                                    request, db, ven, refund_date,
-                                    Gdescription, p_method,
-                                    pay_account.account_id,
-                                    initial_total_decimal,
-                                )
-
-                            # Reverse the balance on the original payment account
-                            pay_account.actual_balance -= total_decimal
-                            pay_account.save(using=db)
-                            CreateLog(db, pay_account, total_decimal)
-
-                            account_log.objects.using(db).create(
-                                transaction_source = "Return Inward",
-                                amount             = total_decimal,
-                                date               = refund_date,
-                                account            = pay_account.account_id,
-                                account_type       = pay_account.account_type,
-                                Userlogin          = request.user.username,
+                            CreditPayable(
+                                request, db, ven, refund_date,
+                                Gdescription, p_method,
+                                pay_account.account_id,
+                                initial_total_decimal,
                             )
+
+                        if accountType == "Customer":
+                            post_sale_return(
+                                db,
+                                total=total_decimal,
+                                paid=paid_to_refund,
+                                vat=vat,
+                                payment_account_id=original_payment_account,
+                                payment_method=p_method,
+                                txn_date=refund_date,
+                                user=request.user.username,
+                            )
+                        else:
+                            debtor_account = chart_of_account.objects.using(db).get(
+                                account_id='1001-ReturnOutward'
+                            )
+                            debtor_account.actual_balance += total_decimal
+                            debtor_account.save(using=db)
+                            CreateLog(db, debtor_account, total_decimal, txn_date=refund_date)
+
+                        account_log.objects.using(db).create(
+                            transaction_source = "Return Inward",
+                            amount             = total_decimal,
+                            date               = refund_date,
+                            account            = original_payment_account or '',
+                            account_type       = '',
+                            Userlogin          = request.user.username,
+                        )
 
                         # AR must net to zero for the returned invoice so Receivables
                         # matches Customer Ledger (which excludes cancelled invoices).

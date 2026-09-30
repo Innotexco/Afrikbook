@@ -5,6 +5,7 @@ from vendor.models import vendor_table
 from django.contrib import messages
 import decimal, uuid
 from customer.functions.generalFunction import *
+from customer.functions.gl import post_receipt
 from django.conf import settings
 import logging
 import traceback
@@ -144,10 +145,15 @@ def receive_payment(request, db):
                     payment_method, account.account_id, amount_decimal
                 )
 
-            # ── Update account balance and log ────────────────────────────
-            account.actual_balance += amount_decimal
-            account.save(using=db)
-            CreateLog(db, account, amount_decimal)
+            post_receipt(
+                db,
+                amount_decimal,
+                payment_account_id=account.account_id,
+                payment_method=payment_method,
+                party='vendor' if accountype == 'Vendor' else 'customer',
+                txn_date=date,
+                user=request.user.username,
+            )
 
             # ── Account log ───────────────────────────────────────────────
             account_log.objects.using(db).create(

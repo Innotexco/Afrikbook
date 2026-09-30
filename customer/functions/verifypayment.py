@@ -21,12 +21,12 @@ def verify_payment(request, db):
 
 
         if receivable_form.is_valid():
-            account.actual_balance += decimal.Decimal(amount)
-
+            from customer.functions.gl import post_receipt
             CreditReceivable(request, db, customer, today, description, "Transfer", account.account_id, amount)
-            
-            
-            CreateLog(db, account, amount)
+            post_receipt(
+                db, amount, payment_account_id=account.account_id,
+                payment_method="Transfer", party='customer', txn_date=today,
+            )
             
             # create account log
             acc_log = account_log(

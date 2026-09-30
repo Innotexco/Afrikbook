@@ -783,19 +783,9 @@ def ReduceStockinItemQuantity(db, outlet, itemcode, qty):
     stock.save(using=db)
     
 from django.apps import apps
-    
-def CreateLog(db, account, total):
-    model_name = account.series_name.title()+"_account"
 
-     # Get the model dynamically
-    AccountModel = apps.get_model(app_label='account', model_name=model_name)
-    
- 
-    
-    AccountModel.objects.using(db).create(
-        account_id          = account.account_id,
-        series_name         = account.series_name,
-        account_bankname    = account.account_bankname,
-        account_type        = account.account_type,
-        amount              = total    
-    )
+
+def CreateLog(db, account, total, txn_date=None, user=None):
+    """Write a series-table row. Prefer post_double_entry in customer.functions.gl."""
+    from customer.functions.gl import post_series_log
+    post_series_log(db, account, total, txn_date=txn_date, user=user)

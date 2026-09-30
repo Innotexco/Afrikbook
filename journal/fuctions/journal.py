@@ -117,7 +117,12 @@ def create_new_journal_enty(request, db):
                         DebitPayable(request, db, ven, date, narration, "Transfer", account.account_id, amount_paid)
                         CreditPayable(request, db, ven, date, narration, "Transfer", account.account_id, total_debit)
 
-                    CreateLog(db, account, amount_paid)
+                    from customer.functions.gl import post_double_entry, cash_chart
+                    cash = cash_chart(db)
+                    post_double_entry(
+                        db, account, cash, amount_paid,
+                        txn_date=date, user=request.user.username,
+                    )
                     messages.success(request, "Journal Entry was edited successfully")
                     message_displayed = True
             else:
@@ -166,7 +171,12 @@ def transfer_to_bin(request, db, status, invoice_no):
                 pass
 
         journal.delete()
-        CreateLog(db, account, -abs(decimal.Decimal(j.debit)))
+        from customer.functions.gl import post_double_entry, cash_chart, money
+        cash = cash_chart(db)
+        post_double_entry(
+            db, cash, account, abs(money(j.debit)),
+            txn_date=j.date, user=request.user.username,
+        )
 
         return True
     else:

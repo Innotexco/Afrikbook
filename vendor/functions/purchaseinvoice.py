@@ -8,6 +8,7 @@ from main.models import User
 from vendor.models import vendor_table
 from customer.functions.generalFunction import *
 from customer.functions.newsalesfunc import *
+from customer.functions.gl import post_purchase
 import decimal
 from django.db import transaction
 
@@ -200,26 +201,11 @@ def add_purchase_invoice(request, db):
                     if not message_displayed:
                         try:
                             if credit_purchase:
-                                # Credit purchase: open full payable, no payment yet
-                                # (mirrors credit sales DebitReceivable-only path)
-                                bank_account.actual_balance += total_decimal
-                                bank_account.save(using=db)
                                 DebitPayable(
                                     request, db, ven, invoice_date, Gdescription,
                                     payment_method, bank_account.account_id, total_decimal
                                 )
-                                CreateLog(db, bank_account, total_decimal)
-                                account_log.objects.using(db).create(
-                                    transaction_source = transaction_source,
-                                    amount             = total_decimal,
-                                    date               = invoice_date,
-                                    account            = bank_account.account_id,
-                                    account_type       = bank_account.account_type,
-                                    Userlogin          = request.user.username,
-                                )
-
                             elif part_payment and amount_paid > 0:
-                                # Part payment: full liability + partial settlement
                                 DebitPayable(
                                     request, db, ven, invoice_date, Gdescription,
                                     payment_method, bank_account.account_id, total_decimal
@@ -228,18 +214,7 @@ def add_purchase_invoice(request, db):
                                     request, db, ven, invoice_date, Gdescription,
                                     payment_method, bank_account.account_id, amount_paid
                                 )
-                                CreateLog(db, bank_account, amount_paid)
-                                account_log.objects.using(db).create(
-                                    transaction_source = transaction_source,
-                                    amount             = amount_paid,
-                                    date               = invoice_date,
-                                    account            = bank_account.account_id,
-                                    account_type       = bank_account.account_type,
-                                    Userlogin          = request.user.username,
-                                )
-
                             else:
-                                # Full payment: open and clear payable for the total
                                 DebitPayable(
                                     request, db, ven, invoice_date, Gdescription,
                                     payment_method, bank_account.account_id, total_decimal
@@ -248,15 +223,24 @@ def add_purchase_invoice(request, db):
                                     request, db, ven, invoice_date, Gdescription,
                                     payment_method, bank_account.account_id, total_decimal
                                 )
-                                CreateLog(db, bank_account, total_decimal)
-                                account_log.objects.using(db).create(
-                                    transaction_source = transaction_source,
-                                    amount             = total_decimal,
-                                    date               = invoice_date,
-                                    account            = bank_account.account_id,
-                                    account_type       = bank_account.account_type,
-                                    Userlogin          = request.user.username,
-                                )
+
+                            post_purchase(
+                                db,
+                                total=total_decimal,
+                                paid=amount_paid,
+                                payment_account_id=account_id or bank_account.account_id,
+                                payment_method=payment_method,
+                                txn_date=invoice_date,
+                                user=request.user.username,
+                            )
+                            account_log.objects.using(db).create(
+                                transaction_source = transaction_source,
+                                amount             = total_decimal,
+                                date               = invoice_date,
+                                account            = bank_account.account_id,
+                                account_type       = bank_account.account_type,
+                                Userlogin          = request.user.username,
+                            )
 
                             create_add_vat(db, invoice_id, vat)
                             messages.success(request, "Purchase Invoice was added successfully")

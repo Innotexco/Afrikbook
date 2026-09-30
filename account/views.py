@@ -214,13 +214,15 @@ def InterAccountTransfer(request):
                 messages.error(request, "insufficient Fund !!!")
                 return redirect('account:InterAccountTransfer')
             else:
-                paid_from.actual_balance -= decimal.Decimal(amount)
+                from customer.functions.gl import post_transfer
+                post_transfer(
+                    db, paid_from, received_in, amount,
+                    txn_date=date_tx, user=request.user.username,
+                )
                 paid_from.Userlogin = request.user.username
-                paid_from.save()
-
-                received_in.actual_balance += decimal.Decimal(amount)
                 received_in.Userlogin = request.user.username
-                received_in.save()
+                paid_from.save(using=db)
+                received_in.save(using=db)
 
             # Insert into transfer_account model
             transfer_obj = transfer_account.objects.using(db).create(

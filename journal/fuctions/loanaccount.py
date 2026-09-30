@@ -9,6 +9,7 @@ from employee.forms import employee
 from account.models import chart_of_account
 import uuid, decimal
 from customer.functions.generalFunction import DebitPayable, DebitReceivable, CreateLog
+from customer.functions.gl import post_loan_disbursement
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 import decimal
@@ -193,10 +194,10 @@ def create_new_loan(request, db):
             loan_log_instance.transaction_id = transaction_id
             loan_log_instance.save(using=db)
 
-            #Update account balance
-            account_debited.actual_balance = _money(account_debited.actual_balance) + amount_owed
-            account_debited.save(using=db)
-            CreateLog(db, account_debited, amount_owed)
+            post_loan_disbursement(
+                db, account_debited, amount_owed,
+                txn_date=date, user=request.user.username,
+            )
 
             #Log entry
             account_log.objects.using(db).create(

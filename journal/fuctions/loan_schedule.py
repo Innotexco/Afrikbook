@@ -322,9 +322,8 @@ def increase_loan_receivable(db, loan, amount, userlogin=''):
         except chart_of_account.DoesNotExist:
             return
 
-    account.actual_balance = _money(account.actual_balance) + amount
-    account.save(using=db)
-    CreateLog(db, account, amount)
+    from customer.functions.gl import post_loan_interest
+    post_loan_interest(db, account, amount, user=userlogin)
     account_log.objects.using(db).create(
         transaction_source='Loan Extended Interest',
         amount=amount,
@@ -524,9 +523,8 @@ def credit_loan_receivable(db, loan, amount, userlogin=''):
         except chart_of_account.DoesNotExist:
             return
 
-    account.actual_balance = _money(account.actual_balance) - amount
-    account.save(using=db)
-    CreateLog(db, account, -amount)
+    from customer.functions.gl import post_loan_repayment
+    post_loan_repayment(db, account, amount, user=userlogin)
     account_log.objects.using(db).create(
         transaction_source="Loan Repayment",
         amount=amount,

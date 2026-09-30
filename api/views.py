@@ -22,6 +22,7 @@ from client.models import shipping_addr
 from django.db import transaction
 import decimal
 from customer.functions.generalFunction import *
+from customer.functions.gl import post_sale, post_purchase, cash_chart
 from settings.models import shipping_cost
 from customer.functions.newsalesfunc import *
 from .serializers import *
@@ -1532,6 +1533,11 @@ def create_sales_invoice_api(request):
             
             # Handle receivable/payable entries
             pay_credit = amount_paid
+            gl_paid = Decimal('0.00')
+            gl_pay_acc = account_ID
+            gl_extras = []
+            account = None
+            cash_fallback = cash_chart(db, account_ID, payment_method)
             if not credit_sales:
                 if account_ID:
                     account = chart_of_account.objects.using(db).get(account_id=account_ID)
@@ -1542,12 +1548,13 @@ def create_sales_invoice_api(request):
                         DebitPayable(request, db, vendor, invoice_date, Gdescription, payment_method, account_ID, total, invoiceID=invoiceID)
 
                     if payment_method == "Transfer":
+                        gl_paid = pay_credit
+                        gl_pay_acc = account_ID
                         if pay_credit > 0:
                             if accountType == "Customer":
                                 CreditReceivable(request, db, customer, invoice_date, Gdescription, payment_method, account_ID, pay_credit, invoiceID, total, Decimal('0.00'))
                             elif accountType == "Vendor":
                                 CreditPayable(request, db, vendor, invoice_date, Gdescription, payment_method, account_ID, pay_credit)
-                            CreateLog(db, account, pay_credit)
 
                     elif payment_method == "Transfer and Cash":
                         t_amt = transfer if transfer > 0 else (pay_credit if pay_credit > 0 else Decimal('0.00'))
@@ -1555,44 +1562,48 @@ def create_sales_invoice_api(request):
                         if transfer <= 0 and cash_amount <= 0 and pay_credit > 0:
                             t_amt = pay_credit
                             c_amt = Decimal('0.00')
+                        gl_paid = t_amt
+                        gl_pay_acc = account_ID
+                        if c_amt > 0 and cash_fallback is not None:
+                            gl_extras.append((cash_fallback.account_id, c_amt, "Cash"))
                         if t_amt > 0:
                             if accountType == "Customer":
                                 CreditReceivable(request, db, customer, invoice_date, Gdescription, "Transfer", account_ID, t_amt, invoiceID, total, Decimal('0.00'))
                             elif accountType == "Vendor":
                                 CreditPayable(request, db, vendor, invoice_date, Gdescription, "Transfer", account_ID, t_amt)
-                            CreateLog(db, account, t_amt)
 
                         if c_amt > 0:
-                            cash_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
+                            cash_account = cash_fallback or chart_of_account.objects.using(db).get(account_id='4001-Sales')
                             if accountType == "Customer":
                                 CreditReceivable(request, db, customer, invoice_date, Gdescription, "Cash", cash_account.account_id, c_amt, invoiceID, total, t_amt)
                             elif accountType == "Vendor":
                                 CreditPayable(request, db, vendor, invoice_date, Gdescription, "Cash", cash_account.account_id, c_amt)
-                            CreateLog(db, cash_account, c_amt)
 
                     elif payment_method == "Cheque":
                         ar_account = chart_of_account.objects.using(db).get(account_id='1002-Receivable')
                         account = ar_account
+                        gl_paid = Decimal('0.00')
                         if pay_credit > 0:
                             if accountType == "Customer":
                                 CreditReceivable(request, db, customer, invoice_date, Gdescription, payment_method, ar_account.account_id, pay_credit, invoiceID, total, Decimal('0.00'))
                             elif accountType == "Vendor":
                                 CreditPayable(request, db, vendor, invoice_date, Gdescription, payment_method, ar_account.account_id, pay_credit)
-                            CreateLog(db, ar_account, pay_credit)
 
                     else:
-                        # Cash / fallback
-                        sales_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
+                        cash_account = cash_fallback or chart_of_account.objects.using(db).get(account_id='4001-Sales')
+                        account = cash_account
+                        gl_paid = pay_credit
+                        gl_pay_acc = cash_account.account_id
                         if pay_credit > 0:
                             if accountType == "Customer":
-                                CreditReceivable(request, db, customer, invoice_date, Gdescription, payment_method, sales_account.account_id, pay_credit, invoiceID, total, Decimal('0.00'))
+                                CreditReceivable(request, db, customer, invoice_date, Gdescription, payment_method, cash_account.account_id, pay_credit, invoiceID, total, Decimal('0.00'))
                             elif accountType == "Vendor":
-                                CreditPayable(request, db, vendor, invoice_date, Gdescription, payment_method, sales_account.account_id, pay_credit)
-                            CreateLog(db, sales_account, pay_credit)
+                                CreditPayable(request, db, vendor, invoice_date, Gdescription, payment_method, cash_account.account_id, pay_credit)
 
                 else:
-                    # No account_ID — fall back to Sales Account
-                    sales_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
+                    sales_account = cash_fallback or chart_of_account.objects.using(db).get(account_id='4001-Sales')
+                    gl_paid = pay_credit
+                    gl_pay_acc = sales_account.account_id
                     if accountType == "Customer":
                         DebitReceivable(request, db, customer, invoice_date, Gdescription, payment_method, sales_account.account_id, total, invoiceID=invoiceID)
                         if pay_credit > 0:
@@ -1601,35 +1612,42 @@ def create_sales_invoice_api(request):
                         DebitPayable(request, db, vendor, invoice_date, Gdescription, payment_method, sales_account.account_id, total)
                         if pay_credit > 0:
                             CreditPayable(request, db, vendor, invoice_date, Gdescription, payment_method, sales_account.account_id, pay_credit)
-                    if pay_credit > 0:
-                        CreateLog(db, sales_account, pay_credit)
-                    account = sales_account  # needed for acc_log below
+                    account = sales_account
 
             else:
-                # Credit sales
+                gl_paid = Decimal('0.00')
                 if accountType == "Customer":
                     account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
-                    account.actual_balance += Decimal(str(total))
-                    account.save(using=db)
                     DebitReceivable(request, db, customer, invoice_date, Gdescription, payment_method, account.account_id, total, invoiceID=invoiceID)
 
                 elif accountType == "Vendor":
                     account = chart_of_account.objects.using(db).get(account_id='2067-Purchase')
-                    account.actual_balance += Decimal(str(total))
-                    account.save(using=db)
                     DebitPayable(request, db, vendor, invoice_date, Gdescription, payment_method, account.account_id, total, invoiceID=invoiceID)
 
-                CreateLog(db, account, total)
+            if accountType == "Customer":
+                post_sale(
+                    db, total=total, paid=gl_paid, vat=vat,
+                    payment_account_id=gl_pay_acc, payment_method=payment_method,
+                    extra_receipts=gl_extras, txn_date=invoice_date,
+                    user=request.user.username,
+                )
+            elif accountType == "Vendor":
+                post_purchase(
+                    db, total=total, paid=gl_paid,
+                    payment_account_id=gl_pay_acc, payment_method=payment_method,
+                    txn_date=invoice_date, user=request.user.username,
+                )
 
             # ── Account log ───────────────────────────────────────────────────
-            account_log.objects.using(db).create(
-                transaction_source = "Sales",
-                amount             = total,
-                date               = invoice_date,
-                account            = account.account_id,
-                account_type       = account.account_type,
-                Userlogin          = request.user.username,
-            )
+            if account:
+                account_log.objects.using(db).create(
+                    transaction_source = "Sales",
+                    amount             = total,
+                    date               = invoice_date,
+                    account            = account.account_id,
+                    account_type       = account.account_type,
+                    Userlogin          = request.user.username,
+                )
             
             # Handle shipping/billing reference
             if shipping and method:
@@ -1733,9 +1751,6 @@ def create_add_vat(db, invoiceID, vat):
             Vat.objects.using(db).get(source=invoiceID, amount=vat)
         except Vat.DoesNotExist:
             Vat.objects.using(db).create(source=invoiceID, amount=vat)
-            vat_account = chart_of_account.objects.using(db).get(account_id='6002-Vat')
-            vat_account.actual_balance += Decimal(str(vat))
-            vat_account.save(using=db)
 
 
 @api_view(['GET'])

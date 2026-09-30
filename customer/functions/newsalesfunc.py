@@ -10,6 +10,7 @@ from Stock.models import Item
 from customer.utils import generate_order_id
 from main.models import User
 from customer.functions.generalFunction import *
+from customer.functions.gl import post_sale, post_purchase, cash_chart
 from django.http import JsonResponse
 from datetime import datetime
 from settings.models import shipping_cost
@@ -540,6 +541,11 @@ def add_new_sales(request, db):
 
                         # ── Accounting entries ───────────────────────────────
                         try:
+                            gl_paid = decimal.Decimal('0.00')
+                            gl_pay_acc = account_ID
+                            gl_extras = []
+                            cash_fallback = cash_chart(db, account_ID, payment_method)
+
                             if not credit_sales:
                                 if account_ID:
                                     account = chart_of_account.objects.using(db).get(account_id=account_ID)
@@ -553,11 +559,12 @@ def add_new_sales(request, db):
                                     elif acountType == "Vendor":
                                         DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account_ID, total_decimal, invoiceID=invoiceID)
 
-                                    # Credit only what was actually paid (full, part, or none)
                                     pay_credit = amount_paid
 
                                     if payment_method == "Transfer":
                                         payment_account_used = account_ID
+                                        gl_pay_acc = account_ID
+                                        gl_paid = pay_credit
                                         if pay_credit > 0:
                                             if acountType == "Customer":
                                                 CreditReceivable(
@@ -567,12 +574,10 @@ def add_new_sales(request, db):
                                                 )
                                             elif acountType == "Vendor":
                                                 CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account_ID, pay_credit)
-                                            CreateLog(db, account, pay_credit)
                                         logger.debug(f"[add_new_sales] Transfer posted | paid={pay_credit} | total={total_decimal}")
 
                                     elif payment_method == "Transfer and Cash":
                                         payment_account_used = account_ID
-                                        # Prefer explicit split; if missing (e.g. edit), credit full pay_credit as transfer
                                         t_amt = transfer_decimal if transfer_decimal > 0 else (
                                             pay_credit if pay_credit > 0 else decimal.Decimal('0.00')
                                         )
@@ -580,6 +585,10 @@ def add_new_sales(request, db):
                                         if transfer_decimal <= 0 and cash_decimal <= 0 and pay_credit > 0:
                                             t_amt = pay_credit
                                             c_amt = decimal.Decimal('0.00')
+                                        gl_pay_acc = account_ID
+                                        gl_paid = t_amt
+                                        if c_amt > 0 and cash_fallback is not None:
+                                            gl_extras.append((cash_fallback.account_id, c_amt, "Cash"))
                                         if t_amt > 0:
                                             if acountType == "Customer":
                                                 CreditReceivable(
@@ -589,10 +598,9 @@ def add_new_sales(request, db):
                                                 )
                                             elif acountType == "Vendor":
                                                 CreditPayable(request, db, ven, invoice_date, Gdescription, "Transfer", account_ID, t_amt)
-                                            CreateLog(db, account, t_amt)
 
                                         if c_amt > 0:
-                                            cash_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
+                                            cash_account = cash_fallback or chart_of_account.objects.using(db).get(account_id='4001-Sales')
                                             if acountType == "Customer":
                                                 CreditReceivable(
                                                     request, db, cus, invoice_date, Gdescription,
@@ -601,7 +609,6 @@ def add_new_sales(request, db):
                                                 )
                                             elif acountType == "Vendor":
                                                 CreditPayable(request, db, ven, invoice_date, Gdescription, "Cash", cash_account.account_id, c_amt)
-                                            CreateLog(db, cash_account, c_amt)
                                         logger.debug(
                                             f"[add_new_sales] Transfer+Cash split posted | "
                                             f"transfer={t_amt} | cash={c_amt} | total={total_decimal}"
@@ -610,6 +617,8 @@ def add_new_sales(request, db):
                                     elif payment_method == "Cheque":
                                         payment_account_used = '1002-Receivable'
                                         account = chart_of_account.objects.using(db).get(account_id='1002-Receivable')
+                                        gl_paid = decimal.Decimal('0.00')
+                                        gl_pay_acc = None
                                         if pay_credit > 0:
                                             if acountType == "Customer":
                                                 CreditReceivable(
@@ -619,33 +628,34 @@ def add_new_sales(request, db):
                                                 )
                                             elif acountType == "Vendor":
                                                 CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, pay_credit)
-                                            CreateLog(db, account, pay_credit)
                                         logger.debug(f"[add_new_sales] Cheque posted | paid={pay_credit} | total={total_decimal}")
 
                                     else:
-                                        account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
-                                        payment_account_used = account.account_id
+                                        cash_account = cash_fallback or chart_of_account.objects.using(db).get(account_id='4001-Sales')
+                                        payment_account_used = cash_account.account_id
+                                        gl_pay_acc = cash_account.account_id
+                                        gl_paid = pay_credit
                                         if pay_credit > 0:
                                             if acountType == "Customer":
                                                 CreditReceivable(
                                                     request, db, cus, invoice_date, Gdescription,
-                                                    payment_method, account.account_id, pay_credit,
+                                                    payment_method, cash_account.account_id, pay_credit,
                                                     invoiceID, total_decimal, decimal.Decimal('0.00')
                                                 )
                                             elif acountType == "Vendor":
-                                                CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, pay_credit)
-                                            CreateLog(db, account, pay_credit)
+                                                CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, cash_account.account_id, pay_credit)
                                         logger.debug(f"[add_new_sales] Other payment posted | method={payment_method} | paid={pay_credit}")
 
                                 else:
-                                    # No account_ID — fall back to Sales Account
                                     logger.warning(
-                                        f"[add_new_sales] No account_ID provided, using default Sales Account | "
+                                        f"[add_new_sales] No account_ID provided, using cash/sales fallback | "
                                         f"invoiceID={invoiceID}"
                                     )
-                                    account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
+                                    account = cash_fallback or chart_of_account.objects.using(db).get(account_id='4001-Sales')
                                     payment_account_used = account.account_id
+                                    gl_pay_acc = account.account_id
                                     pay_credit = amount_paid
+                                    gl_paid = pay_credit
                                     if acountType == "Customer":
                                         DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total_decimal, invoiceID=invoiceID)
                                         if pay_credit > 0:
@@ -658,38 +668,45 @@ def add_new_sales(request, db):
                                         DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total_decimal, invoiceID=invoiceID)
                                         if pay_credit > 0:
                                             CreditPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, pay_credit)
-                                    if pay_credit > 0:
-                                        CreateLog(db, account, pay_credit)
 
                             else:
-                                # Credit sales path — no CreditReceivable here, DebitReceivable only
                                 logger.debug(
                                     f"[add_new_sales] Credit sale | acountType={acountType} | "
                                     f"total={total_decimal}"
                                 )
+                                gl_paid = decimal.Decimal('0.00')
                                 if acountType == "Customer":
                                     account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
                                     payment_account_used = account.account_id
-                                    account.actual_balance += total_decimal
                                     DebitReceivable(request, db, cus, invoice_date, Gdescription, payment_method, account.account_id, total_decimal, invoiceID=invoiceID)
-                                    CreateLog(db, account, total_decimal)
 
                                 elif acountType == "Vendor":
                                     account = chart_of_account.objects.using(db).get(account_id='2067-Purchase')
                                     payment_account_used = account.account_id
-                                    account.actual_balance += total_decimal
                                     DebitPayable(request, db, ven, invoice_date, Gdescription, payment_method, account.account_id, total_decimal, invoiceID=invoiceID)
-                                    CreateLog(db, account, total_decimal)
 
-                                acc_log = account_log(
-                                    transaction_source = "Sales",
-                                    amount             = total_decimal,
-                                    date               = invoice_date,
-                                    account            = account.account_id,
-                                    account_type       = account.account_type,
-                                    Userlogin          = request.user.username,
+                            if acountType == "Customer":
+                                post_sale(
+                                    db,
+                                    total=total_decimal,
+                                    paid=gl_paid,
+                                    vat=vat,
+                                    payment_account_id=gl_pay_acc,
+                                    payment_method=payment_method,
+                                    extra_receipts=gl_extras,
+                                    txn_date=date_,
+                                    user=request.user.username,
                                 )
-                                logger.debug(f"[add_new_sales] account_log built (not saved) | invoiceID={invoiceID}")
+                            elif acountType == "Vendor":
+                                post_purchase(
+                                    db,
+                                    total=total_decimal,
+                                    paid=gl_paid,
+                                    payment_account_id=gl_pay_acc,
+                                    payment_method=payment_method,
+                                    txn_date=date_,
+                                    user=request.user.username,
+                                )
 
                         except chart_of_account.DoesNotExist as e:
                             logger.error(
@@ -844,11 +861,6 @@ def create_add_vat(db, invoiceID, vat):
         Vat.objects.using(db).get(source=invoiceID, amount=vat_amount)
     except Vat.DoesNotExist:
         Vat.objects.using(db).create(source=invoiceID, amount=vat_amount)
-        vat_account = chart_of_account.objects.using(db).get(account_id='6002-Vat')
-        vat_account.actual_balance = (
-            decimal.Decimal(str(vat_account.actual_balance or 0)) + vat_amount
-        )
-        vat_account.save(using=db)
 
 def create_minus_vat(db, invoiceID, vat):
     """Reverse VAT for returns. Uses tenant db."""
@@ -865,8 +877,3 @@ def create_minus_vat(db, invoiceID, vat):
         Vat.objects.using(db).get(source=invoiceID, amount=-vat_amount)
     except Vat.DoesNotExist:
         Vat.objects.using(db).create(source=invoiceID, amount=-vat_amount)
-        vat_account = chart_of_account.objects.using(db).get(account_id='6002-Vat')
-        vat_account.actual_balance = (
-            decimal.Decimal(str(vat_account.actual_balance or 0)) - vat_amount
-        )
-        vat_account.save(using=db)
