@@ -1082,7 +1082,7 @@ def ExpirationControl(request):
     products = Item.objects.using(db).count()
     stock = CreateStockIn.objects.using(db).filter(quantity__gt=0).count()
     sold = customer_invoice.objects.using(db).filter(invoice_state="Supplied").values('invoiceID').distinct().count()
-    expired = CreateStockInLog.objects.using(db).filter(status="expired").count()
+    expired = CreateStockInLog.objects.using(db).filter(status="Expired").count()
     items = ExpiryDate.objects.using(db).all()
 
     getData(items, db)

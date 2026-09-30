@@ -98,7 +98,7 @@
                     <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="" required onchange="filterItem(this)">
                         <option selected disabled=true>Select status</option>
                        
-                           <option>Sold</option>   
+                           {% comment %} <option>Sold</option>    {% endcomment %}
                            <option>Expired</option>   
                            <option>Unverified</option>   
                         
@@ -156,13 +156,13 @@
                     <thead>
                         <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
                             <th class="px-4 py-3">SN</th>
-                            <th class="px-4 py-3">Invoice No.</th>
+                            <th class="px-4 py-3">Item Code</th>
                             <th class="px-4 py-3">Item</th>
                             <th class="px-4 py-3">Manufacture Date</th>
                             <th class="px-4 py-3">Expiry Date</th>
-                            <th class="px-4 py-3">Days Before expir</th>
+                            <th class="px-4 py-3">Days Before Expiry</th>
                             <th class="px-4 py-3">Remaining Days</th>
-                            <th class="px-4 py-3">Notifiy Me</th>
+                            <th class="px-4 py-3">Notify Me</th>
                             <th class="px-4 py-3">Notification Status</th>
                             <th class="px-4 py-3">Status</th> 
                             <th class="px-4 py-3"></th>
