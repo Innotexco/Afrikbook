@@ -100,44 +100,25 @@ def getSum2(request, field, value, field2, value2):
 @login_required(login_url='/')
 @urls_name(name="Trial Balance")
 def TrialBalance(request):
-    fromdate = request.GET.get('fromdate')
-    todate   = request.GET.get('todate')
-    context = None
-    if fromdate and todate:
-        from_date, to_date = getdate(fromdate, todate)
-        get_Purchase_Sum            = ammountSummer(request, Expenses_account,  (Q(account_type='Cash') & Q(date__range=(from_date, to_date))))
-        get_Sales_Sum               = ammountSummer(request, Assets_account, (~Q(account_bankname__icontains='Return Inward') & Q(account_type='Cash') & Q(date__range=(from_date, to_date))))
-        get_acct_payable_Sum        = ammountSummer(request, Liability_account, (Q(account_type='Payable') & Q(date__range=(from_date, to_date))))
-        get_acct_receivable_Sum     = ammountSummer(request, Assets_account, (Q(account_type='Receivable') & Q(date__range=(from_date, to_date))))
-        get_expenses_Sum            = ammountSummer(request, Expenses_account,  (~Q(account_bankname__icontains='Salaries')  & ~Q(account_bankname__icontains='Discount Allowed') & ~Q(account_type='Cash') &  Q(date__range=(from_date, to_date))))
-        get_Salaries_Sum            = ammountSummer(request, Expenses_account, (Q(account_bankname__icontains='Salaries') & Q(date__range=(from_date, to_date))))
-        get_discountallowed_Sum     = ammountSummer(request, Expenses_account, (Q(account_bankname__icontains='Discount Allowed') & Q(date__range=(from_date, to_date))))
-        get_discountrecieved_Sum    = ammountSummer(request, Assets_account, (Q(account_bankname__icontains='Discount Allowed') & Q(date__range=(from_date, to_date))))
-        get_returnInward_Sum        = ammountSummer(request, Assets_account, (Q(account_bankname__icontains='Return Inward') & Q(date__range=(from_date, to_date))))
-        get_returnoutward_Sum       = ammountSummer(request, Assets_account, (Q(account_bankname__icontains='Return Outward') & Q(date__range=(from_date, to_date))))
-        get_loan_Sum                = ammountSummer(request, Liability_account,  (Q(account_type='Loan') & Q(account_bankname__icontains='Loan') & Q(date__range=(from_date, to_date))))
-        get_rapaid_loan_Sum         = ammountSummer(request, Liability_account, (Q(account_bankname__icontains='Rapaid_Loan') & Q(date__range=(from_date, to_date))))
-        get_retained_earnings       = 0
+    db = AfrikBookDB(request)
+    toDate = (request.GET.get('toDate') or request.GET.get('todate') or '').strip()
+    to_date = None
+    if toDate:
+        try:
+            _, to_date = getdate(toDate, toDate)
+        except (ValueError, TypeError):
+            to_date = None
+            toDate = ''
 
-
-
-        context= {
-            # 'CashSum': get_Cash_Sum,
-            'SalesSum': get_Sales_Sum,
-            'PurchaseSum': get_Purchase_Sum,
-            'acctpayableSum': get_acct_payable_Sum,
-            'acctreceivableSum': get_acct_receivable_Sum,
-            'Expenses': get_expenses_Sum,
-            'SalariesSum': get_Salaries_Sum,
-            'returnInwardSum': get_returnInward_Sum,
-            'returnoutward_Sum': get_returnoutward_Sum,
-            'discountallowed_Sum': get_discountallowed_Sum,
-            'discountrecieved_Sum': get_discountrecieved_Sum,
-            'loan_Sum': get_loan_Sum,
-            'rapaid_loan_Sum': get_rapaid_loan_Sum,
-            'retained_earnings': get_retained_earnings,
-        }
-
+    context = compute_trial_balance(db, to_date)
+    company = None
+    try:
+        company = company_table.objects.get(id=request.user.company_id_id)
+    except Exception:
+        pass
+    context['toDate'] = toDate
+    context['as_of'] = toDate if to_date else 'Live'
+    context['company'] = company
     return render(request, 'report/TrialBalance.html', context)
 
 
@@ -890,6 +871,119 @@ def build_series_block(title, model, names, db, to_date=None):
         })
         total += amount
     return {'title': title, 'rows': rows, 'total': total}
+
+
+TRIAL_BALANCE_DEBIT_SERIES = frozenset(('Assets', 'Expenses'))
+
+
+def _tb_normal_is_debit(series_name):
+    s = (series_name or '').strip().lower()
+    if s in ('assets', 'asset', 'expenses', 'expense'):
+        return True
+    if s in ('liability', 'liabilities', 'liablity', 'equity', 'income', 'revenue'):
+        return False
+    if 'expense' in s or 'asset' in s:
+        return True
+    if any(token in s for token in ('liab', 'equity', 'income', 'revenue')):
+        return False
+    return True
+
+
+def _tb_split(amount, debit_normal):
+    zero = decimal.Decimal('0.00')
+    amt = _series_decimal(amount)
+    if amt > 0:
+        return (amt, zero) if debit_normal else (zero, amt)
+    if amt < 0:
+        flipped = abs(amt)
+        return (zero, flipped) if debit_normal else (flipped, zero)
+    return (zero, zero)
+
+
+def compute_trial_balance(db, to_date=None):
+    """Chart accounts with live actual_balance or as-of CreateLog totals.
+
+    Assets and Expenses sit on debit; Liabilities, Equity, and Income on credit.
+    A negative amount flips column.
+    """
+    zero = decimal.Decimal('0.00')
+    groups = []
+    debit_total = zero
+    credit_total = zero
+    matched_q = Q()
+
+    for title, model, names in SERIES_REPORT_GROUPS:
+        matched_q |= series_name_q(names)
+        block = build_series_block(title, model, names, db, to_date)
+        debit_normal = title in TRIAL_BALANCE_DEBIT_SERIES
+        rows = []
+        g_debit = zero
+        g_credit = zero
+        for row in block['rows']:
+            debit, credit = _tb_split(row['amount'], debit_normal)
+            rows.append({
+                'account_id': row['account_id'],
+                'account_bankname': row['account_bankname'],
+                'account_type': row['account_type'],
+                'debit': debit,
+                'credit': credit,
+            })
+            g_debit += debit
+            g_credit += credit
+        groups.append({
+            'title': title,
+            'rows': rows,
+            'debit_total': g_debit,
+            'credit_total': g_credit,
+        })
+        debit_total += g_debit
+        credit_total += g_credit
+
+    leftovers = chart_of_account.objects.using(db).exclude(matched_q).order_by('account_id')
+    extra_rows = []
+    g_debit = zero
+    g_credit = zero
+    log_maps = None
+    if to_date:
+        log_maps = [
+            series_log_totals(model, db, to_date)
+            for _, model, _ in SERIES_REPORT_GROUPS
+        ]
+    for acc in leftovers:
+        if log_maps is not None:
+            amount = zero
+            for log_by_id in log_maps:
+                amount += log_by_id.get(acc.account_id, zero)
+        else:
+            amount = _series_decimal(acc.actual_balance)
+        debit, credit = _tb_split(amount, _tb_normal_is_debit(acc.series_name))
+        extra_rows.append({
+            'account_id': acc.account_id,
+            'account_bankname': acc.account_bankname or '',
+            'account_type': acc.account_type or '',
+            'debit': debit,
+            'credit': credit,
+        })
+        g_debit += debit
+        g_credit += credit
+    if extra_rows:
+        groups.append({
+            'title': 'Other',
+            'rows': extra_rows,
+            'debit_total': g_debit,
+            'credit_total': g_credit,
+        })
+        debit_total += g_debit
+        credit_total += g_credit
+
+    difference = debit_total - credit_total
+    return {
+        'groups': groups,
+        'debit_total': debit_total,
+        'credit_total': credit_total,
+        'difference': difference,
+        'is_balanced': abs(difference) < decimal.Decimal('0.02'),
+    }
 
 
 @login_required(login_url='/')
