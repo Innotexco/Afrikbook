@@ -156,7 +156,7 @@
                     <thead>
                         <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
                             <th class="px-4 py-3">SN</th>
-                            <th class="px-4 py-3">Item Code</th>
+                            <th class="px-4 py-3">Invoice No.</th>
                             <th class="px-4 py-3">Item</th>
                             <th class="px-4 py-3">Manufacture Date</th>
                             <th class="px-4 py-3">Expiry Date</th>
@@ -175,7 +175,7 @@
                                   {{ forloop.counter0|add:items.start_index}}
                                 </td>
                                 <td class="px-4 py-3 text-sm">
-                                  {{stockout.item_code}}
+                                  {{stockout.invoice_no}}
                                 </td>
                                 <td class="px-4 py-3 text-sm">
                                    {{stockout.item}}
