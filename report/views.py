@@ -100,9 +100,11 @@ def getSum2(request, field, value, field2, value2):
 @login_required(login_url='/')
 @urls_name(name="Trial Balance")
 def TrialBalance(request):
-    from_date, to_date = getdate(request)
+    fromdate = request.GET.get('fromdate')
+    todate   = request.GET.get('todate')
     context = None
-    if from_date and  to_date:
+    if fromdate and todate:
+        from_date, to_date = getdate(fromdate, todate)
         get_Purchase_Sum            = ammountSummer(request, Expenses_account,  (Q(account_type='Cash') & Q(date__range=(from_date, to_date))))
         get_Sales_Sum               = ammountSummer(request, Assets_account, (~Q(account_bankname__icontains='Return Inward') & Q(account_type='Cash') & Q(date__range=(from_date, to_date))))
         get_acct_payable_Sum        = ammountSummer(request, Liability_account, (Q(account_type='Payable') & Q(date__range=(from_date, to_date))))
