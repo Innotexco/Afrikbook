@@ -177,13 +177,15 @@ def Warehouse_outlet(request, context, db):
                     price_dec = resolve_selling_price(db, item_code[i], list_val(selling_price, i, ""))
                     wholesale_dec = to_decimal(list_val(wholesale_price, i, 0))
                     desc_i = list_val(item_decription, i, "")
-                    name_i = list_val(item, i, "")
+                    name_i = resolve_item_name(db, item_code[i], list_val(item, i, ""))
                     try:
                         updateQTYto = CreateOutletStockIn.objects.using(db).get(Q(item_code= item_code[i]), Q(outlet=outlet))
                         if INT == 'Yes':
                             oldQty2 = updateQTYto.quantity
                             newQty2 = float(oldQty2 or 0) + float(qty_dec)
                             updateQTYto.quantity = newQty2
+                            if name_i and not (updateQTYto.item or '').strip():
+                                updateQTYto.item = name_i
                             updateQTYto.save()
                         savedata = CreateOutletStockInLog.objects.using(db).create(datetx= datetx, token_id=token_id, Userlogin=Userlogin, supplier=supplier, ref_no=ref_no, description=description, warehouse= warehouse, outlet=outlet, item_decription=desc_i, item=name_i, quantity=qty_dec, item_code= item_code[i], selling_price=price_dec, wholesale_price=wholesale_dec, transfer="W_O")
                         if savedata:
@@ -251,7 +253,7 @@ def outlet_Warehouse(request, context, db):
                     qty_dec = to_decimal(list_val(quantity, i, 0))
                     price_dec = resolve_selling_price(db, item_code[i], list_val(selling_price, i, ""))
                     desc_i = list_val(item_decription, i, "")
-                    name_i = list_val(item, i, "")
+                    name_i = resolve_item_name(db, item_code[i], list_val(item, i, ""))
                     try:
                         updateQTYto = CreateStockIn.objects.using(db).get(Q(item_code= item_code[i]), Q(warehouse=warehouse))
                         if INT == 'Yes':
@@ -325,7 +327,7 @@ def outlet_outlet(request, context, db):
                     qty_dec = to_decimal(list_val(quantity, i, 0))
                     price_dec = resolve_selling_price(db, item_code[i], list_val(selling_price, i, ""))
                     desc_i = list_val(item_decription, i, "")
-                    name_i = list_val(item, i, "")
+                    name_i = resolve_item_name(db, item_code[i], list_val(item, i, ""))
                     # CreateOutletStockInLog.selling_price is CharField — store as string
                     price_str = str(price_dec)
                     try:
@@ -334,6 +336,8 @@ def outlet_outlet(request, context, db):
                             oldQty2 = updateQTYto.quantity
                             newQty2 = float(oldQty2 or 0) + float(qty_dec)
                             updateQTYto.quantity = newQty2
+                            if name_i and not (updateQTYto.item or '').strip():
+                                updateQTYto.item = name_i
                             updateQTYto.save()
                         savedata = CreateOutletStockInLog.objects.using(db).create(token_id=token_id, Userlogin=Userlogin, supplier=supplier, ref_no=ref_no, description=description, warehouse= warehouse, outlet=outlet, item_decription=desc_i, item=name_i, quantity=qty_dec, item_code= item_code[i], selling_price=price_str, transfer="O_O", datetx=datetx)
                         if savedata:

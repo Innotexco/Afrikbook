@@ -32,6 +32,42 @@ def getdate(fromdate, todate):
    return from_date, to_date
 
 
+def _seq_at(seq, index, default=''):
+    try:
+        return seq[index]
+    except (IndexError, TypeError):
+        return default
+
+
+def resolve_item_name(db, item_code, stored_name=''):
+    """Prefer a stored name; otherwise Item.item_name for the code; otherwise the code."""
+    name = (stored_name or '').strip()
+    if name:
+        return name
+    code = (item_code or '').strip()
+    if not code:
+        return ''
+    item = Item.objects.using(db).filter(generated_code=code).only('item_name').first()
+    master = (item.item_name or '').strip() if item else ''
+    return master or code
+
+
+def repair_blank_outlet_stockin_item_names(db, dry_run=False):
+    """Fill empty CreateOutletStockIn / Log.item from Item.item_name or item_code."""
+    blank = Q(item__isnull=True) | Q(item='') | Q(item__regex=r'^\s+$')
+    updated = 0
+    for model in (CreateOutletStockIn, CreateOutletStockInLog):
+        for row in model.objects.using(db).filter(blank):
+            name = resolve_item_name(db, row.item_code, row.item)
+            if not name:
+                continue
+            updated += 1
+            if not dry_run:
+                row.item = name
+                row.save(update_fields=['item'])
+    return updated
+
+
 def getStockOutInvoiceData(getinvoiceID, context, db):
       context['loader'] = 'Yes'
       cusName = getonedata(getinvoiceID, 'customer_name', db)
@@ -870,6 +906,12 @@ def add_stockin_invoice(request, db):
                             try:
                                 stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=outlet, item_code=itemcode[i])
                                 stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
+                                resolved = resolve_item_name(
+                                    db, itemcode[i],
+                                    stock_in_outlet_query.item or _seq_at(item_name, i),
+                                )
+                                if resolved:
+                                    stock_in_outlet_query.item = resolved
                                 stock_in_outlet_query.save(using=db)
                             except CreateOutletStockIn.DoesNotExist:
                                 saveOutlet(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
@@ -883,6 +925,12 @@ def add_stockin_invoice(request, db):
                             try:
                                 stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=outlet, item_code=itemcode[i])
                                 stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
+                                resolved = resolve_item_name(
+                                    db, itemcode[i],
+                                    stock_in_outlet_query.item or _seq_at(item_name, i),
+                                )
+                                if resolved:
+                                    stock_in_outlet_query.item = resolved
                                 stock_in_outlet_query.save(using=db)
                             except CreateOutletStockIn.DoesNotExist:
                                 saveOutlet(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
@@ -969,7 +1017,7 @@ def saveOutlet(invoice_date, vendor_name, invoice_id, order_id, check_outlet, Gd
             order_no=order_id,
             outlet = check_outlet,
             description = Gdescription,
-            item = item_name[i],
+            item = resolve_item_name(db, itemcode[i], _seq_at(item_name, i)),
             item_decription = item_descriptions[i],
             quantity = int(quantities[i]),
             item_code = itemcode[i],
@@ -990,7 +1038,7 @@ def saveOutletLog(invoice_date, vendor_name, invoice_id, order_id, check_outlet,
         outlet = check_outlet,
         warehouse = warehouse,
         description = Gdescription,
-        item = item_name[i],
+        item = resolve_item_name(db, itemcode[i], _seq_at(item_name, i)),
         item_decription = item_descriptions[i],
         quantity = quantities[i],
         item_code = itemcode[i],

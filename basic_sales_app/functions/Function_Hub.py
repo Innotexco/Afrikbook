@@ -22,6 +22,7 @@ from settings.models import *
 from account.models import chart_of_account
 from customer.functions.generalFunction import DebitReceivable, CreditReceivable, CreateLog
 from customer.functions.newsalesfunc import create_add_vat
+from Stock.functions.functionHub.functionHub import resolve_item_name
 from decimal import Decimal
 
 # GET ALL CUSTOMER USING OUR QS STATEMENT
@@ -651,6 +652,8 @@ def add_stockin(request, context):
     ifgood = False;
     while i < item_length:
         if item_code[i] != '_ _Choose an Option_ _':
+            posted_name = item[i] if i < len(item) else ''
+            resolved_name = resolve_item_name(DB, item_code[i], posted_name)
             to_be_stored = {
                 'outlet':outlet, 
                 'token_id':token_id, 
@@ -658,7 +661,7 @@ def add_stockin(request, context):
                 'quantity':quantity[i],
                 'item_code': item_code[i], 
                 'item_decription':item_decription[i], 
-                'item':item[i], 
+                'item':resolved_name, 
                 'selling_price':selling_price[i], 
                 'wholesale_price':wholesale_price[i],
                 'Userlogin':request.user,
@@ -669,6 +672,8 @@ def add_stockin(request, context):
                 old_qty = stockin.quantity
                 new_qty = float(old_qty) + float(quantity[i])
                 stockin.quantity = new_qty
+                if resolved_name and not (stockin.item or '').strip():
+                    stockin.item = resolved_name
                 stockin.save(using=DB)
                 stockinLOG = CreateOutletStockInLog.objects.using(DB).create(**to_be_stored)
                 ifgood = True;

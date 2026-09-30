@@ -64,9 +64,11 @@
                         <label class="block text-sm">
                             <span class="text-gray-700">outlet</span>
                             <select class="commonClass block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" name="searchoutlet">
-                                <option>_ _Choose outlet_ _</option>
+                                <option value="">_ _Choose outlet_ _</option>
                                 {% for outlet in outlet %}
-                                    <option>{{outlet}}</option>
+                                    {% if outlet %}
+                                    <option value="{{ outlet }}" {% if request.GET.searchoutlet == outlet %}selected{% endif %}>{{ outlet }}</option>
+                                    {% endif %}
                                 {% endfor %}
                             </select>
                         </label>
@@ -75,11 +77,12 @@
                                 Select by item
                             </span>
                             <select class="commonClass block w-full py-2 px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600 shadow-lg" id="selectItem"  name="searchitem">
-                                <option>_ _Choose Item_ _</option>
+                                <option value="">_ _Choose Item_ _</option>
                                 {% for item in item %}
-                                    <option>{{item}}</option>
+                                    {% if item %}
+                                    <option value="{{ item }}" {% if request.GET.searchitem == item %}selected{% endif %}>{{ item }}</option>
+                                    {% endif %}
                                 {% endfor %}
-                            
                             </select>
                         </label>
                         <div class="block text-sm mt-5"> 
@@ -120,7 +123,7 @@
                             {{ page_obj.start_index|add:forloop.counter0 }}
                         </td>
                         <td class="text-[10px]">
-                            {{stock.item}}
+                            {% firstof stock.item stock.item_code %}
                         </td>
                         <td class="text-[10px]">
                             {{stock.quantity}}

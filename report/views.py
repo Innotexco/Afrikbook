@@ -20,6 +20,7 @@ from journal.models import loan_account
 from journal.fuctions.loan_schedule import allocate_loan_repayment, apply_loan_charges_to_receivables
 from customer.functions.generalFunction import *
 from customer.functions.gl import SALES_ID, RETURN_IN_ID, VAT_ID
+from Stock.functions.functionHub.functionHub import resolve_item_name
 from account.models import Expenses_account, Income_account, Assets_account, Liability_account, Equity_account
 
 from main.models import company_table
@@ -1064,22 +1065,37 @@ def OutletStockinReport(request):
     from main.utils import paginate_queryset
     db = AfrikBookDB(request)
     getstock = CreateOutletStockIn.objects.using(db).all().order_by('-datetx', '-id')
-    items = Encountered(getstock,'item')
-    outlet = Encountered(getstock,'outlet')
-    total_quantity = sum(item.quantity for item in getstock)
-    
+    item_labels = []
+    seen_items = set()
+    outlet_labels = []
+    seen_outlets = set()
+    for row in getstock:
+        name = resolve_item_name(db, row.item_code, row.item)
+        if name and name not in seen_items:
+            seen_items.add(name)
+            item_labels.append(name)
+        outlet_name = (row.outlet or '').strip()
+        if outlet_name and outlet_name not in seen_outlets:
+            seen_outlets.add(outlet_name)
+            outlet_labels.append(outlet_name)
+    item_labels.sort(key=str.lower)
+    outlet_labels.sort(key=str.lower)
+    total_quantity = sum((item.quantity or 0) for item in getstock)
+
     context = {
         'stock' : getstock,
-        'outlet' : outlet,
-        'item' : items,
+        'outlet' : outlet_labels,
+        'item' : item_labels,
         'qty' : total_quantity,
     }
-    
+
     ForOutletStockinReport(request, context, db)
     stock_qs = context.get('stock') or getstock
     if hasattr(stock_qs, 'order_by'):
         stock_qs = stock_qs.order_by('-datetx', '-id')
     page_obj = paginate_queryset(request, stock_qs)
+    for row in page_obj:
+        row.item = resolve_item_name(db, row.item_code, row.item)
     context['stock'] = page_obj
     context['page_obj'] = page_obj
     return render(request, 'report/OutletStockinReport.html', context)
