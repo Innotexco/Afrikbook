@@ -289,52 +289,44 @@ def purchase_ladger_filter_by_date(request):
     vendor = request.GET.get('vendor')
     item = request.GET.get('item')
 
-    filter_conditions = Q()
-
-    filter_conditions = Q()
+    filter_conditions = ~Q(invoiceID__icontains="returned") & ~Q(invoiceID__icontains="cancelled")
 
     if start_date_str and end_date_str:
         filter_conditions &= Q(invoice_date__range=(convertDate(start_date_str, end_date_str)))
-    
+
     if vendor:
         filter_conditions &= Q(cusID=vendor)
-    
-        
+
     if item:
         filter_conditions &= Q(item_name=item)
 
-    
     data = []
-    if filter_conditions:
-        filtered_data = Vendor_invoice.objects.using(db).filter(filter_conditions).values()
-        for item in filtered_data:
-            if item['invoiceID'] not in [d['invoiceID'] for d in data]:
-                data.append(item)
+    amount_total = 0
+    amount_paid_tatal = 0
 
-        amount_total = Vendor_invoice.objects.using(db).filter(filter_conditions).values("invoiceID").distinct().aggregate(total_amount=Sum("amount_expected"))['total_amount'] or 0
-        amount_paid_tatal = Vendor_invoice.objects.using(db).filter(filter_conditions).values("invoiceID").distinct().aggregate(total_amount_paid=Sum("amount_paid"))['total_amount_paid'] or 0
-        
-    
-   
-    if amount_total and amount_paid_tatal:
-       balance = amount_total - amount_paid_tatal
-    else:
-        amount_total = "0.00"
-        amount_paid_tatal = "0.00"
-        balance = "0.00"
-   
+    filtered_data = Vendor_invoice.objects.using(db).filter(filter_conditions).values()
+    for item_row in filtered_data:
+        if item_row['invoiceID'] not in [d['invoiceID'] for d in data]:
+            data.append(item_row)
+
+    amount_total = Vendor_invoice.objects.using(db).filter(filter_conditions).values("invoiceID").distinct().aggregate(total_amount=Sum("amount_expected"))['total_amount'] or 0
+    amount_paid_tatal = Vendor_invoice.objects.using(db).filter(filter_conditions).values("invoiceID").distinct().aggregate(total_amount_paid=Sum("amount_paid"))['total_amount_paid'] or 0
+
+    balance = amount_total - amount_paid_tatal
+
     serializer_data = list(data)
     page_obj = paginate_queryset(request, serializer_data)
     payload = {
         'serializer_data': list(page_obj),
-        'amount_total':amount_total,
-        'amount_paid_total':amount_paid_tatal,
-        'balance':balance
+        'amount_total': amount_total,
+        'amount_paid_total': amount_paid_tatal,
+        'balance': balance,
     }
     payload.update(pagination_meta(page_obj))
     return JsonResponse(payload)
-from datetime import datetime
 
+
+from datetime import datetime
 
 def getdate(request):
     from_date = None
@@ -459,47 +451,34 @@ def purchase_quote_filter_by_date(request):
 def purchase_filter(request, value):
     db = request.user.company_id.db_name
     if value is not None:
-        lookups = Q(invoiceID__iexact=value) | Q(cusID__iexact=value) | Q(item_name__iexact=value) #| Q(invoice_state__iexact=value)
-       
+        base_filter = ~Q(invoiceID__icontains="returned") & ~Q(invoiceID__icontains="cancelled")
+        lookups = base_filter & (Q(invoiceID__iexact=value) | Q(cusID__iexact=value) | Q(item_name__iexact=value))
+
     amount_total = None
     paid_total = None
-    # Perform filtering based on filter type
     item = Item.objects.using(db).filter(item_name=value)
     if item.exists():
-        filtered_data = Vendor_invoice.objects.using(db).filter(lookups).values()  #[:1]
-        
+        filtered_data = Vendor_invoice.objects.using(db).filter(lookups).values()
     else:
-        filtered_data = Vendor_invoice.objects.using(db).filter(lookups).values() [:1]
-        
+        filtered_data = Vendor_invoice.objects.using(db).filter(lookups).values()[:1]
         paid_total = Vendor_invoice.objects.using(db).filter(lookups).values_list("amount_paid", flat=True).first()
         amount_total = Vendor_invoice.objects.using(db).filter(lookups).values_list("amount_expected", flat=True).first()
-       
-    
 
     sales_total = Vendor_invoice.objects.using(db).filter(lookups).values("invoiceID").distinct().count()
     qty_total = Vendor_invoice.objects.using(db).filter(lookups).aggregate(total_qty=Sum("qty"))['total_qty']
     if amount_total is None:
-         amount_total = Vendor_invoice.objects.using(db).filter(lookups).aggregate(total_amount=Sum("amount_expected"))['total_amount']
+        amount_total = Vendor_invoice.objects.using(db).filter(lookups).aggregate(total_amount=Sum("amount_expected"))['total_amount'] or 0
+        paid_total = Vendor_invoice.objects.using(db).filter(lookups).aggregate(total_amount_paid=Sum("amount_paid"))['total_amount_paid'] or 0
 
+    balance = (amount_total or 0) - (paid_total or 0)
 
-         paid_total = Vendor_invoice.objects.using(db).filter(lookups).aggregate(total_amount_paid=Sum("amount_paid"))['total_amount_paid']
-
-   
-    if amount_total and paid_total:
-       balance = amount_total - paid_total
-    else:
-        amount_total = "0.00"
-        paid_total = "0.00"
-        balance = "0.00"
-   
     serializer_data = list(filtered_data)
     data = {
         'item': serializer_data,
-        'sales_total':sales_total,
-        'qty_total':qty_total,
-        'amount_total':amount_total,
-        'amount_paid_total':paid_total,
-        'balance':balance
+        'sales_total': sales_total,
+        'qty_total': qty_total,
+        'amount_total': amount_total,
+        'amount_paid_total': paid_total,
+        'balance': balance,
     }
-
     return JsonResponse(data)
