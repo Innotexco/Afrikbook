@@ -471,10 +471,12 @@
                             var table = $('#myTable tbody')
                         
                             table.empty()
-                            var num = 1
+                            var num = 0
+                            var matchingItems = 0
                             data.items.forEach(item => {
-                            num++ 
-                            if(item.status === data.status){
+                            if(String(item.status || '').trim().toLowerCase() === String(data.status || '').trim().toLowerCase()){
+                                num++
+                                matchingItems++
                                 var n_status = ""
                                 if(item.n_status === "1"){
                                    n_status = "Enabled"
@@ -497,13 +499,17 @@
                                 );
                                // table.animate({left:"100px"}, "slow");
                                 table.append(row);
-                            }else{
-                               $('#no-data').html('No '+value+' product in database')
                             }
                            });
+                           if(matchingItems === 0){
+                               $('#no-data').html('No '+value+' product in database')
+                           }else{
+                               $('#no-data').empty()
+                           }
                            
                         }else{
-                             
+                            $('#myTable tbody').empty()
+                            $('#no-data').html('No '+value+' product in database')
                             alertify.error('No '+value+' product in database')
                             //alertify.error("Select start_date and end_date")
                         }
@@ -511,6 +517,7 @@
                     error: function(error) {
                         // Handle the error
                         console.log(error)
+                        alertify.error('Unable to filter expiration records')
                     }
                 });
             }else{

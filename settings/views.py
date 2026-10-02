@@ -1122,20 +1122,22 @@ def ExpirationControlFilter(request, value):
     for i in items:
         i['rdays'] = (i['expiry_date'] - today).days
         
-        try:
-            item1 = SetItemNotification.objects.using(db).get(item__generated_code=['item_code'])
+        item1 = SetItemNotification.objects.using(db).filter(
+            item__generated_code=i['item_code']
+        ).first()
+        if item1:
             i['notify_me'] = item1.notification_days        
-            
-        except SetItemNotification.DoesNotExist:
-             i['notify_me'] = "not set"
+        else:
+            i['notify_me'] = "not set"
 
-        try:
-            log = CreateStockInLog.objects.using(db).get(invoice_no=i['invoice_no'], item_code=i['item_code'])
+        log = CreateStockInLog.objects.using(db).filter(
+            invoice_no=i['invoice_no'],
+            item_code=i['item_code'],
+        ).first()
+        if log:
             i['n_status'] = log.notification_status
             i['status'] = log.status
-        
-            
-        except CreateStockInLog.DoesNotExist:
+        else:
             i['n_status'] = "0"
             i['status'] = "Unverified"
             
@@ -1592,4 +1594,3 @@ def ChangeCartMethosState(request):
     except cat_payment_method.DoesNotExist:
         
         return JsonResponse({'message': 'Failed to update price. Please try again'}, status = 404)
-
