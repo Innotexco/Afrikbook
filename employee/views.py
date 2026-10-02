@@ -16,7 +16,20 @@ from account.models import chart_of_account
 from customer.functions.generalFunction import *
 from django.contrib.auth.decorators import login_required
 from routers.page_permission import  urls_name
+from main.models import Billing
 
+
+def get_company_signup_year(request):
+    company = getattr(request.user, 'company_id', None)
+    if company is not None:
+        try:
+            signup_date = Billing.objects.filter(company=company).order_by('created_at').values_list('created_at', flat=True).first()
+            if signup_date:
+                return signup_date.year
+        except Exception:
+            pass
+
+    return getattr(request.user, 'date_joined', datetime.today()).year if hasattr(request.user, 'date_joined') else datetime.today().year
 
 
 # Create your views here.
@@ -98,9 +111,9 @@ def ViewPayroll(request):
     from main.utils import paginate_queryset
     db = request.user.company_id.db_name
     today_date = date.today()
-    year = datetime.today().year
-   
-    years = range(year, year - 10, -1)
+    start_year = get_company_signup_year(request)
+    current_year = datetime.today().year
+    years = range(start_year, current_year + 1)
     Payroll = payroll.objects.using(db).filter(dateG=today_date).order_by('id')
     amount_total = payroll.objects.using(db).filter(dateG=today_date).values("staffID").distinct().aggregate(total_amount=Sum("net_pay"))['total_amount']
     page_obj = paginate_queryset(request, Payroll)
@@ -118,8 +131,9 @@ def ViewPayroll(request):
 def AddPayroll(request):
     db = request.user.company_id.db_name
     employe = employee.objects.using(db).all()
-    year = datetime.today().year
-    years = range(year, year - 10, -1)
+    start_year = get_company_signup_year(request)
+    current_year = datetime.today().year
+    years = range(start_year, current_year + 1)
 
     # Check for employees with no basic salary set
     missing_salary = employe.filter(
