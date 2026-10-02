@@ -622,21 +622,28 @@ def sales_ladger_filter_by_date(request):
     if invoice_id:
         filter_conditions &= Q(invoiceID__icontains=invoice_id)
 
-    data = []
-    amount_total = 0
-    if filter_conditions:
-        filtered_data = customer_invoice.objects.using(db).filter(filter_conditions).values()
-        for item_row in filtered_data:
-            if item_row['invoiceID'] not in [d['invoiceID'] for d in data]:
-                data.append(item_row)
+    filtered_data = customer_invoice.objects.using(db).filter(
+        filter_conditions
+    ).order_by('invoiceID', 'id').values()
+    unique_data = []
+    seen_invoice_ids = set()
+    for item_row in filtered_data:
+        if item_row['invoiceID'] not in seen_invoice_ids:
+            seen_invoice_ids.add(item_row['invoiceID'])
+            unique_data.append(item_row)
 
-        amount_total = customer_invoice.objects.using(db).filter(filter_conditions).values("invoiceID").distinct().aggregate(total_amount=Sum("amount_expected"))['total_amount'] or 0
+    amount_total = customer_invoice.objects.using(db).filter(
+        filter_conditions
+    ).values("invoiceID").distinct().aggregate(
+        total_amount=Sum("amount_expected")
+    )['total_amount'] or 0
 
-    serializer_data = list(data)
+    page_obj = paginate_queryset(request, unique_data)
     data = {
-        'serializer_data': serializer_data,
+        'serializer_data': list(page_obj.object_list),
         'amount_total': amount_total,
     }
+    data.update(pagination_meta(page_obj))
 
     return JsonResponse(data)
 
@@ -827,6 +834,5 @@ def recievable_filter(request, value):
     }
 
     return JsonResponse(data)
-
 
 

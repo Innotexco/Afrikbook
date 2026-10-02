@@ -175,7 +175,10 @@
                 </tfoot>
             </table>
         </div>
-        {% include 'components/pagination.html' with page_obj=page_obj %}
+        <div id="sales-ledger-initial-pagination">
+            {% include 'components/pagination.html' with page_obj=page_obj %}
+        </div>
+        {% include 'components/ajax_pagination.html' %}
     </div>
 
 
@@ -196,13 +199,14 @@
             }, 200)
         )
         //serach by date
-        function Fetch(){
+        function Fetch(page){
             const datas = {
                 start_date: $('#from').val(),
                 end_date:   $('#to').val(),
                 item:       $('#item').val(),
                 customer:   $('#customer_id').val(),
                 invoice_id: $('#invoice_id').val(),
+                page:       page || 1,
             };
 
             if (datas.start_date || datas.end_date || datas.item || datas.customer || datas.invoice_id) {
@@ -212,16 +216,17 @@
                     data:   datas,
                     success: function(response) {
                         $("#amount_total").html(NCFormat(response.amount_total));
+                        $('#sales-ledger-initial-pagination').hide();
 
                         const table = $('#example tbody');  // ← declared here
                         table.empty();                      // ← clear before appending
 
                         if (response.serializer_data && response.serializer_data.length > 0) {
                             $("#no-data").css('display', 'none');
-                            let num = 0;  // ← declared here
+                            const startIndex = parseInt(response.start_index, 10) || 1;
 
-                            response.serializer_data.forEach(function(item) {
-                                num++;
+                            response.serializer_data.forEach(function(item, index) {
+                                const num = startIndex + index;
                                 const editUrl = "{% url 'customer:EditSalesInvoice' 0 %}".replace('0', item.invoiceID);
                                 const row = $('<tr>').append(
                                     $('<td class="text-[10px] px-4">').html(num),
@@ -250,8 +255,10 @@
                                 );
                                 table.append(row);
                             });
+                            renderAjaxPagination(response, Fetch);
 
                         } else {
+                            hideAjaxPagination();
                             $("#no-data").css('display', 'block');
                             alertify.error("No data found for selected filters");
                         }
