@@ -179,16 +179,26 @@ def receivable_filter_by_date(request):
     if customer in (None, '', 'Select Customer'):
         customer = None
 
-    if not start_date_str or not end_date_str:
+    has_customer = bool(customer)
+    has_date_range = bool(start_date_str and end_date_str)
+    if not has_customer and not has_date_range:
         return JsonResponse(_empty_receivable_page(), safe=False)
 
-    start_date, end_date = convertDate(start_date_str, end_date_str)
+    if start_date_str and end_date_str:
+        start_date, end_date = convertDate(start_date_str, end_date_str)
+    else:
+        start_date = end_date = None
 
-    prior_qs = receivable.objects.using(db).filter(date__lt=start_date)
-    period_qs = receivable.objects.using(db).filter(date__range=(start_date, end_date))
+    base_qs = receivable.objects.using(db)
     if customer:
-        prior_qs = prior_qs.filter(customer_id__iexact=customer)
-        period_qs = period_qs.filter(customer_id__iexact=customer)
+        base_qs = base_qs.filter(customer_id__iexact=customer)
+
+    if start_date and end_date:
+        prior_qs = base_qs.filter(date__lt=start_date)
+        period_qs = base_qs.filter(date__range=(start_date, end_date))
+    else:
+        prior_qs = base_qs.none()
+        period_qs = base_qs.all()
 
     prior_debit = prior_qs.filter(type__iexact="Debit").aggregate(total=Sum("amount"))["total"] or 0
     prior_credit = prior_qs.filter(type__iexact="Credit").aggregate(total=Sum("amount"))["total"] or 0
