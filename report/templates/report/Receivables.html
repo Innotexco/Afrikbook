@@ -271,8 +271,17 @@
                 page: page || 1,
             };
 
-            if (!datas.start_date || !datas.end_date) {
-                alertify.error("Select start date and end date to search");
+            const hasCustomer = !!datas.customer;
+            const hasFullDateRange = !!datas.start_date && !!datas.end_date;
+            const hasPartialDateRange = (!!datas.start_date) !== (!!datas.end_date);
+
+            if (!hasCustomer && !hasFullDateRange) {
+                alertify.error("Select a customer or a full date range to search");
+                return;
+            }
+
+            if (hasPartialDateRange) {
+                alertify.error("Select both start date and end date together");
                 return;
             }
 
