@@ -137,11 +137,14 @@ def sales_report_filter_by_date(request):
                 'payment_method': resolve_payment_method(row),
             })
 
-    return JsonResponse({
-        'serializer_data': data,
+    page_obj = paginate_queryset(request, data)
+    response = {
+        'serializer_data': list(page_obj.object_list),
         'sales_total': str(sales_total) if sales_total is not None else '0',
         'qty_total': str(qty_total) if qty_total is not None else '0',
-    })
+    }
+    response.update(pagination_meta(page_obj))
+    return JsonResponse(response)
 
 
     

@@ -82,7 +82,7 @@
                     <span class="text-gray-700">By Invoice</span>
                     <select class="block w-full px-2 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="invoiceID" required >
                         <option selected disabled=true>Select Invoice</option>
-                        {% for invoice in sales %}
+                        {% for invoice in invoice_options %}
                            <option>{{invoice.invoiceID}}</option>   
                         {% endfor %}
                     </select>
@@ -135,7 +135,7 @@
                 <tbody class="bg-white divide-y" id="'+i+'">
 
                     
-                    {% for sale in saless %}
+                    {% for sale in sales %}
                     
                     <tr class="text-gray-700">
 
@@ -190,6 +190,10 @@
                 </tbody>
             </table>
             <div class="text-center  text-gray-500 py-2 font-semibold" id="no-data" style="display: none;">No data found</div>
+            <div id="sales-report-initial-pagination">
+                {% include 'components/pagination.html' with page_obj=page_obj %}
+            </div>
+            {% include 'components/ajax_pagination.html' %}
             <div class="flex justify-end py-3 my-5 bg-white rounded-lg shadow-md">
 
                 <div class="">
@@ -241,11 +245,59 @@
             }, 500)
         )
         //serach by date
+        var salesReportFilters = {};
+
+        function loadSalesReportPage(page) {
+            $.ajax({
+                url: '{% url "filter:sales-report-date" %}',
+                method: 'GET',
+                data: $.extend({}, salesReportFilters, { page: page || 1 }),
+                success: function(response) {
+                    $(".sales_total").html(response.sales_total != null ? response.sales_total : 0);
+                    $("#qty_total").html(response.qty_total != null ? response.qty_total : 0);
+
+                    const table = $('#example2 tbody');
+                    table.empty();
+                    if (response.serializer_data && response.serializer_data.length > 0) {
+                        const startIndex = parseInt(response.start_index, 10) || 1;
+                        response.serializer_data.forEach(function(item, index) {
+                            const amount = parseFloat(item.amount_expected != null ? item.amount_expected : 0) || 0;
+                            const row = $('<tr>').append(
+                                $('<td class="text-[10px]">').text(startIndex + index),
+                                $('<td class="text-[10px]">').text(item.cusID || ''),
+                                $('<td class="text-[10px]">').text(item.customer_name || ''),
+                                $('<td class="text-[10px]">').text(item.invoice_date || ''),
+                                $('<td class="text-[10px]">').text(item.invoiceID || ''),
+                                $('<td class="text-[10px]">').text(item.Gdescription || ''),
+                                $('<td class="text-[10px]">').text(amount),
+                                $('<td class="text-[10px]">').text(item.Userlogin || ''),
+                                $('<td class="text-[10px]">').text(item.payment_method || ''),
+                                $('<td class="text-[10px]">').append(
+                                    $('<a class="flex items-center justify-center text-blue-500 border px-3 bg-gray-50 cursor-pointer" aria-label="Edit">')
+                                        .text('View')
+                                        .on('click', function() { showModal(item.invoiceID, item.cusID); })
+                                )
+                            );
+                            table.append(row);
+                        });
+                        $('#no-data').hide();
+                        renderAjaxPagination(response, loadSalesReportPage);
+                    } else {
+                        hideAjaxPagination();
+                        $('#no-data').show();
+                    }
+                },
+                error: function(error) {
+                    console.log('error', error);
+                    alertify.error("An error occurred while fetching data");
+                }
+            });
+        }
+
         function Filter(){
-            //e.preventDefault()
-            const from = $('#from').val()
-            const to = $('#to').val()
-            const datas = {
+            const from = $('#from').val();
+            const to = $('#to').val();
+            salesReportFilters = {
                 start_date: from,
                 end_date: to,
                 invoice: $('#invoiceID').val(),
@@ -253,60 +305,17 @@
                 customer: $('#customer_id').val(),
                 item: $('#item').val(),
                 payment_method: $('#payment_method').val(),
-            }
-            //console.log(datas)
-            if(from || to || datas.invoice || datas.invoice_state || datas.customer || datas.item || datas.payment_method){
-                $.ajax({
-                    url: '{% url "filter:sales-report-date" %}',
-                    method: 'GET',
-                    data: datas,
-                    success: function(response) {
-                        if(response.serializer_data && response.serializer_data.length > 0){
-                            // Handle the response data
-                        
-                            $(".sales_total").html(response.sales_total != null ? response.sales_total : 0);
-                            $("#qty_total").html(response.qty_total != null ? response.qty_total : 0);
-                            const table = $('#example2 tbody')
-                            table.empty()
-                            let num = 0;
-                            response.serializer_data.forEach(item => {
-                                num++
-                                const amount = parseFloat(item.amount_expected != null ? item.amount_expected : 0) || 0;
-                                const row = $('<tr id="row">').append(
-                                    $('<td class="text-[10px]">').html(num),
-                                    $('<td class="text-[10px]">').text(item.cusID || ''),
-                                    $('<td class="text-[10px]">').text(item.customer_name || ''),
-                                    $('<td class="text-[10px]">').text(item.invoice_date || ''),
-                                    $('<td class="text-[10px]">').text(item.invoiceID || ''),
-                                    $('<td class="text-[10px]">').text(item.Gdescription || ''),
-                                    $('<td class="text-[10px]">').text(amount),
-                                    $('<td class="text-[10px]">').text(item.Userlogin || ''),
-                                    $('<td class="text-[10px]">').text(item.payment_method || ''),
-                                    $('<td class="text-[10px]">').append('<a onclick="showModal(\'' + item.invoiceID + '\', \'' + item.cusID + '\')" class="flex items-center justify-center text-blue-500 border px-3 bg-gray-50 cursor-pointer"  aria-label="Edit">View</a>'),
-                                );
-                                table.append(row);
-                                
-                                $("#no-data").css('display', 'none');
-                            });
-                        }else{
-                            $("#example2 tbody").empty();
-                            $(".sales_total").text(0);
-                            $("#qty_total").text(0);
-                            $("#no-data").css('display', 'block');
-                            alertify.error("No Return data between selected category")
-                            //alertify.error("Select start_date and end_date")
-                        }
-                    },
-                    error: function(error) {
-                        // Handle the error
-                        console.log('error')
-                    }
-                });
-            }else{
-                //alertify.error("Select start_date and end_date")
-            }
+            };
 
-            
+            if(from || to || salesReportFilters.invoice || salesReportFilters.invoice_state || salesReportFilters.customer || salesReportFilters.item || salesReportFilters.payment_method){
+                $('#sales-report-initial-pagination').hide();
+                loadSalesReportPage(1);
+            } else {
+                salesReportFilters = {};
+                hideAjaxPagination();
+                $('#sales-report-initial-pagination').show();
+                alertify.error("Select at least one filter to search");
+            }
         };
 
     
