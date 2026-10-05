@@ -608,7 +608,7 @@ def sales_ladger_filter_by_date(request):
     item = request.GET.get('item')
     invoice_id = request.GET.get('invoice_id')
 
-    filter_conditions = Q(invoice_state="Supplied") & ~Q(invoiceID__icontains="returned") & ~Q(invoiceID__icontains="cancelled")
+    filter_conditions = Q(invoice_state__in=["Supplied", "Pending"]) & ~Q(invoiceID__icontains="returned") & ~Q(invoiceID__icontains="cancelled")
 
     if start_date_str and end_date_str:
         filter_conditions &= Q(invoice_date__range=(convertDate(start_date_str, end_date_str)))
@@ -834,5 +834,4 @@ def recievable_filter(request, value):
     }
 
     return JsonResponse(data)
-
 
