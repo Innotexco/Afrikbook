@@ -2026,26 +2026,63 @@ def SalesLedger(request):
     from main.utils import paginate_queryset
     db = AfrikBookDB(request)
     item_name = Item.objects.using(db).values("item_name")
-    sales = customer_invoice.objects.using(db).filter(invoice_state="Supplied").exclude(Q(invoiceID__icontains="returned") | Q(invoiceID__icontains="cancelled")) 
+
+    base_filter = Q(invoice_state__in=["Supplied", "Pending"]) & ~Q(invoiceID__icontains="returned") & ~Q(invoiceID__icontains="cancelled")
+
+    sales = customer_invoice.objects.using(db).filter(base_filter)
     unique_invoices = list({sale.invoiceID: sale for sale in sales}.values())
     company = company_table.objects.get(id=request.user.company_id_id)
     profile = CreateProfile.objects.using(db).filter(CompanyName=request.user.company_id.company_name).first()
 
-    sales_total = customer_invoice.objects.using(db).values("invoiceID").distinct().count()
-    # amount_total = customer_invoice.objects.using(db).exclude(invoiceID__icontains=str('returned')).values("invoiceID").distinct().aggregate(total_amount=Sum("amount"))['total_amount']
-    amount_total = customer_invoice.objects.using(db).exclude(invoiceID__icontains=str('returned')).values("invoiceID").distinct().aggregate(total_amount=Sum("amount_expected"))['total_amount'] or 0
+    sales_total = customer_invoice.objects.using(db).filter(base_filter).values("invoiceID").distinct().count()
+    amount_total = customer_invoice.objects.using(db).filter(base_filter).values("invoiceID").distinct().aggregate(total_amount=Sum("amount_expected"))['total_amount'] or 0
+
     page_obj = paginate_queryset(request, unique_invoices)
     context = {
         'sales': page_obj,
         'page_obj': page_obj,
-        'amount_total':amount_total,
-        'item_name':item_name,
-        'company':company,
-        'profile' :profile
+        'amount_total': amount_total,
+        'item_name': item_name,
+        'company': company,
+        'profile': profile
     }
-   
-   
+
     return render(request, 'report/SalesLedger.html', context)
+
+def MarkInvoiceSupplied(request, invoiceID):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+    db = request.user.company_id.db_name
+    success, message = mark_invoice_supplied(request, db, invoiceID)
+    return JsonResponse({"success": success, "message": message})
+
+def mark_invoice_supplied(request, db, invoiceID):
+    try:
+        lines = customer_invoice.objects.using(db).filter(invoiceID=invoiceID)
+        if not lines.exists():
+            return False, "Invoice not found"
+
+        first = lines.first()
+        if first.invoice_state == "Supplied":
+            return False, "Invoice is already marked as supplied"
+        if first.invoice_state == "Cancelled":
+            return False, "Cancelled invoices cannot be marked as supplied"
+
+        outlet = request.user.outlet
+        if not outlet:
+            return False, "Assign an outlet to your user account first"
+
+        with transaction.atomic(using=db):
+            for line in lines:
+                ReduceOutletStockinItemQuantity(db, outlet, line.itemcode, line.qty)
+            lines.update(invoice_state="Supplied")
+
+        logger.info(f"[mark_invoice_supplied] invoiceID={invoiceID} | by={request.user.username}")
+        return True, "Invoice marked as supplied"
+
+    except Exception as e:
+        logger.error(f"[mark_invoice_supplied] Failed | invoiceID={invoiceID} | {e}\n{traceback.format_exc()}")
+        return False, "Failed to mark invoice as supplied"
 
 from datetime import datetime
 

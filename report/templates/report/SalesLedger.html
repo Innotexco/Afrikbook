@@ -99,6 +99,7 @@
                         <th class="px-4 py-3">Total Amount</th>
                         <th class="px-4 py-3 text-center">View</th>
                         <th class="px-4 py-3 text-center">Edit</th>
+                        <th class="px-4 py-3 text-center">Supplied</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y mb-6  px-5" id="'+i+'">
@@ -153,6 +154,14 @@
                             </a>
                         </td>
 
+                        <td class="text-[10px] text-center">
+                            <input type="checkbox"
+                                class="supplied-checkbox"
+                                data-invoice="{{ display.invoiceID }}"
+                                {% if display.invoice_state == "Supplied" %}checked disabled{% endif %}
+                                onclick="markSupplied('{{ display.invoiceID }}', this)" />
+                        </td>
+
                     </tr>
 
                     {% endfor %}
@@ -191,343 +200,380 @@
         {% include 'modalBoxx/printbtn.html' with container="sl" table="example" table_no="" %}
     </div>
 
-    <script>
+<script>
 
-        $(document).ready(
-            setTimeout(function(){
-                //Fetch()
-            }, 200)
-        )
-        //serach by date
-        function Fetch(page){
-            const datas = {
-                start_date: $('#from').val(),
-                end_date:   $('#to').val(),
-                item:       $('#item').val(),
-                customer:   $('#customer_id').val(),
-                invoice_id: $('#invoice_id').val(),
-                page:       page || 1,
-            };
-
-            if (datas.start_date || datas.end_date || datas.item || datas.customer || datas.invoice_id) {
-                $.ajax({
-                    url:    '{% url "filter:sales-ladger-date" %}',
-                    method: 'GET',
-                    data:   datas,
-                    success: function(response) {
-                        $("#amount_total").html(NCFormat(response.amount_total));
-                        $('#sales-ledger-initial-pagination').hide();
-
-                        const table = $('#example tbody');  // ← declared here
-                        table.empty();                      // ← clear before appending
-
-                        if (response.serializer_data && response.serializer_data.length > 0) {
-                            $("#no-data").css('display', 'none');
-                            const startIndex = parseInt(response.start_index, 10) || 1;
-
-                            response.serializer_data.forEach(function(item, index) {
-                                const num = startIndex + index;
-                                const editUrl = "{% url 'customer:EditSalesInvoice' 0 %}".replace('0', item.invoiceID);
-                                const row = $('<tr>').append(
-                                    $('<td class="text-[10px] px-4">').html(num),
-                                    $('<td class="text-[10px] px-4">').text(formatInvoiceDate(item.invoice_date)),
-                                    $('<td class="text-[10px] px-4">').text(item.invoiceID),
-                                    $('<td class="text-[10px] px-4">').text(item.customer_name),
-                                    $('<td class="text-[10px] px-4">').text(item.amount_expected),
-                                    $('<td class="text-[10px] px-4 text-center">').append(`
-                                        <a onclick="showModal('${item.invoiceID}')"
-                                        class="inline-flex items-center justify-center mx-auto text-green-600 cursor-pointer"
-                                        aria-label="View">
-                                            <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7zm0 11a4 4 0 110-8 4 4 0 010 8zm0-2.5A1.5 1.5 0 1010 8a1.5 1.5 0 000 3.5z"/>
-                                            </svg>
-                                        </a>
-                                    `),
-                                    $('<td class="text-[10px] text-center">').append(`
-                                        <a href="${editUrl}"
-                                        class="inline-flex items-center justify-center mx-auto text-blue-500 cursor-pointer"
-                                        aria-label="Edit">
-                                            <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                                            </svg>
-                                        </a>
-                                    `)
-                                );
-                                table.append(row);
-                            });
-                            renderAjaxPagination(response, Fetch);
-
-                        } else {
-                            hideAjaxPagination();
-                            $("#no-data").css('display', 'block');
-                            alertify.error("No data found for selected filters");
-                        }
-                    },
-                    error: function(error) {
-                        console.log('error', error);
-                        alertify.error("An error occurred while fetching data");
-                    }
-                });
-            } else {
-                alertify.error("Select at least one filter to search");
-            }
+    function markSupplied(invoiceID, checkbox) {
+        if (!confirm('Mark invoice ' + invoiceID + ' as supplied? This will reduce stock.')) {
+            checkbox.checked = false;
+            return;
         }
-
-    
-        //multiple filter
-        function filterItem(selected){
-          // preventDefault()
-
-            //const value = selected.value
-            const value = ""
-           // alertify.success(value)
-            //console.log(from)
-            //console.log(to)
-            if(value){
-                $.ajax({
-                    url: 'sales/'+value+'/',
-                    method: 'GET',
-                    success: function(data) {
-                        //if(response.serializer_data ){
-                        console.log(data.item);
-                        console.log(data.amount_total);
-                        $("#amount_total").val("#"+data.amount_total);
-                       
-                            const table = $('#example tbody')
-                            table.empty()
-                            let num = 0;
-                            data.item.forEach(item => {
-                                num++;
-                                const editUrl = "{% url 'customer:EditSalesInvoice' 0 %}".replace('0', item.invoiceID);
-                                const row = $('<tr id="row">').append(
-                                    $('<td class="text-[10px]">').html(num),
-                                    $('<td class="text-[10px]">').text(item.invoice_date),
-                                    $('<td class="text-[10px]">').text(item.invoiceID),
-                                    $('<td class="text-[10px]">').text(item.customer_name),
-                                    $('<td class="text-[10px]">').text(item.item_name),
-                                    $('<td class="text-[10px]">').text(item.amount_expected),
-                                    // VIEW
-                                    $('<td class="text-[10px]">').append(`
-                                        <a onclick="showModal('${item.invoiceID}')"
-                                        class="flex items-center justify-center text-green-600 cursor-pointer"
-                                        aria-label="View">
-                                            <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7zm0 11a4 4 0 110-8 4 4 0 010 8zm0-2.5A1.5 1.5 0 1010 8a1.5 1.5 0 000 3.5z"/>
-                                            </svg>
-                                        </a>
-                                    `),
-                                    // EDIT
-                                    $('<td class="text-[10px]">').append(`
-                                        <a href="${editUrl}"
-                                        class="flex items-center justify-center text-blue-500 cursor-pointer"
-                                        aria-label="Edit">
-                                            <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                                            </svg>
-                                        </a>
-                                    `)
-                                );
-                                table.append(row);
-                            });
-                        //}else{
-                        //    alertify.error("No Return data between selected date")
-                            //alertify.error("Select start_date and end_date")
-                        //}
-                    },
-                    error: function(error) {
-                        // Handle the error
-                        console.log(error)
-                    }
-                });
-            }else{
-                //alertify.error("Select start_date and end_date")
+        $.ajax({
+            url: '/mark-invoice-supplied/' + invoiceID + '/',
+            method: 'POST',
+            data: { csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val() },
+            success: function(res) {
+                if (res.success) {
+                    alertify.success(res.message);
+                    checkbox.disabled = true;
+                } else {
+                    alertify.error(res.message);
+                    checkbox.checked = false;
+                }
+            },
+            error: function() {
+                alertify.error('Failed to update invoice');
+                checkbox.checked = false;
             }
+        });
+    }
+
+
+    $(document).ready(
+        setTimeout(function(){
+            //Fetch()
+        }, 200)
+    )
+    //serach by date
+    function Fetch(page){
+        const datas = {
+            start_date: $('#from').val(),
+            end_date:   $('#to').val(),
+            item:       $('#item').val(),
+            customer:   $('#customer_id').val(),
+            invoice_id: $('#invoice_id').val(),
+            page:       page || 1,
         };
-    </script>
 
-    <script>
-        // Format API date/datetime values as dd/mm/yyyy (avoids ISO strings & timezone day-shift)
-        function formatInvoiceDate(value) {
-            if (value === null || value === undefined || value === '') return '';
-            const s = String(value);
-            const match = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-            if (match) {
-                return match[3] + '/' + match[2] + '/' + match[1];
-            }
-            const d = new Date(value);
-            if (isNaN(d.getTime())) return s;
-            const day = String(d.getDate()).padStart(2, '0');
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            return day + '/' + month + '/' + d.getFullYear();
-        }
-
-       function showModal(invoiceId) {
-            if (!invoiceId) return;
-
+        if (datas.start_date || datas.end_date || datas.item || datas.customer || datas.invoice_id) {
             $.ajax({
-                url: '/view-sales-ledger/' + invoiceId + '/',
+                url:    '{% url "filter:sales-ladger-date" %}',
                 method: 'GET',
-                success: function(data) {
-                    if (!data.serialized_data || data.serialized_data.length === 0) return;
-                    var currencySymbol = "{{ profile.currency|default:'$' }}";
-                    const items = data.serialized_data;
-                    const line = items[0];
-                    const inv = data.invoice || {};
+                data:   datas,
+                success: function(response) {
+                    $("#amount_total").html(NCFormat(response.amount_total));
+                    $('#sales-ledger-initial-pagination').hide();
 
-                    const invoiceIdVal = inv.invoiceID || line.invoiceID || '';
-                    const invoiceDate = formatInvoiceDate(inv.invoice_date || line.invoice_date);
-                    const dueDate = formatInvoiceDate(inv.due_date || line.due_date);
-                    const customerName = inv.customer_name || line.customer_name || '';
-                    const customerId = inv.customer_id || line.cusID || '';
-                    const invoiceState = inv.invoice_state || line.invoice_state || 'Supplied';
+                    const table = $('#example tbody');  // ← declared here
+                    table.empty();                      // ← clear before appending
 
-                    // ── Invoice meta ──────────────────────────────────────────────
-                    $('#invoiceHeader').html(`
-                        <table style="width:100%;border-collapse:collapse;margin-bottom:8px;background:#f3f4f6;border-bottom:2px solid #9ca3af;">
-                            <tr>
-                                <td style="padding:12px 16px;vertical-align:top;width:25%;text-align:center;">
-                                    <div style="font-size:11px;color:#111827;font-weight:800;text-transform:uppercase;margin-bottom:4px;">Invoice ID</div>
-                                    <div style="font-weight:800;color:#030712;font-size:13px;">${invoiceIdVal}</div>
-                                </td>
-                                <td style="padding:12px 16px;vertical-align:top;width:25%;text-align:center;">
-                                    <div style="font-size:11px;color:#111827;font-weight:800;text-transform:uppercase;margin-bottom:4px;">Date</div>
-                                    <div style="font-weight:800;color:#030712;font-size:13px;">${invoiceDate}</div>
-                                </td>
-                                <td style="padding:12px 16px;vertical-align:top;width:25%;text-align:center;">
-                                    <div style="font-size:11px;color:#111827;font-weight:800;text-transform:uppercase;margin-bottom:4px;">Due Date</div>
-                                    <div style="font-weight:800;color:#030712;font-size:13px;">${dueDate}</div>
-                                </td>
-                                <td style="padding:12px 16px;vertical-align:top;width:25%;text-align:center;">
-                                    <div style="font-size:11px;color:#111827;font-weight:800;text-transform:uppercase;margin-bottom:4px;">Status</div>
-                                    <span style="display:inline-block;padding:3px 10px;border-radius:9999px;font-size:10px;font-weight:800;text-transform:uppercase;background:#d1fae5;color:#065f46;">
-                                        ${invoiceState}
-                                    </span>
-                                </td>
-                            </tr>
-                        </table>
-                        <div style="padding:10px 16px;margin-bottom:8px;">
-                            <div style="font-size:11px;text-transform:uppercase;color:#111827;font-weight:800;margin-bottom:4px;">Bill To</div>
-                            <div style="font-size:13px;font-weight:800;color:#030712;">${customerName}</div>
-                            <div style="font-size:12px;font-weight:700;color:#1f2937;">ID: ${customerId}</div>
-                        </div>
-                    `);
+                    if (response.serializer_data && response.serializer_data.length > 0) {
+                        $("#no-data").css('display', 'none');
+                        const startIndex = parseInt(response.start_index, 10) || 1;
 
-                    // ── Line items ────────────────────────────────────────────────
-                    const tbody = $('#salesLadgerView tbody');
-                    tbody.empty();
-                    let linesSubtotal = 0;
+                        response.serializer_data.forEach(function(item, index) {
+                            const num = startIndex + index;
+                            const editUrl = "{% url 'customer:EditSalesInvoice' 0 %}".replace('0', item.invoiceID);
+                            const row = $('<tr>').append(
+                                $('<td class="text-[10px] px-4">').html(num),
+                                $('<td class="text-[10px] px-4">').text(formatInvoiceDate(item.invoice_date)),
+                                $('<td class="text-[10px] px-4">').text(item.invoiceID),
+                                $('<td class="text-[10px] px-4">').text(item.customer_name),
+                                $('<td class="text-[10px] px-4">').text(item.amount_expected),
+                                $('<td class="text-[10px] px-4 text-center">').append(`
+                                    <a onclick="showModal('${item.invoiceID}')"
+                                    class="inline-flex items-center justify-center mx-auto text-green-600 cursor-pointer"
+                                    aria-label="View">
+                                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7zm0 11a4 4 0 110-8 4 4 0 010 8zm0-2.5A1.5 1.5 0 1010 8a1.5 1.5 0 000 3.5z"/>
+                                        </svg>
+                                    </a>
+                                `),
+                                $('<td class="text-[10px] text-center">').append(`
+                                    <a href="${editUrl}"
+                                    class="inline-flex items-center justify-center mx-auto text-blue-500 cursor-pointer"
+                                    aria-label="Edit">
+                                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                                        </svg>
+                                    </a>
+                                `),
+                                $('<td class="text-[10px] px-4 text-center">').html(
+                                    item.invoice_state === "Supplied"
+                                        ? '<input type="checkbox" checked disabled>'
+                                        : `<input type="checkbox" class="supplied-checkbox" onclick="markSupplied('${item.invoiceID}', this)">`
+                                )
+                            );
+                            table.append(row);
+                        });
+                        renderAjaxPagination(response, Fetch);
 
-                    items.forEach(function(item, index) {
-                        const amount = parseFloat(item.amount) || 0;
-                        linesSubtotal += amount;
-                        tbody.append(`
-                            <tr style="border-bottom:1px solid #d1d5db;">
-                                <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#111827;">${index + 1}</td>
-                                <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#111827;">${item.item_name || ''}</td>
-                                <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#111827;">${item.qty || ''}</td>
-                                <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#111827;">${NCFormat(item.unit_p)}</td>
-                                <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#111827;">${item.discount ? NCFormat(item.discount) : '—'}</td>
-                                <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#111827;text-align:right;">${NCFormat(amount)}</td>
-                            </tr>
-                        `);
-                    });
-
-                    // ── Totals (from API: subtotal, VAT, grand total, paid, balance) ──
-                    const subtotalVal = parseFloat(data.subtotal);
-                    const subtotal = !isNaN(subtotalVal) ? subtotalVal : linesSubtotal;
-                    const vatItems = Array.isArray(data.vat_items) ? data.vat_items : [];
-                    const vatTotalVal = parseFloat(data.vat_total);
-                    const vatTotal = !isNaN(vatTotalVal) ? vatTotalVal : 0;
-                    const grandTotalVal = parseFloat(data.grand_total);
-                    const grandTotal = !isNaN(grandTotalVal) ? grandTotalVal : (subtotal + vatTotal);
-                    const amountPaidVal = parseFloat(inv.amount_paid != null ? inv.amount_paid : line.amount_paid);
-                    const amountPaid = !isNaN(amountPaidVal) ? amountPaidVal : 0;
-                    const balanceDueVal = parseFloat(data.balance_due);
-                    const balanceDue = !isNaN(balanceDueVal) ? balanceDueVal : (grandTotal - amountPaid);
-
-                    // tfoot: dark and bold for PDF readability
-                    const tfootColor = '#030712';
-                    const cellLabel = `padding:8px 12px; text-align:right; font-size:12px; color:${tfootColor}; font-weight:800;`;
-                    const cellValue = `padding:8px 12px; font-size:12px; color:${tfootColor}; text-align:right; font-weight:800;`;
-                    let totalsHtml = `
-                        <tr><td colspan="6" style="padding:4px;"></td></tr>
-                        <tr style="background:#f3f4f6;">
-                            <td colspan="4" style="${cellLabel}">Subtotal</td>
-                            <td colspan="2" style="${cellValue}">${currencySymbol}${NCFormat(subtotal)}</td>
-                        </tr>
-                    `;
-
-                    vatItems.forEach(function(vat) {
-                        totalsHtml += `
-                            <tr style="background:#f3f4f6;">
-                                <td colspan="4" style="${cellLabel}">VAT</td>
-                                <td colspan="2" style="${cellValue}">${currencySymbol}${NCFormat(vat.amount)}</td>
-                            </tr>
-                        `;
-                    });
-
-                    if (vatItems.length > 1) {
-                        totalsHtml += `
-                            <tr style="background:#f3f4f6; border-top:1px solid #9ca3af;">
-                                <td colspan="4" style="${cellLabel}">VAT Total</td>
-                                <td colspan="2" style="${cellValue}">${currencySymbol}${NCFormat(vatTotal)}</td>
-                            </tr>
-                        `;
+                    } else {
+                        hideAjaxPagination();
+                        $("#no-data").css('display', 'block');
+                        alertify.error("No data found for selected filters");
                     }
-
-                    totalsHtml += `
-                        <tr style="background:#e5e7eb; border-top:2px solid #111827;">
-                            <td colspan="4" style="padding:10px 12px; text-align:right; font-size:13px; font-weight:900; color:${tfootColor};">Total Amount</td>
-                            <td colspan="2" style="padding:10px 12px; font-size:13px; font-weight:900; color:${tfootColor}; text-align:right;">${currencySymbol}${NCFormat(grandTotal)}</td>
-                        </tr>
-                    `;
-
-                    if (amountPaid > 0 && Math.abs(amountPaid - grandTotal) > 0.001) {
-                        totalsHtml += `
-                            <tr style="background:#fff;">
-                                <td colspan="4" style="${cellLabel}">Amount Paid</td>
-                                <td colspan="2" style="${cellValue}">${currencySymbol}${NCFormat(amountPaid)}</td>
-                            </tr>
-                            <tr style="background:#fff; border-bottom:1px solid #e5e7eb;">
-                                <td colspan="4" style="${cellLabel}">Balance Due</td>
-                                <td colspan="2" style="${cellValue}">${currencySymbol}${NCFormat(balanceDue)}</td>
-                            </tr>
-                        `;
-                    }
-
-                    $('#modal_invoice_totals').html(totalsHtml);
-
-                    // ── Text footer ───────────────────────────────────────────────
-                    $('#modal_footer').text('Prepared by: ' + (line.Userlogin || ''));
-
-                    my_modal_view_sales_ledger.showModal();
                 },
-                error: function() {
-                    alertify.confirm("Invoice retrieval failed");
+                error: function(error) {
+                    console.log('error', error);
+                    alertify.error("An error occurred while fetching data");
                 }
             });
+        } else {
+            alertify.error("Select at least one filter to search");
         }
+    }
+
+
+    //multiple filter
+    function filterItem(selected){
+        // preventDefault()
+
+        //const value = selected.value
+        const value = ""
+        // alertify.success(value)
+        //console.log(from)
+        //console.log(to)
+        if(value){
+            $.ajax({
+                url: 'sales/'+value+'/',
+                method: 'GET',
+                success: function(data) {
+                    //if(response.serializer_data ){
+                    console.log(data.item);
+                    console.log(data.amount_total);
+                    $("#amount_total").val("#"+data.amount_total);
+                    
+                        const table = $('#example tbody')
+                        table.empty()
+                        let num = 0;
+                        data.item.forEach(item => {
+                            num++;
+                            const editUrl = "{% url 'customer:EditSalesInvoice' 0 %}".replace('0', item.invoiceID);
+                            const row = $('<tr id="row">').append(
+                                $('<td class="text-[10px]">').html(num),
+                                $('<td class="text-[10px]">').text(item.invoice_date),
+                                $('<td class="text-[10px]">').text(item.invoiceID),
+                                $('<td class="text-[10px]">').text(item.customer_name),
+                                $('<td class="text-[10px]">').text(item.item_name),
+                                $('<td class="text-[10px]">').text(item.amount_expected),
+                                // VIEW
+                                $('<td class="text-[10px]">').append(`
+                                    <a onclick="showModal('${item.invoiceID}')"
+                                    class="flex items-center justify-center text-green-600 cursor-pointer"
+                                    aria-label="View">
+                                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7zm0 11a4 4 0 110-8 4 4 0 010 8zm0-2.5A1.5 1.5 0 1010 8a1.5 1.5 0 000 3.5z"/>
+                                        </svg>
+                                    </a>
+                                `),
+                                // EDIT
+                                $('<td class="text-[10px]">').append(`
+                                    <a href="${editUrl}"
+                                    class="flex items-center justify-center text-blue-500 cursor-pointer"
+                                    aria-label="Edit">
+                                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                                        </svg>
+                                    </a>
+                                `),
+                                // SUPPLIED
+                                $('<td class="text-[10px] px-4 text-center">').html(
+                                    item.invoice_state === "Supplied"
+                                        ? '<input type="checkbox" checked disabled>'
+                                        : `<input type="checkbox" class="supplied-checkbox" onclick="markSupplied('${item.invoiceID}', this)">`
+                                )
+                            );
+                            table.append(row);
+                        });
+                    //}else{
+                    //    alertify.error("No Return data between selected date")
+                        //alertify.error("Select start_date and end_date")
+                    //}
+                },
+                error: function(error) {
+                    // Handle the error
+                    console.log(error)
+                }
+            });
+        }else{
+            //alertify.error("Select start_date and end_date")
+        }
+    };
+</script>
+
+<script>
+    // Format API date/datetime values as dd/mm/yyyy (avoids ISO strings & timezone day-shift)
+    function formatInvoiceDate(value) {
+        if (value === null || value === undefined || value === '') return '';
+        const s = String(value);
+        const match = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (match) {
+            return match[3] + '/' + match[2] + '/' + match[1];
+        }
+        const d = new Date(value);
+        if (isNaN(d.getTime())) return s;
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        return day + '/' + month + '/' + d.getFullYear();
+    }
+
+    function showModal(invoiceId) {
+        if (!invoiceId) return;
+
+        $.ajax({
+            url: '/view-sales-ledger/' + invoiceId + '/',
+            method: 'GET',
+            success: function(data) {
+                if (!data.serialized_data || data.serialized_data.length === 0) return;
+                var currencySymbol = "{{ profile.currency|default:'$' }}";
+                const items = data.serialized_data;
+                const line = items[0];
+                const inv = data.invoice || {};
+
+                const invoiceIdVal = inv.invoiceID || line.invoiceID || '';
+                const invoiceDate = formatInvoiceDate(inv.invoice_date || line.invoice_date);
+                const dueDate = formatInvoiceDate(inv.due_date || line.due_date);
+                const customerName = inv.customer_name || line.customer_name || '';
+                const customerId = inv.customer_id || line.cusID || '';
+                const invoiceState = inv.invoice_state || line.invoice_state || 'Supplied';
+
+                // ── Invoice meta ──────────────────────────────────────────────
+                $('#invoiceHeader').html(`
+                    <table style="width:100%;border-collapse:collapse;margin-bottom:8px;background:#f3f4f6;border-bottom:2px solid #9ca3af;">
+                        <tr>
+                            <td style="padding:12px 16px;vertical-align:top;width:25%;text-align:center;">
+                                <div style="font-size:11px;color:#111827;font-weight:800;text-transform:uppercase;margin-bottom:4px;">Invoice ID</div>
+                                <div style="font-weight:800;color:#030712;font-size:13px;">${invoiceIdVal}</div>
+                            </td>
+                            <td style="padding:12px 16px;vertical-align:top;width:25%;text-align:center;">
+                                <div style="font-size:11px;color:#111827;font-weight:800;text-transform:uppercase;margin-bottom:4px;">Date</div>
+                                <div style="font-weight:800;color:#030712;font-size:13px;">${invoiceDate}</div>
+                            </td>
+                            <td style="padding:12px 16px;vertical-align:top;width:25%;text-align:center;">
+                                <div style="font-size:11px;color:#111827;font-weight:800;text-transform:uppercase;margin-bottom:4px;">Due Date</div>
+                                <div style="font-weight:800;color:#030712;font-size:13px;">${dueDate}</div>
+                            </td>
+                            <td style="padding:12px 16px;vertical-align:top;width:25%;text-align:center;">
+                                <div style="font-size:11px;color:#111827;font-weight:800;text-transform:uppercase;margin-bottom:4px;">Status</div>
+                                <span style="display:inline-block;padding:3px 10px;border-radius:9999px;font-size:10px;font-weight:800;text-transform:uppercase;background:#d1fae5;color:#065f46;">
+                                    ${invoiceState}
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                    <div style="padding:10px 16px;margin-bottom:8px;">
+                        <div style="font-size:11px;text-transform:uppercase;color:#111827;font-weight:800;margin-bottom:4px;">Bill To</div>
+                        <div style="font-size:13px;font-weight:800;color:#030712;">${customerName}</div>
+                        <div style="font-size:12px;font-weight:700;color:#1f2937;">ID: ${customerId}</div>
+                    </div>
+                `);
+
+                // ── Line items ────────────────────────────────────────────────
+                const tbody = $('#salesLadgerView tbody');
+                tbody.empty();
+                let linesSubtotal = 0;
+
+                items.forEach(function(item, index) {
+                    const amount = parseFloat(item.amount) || 0;
+                    linesSubtotal += amount;
+                    tbody.append(`
+                        <tr style="border-bottom:1px solid #d1d5db;">
+                            <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#111827;">${index + 1}</td>
+                            <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#111827;">${item.item_name || ''}</td>
+                            <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#111827;">${item.qty || ''}</td>
+                            <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#111827;">${NCFormat(item.unit_p)}</td>
+                            <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#111827;">${item.discount ? NCFormat(item.discount) : '—'}</td>
+                            <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#111827;text-align:right;">${NCFormat(amount)}</td>
+                        </tr>
+                    `);
+                });
+
+                // ── Totals (from API: subtotal, VAT, grand total, paid, balance) ──
+                const subtotalVal = parseFloat(data.subtotal);
+                const subtotal = !isNaN(subtotalVal) ? subtotalVal : linesSubtotal;
+                const vatItems = Array.isArray(data.vat_items) ? data.vat_items : [];
+                const vatTotalVal = parseFloat(data.vat_total);
+                const vatTotal = !isNaN(vatTotalVal) ? vatTotalVal : 0;
+                const grandTotalVal = parseFloat(data.grand_total);
+                const grandTotal = !isNaN(grandTotalVal) ? grandTotalVal : (subtotal + vatTotal);
+                const amountPaidVal = parseFloat(inv.amount_paid != null ? inv.amount_paid : line.amount_paid);
+                const amountPaid = !isNaN(amountPaidVal) ? amountPaidVal : 0;
+                const balanceDueVal = parseFloat(data.balance_due);
+                const balanceDue = !isNaN(balanceDueVal) ? balanceDueVal : (grandTotal - amountPaid);
+
+                // tfoot: dark and bold for PDF readability
+                const tfootColor = '#030712';
+                const cellLabel = `padding:8px 12px; text-align:right; font-size:12px; color:${tfootColor}; font-weight:800;`;
+                const cellValue = `padding:8px 12px; font-size:12px; color:${tfootColor}; text-align:right; font-weight:800;`;
+                let totalsHtml = `
+                    <tr><td colspan="6" style="padding:4px;"></td></tr>
+                    <tr style="background:#f3f4f6;">
+                        <td colspan="4" style="${cellLabel}">Subtotal</td>
+                        <td colspan="2" style="${cellValue}">${currencySymbol}${NCFormat(subtotal)}</td>
+                    </tr>
+                `;
+
+                vatItems.forEach(function(vat) {
+                    totalsHtml += `
+                        <tr style="background:#f3f4f6;">
+                            <td colspan="4" style="${cellLabel}">VAT</td>
+                            <td colspan="2" style="${cellValue}">${currencySymbol}${NCFormat(vat.amount)}</td>
+                        </tr>
+                    `;
+                });
+
+                if (vatItems.length > 1) {
+                    totalsHtml += `
+                        <tr style="background:#f3f4f6; border-top:1px solid #9ca3af;">
+                            <td colspan="4" style="${cellLabel}">VAT Total</td>
+                            <td colspan="2" style="${cellValue}">${currencySymbol}${NCFormat(vatTotal)}</td>
+                        </tr>
+                    `;
+                }
+
+                totalsHtml += `
+                    <tr style="background:#e5e7eb; border-top:2px solid #111827;">
+                        <td colspan="4" style="padding:10px 12px; text-align:right; font-size:13px; font-weight:900; color:${tfootColor};">Total Amount</td>
+                        <td colspan="2" style="padding:10px 12px; font-size:13px; font-weight:900; color:${tfootColor}; text-align:right;">${currencySymbol}${NCFormat(grandTotal)}</td>
+                    </tr>
+                `;
+
+                if (amountPaid > 0 && Math.abs(amountPaid - grandTotal) > 0.001) {
+                    totalsHtml += `
+                        <tr style="background:#fff;">
+                            <td colspan="4" style="${cellLabel}">Amount Paid</td>
+                            <td colspan="2" style="${cellValue}">${currencySymbol}${NCFormat(amountPaid)}</td>
+                        </tr>
+                        <tr style="background:#fff; border-bottom:1px solid #e5e7eb;">
+                            <td colspan="4" style="${cellLabel}">Balance Due</td>
+                            <td colspan="2" style="${cellValue}">${currencySymbol}${NCFormat(balanceDue)}</td>
+                        </tr>
+                    `;
+                }
+
+                $('#modal_invoice_totals').html(totalsHtml);
+
+                // ── Text footer ───────────────────────────────────────────────
+                $('#modal_footer').text('Prepared by: ' + (line.Userlogin || ''));
+
+                my_modal_view_sales_ledger.showModal();
+            },
+            error: function() {
+                alertify.confirm("Invoice retrieval failed");
+            }
+        });
+    }
 
 
 
 
-        function showEditDateModal(id, name, price, date, invoice){
-            //alert(invoiceId)
-                //const invoiceId = $(this).val();
-                my_modal_sales_ledger_edit_date.showModal()
-             
-                $("#cusID").text(id);
-                $("#item_name").text(name);
-                $("#unit_p").text(price);
-                $("#invoice_date").text(date);
+    function showEditDateModal(id, name, price, date, invoice){
+        //alert(invoiceId)
+            //const invoiceId = $(this).val();
+            my_modal_sales_ledger_edit_date.showModal()
+            
+            $("#cusID").text(id);
+            $("#item_name").text(name);
+            $("#unit_p").text(price);
+            $("#invoice_date").text(date);
 
-                $("#invoice_id").val(invoice);
-                $("#invoice_date2").val(date);
+            $("#invoice_id").val(invoice);
+            $("#invoice_date2").val(date);
 
-               
-        };
-    </script>
-    
+            
+    };
+</script>
+
 
 
 {% endblock content %}

@@ -184,7 +184,7 @@ def add_new_sales(request, db):
     executed = False
     user = False
 
-    # ── 1. Parse POST data ───────────────────────────────────
+    # ── 1. Parse POST data
     try:
         cusID             = request.POST['cusID']
         venID             = request.POST['venID']
@@ -302,7 +302,7 @@ def add_new_sales(request, db):
     elif invoice_state:
         invoice_state = "Pending"
     else:
-        invoice_state = "Supplied"
+        invoice_state = "Pending"
 
     logger.debug(
         f"[add_new_sales] Config | invoice_state={invoice_state} | "
