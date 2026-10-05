@@ -200,6 +200,8 @@
         {% include 'modalBoxx/printbtn.html' with container="sl" table="example" table_no="" %}
     </div>
 
+    <div class="hidden">{% csrf_token %}</div>
+
 <script>
 
     function markSupplied(invoiceID, checkbox) {

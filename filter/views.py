@@ -630,7 +630,13 @@ def sales_ladger_filter_by_date(request):
     for item_row in filtered_data:
         if item_row['invoiceID'] not in seen_invoice_ids:
             seen_invoice_ids.add(item_row['invoiceID'])
-            unique_data.append(item_row)
+            unique_data.append({
+                'invoiceID': item_row['invoiceID'],
+                'invoice_date': item_row['invoice_date'],
+                'customer_name': item_row['customer_name'],
+                'amount_expected': item_row['amount_expected'],
+                'invoice_state': item_row['invoice_state'],
+            })
 
     amount_total = customer_invoice.objects.using(db).filter(
         filter_conditions
@@ -834,4 +840,3 @@ def recievable_filter(request, value):
     }
 
     return JsonResponse(data)
-
