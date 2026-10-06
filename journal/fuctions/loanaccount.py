@@ -8,7 +8,7 @@ from employee.models import employee, staff_account
 from employee.forms import employee
 from account.models import chart_of_account
 import uuid, decimal
-from customer.functions.generalFunction import DebitPayable, DebitReceivable, CreateLog
+from customer.functions.generalFunction import DebitPayable, CreateLog
 from customer.functions.gl import post_loan_disbursement
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
@@ -170,14 +170,10 @@ def create_new_loan(request, db):
                     Userlogin=request.user.username
                 )
 
-            elif customer_id:
-                DebitReceivable(
-                    request, db, cus, date, description, "Cash",
-                    account.account_id, amount_owed, invoiceID=reference or None,
-                )
-
             elif vendor_id:
                 DebitPayable(request, db, ven, date, description, "Cash", account, amount_owed)
+            # Customer loans stay on 1100-LoanReceivable (post_loan_disbursement).
+            # They must not write a Debit into the trade-receivable subsidiary.
 
             #Save loan
             loan_instance = loan_form.save(commit=False)

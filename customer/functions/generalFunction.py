@@ -3,7 +3,7 @@ import decimal, uuid
 from decimal import Decimal
 from Stock.models import CreateOutletStockIn, CreateOutletStockInLog, CreateStockIn, CreateStockInLog
 from django.db.models import Q
-from django.db import transaction
+from django.db import connections, transaction
 
 
 def exclude_returned_or_cancelled_invoices(qs):
@@ -286,6 +286,125 @@ def repair_spurious_payment_debits(db, dry_run=False):
 
 def _d(value):
     return Decimal(str(value or 0)).quantize(Decimal('0.01'))
+
+
+def _account_posted_is_loan_gl(account_posted):
+    text = (account_posted or '').strip()
+    if not text:
+        return False
+    compact = text.lower().replace(' ', '')
+    if 'loanreceivable' in compact:
+        return True
+    return text == '1100' or text.startswith('1100-')
+
+
+def _account_posted_is_chart_object(account_posted):
+    return (account_posted or '').strip().lower().startswith('chart_of_account object')
+
+
+def _loan_account_rows(db):
+    """Read loan_account with whatever columns this tenant actually has."""
+    with connections[db].cursor() as cursor:
+        cursor.execute(
+            "SELECT column_name FROM information_schema.columns WHERE table_name = %s",
+            ['loan_account'],
+        )
+        cols = {row[0] for row in cursor.fetchall()}
+    if not cols:
+        return []
+    want = [
+        'id', 'date', 'debtor_id', 'debtor_name', 'description',
+        'amount_borrowed', 'total_amount', 'account_debited',
+    ]
+    use = [name for name in want if name in cols]
+    if not use:
+        return []
+    with connections[db].cursor() as cursor:
+        cursor.execute('SELECT ' + ', '.join(use) + ' FROM loan_account')
+        return [dict(zip(use, row)) for row in cursor.fetchall()]
+
+
+def _loan_amounts(loan):
+    amounts = set()
+    for key in ('amount_borrowed', 'total_amount'):
+        value = loan.get(key)
+        if value is None or str(value).strip() == '':
+            continue
+        amounts.add(_d(value))
+    return amounts
+
+
+def _receivable_matches_loan(row, loans):
+    amount = _d(row.amount)
+    description = (row.description or '').strip()
+    if not description:
+        return False
+    for loan in loans:
+        if amount not in _loan_amounts(loan):
+            continue
+        if description == (loan.get('description') or '').strip():
+            return True
+    return False
+
+
+def loan_posted_receivable_qs(db):
+    """Debits create_new_loan wrote into the trade-receivable subsidiary."""
+    loans = _loan_account_rows(db)
+    keep_ids = []
+    qs = receivable.objects.using(db).filter(type='Debit').order_by('date', 'id')
+    for row in qs.only(
+        'id', 'date', 'customer_id', 'customer_name', 'token_id',
+        'description', 'amount', 'account_posted', 'balance',
+    ):
+        posted = row.account_posted or ''
+        if _account_posted_is_loan_gl(posted):
+            keep_ids.append(row.id)
+        elif _account_posted_is_chart_object(posted) and _receivable_matches_loan(row, loans):
+            keep_ids.append(row.id)
+    if not keep_ids:
+        return receivable.objects.using(db).none()
+    return receivable.objects.using(db).filter(id__in=keep_ids).order_by('date', 'id')
+
+
+def repair_loan_receivable_debits(db, dry_run=False):
+    """Drop customer-loan Debits from receivable so AR is invoice outstanding only.
+
+    Matching: Debit rows posted to 1100-LoanReceivable, or the historical
+    str(chart_of_account) value when that row also matches a loan amount+description.
+    Invoice sale Debits (4001-Sales) and later payment credits are kept.
+    """
+    junk = loan_posted_receivable_qs(db)
+    preview = list(junk.values(
+        'id', 'date', 'customer_id', 'customer_name', 'token_id',
+        'description', 'amount', 'account_posted', 'balance',
+    ))
+    delete_count = len(preview)
+    customer_ids = {
+        row['customer_id'] for row in preview if row.get('customer_id')
+    }
+
+    if dry_run:
+        return {
+            'deleted': 0,
+            'would_delete': delete_count,
+            'recomputed': 0,
+            'rows': preview,
+        }
+
+    with transaction.atomic(using=db):
+        if delete_count:
+            junk.delete()
+        recomputed = (
+            recompute_receivable_running_balances(db, customer_ids)
+            if customer_ids else 0
+        )
+
+    return {
+        'deleted': delete_count,
+        'would_delete': delete_count,
+        'recomputed': recomputed,
+        'rows': preview,
+    }
 
 
 def _sum_amounts(rows):
