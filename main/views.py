@@ -95,6 +95,17 @@ def set_auto_verify_session(request, user, db_name):
     request.session.modified = True
 
 
+def _complete_login(request, user, db_name):
+    backend = getattr(user, 'backend', None) or 'main.backends.EmailAuthenticationBackend'
+    login(request, user, backend=backend)
+    try:
+        create_profile(request, user)
+        set_auto_verify_session(request, user, db_name)
+    except Exception as e:
+        print(f"Post-login setup error for {user.username}: {e}")
+    return redirect('main:home')
+
+
 @never_cache
 @not_logged_in_required
 def Login(request):
@@ -104,14 +115,17 @@ def Login(request):
     if request.method == "POST":
         form = LoginForm(request.POST)
         if form.is_valid():
-            email = form.cleaned_data.get('username')
-            us = User.objects.filter(email=email)
-            if us.exists():
-                username = us.first().username
-            else:
-                username = email
-         
-            user = authenticate(username=username, password=form.cleaned_data.get('password'))
+            identifier = (form.cleaned_data.get('username') or '').strip()
+            password = form.cleaned_data.get('password')
+            matched = (
+                User.objects.filter(email__iexact=identifier).first()
+                or User.objects.filter(username__iexact=identifier).first()
+            )
+            user = authenticate(request, username=identifier, password=password)
+            if user is None and matched is not None:
+                user = authenticate(request, username=matched.username, password=password)
+                if user is None and matched.email:
+                    user = authenticate(request, username=matched.email, password=password)
           
             if user:
                 try:
@@ -126,8 +140,10 @@ def Login(request):
                             messages.error(request, "Database connection error. Please try again or contact support.")
                             return render(request, 'login.html', {"form": form})
                     
-                    # Run migrations for first-time users 
-                    if user.last_login is None:
+                    company_already_live = User.objects.filter(
+                        company_id=user.company_id_id, last_login__isnull=False
+                    ).exclude(pk=user.pk).exists()
+                    if user.last_login is None and not company_already_live:
                         try:
                             print(f"First-time login for {user.username}, running migrations...")
                             migrate_database_safe(db_name)
@@ -139,21 +155,21 @@ def Login(request):
                     try:
                         billing = Billing.objects.get(company=company)
                         if billing.subscription == "Free":
-                            create_profile(request, user)
-                            login(request, user)
-                            set_auto_verify_session(request, user, company.db_name)
-                            return redirect('main:home')
+                            return _complete_login(request, user, company.db_name)
                         else:
                             if int(billing.subscription) > 0 and billing.payment_status == "Verified":
                                 remaining_days, plan = check_sub(request, company.id)
                                 if remaining_days <= 0:
-                                    billing_url = reverse('main:Billing', args=[request.user.company_id.id])
+                                    login(
+                                        request,
+                                        user,
+                                        backend=getattr(user, 'backend', None)
+                                        or 'main.backends.EmailAuthenticationBackend',
+                                    )
+                                    billing_url = reverse('main:Billing', args=[user.company_id.id])
                                     return redirect(billing_url)
                                 else:
-                                    create_profile(request, user)
-                                    set_auto_verify_session(request, user, company.db_name)
-                                    login(request, user)
-                                    return redirect('main:home')
+                                    return _complete_login(request, user, company.db_name)
                             else:
                                 reference = billing.reference  
                                 url = reverse('main:Verify-Payment') 
@@ -168,9 +184,9 @@ def Login(request):
                     return redirect('main:NewCompany')
                     
             else:
-                us = User.objects.filter(username=username)
-                if us.exists():
-                    if us.first().is_active:
+                us = matched or User.objects.filter(username__iexact=identifier).first()
+                if us:
+                    if us.is_active:
                         messages.warning(request, "Invalid Credentials!")
                     else:
                         messages.warning(request, "Your account is currently restricted")
@@ -948,23 +964,32 @@ def NewUser(request):
     form = NewUserForm()
     if request.method == "POST":
         em = request.POST.get('employee')
-        username = request.POST.get('username')
+        username = (request.POST.get('username') or '').strip()
         
         form = NewUserForm(request.POST)
         if em is None:
             messages.error(request, "Select employee")
+        elif not username:
+            messages.error(request, "Username is required")
+        elif User.objects.filter(username__iexact=username).exists():
+            messages.error(request, "A user with that username already exists")
         else:
             if add_user(request):
                 if form.is_valid():
                     save_form = form.save(commit=False)
                     save_form.username = username
                     save_form.company_id_id = id
+                    save_form.is_active = True
                     save_form.set_password(form.cleaned_data.get('password'))
                     save_form.save()
-                    messages.success(request, "Registration Successful")
+                    assign_role_privileges(save_form, save_form.priviledge)
+                    messages.success(
+                        request,
+                        "Registration Successful. This user can log in with their email or username.",
+                    )
                     return redirect('main:NewUser')
                 else:
-                    pass
+                    messages.error(request, "Create user was unsuccessful. Check the form for errors.")
             else:
                 messages.error(request, "You have exceed user limit")
 

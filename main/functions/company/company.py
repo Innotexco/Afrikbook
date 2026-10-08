@@ -334,13 +334,72 @@ def makemigrations(db_name):
        
 
 
-def AssignPrevilage(request, user, username):
-    pages = Pages.objects.all()
+SALES_ADMIN_PAGES = [
+    'Dashboard', 'Profile',
+    'Sales Invoices', 'Sales Quotes', 'Sales Order', 'Returns Inwards',
+    'Customer', 'Customer Ledger', 'Sales Ledger', 'Sales Report',
+    'Receivables', 'Aged Receivables', 'Receive Payment',
+    'Item', 'Item Issue', 'Item Receipt', 'Transfer Stock',
+    'Warehouse to Outlet', 'Sales Unit', 'Journal Entries', 'General Ledger',
+]
 
-    if pages.count() > 0:
-        for page in pages:
-            Privilege.objects.create(name=page.page_name, user=user)
-        messages.success(request, str(pages.count()) +" Previlages was assinged to "+username)
+STOCK_MANAGER_PAGES = [
+    'Dashboard', 'Profile',
+    'Item', 'Add New Item', 'Item Category', 'Item Receipt', 'Item Issue',
+    'Transfer Stock', 'Stock Adjustment', 'Stock Adjustment Outlet',
+    'Warehouse to Outlet', 'Outlet to Warehouse', 'Verify Transfer',
+    'Stock Level', 'Stock In Report', 'Expired Items', 'Add Warehouse',
+]
+
+ROLE_PAGES = {
+    'Admin': None,
+    'Sales Admin': SALES_ADMIN_PAGES,
+    'Stock Manager': STOCK_MANAGER_PAGES,
+    'Inventary': STOCK_MANAGER_PAGES,
+}
+
+
+def assign_role_privileges(user, role=None):
+    """Grant page privileges so a company-created user can sign in and open pages."""
+    role = (role or getattr(user, 'priviledge', None) or 'Admin').strip() or 'Admin'
+    page_names = ROLE_PAGES.get(role)
+    if role == 'Admin' or page_names is None:
+        page_names = list(Pages.objects.values_list('page_name', flat=True).distinct())
+    granted = 0
+    for name in page_names:
+        obj, created = Privilege.objects.get_or_create(
+            user=user,
+            name=name,
+            defaults={'description': '', 'is_active': True},
+        )
+        if not obj.is_active:
+            obj.is_active = True
+            obj.save(update_fields=['is_active'])
+            granted += 1
+        elif created:
+            granted += 1
+    return granted
+
+
+def repair_missing_user_privileges():
+    """Assign role privileges to company staff who were created without any pages."""
+    repaired = []
+    for user in User.objects.all().order_by('id'):
+        if Privilege.objects.filter(user=user, is_active=True).exists():
+            continue
+        role = (user.priviledge or '').strip()
+        extra = User.objects.filter(company_id=user.company_id_id).count() > 1
+        if not role and not extra:
+            continue
+        granted = assign_role_privileges(user, role or 'Admin')
+        repaired.append((user.id, user.username, role or 'Admin', granted))
+    return repaired
+
+
+def AssignPrevilage(request, user, username):
+    granted = assign_role_privileges(user, 'Admin')
+    if granted:
+        messages.success(request, str(granted) + " Previlages was assinged to " + username)
     
 
 def create_pages(request):

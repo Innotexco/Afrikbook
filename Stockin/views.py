@@ -480,12 +480,18 @@ def NewUser(request):
 
     if request.method == "POST":
         form = NewUserForm(request.POST)
+        username = (request.POST.get('username') or '').strip()
         if form.is_valid():
             user = form.save(commit=False)
+            if username:
+                user.username = username
+            user.company_id_id = company_id
+            user.is_active = True
             user.set_password(form.cleaned_data.get('password'))
-            user.company_id = company_id
             user.save()
-            messages.success(request, "Registration Successful")
+            from main.functions.company.company import assign_role_privileges
+            assign_role_privileges(user, user.priviledge)
+            messages.success(request, "Registration Successful. This user can log in with their email or username.")
             return redirect('Stockin:StockNewUser')
 
     context = {

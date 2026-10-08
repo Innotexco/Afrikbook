@@ -18,6 +18,8 @@ def urls_name(name):
                     billing_url = reverse('main:Billing', args=[request.user.company_id.id])
                     return redirect(billing_url)
                 else:
+                    if (getattr(request.user, 'priviledge', '') or '').strip() == 'Admin':
+                        return view_function(request, *args, **kwargs)
                     Privileges = Privilege.objects.filter(name=name,is_active = 1, user_id=request.user.id)
                     if Privileges.exists():
                         return view_function(request, *args, **kwargs)

@@ -343,10 +343,10 @@ MY_EXPERIMENT = True
 
 AUTH_USER_MODEL = 'main.User'
 
-AUTHENTICATION_BACKENDS = {
+AUTHENTICATION_BACKENDS = [
     "main.backends.EmailAuthenticationBackend",
-    "django.contrib.auth.backends.ModelBackend"
-}
+    "django.contrib.auth.backends.ModelBackend",
+]
 
 
 
