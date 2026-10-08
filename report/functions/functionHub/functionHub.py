@@ -2,6 +2,7 @@ from django.shortcuts import  redirect
 from Stock.models import *
 from django.db.models import Q
 from datetime import datetime
+from Stock.functions.functionHub.functionHub import resolve_item_name
 
 
 def _search_chosen(value):
@@ -64,7 +65,7 @@ def ForStockInReport(request, context, db):
             if getstock:
                 # context['stock'] = getstock
                 stockReport = [{
-                    'item':report.item,
+                    'item': resolve_item_name(db, report.item_code, report.item),
                     'quantity':report.quantity,
                     'datetx':report.datetx,
                     'invoice_no':report.invoice_no,

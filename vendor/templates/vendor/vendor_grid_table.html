@@ -14,6 +14,21 @@
         return isFinite(n) ? n : 0;
     }
 
+    function selectedItemName($select) {
+        var text = (($select.find('option:selected').text() || '')).trim();
+        if (!text || text.indexOf('Select Item') === 0 || text.indexOf('_ _Choose') === 0) {
+            return '';
+        }
+        return text;
+    }
+
+    function fillRowItemName($row) {
+        var $name = $row.find('input[name=item_name]');
+        if (!$name.length) return;
+        if (($name.val() || '').trim()) return;
+        $name.val(selectedItemName($row.find('select[name="item[]"]')));
+    }
+
     function sumAmounts() {
         const inputElements = document.getElementsByName("amount[]");
         let sum = 0;
@@ -150,9 +165,9 @@
             // Perform actions when the value doesn't exist in other rows
            // console.log("Value is unique in the table.");
             if(itemId != 0){
-                
+                name.val(selectedItemName($(this)));
                 $.ajax({
-                    url: '/get_items_vendor/'+ itemId + '/',
+                    url: '/get_items_vendor/'+ encodeURIComponent(itemId) + '/',
                     method: 'GET',
                     
                     success: function(data){
@@ -162,7 +177,7 @@
                                 : (data.amount != null ? data.amount : data.unit);
 
                             desc.val(data.desc)
-                            name.val(data.name)
+                            if (data.name) name.val(data.name)
                             purchaseP.val(purchasePrice)
                             qty.val(1)
                             unit.val(purchasePrice)
@@ -178,6 +193,9 @@
                             }
                     },
                     error: function(){
+                        if (!(name.val() || '').trim()) {
+                            name.val(selectedItemName($currentRow.find('select[name="item[]"]')));
+                        }
                         alert('Item not found');
                     }
                     });
@@ -192,6 +210,12 @@
             }
         }
 
+    });
+
+    $(document).on('submit', 'form', function() {
+        $('#dynamic_row_add tr').each(function() {
+            fillRowItemName($(this));
+        });
     });
    
     

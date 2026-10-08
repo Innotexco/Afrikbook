@@ -68,6 +68,7 @@ urlpatterns = [
     path('fetch_locations', views.fetch_locations, name='fetch_locations'),
     path('fetch_cities', views.fetch_cities, name='fetch_cities'),
     path('update_address_shipping_price', views.update_address_shipping_price, name='update_address_shipping_price'),
+    path('update_pickup_shipping_price', views.update_pickup_shipping_price, name='update_pickup_shipping_price'),
     path('ChangeCartMethosState', views.ChangeCartMethosState, name='ChangeCartMethosState'),
 
 ]

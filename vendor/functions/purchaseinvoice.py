@@ -9,6 +9,7 @@ from vendor.models import vendor_table
 from customer.functions.generalFunction import *
 from customer.functions.newsalesfunc import *
 from customer.functions.gl import post_purchase
+from Stock.functions.functionHub.functionHub import resolve_item_name, _seq_at, fill_stock_row_item
 import decimal
 from django.db import transaction
 
@@ -106,6 +107,8 @@ def add_purchase_invoice(request, db):
                     if not quantities[i] or int(quantities[i]) == 0:
                         quantities[i] = 1
 
+                    resolved_name = resolve_item_name(db, itemcode[i], _seq_at(item_name, i))
+
                     vendor_invoice_form_data = {
                         'cusID':             ven.custID,
                         'vendor_name':       ven.name,
@@ -116,7 +119,7 @@ def add_purchase_invoice(request, db):
                         'due_date':          due_date,
                         'amount_paid':       amount_paid,
                         'amount_expected':   amount_expected,
-                        'item_name':         item_name[i],
+                        'item_name':         resolved_name,
                         'itemcode':          itemcode[i],
                         'item_descriptions': item_descriptions[i],
                         'qty':               quantities[i],
@@ -147,6 +150,7 @@ def add_purchase_invoice(request, db):
                             try:
                                 stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=outlet, item_code=itemcode[i])
                                 stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
+                                fill_stock_row_item(stock_in_outlet_query, db, resolved_name)
                                 stock_in_outlet_query.save(using=db)
                             except CreateOutletStockIn.DoesNotExist:
                                 saveOutlet(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
@@ -160,6 +164,7 @@ def add_purchase_invoice(request, db):
                             try:
                                 stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=outlet, item_code=itemcode[i])
                                 stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
+                                fill_stock_row_item(stock_in_outlet_query, db, resolved_name)
                                 stock_in_outlet_query.save(using=db)
                             except CreateOutletStockIn.DoesNotExist:
                                 saveOutlet(invoice_date, vendor_name, invoice_id, order_id, outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
@@ -170,6 +175,7 @@ def add_purchase_invoice(request, db):
                             try:
                                 stock_in_query = CreateStockIn.objects.using(db).get(warehouse=warehouse, item_code=itemcode[i])
                                 stock_in_query.quantity += int(quantities[i])
+                                fill_stock_row_item(stock_in_query, db, resolved_name)
                                 stock_in_query.save(using=db)
                             except CreateStockIn.DoesNotExist:
                                 saveStockin(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
@@ -185,6 +191,7 @@ def add_purchase_invoice(request, db):
                                 try:
                                     stock_in_outlet_query = CreateOutletStockIn.objects.using(db).get(outlet=check_outlet, item_code=itemcode[i])
                                     stock_in_outlet_query.quantity = int(stock_in_outlet_query.quantity) + int(quantities[i])
+                                    fill_stock_row_item(stock_in_outlet_query, db, resolved_name)
                                     stock_in_outlet_query.save(using=db)
                                 except CreateOutletStockIn.DoesNotExist:
                                     saveOutlet(invoice_date, vendor_name, invoice_id, order_id, check_outlet, Gdescription, item_name, item_descriptions, quantities, itemcode, request, db, i)
@@ -267,7 +274,7 @@ def saveStockin(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdes
         order_no=order_id,
         warehouse=warehouse,
         description=Gdescription,
-        item=item_name[i],
+        item=resolve_item_name(db, itemcode[i], _seq_at(item_name, i)),
         item_decription=item_descriptions[i],
         quantity=int(quantities[i]),
         manufacture_date=invoice_date,
@@ -285,7 +292,7 @@ def saveStockinLog(invoice_date, vendor_name, invoice_id, order_id, warehouse, G
         order_no=order_id,
         outlet=warehouse,
         description=Gdescription,
-        item=item_name[i],
+        item=resolve_item_name(db, itemcode[i], _seq_at(item_name, i)),
         item_decription=item_descriptions[i],
         quantity=int(quantities[i]),
         manufacture_date=invoice_date,
@@ -304,7 +311,7 @@ def saveOutlet(invoice_date, vendor_name, invoice_id, order_id, check_outlet, Gd
             order_no=order_id,
             outlet = check_outlet,
             description = Gdescription,
-            item = item_name[i],
+            item = resolve_item_name(db, itemcode[i], _seq_at(item_name, i)),
             item_decription = item_descriptions[i],
             quantity = int(quantities[i]),
             item_code = itemcode[i],
@@ -325,7 +332,7 @@ def saveOutletLog(invoice_date, vendor_name, invoice_id, order_id, check_outlet,
         outlet = check_outlet,
         warehouse = warehouse,
         description = Gdescription,
-        item = item_name[i],
+        item = resolve_item_name(db, itemcode[i], _seq_at(item_name, i)),
         item_decription = item_descriptions[i],
         quantity = quantities[i],
         item_code = itemcode[i],

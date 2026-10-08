@@ -445,14 +445,17 @@
             // Perform actions when the value doesn't exist in other rows
         // console.log("Value is unique in the table.");
             if(itemId != 0){
-                
+                var selectedText = ($(this).find('option:selected').text() || '').trim();
+                if (selectedText && selectedText.indexOf('Select Item') !== 0) {
+                    name.val(selectedText);
+                }
                 $.ajax({
-                    url: '/get_items_vendor/'+ itemId + '/',
+                    url: '/get_items_vendor/'+ encodeURIComponent(itemId) + '/',
                     method: 'GET',
                     
                     success: function(data){
                             desc.val(data.desc)
-                            name.val(data.name)
+                            if (data.name) name.val(data.name)
                             purchaseP.val(data.amount)
                             qty.val(1)
                             unit.val(data.unit)

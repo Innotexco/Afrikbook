@@ -59,14 +59,17 @@
             // Perform actions when the value doesn't exist in other rows
            // console.log("Value is unique in the table.");
             if(itemId != 0){
-                
+                var selectedText = ($(this).find('option:selected').text() || '').trim();
+                if (selectedText && selectedText.indexOf('Select Item') !== 0) {
+                    name.val(selectedText);
+                }
                 $.ajax({
-                    url: '/get_items/'+ itemId + '/',
+                    url: '/get_items/'+ encodeURIComponent(itemId) + '/',
                     method: 'GET',
                     
                     success: function(data){
                             desc.val(data.desc)
-                            name.val(data.name)
+                            if (data.name) name.val(data.name)
                             purchaseP.val(data.amount)
                             qty.val(1)
                             unit.val(data.unit)
@@ -94,6 +97,10 @@
                             addRow()
                     },
                     error: function(){
+                        if (!(name.val() || '').trim()) {
+                            var fallback = ($(event.target).find('option:selected').text() || '').trim();
+                            if (fallback && fallback.indexOf('Select Item') !== 0) name.val(fallback);
+                        }
                         alert('Item not found');
                     }
                     });
@@ -108,6 +115,19 @@
             }
         }
 
+    });
+
+    $(document).on('submit', 'form', function() {
+        $('#dynamic_row_add tr').each(function() {
+            var $row = $(this);
+            var $name = $row.find('input[name=item_name]');
+            if ($name.length && !($name.val() || '').trim()) {
+                var text = ($row.find('select[name="item[]"] option:selected').text() || '').trim();
+                if (text && text.indexOf('Select Item') !== 0 && text.indexOf('_ _Choose') !== 0) {
+                    $name.val(text);
+                }
+            }
+        });
     });
    
     

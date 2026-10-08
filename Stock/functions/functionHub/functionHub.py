@@ -52,11 +52,19 @@ def resolve_item_name(db, item_code, stored_name=''):
     return master or code
 
 
+def fill_stock_row_item(row, db, posted_name=''):
+    """Set row.item from posted name, Item master, or item_code. Caller saves."""
+    name = resolve_item_name(db, getattr(row, 'item_code', ''), getattr(row, 'item', None) or posted_name)
+    if name:
+        row.item = name
+    return name
+
+
 def repair_blank_outlet_stockin_item_names(db, dry_run=False):
-    """Fill empty CreateOutletStockIn / Log.item from Item.item_name or item_code."""
+    """Fill empty warehouse/outlet stock-in and log item names from Item.item_name or item_code."""
     blank = Q(item__isnull=True) | Q(item='') | Q(item__regex=r'^\s+$')
     updated = 0
-    for model in (CreateOutletStockIn, CreateOutletStockInLog):
+    for model in (CreateOutletStockIn, CreateOutletStockInLog, CreateStockIn, CreateStockInLog):
         for row in model.objects.using(db).filter(blank):
             name = resolve_item_name(db, row.item_code, row.item)
             if not name:
@@ -64,7 +72,7 @@ def repair_blank_outlet_stockin_item_names(db, dry_run=False):
             updated += 1
             if not dry_run:
                 row.item = name
-                row.save(update_fields=['item'])
+                row.save(using=db, update_fields=['item'])
     return updated
 
 
@@ -878,7 +886,7 @@ def add_stockin_invoice(request, db):
                         'due_date':          due_date,
                         'amount_paid':       amount_paid,
                         'amount_expected':   amount_expected,
-                        'item_name':         item_name[i],
+                        'item_name':         resolve_item_name(db, itemcode[i], _seq_at(item_name, i)),
                         'itemcode':          itemcode[i],
                         'item_descriptions': item_descriptions[i],
                         'qty':               quantities[i],
@@ -941,6 +949,7 @@ def add_stockin_invoice(request, db):
                             try:
                                 stock_in_query = CreateStockIn.objects.using(db).get(warehouse=warehouse, item_code=itemcode[i])
                                 stock_in_query.quantity += int(quantities[i])
+                                fill_stock_row_item(stock_in_query, db, _seq_at(item_name, i))
                                 stock_in_query.save(using=db)
                             except CreateStockIn.DoesNotExist:
                                 saveStockin(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdescription, item_name, item_descriptions, quantities, due_date, itemcode, request, db, i)
@@ -980,7 +989,7 @@ def saveStockin(invoice_date, vendor_name, invoice_id, order_id, warehouse, Gdes
         order_no=order_id,
         warehouse=warehouse,
         description=Gdescription,
-        item=item_name[i],
+        item=resolve_item_name(db, itemcode[i], _seq_at(item_name, i)),
         item_decription=item_descriptions[i],
         quantity=int(quantities[i]),
         manufacture_date=invoice_date,
@@ -998,7 +1007,7 @@ def saveStockinLog(invoice_date, vendor_name, invoice_id, order_id, warehouse, G
         order_no=order_id,
         outlet=warehouse,
         description=Gdescription,
-        item=item_name[i],
+        item=resolve_item_name(db, itemcode[i], _seq_at(item_name, i)),
         item_decription=item_descriptions[i],
         quantity=int(quantities[i]),
         manufacture_date=invoice_date,

@@ -942,21 +942,23 @@ def GetVendorDetails(request, id):
 def GetItemDetails(request, item_id):
     """Item details for purchase grids — unit price is purchase_price, not selling."""
     db = request.user.company_id.db_name
-    try:
-        item = Item.objects.using(db).get(generated_code=item_id)
-        purchase = item.purchase_price if item.purchase_price is not None else 0
-        data = {
-            'desc': item.description,
-            'name': item.item_name,
-            # Purchase invoice unit price must be purchase cost
-            'unit': purchase,
-            'amount': purchase,
-            'purchase_price': purchase,
-            'selling_price': item.selling_price if item.selling_price is not None else 0,
-        }
-        return JsonResponse(data)
-    except Item.DoesNotExist:
+    code = (item_id or '').strip()
+    item = Item.objects.using(db).filter(generated_code=code).first()
+    if item is None and code.isdigit():
+        item = Item.objects.using(db).filter(pk=code).first()
+    if item is None:
         return JsonResponse({'error': 'Item not found'}, status=404)
+    purchase = item.purchase_price if item.purchase_price is not None else 0
+    data = {
+        'desc': item.description,
+        'name': item.item_name or '',
+        # Purchase invoice unit price must be purchase cost
+        'unit': purchase,
+        'amount': purchase,
+        'purchase_price': purchase,
+        'selling_price': item.selling_price if item.selling_price is not None else 0,
+    }
+    return JsonResponse(data)
     
 def GetInvoiceDetails(request, invoice_id):
     db = request.user.company_id.db_name

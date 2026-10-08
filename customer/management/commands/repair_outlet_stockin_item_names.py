@@ -11,7 +11,7 @@ from Stockin.models import company_table
 
 
 class Command(BaseCommand):
-    help = "Fill blank outlet stock-in item names from Item.item_name or item_code."
+    help = "Fill blank warehouse and outlet stock-in item names from Item.item_name or item_code."
 
     def add_arguments(self, parser):
         parser.add_argument(

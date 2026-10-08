@@ -1361,45 +1361,59 @@ def AddCity(request):
 @login_required(login_url='/')
 @urls_name(name="Customer")
 def PickupShippingPrice(request):
+    from main.utils import paginate_queryset
     db = request.user.company_id.db_name
 
-    items = Item.objects.using(db).all()
-    locations = pickupstation.objects.using(db).all()
+    items = Item.objects.using(db).all().order_by('item_name', 'id')
+    locations = pickupstation.objects.using(db).all().order_by('addr', 'id')
+    selected_item = (request.POST.get('item') or request.GET.get('item') or '').strip()
 
     if request.method == "POST":
         item = request.POST.get('item')
-        same_price = request.POST['same_price']
         location = request.POST.getlist('location[]')
         price = request.POST.getlist('price[]')
-     
+
         if item:
-            item = Item.objects.using(db).get(generated_code=item)
+            item_obj = Item.objects.using(db).get(generated_code=item)
+            selected_item = item_obj.generated_code
             for i in range(len(location)):
-                if price[i] == '':
-                    price[i] = 0
-
-                location_obj =  pickupstation.objects.using(db).get(addr=location[i])
-
-                cost = pickUpShippingPrice.objects.using(db).filter(location=location_obj, item_name=item.item_name, generated_code=item.generated_code)
-                
-                if cost.exists():
-                    cost.update(cost=price[i])
+                if i >= len(price) or price[i] == '':
+                    line_price = 0
                 else:
-                    pickUpShippingPrice.objects.using(db).create(location=location_obj, item_name=item.item_name, generated_code=item.generated_code, cost=price[i])
-            
+                    line_price = price[i]
+
+                location_obj = pickupstation.objects.using(db).get(addr=location[i])
+
+                cost = pickUpShippingPrice.objects.using(db).filter(
+                    location=location_obj,
+                    item_name=item_obj.item_name,
+                    generated_code=item_obj.generated_code,
+                )
+
+                if cost.exists():
+                    cost.update(cost=line_price)
+                else:
+                    pickUpShippingPrice.objects.using(db).create(
+                        location=location_obj,
+                        item_name=item_obj.item_name,
+                        generated_code=item_obj.generated_code,
+                        cost=line_price,
+                    )
+
             messages.success(request, 'Pickup Price created successfully')
-            
-        else:
-            messages.error(request, 'Please select item')
+            from django.urls import reverse
+            return redirect(reverse('settings:PickupShippingPrice') + '?item=' + item_obj.generated_code)
+
+        messages.error(request, 'Please select item')
 
     shipping = pickUpShippingPrice.objects.using(db).all().order_by('item_name', 'id')
-    from main.utils import paginate_queryset
     page_obj = paginate_queryset(request, shipping)
     context ={
         'shipping': page_obj,
         'page_obj': page_obj,
         'items' : items,
-        'locations': locations
+        'locations': locations,
+        'selected_item': selected_item,
     }
     return render(request, "shipping/PickupShippingPrice.html", context)
 
@@ -1494,23 +1508,64 @@ def AddressShippingPrice(request):
 def fetch_locations(request):
     db = request.user.company_id.db_name
     item = request.GET.get('item')
-    try:  
+    try:
         item = Item.objects.using(db).get(generated_code=item)
-        locations = pickupstation.objects.using(db).values()
+        locations = list(pickupstation.objects.using(db).order_by('addr', 'id').values())
 
         for i in locations:
             i['item_name'] = item.item_name
-            try:
-               price = pickUpShippingPrice.objects.using(db).get(location=i['id'], item_name=item.item_name, generated_code=item.generated_code)
-               i['cost'] = price.cost
-            except pickUpShippingPrice.DoesNotExist:
+            price = pickUpShippingPrice.objects.using(db).filter(
+                location=i['id'],
+                item_name=item.item_name,
+                generated_code=item.generated_code,
+            ).first()
+            if price:
+                i['cost'] = price.cost
+                i['price_id'] = price.id
+            else:
                 i['cost'] = "0"
+                i['price_id'] = ""
 
-        serialized_data = list(locations)
-        return JsonResponse(serialized_data, safe=False)
-        status = 200
-    except Item.DoesNotExist: 
+        return JsonResponse(locations, safe=False)
+    except Item.DoesNotExist:
         return JsonResponse({'error': 'No location not found'}, status = 404)
+
+def update_pickup_shipping_price(request):
+    db = request.user.company_id.db_name
+    price_id = request.GET.get('item_id')
+    item_price = request.GET.get('item_price')
+    location_id = request.GET.get('location_id')
+    item_code = request.GET.get('item')
+
+    if item_price in (None, ''):
+        item_price = 0
+
+    try:
+        if price_id:
+            price = pickUpShippingPrice.objects.using(db).get(id=price_id)
+            price.cost = item_price
+            price.save(using=db)
+            return JsonResponse({'message': 'Changes saved successfully'})
+
+        item = Item.objects.using(db).get(generated_code=item_code)
+        location_obj = pickupstation.objects.using(db).get(id=location_id)
+        existing = pickUpShippingPrice.objects.using(db).filter(
+            location=location_obj,
+            item_name=item.item_name,
+            generated_code=item.generated_code,
+        )
+        if existing.exists():
+            existing.update(cost=item_price)
+        else:
+            pickUpShippingPrice.objects.using(db).create(
+                location=location_obj,
+                item_name=item.item_name,
+                generated_code=item.generated_code,
+                cost=item_price,
+            )
+        return JsonResponse({'message': 'Changes saved successfully'})
+    except (pickUpShippingPrice.DoesNotExist, Item.DoesNotExist, pickupstation.DoesNotExist):
+        return JsonResponse({'message': 'Failed to update price. Please try again'}, status=404)
     
 def fetch_cities(request):
     db = request.user.company_id.db_name

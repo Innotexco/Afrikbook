@@ -1056,6 +1056,16 @@ def StockInReport(request):
         storkreport, qty = storkReport
         return JsonResponse({'data':storkreport, 'qty':qty})
 
+    for row in getstock:
+        stored = (row.item or '').strip()
+        name = resolve_item_name(db, row.item_code, row.item)
+        row.item = name
+        if name and not stored:
+            try:
+                row.save(using=db, update_fields=['item'])
+            except Exception:
+                pass
+
     return render(request, 'report/StockInReport.html', context)
 
 
@@ -1095,7 +1105,14 @@ def OutletStockinReport(request):
         stock_qs = stock_qs.order_by('-datetx', '-id')
     page_obj = paginate_queryset(request, stock_qs)
     for row in page_obj:
-        row.item = resolve_item_name(db, row.item_code, row.item)
+        stored = (row.item or '').strip()
+        name = resolve_item_name(db, row.item_code, row.item)
+        row.item = name
+        if name and not stored:
+            try:
+                row.save(using=db, update_fields=['item'])
+            except Exception:
+                pass
     context['stock'] = page_obj
     context['page_obj'] = page_obj
     return render(request, 'report/OutletStockinReport.html', context)

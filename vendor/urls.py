@@ -9,7 +9,7 @@ app_name="vendor"
 urlpatterns = [
     # path('get_supplier_info/<int:id>/', GetSupplierDetails, name='supplier-details'), #ajax
 
-    path('get_items_vendor/<int:item_id>/', GetItemDetails, name='item-details'), #ajax
+    path('get_items_vendor/<str:item_id>/', GetItemDetails, name='item-details'), #ajax
 
     path('get_vendors/<str:id>/',GetVendorDetails, name='VendorDetails'), #ajax
     path('GetInvoiceDetails/<str:invoice_id>/',GetInvoiceDetails, name='GetInvoiceDetails'), #ajax

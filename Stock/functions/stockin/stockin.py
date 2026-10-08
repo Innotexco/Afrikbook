@@ -5,6 +5,7 @@ from account.models import account_log, chart_of_account
 from Stock.models import CreateStockIn, CreateStockInLog, CreateOutletStockIn, CreateOutletStockInLog
 from settings.models import sales_outlet
 from main.models import User
+from Stock.functions.functionHub.functionHub import resolve_item_name, _seq_at, fill_stock_row_item
 
 import decimal
 
@@ -35,6 +36,7 @@ def add_stockin(request):
 
     stock_in = CreateStockIn.objects.all()
     source = "Stockin"
+    db_name = getattr(getattr(request.user, 'company_id', None), 'db_name', None) or 'default'
     
 
     for i in range(len(itemcode)):
@@ -49,10 +51,12 @@ def add_stockin(request):
             if warehouse != "":
              
                 stock_in_query = CreateStockIn.objects.filter(warehouse=warehouse, item_code=itemcode[i])
+                resolved_name = resolve_item_name(db_name, itemcode[i], _seq_at(item_name, i))
                 if stock_in_query.exists():
                     # If the record exists, update the quantity
                     stock_in = stock_in_query.first()
                     stock_in.quantity += int(quantities[i])
+                    fill_stock_row_item(stock_in, db_name, resolved_name)
                     stock_in.save()
                 else:
                     # If the record does not exist, create a new one
@@ -63,7 +67,7 @@ def add_stockin(request):
                         warehouse=warehouse,
                         outlet="",
                         description=Gdescription,
-                        item=item_name[i],
+                        item=resolved_name,
                         item_decription=item_descriptions[i],
                         quantity=int(quantities[i]),
                         manufacture_date=invoice_date,
@@ -79,7 +83,7 @@ def add_stockin(request):
                     warehouse = warehouse,
                     outlet = "",
                     description = Gdescription,
-                    item = item_name[i],
+                    item = resolved_name,
                     item_decription = item_descriptions[i],
                     quantity = quantities[i],
                     source = source,
