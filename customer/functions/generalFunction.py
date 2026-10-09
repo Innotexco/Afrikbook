@@ -270,6 +270,11 @@ def _aged_payment_prefix_q():
     return lookup
 
 
+def received_payment_credit_q():
+    """Credit rows posted as Payment Received or Discount Allowed (Pay Now receipts)."""
+    return Q(type__iexact="Credit") & _aged_payment_prefix_q()
+
+
 def aged_receivable_payment_qs(db, invoice_id=None, customer_id=None):
     """Credits posted by Aged Receivables Pay Now (payment or discount)."""
     qs = (

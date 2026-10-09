@@ -68,9 +68,9 @@
                         <td class="text-[10px] px-4">{{ aged.customer_name }}</td>
                         <td class="text-[10px] px-4">{{ aged.invoiceID }}</td>
                         <td class="text-[10px] px-4">{{ aged.Gdescription|default:"—" }}</td>
-                        <td class="text-[10px] px-4">{{ aged.amount_paid }}</td>
-                        <td class="text-[10px] px-4">{{ aged.amount_expected }}</td>
-                        <td class="text-[10px] px-4 text-red-600 font-semibold">{{ aged.outstanding }}</td>  {# pre-calculated in view #}
+                        <td class="text-[10px] px-4" data-order="{{ aged.amount_paid }}">{{ aged.amount_paid|money }}</td>
+                        <td class="text-[10px] px-4" data-order="{{ aged.amount_expected }}">{{ aged.amount_expected|money }}</td>
+                        <td class="text-[10px] px-4 text-red-600 font-semibold" data-order="{{ aged.outstanding }}">{{ aged.outstanding|money }}</td>
                         <td class="text-[10px] px-4">
                             <a onclick="showModal('{{ aged.invoiceID }}', '{{ aged.cusID }}')"
                                 class="items-center justify-center text-blue-500" aria-label="View">
@@ -113,7 +113,7 @@
                         </td>
                         <td class="pt-6">
                             <b class="text-[15px] mr-1 currency"></b>
-                            <span id="amount_total">{{ amount_total }}</span>
+                            <span id="amount_total">{{ amount_total|money }}</span>
                         </td>
                     </tr>
                 </tfoot>

@@ -123,6 +123,52 @@
     el.value = unformatString(el.value);
   }
 
+  // Thousand separators while typing. Keeps a trailing "." and does not pad .00.
+  function formatMoneyLiveString(value) {
+    var raw = String(value == null ? "" : value);
+    var neg = /^\s*-/.test(raw);
+    var s = raw.replace(/[₦$£€\s,]/g, "").replace(/^-/, "");
+    if (!s) return neg ? "-" : "";
+    var hasDot = s.indexOf(".") !== -1;
+    var parts = s.split(".");
+    var intPart = (parts[0] || "").replace(/\D/g, "");
+    var decPart = hasDot ? parts.slice(1).join("").replace(/\D/g, "").slice(0, 2) : null;
+    if (intPart) {
+      intPart = intPart.replace(/^0+(?=\d)/, "");
+    } else if (hasDot) {
+      intPart = "0";
+    }
+    var grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    var out = (neg ? "-" : "") + grouped;
+    if (hasDot) out += "." + (decPart || "");
+    return out;
+  }
+
+  function formatMoneyInputLive(el) {
+    if (!el) return;
+    var old = el.value;
+    var start = typeof el.selectionStart === "number" ? el.selectionStart : old.length;
+    var digitsBefore = 0;
+    var i;
+    for (i = 0; i < start && i < old.length; i++) {
+      if (/[\d.]/.test(old.charAt(i))) digitsBefore++;
+    }
+    var next = formatMoneyLiveString(old);
+    if (next === old) return;
+    el.value = next;
+    var pos = 0;
+    var seen = 0;
+    while (pos < next.length && seen < digitsBefore) {
+      if (/[\d.]/.test(next.charAt(pos))) seen++;
+      pos++;
+    }
+    try {
+      el.setSelectionRange(pos, pos);
+    } catch (err) {}
+  }
+
+  window.formatMoneyLive = formatMoneyLiveString;
+
   function setMoneyValue(el, n) {
     if (!el) return;
     if (el.jquery) el = el[0];
@@ -220,19 +266,26 @@
       if (el.getAttribute("data-money-bound") === "1") return;
       el.setAttribute("data-money-bound", "1");
 
+      var live = el.getAttribute("data-money-live") === "1";
+
       el.addEventListener("focus", function () {
+        if (live) return;
         if (el.value && looksLikePlainNumber(el.value)) {
           el.value = unformatString(el.value);
         }
       });
 
       el.addEventListener("blur", function () {
+        if (live && String(el.value).slice(-1) === ".") {
+          el.value = String(el.value).replace(/\.$/, "");
+        }
         formatInput(el);
       });
 
       el.addEventListener("input", function () {
         var cleaned = String(el.value).replace(/[^\d.,\-]/g, "");
         if (cleaned !== el.value) el.value = cleaned;
+        if (live) formatMoneyInputLive(el);
       });
 
       if (el.value && el !== document.activeElement) {

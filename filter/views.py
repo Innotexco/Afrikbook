@@ -14,6 +14,7 @@ from customer.functions.generalFunction import (
     customer_ledger_entries_qs,
     aged_open_or_cancellable_invoice_qs,
     receivable_credit_is_cancellable,
+    received_payment_credit_q,
 )
 
 
@@ -219,7 +220,9 @@ def receivable_filter_by_date(request):
     closing_balance = opening_balance + debit_total - credit_total
 
     table_qs = period_qs
-    if tx_type and tx_type != "Debit&Credit":
+    if tx_type == "Received Payments":
+        table_qs = table_qs.filter(received_payment_credit_q())
+    elif tx_type and tx_type != "Debit&Credit":
         table_qs = table_qs.filter(type__iexact=tx_type)
     table_qs = table_qs.order_by('date', 'id')
 

@@ -50,7 +50,7 @@
 
                     <button class="block w-full h-8 px-4 py-1 mt-4 text-sm font-medium leading-5 text-center text-gray-600 transition-colors duration-150 bg-slate-200 border border-transparent rounded-lg active:bg-slate-300 hover:bg-slate-300 focus:outline-none focus:shadow-outline-slate" id="search2" onclick="Filter(1)">
                     Search
-                </button> 
+                </button>
 
                 <div class="text-sm grid gap-6 grid-cols-2">
                     <label >
@@ -60,7 +60,8 @@
                            
                                <option>Debit</option>   
                                <option>Credit</option>   
-                               <option>Debit&Credit</option>   
+                               <option>Debit&Credit</option>
+                               <option>Received Payments</option>
                             
                         </select>
                     </label>
@@ -78,6 +79,10 @@
 
                 
             </div>
+            <p class="text-xs text-slate-500 mt-3">
+                Pay Now receipts are Credit rows named Payment Received or Discount Allowed.
+                Set By Type to Received Payments, choose dates, then Search.
+            </p>
         </div>
         <div class="w-full my-5 overflow-x-auto table-responsive" id="receive">
         
@@ -373,7 +378,11 @@
                                         })
                                 );
                             }
-                            const row = $('<tr>').append(
+                            const row = $('<tr class="text-gray-700">');
+                            if (item.cancellable) {
+                                row.addClass("bg-amber-50");
+                            }
+                            row.append(
                                 $('<td class="text-[10px]">').text(num),
                                 $('<td class="text-[10px]">').text(item.date),
                                 $('<td class="text-[10px]">').text(item.customer_name),
