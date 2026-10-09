@@ -302,19 +302,22 @@ def serialize_aged_payments(db, invoice_id, customer_id=None):
     return rows
 
 
+def receivable_credit_is_cancellable(row):
+    """True for uncancelled Payment Received / Discount Allowed credits tied to an invoice."""
+    if (getattr(row, "type", "") or "").lower() != "credit":
+        return False
+    desc = row.description or ""
+    if "[cancelled]" in desc.lower():
+        return False
+    if not desc.lower().startswith(tuple(p.lower() for p in AGED_PAYMENT_PREFIXES)):
+        return False
+    return bool((getattr(row, "token_id", None) or "").strip())
+
+
 def aged_open_or_cancellable_invoice_qs(db):
-    """Open invoices plus fully paid invoices that still have cancellable Pay Now credits."""
-    tokens = list(
-        aged_receivable_payment_qs(db)
-        .exclude(token_id__isnull=True)
-        .exclude(token_id="")
-        .values_list("token_id", flat=True)
-        .distinct()
-    )
+    """Invoices with remaining balance. Balanced invoices leave Aged Receivables."""
     return exclude_returned_or_cancelled_invoices(
-        customer_invoice.objects.using(db).filter(
-            Q(amount_paid__lt=F("amount_expected")) | Q(invoiceID__in=tokens)
-        )
+        customer_invoice.objects.using(db).filter(amount_paid__lt=F("amount_expected"))
     )
 
 
@@ -346,11 +349,11 @@ def _mark_aged_payment_cancelled(db, row):
 
 
 def cancel_aged_receivable_payment(request, db, payment_id, customer_code, invoice_id):
-    """Reverse one Aged Receivables Pay Now credit.
+    """Reverse one received-payment credit (Payment Received / Discount Allowed).
 
-    Restores invoice amount_paid, posts a Payment Cancelled AR Debit, reverses
-    the original CreateLog series row, restores customer balance when needed,
-    and unwinds loan allocations from that payment.
+    Restores invoice amount_paid so the invoice can return to Aged Receivables,
+    posts a Payment Cancelled AR Debit, reverses the original CreateLog series
+    row, restores customer balance when needed, and unwinds loan allocations.
     """
     from datetime import date as date_cls
     from account.models import account_log, chart_of_account
@@ -391,7 +394,7 @@ def cancel_aged_receivable_payment(request, db, payment_id, customer_code, invoi
         if "[cancelled]" in desc.lower():
             return {"ok": False, "error": "This payment is already cancelled."}
         if not desc.lower().startswith(tuple(p.lower() for p in AGED_PAYMENT_PREFIXES)):
-            return {"ok": False, "error": "This entry was not received from Aged Receivables."}
+            return {"ok": False, "error": "This entry is not a received payment that can be cancelled."}
 
         amount = Decimal(str(row.amount or 0))
         if amount <= 0:

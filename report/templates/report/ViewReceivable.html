@@ -83,29 +83,6 @@
                 </div>
             </div>
 
-            <!-- Payments received on this invoice -->
-            <div class="w-full my-5 overflow-hidden shadow-xs" id="payments_section">
-                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 pb-2 mb-2">Payments Received</p>
-                <div class="w-full overflow-x-auto">
-                    <table id="paymentsTable" class="border-collapse border border-slate-300 w-full text-xs">
-                        <thead class="bg-gray-100">
-                            <tr class="font-medium text-gray-600">
-                                <th class="px-2 py-2 text-left">Date</th>
-                                <th class="px-2 py-2 text-left">Type</th>
-                                <th class="px-2 py-2 text-left">Method</th>
-                                <th class="px-2 py-2 text-right">Amount</th>
-                                <th class="px-2 py-2 text-right">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="paymentsBody" class="bg-white divide-y">
-                            <tr>
-                                <td colspan="5" class="px-2 py-2 text-center text-gray-400">No payments received on this invoice</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
             <!-- Totals and Payment Fields -->
             <div class="mt-4 border-t border-gray-200 pt-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -450,7 +427,6 @@
                     $("#transfer_amount").val(0);
                     $("#cash_amount").val(0);
                     $("#payment_method").val("Cash").trigger("change");
-                    renderAgedPayments(res.payments || []);
                     updateRemainingBalance();
                 } else {
                     location.reload();
@@ -460,82 +436,7 @@
         });
     }
 
-    function renderAgedPayments(payments) {
-        const tbody = $("#paymentsBody");
-        tbody.empty();
-        if (!payments || payments.length === 0) {
-            tbody.append(
-                '<tr><td colspan="5" class="px-2 py-2 text-center text-gray-400">No payments received on this invoice</td></tr>'
-            );
-            return;
-        }
-        payments.forEach(function (pay) {
-            const amount = _money(pay.amount);
-            const row = $("<tr>").append(
-                $('<td class="border border-slate-300 px-2 py-1">').text(pay.date || "—"),
-                $('<td class="border border-slate-300 px-2 py-1">').text(pay.kind || "Payment"),
-                $('<td class="border border-slate-300 px-2 py-1">').text(pay.payment_method || "—"),
-                $('<td class="border border-slate-300 px-2 py-1 text-right font-semibold">').text(amount.toLocaleString("en-NG", {minimumFractionDigits: 2})),
-                $('<td class="border border-slate-300 px-2 py-1 text-right">').append(
-                    $('<button type="button" class="text-red-600 hover:text-red-800 font-medium">')
-                        .text("Cancel")
-                        .attr("data-payment-id", pay.id)
-                        .attr("data-amount", amount)
-                        .on("click", function () {
-                            cancelAgedPayment($(this).attr("data-payment-id"), $(this).attr("data-amount"), $(this));
-                        })
-                )
-            );
-            tbody.append(row);
-        });
-    }
 
-    function cancelAgedPayment(paymentId, amount, btn) {
-        const customer = $("#code").text().trim();
-        const invoice = $("#invoice").text().trim();
-        if (!paymentId || !customer || !invoice) {
-            alertify.error("Missing payment details.");
-            return;
-        }
-        const formatted = NCFormat(amount);
-        if (!window.confirm("Cancel this " + formatted + " payment on invoice " + invoice + "?")) {
-            return;
-        }
-        if (btn) btn.prop("disabled", true);
-        $.ajax({
-            url: window.location.href,
-            method: "POST",
-            data: {
-                action: "cancel_payment",
-                payment_id: paymentId,
-                customer: customer,
-                invoice: invoice,
-                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
-            },
-            success: function (data) {
-                if (data.success === true) {
-                    alertify.success("Payment cancelled.");
-                    $("#amount_paid").val(data.amount_paid);
-                    $("#total-cost").val(data.balance);
-                    $("#payment_amount").val(0);
-                    $("#Discount").val(0);
-                    renderAgedPayments(data.payments || []);
-                    updateRemainingBalance();
-                    const hasFilter = $("#from").val() || $("#to").val() || $("#customer_id").val();
-                    if (typeof Filter === "function" && hasFilter) {
-                        Filter();
-                    }
-                } else {
-                    alertify.error(data.error || "Could not cancel payment.");
-                    if (btn) btn.prop("disabled", false);
-                }
-            },
-            error: function (xhr) {
-                alertify.error((xhr.responseJSON && xhr.responseJSON.error) || "Server error. Please try again.");
-                if (btn) btn.prop("disabled", false);
-            }
-        });
-    }
 
     const loanDetailBase = "{% url 'journal:ViewLoanItem' 0 %}";
     function renderViewLoanButton(loanId) {

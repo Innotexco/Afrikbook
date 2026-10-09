@@ -96,7 +96,7 @@
                         <th class="px-4 py-3">Amount</th>
                         <th class="px-4 py-3">Initial Amount</th>
                         <th class="px-4 py-3">Balance</th>
-                        {% comment %} <th class="px-4 py-3">View</th> {% endcomment %}
+                        <th class="px-4 py-3">Action</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y mb-8">
@@ -148,7 +148,7 @@
                         <td class="py-4"></td>
                     </tr>
                     <tr class="text-gray-700 text-xs ">
-                        <td class="pt-6 text-right pr-3" colspan="9">
+                        <td class="pt-6 text-right pr-3" colspan="10">
                             <span class="">Opening Balance:</span>
                         </td>
                         <td class="pt-6 text-sm whitespace-nowrap">
@@ -156,7 +156,7 @@
                         </td>
                     </tr>
                     <tr class="text-gray-700 text-xs ">
-                        <td class="text-right pr-3" colspan="9">
+                        <td class="text-right pr-3" colspan="10">
                             <span class="">Total Debit:</span>
                         </td>
                         <td class="text-sm whitespace-nowrap">
@@ -164,7 +164,7 @@
                         </td>
                     </tr>
                     <tr class="text-gray-700 text-xs">
-                        <td class="text-right pr-3" colspan="9">
+                        <td class="text-right pr-3" colspan="10">
                             <span class="">Total Credit:</span>
                         </td>
                         <td class="text-sm whitespace-nowrap">
@@ -172,7 +172,7 @@
                         </td>
                     </tr>
                     <tr class="text-gray-700 text-xs">
-                        <td class="text-right pr-3" colspan="9">
+                        <td class="text-right pr-3" colspan="10">
                             <span class="">Closing Balance:</span>
                         </td>
                         <td class="text-sm whitespace-nowrap">
@@ -210,11 +210,54 @@
         </div>
 
     </div>
+    {% csrf_token %}
     <script>
         function selectVal(selector, placeholder) {
             const value = $(selector).val();
             if (!value || value === placeholder) return '';
             return value;
+        }
+
+        let lastReceivablePage = 1;
+
+        function cancelReceivablePayment($btn) {
+            const paymentId = $btn.attr("data-payment-id");
+            const customer = $btn.attr("data-customer");
+            const invoice = $btn.attr("data-invoice");
+            const amount = $btn.attr("data-amount");
+            if (!paymentId || !customer || !invoice) {
+                alertify.error("Missing payment details.");
+                return;
+            }
+            const formatted = typeof NCFormat === "function" ? NCFormat(amount) : amount;
+            if (!window.confirm("Cancel this " + formatted + " payment on invoice " + invoice + "?")) {
+                return;
+            }
+            $btn.prop("disabled", true);
+            $.ajax({
+                url: "{% url 'report:Receivables' %}",
+                method: "POST",
+                data: {
+                    action: "cancel_payment",
+                    payment_id: paymentId,
+                    customer: customer,
+                    invoice: invoice,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                },
+                success: function (data) {
+                    if (data.success === true) {
+                        alertify.success("Payment cancelled. The invoice will return to Aged Receivables if a balance remains.");
+                        Filter(lastReceivablePage);
+                    } else {
+                        alertify.error(data.error || "Could not cancel payment.");
+                        $btn.prop("disabled", false);
+                    }
+                },
+                error: function (xhr) {
+                    alertify.error((xhr.responseJSON && xhr.responseJSON.error) || "Server error. Please try again.");
+                    $btn.prop("disabled", false);
+                }
+            });
         }
 
         function renderReceivablePagination(meta) {
@@ -263,6 +306,7 @@
         }
 
         function Filter(page) {
+            lastReceivablePage = page || 1;
             const datas = {
                 start_date: $('#from').val(),
                 end_date: $('#to').val(),
@@ -315,6 +359,20 @@
                     if (response.serializer_data && response.serializer_data.length > 0) {
                         let num = response.start_index || 1;
                         response.serializer_data.forEach(function(item) {
+                            const actionCell = $('<td class="text-[10px]">');
+                            if (item.cancellable) {
+                                actionCell.append(
+                                    $('<button type="button" class="text-red-600 hover:text-red-800 font-medium">')
+                                        .text("Cancel")
+                                        .attr("data-payment-id", item.id)
+                                        .attr("data-customer", item.customer_id)
+                                        .attr("data-invoice", item.token_id)
+                                        .attr("data-amount", item.amount)
+                                        .on("click", function () {
+                                            cancelReceivablePayment($(this));
+                                        })
+                                );
+                            }
                             const row = $('<tr>').append(
                                 $('<td class="text-[10px]">').text(num),
                                 $('<td class="text-[10px]">').text(item.date),
@@ -325,7 +383,8 @@
                                 $('<td class="text-[10px]">').text(item.type),
                                 $('<td class="text-[10px]">').text(NCFormat(item.amount)),
                                 $('<td class="text-[10px]">').text(NCFormat(item.initial_amount)),
-                                $('<td class="text-[10px]">').text(NCFormat(item.balance))
+                                $('<td class="text-[10px]">').text(NCFormat(item.balance)),
+                                actionCell
                             );
                             table.append(row);
                             num++;

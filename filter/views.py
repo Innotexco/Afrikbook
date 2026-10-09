@@ -13,6 +13,7 @@ from customer.functions.generalFunction import (
     exclude_returned_or_cancelled_invoices,
     customer_ledger_entries_qs,
     aged_open_or_cancellable_invoice_qs,
+    receivable_credit_is_cancellable,
 )
 
 
@@ -243,15 +244,18 @@ def receivable_filter_by_date(request):
         else:
             running -= amount
         serializer_data.append({
+            'id': row.id,
             'date': str(row.date) if row.date else '',
             'customer_name': row.customer_name,
             'description': row.description,
             'customer_id': row.customer_id,
             'transaction_id': str(row.transaction_id) if row.transaction_id else '',
+            'token_id': row.token_id or '',
             'type': row.type,
             'amount': str(amount),
             'initial_amount': str(initial),
             'balance': str(running),
+            'cancellable': receivable_credit_is_cancellable(row),
         })
 
     return JsonResponse({
@@ -291,7 +295,7 @@ def aged_receivable_filter_by_date(request):
 
     apply_loan_charges_to_receivables(db)
 
-    # Open invoices, plus fully paid invoices that still have cancellable Pay Now credits
+    # Open invoices only (amount_paid < amount_expected)
     base_qs = aged_open_or_cancellable_invoice_qs(db).filter(filter_conditions)
 
     loan_id_by_ref = dict(

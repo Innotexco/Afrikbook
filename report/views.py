@@ -1235,6 +1235,23 @@ def Receivables(request):
     customers = customer_table.objects.using(db).all().order_by(Lower('name'), 'name')
     company = company_table.objects.get(id=request.user.company_id_id)
 
+    if request.method == "POST" and request.POST.get("action") == "cancel_payment":
+        result = cancel_aged_receivable_payment(
+            request, db,
+            request.POST.get("payment_id"),
+            request.POST.get("customer"),
+            request.POST.get("invoice"),
+        )
+        if result.get("ok"):
+            payload = dict(result)
+            payload["success"] = True
+            payload.pop("ok", None)
+            return JsonResponse(payload)
+        return JsonResponse(
+            {"success": False, "error": result.get("error") or "Could not cancel payment"},
+            status=400,
+        )
+
     context = {
         'recievables': [],
         'credit': 0,
@@ -1280,23 +1297,6 @@ def AgedReceivables(request):
     amount_total = sum(inv.outstanding for inv in aged_list)
 
     if request.method == "POST":
-        if request.POST.get("action") == "cancel_payment":
-            result = cancel_aged_receivable_payment(
-                request, db,
-                request.POST.get("payment_id"),
-                request.POST.get("customer"),
-                request.POST.get("invoice"),
-            )
-            if result.get("ok"):
-                payload = dict(result)
-                payload["success"] = True
-                payload.pop("ok", None)
-                return JsonResponse(payload)
-            return JsonResponse(
-                {"success": False, "error": result.get("error") or "Could not cancel payment"},
-                status=400,
-            )
-
         discount        = parse_money(request.POST.get("Discount", 0))
         cost            = parse_money(request.POST.get("cost", 0))
         customer        = request.POST.get("customer")
