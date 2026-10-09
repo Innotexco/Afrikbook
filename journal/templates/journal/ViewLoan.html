@@ -64,8 +64,8 @@
                         <td class="text-[10px] px-4">{{ display.debtor_name }}</td>
                         <td class="text-[10px] px-4">{{ display.debtor_id }}</td>
                         <td class="text-[10px] px-4">{{ display.description }}</td>
-                        <td class="text-[10px] px-4">{{ display.amount_borrowed }}</td>
-                        <td class="text-[10px] px-4">{{ display.balance_left }}</td>
+                        <td class="text-[10px] px-4">{{ display.amount_borrowed|money }}</td>
+                        <td class="text-[10px] px-4">{{ display.balance_left|money }}</td>
                         <td class="text-[10px] px-4">{% if display.duration %}{{ display.get_duration_display }}{% else %}—{% endif %}</td>
                         <td class="text-[10px] px-4">{% if display.interest is not None %}{{ display.interest }}%{% else %}—{% endif %}</td>
                         <td class="text-[10px] px-4">{{ display.reference|default:"—" }}</td>

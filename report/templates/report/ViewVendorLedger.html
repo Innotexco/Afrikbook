@@ -251,9 +251,9 @@
                                     $('<td class="text-[10px]">').html(num),
                                     $('<td class="text-[10px]">').text(item.invoice_date),
                                     $('<td class="text-[10px]">').text(item.cusID),
-                                    $('<td class="text-[10px]">').text(item.amount),
-                                    $('<td class="text-[10px]">').text(item.amount_paid),
-                                    $('<td class="text-[10px]">').text(item.amount_expected - item.amount_paid ),
+                                    $('<td class="text-[10px]">').text(NCFormat(item.amount)),
+                                    $('<td class="text-[10px]">').text(NCFormat(item.amount_paid)),
+                                    $('<td class="text-[10px]">').text(NCFormat(item.amount_expected - item.amount_paid )),
                                 );
                                 table.append(row);
                             };

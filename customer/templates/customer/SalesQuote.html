@@ -127,7 +127,7 @@
                             $('<td class="text-[10px] px-4 py-2 font-mono">').text(ref || '—'),
                             $('<td class="text-[10px] px-4 py-2">').text(item.genby),
                             $('<td class="text-[10px] px-4 py-2">').text(item.Gdescription || '—'),
-                            $('<td class="text-[10px] px-4 py-2">').text(item.amount),
+                            $('<td class="text-[10px] px-4 py-2">').text(NCFormat(item.amount)),
                             $('<td class="text-[10px] px-4 py-2 text-center">').append(
                                 `<a onclick="showQuoteModal('${ref}')" 
                                     class="inline-flex items-center justify-center mx-auto text-green-600 cursor-pointer" 

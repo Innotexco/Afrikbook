@@ -113,7 +113,7 @@
                 let num = 0
                 let executed = false
                 if(response.data.length > 0){
-                    $("#total").val(response.total);
+                    $("#total").val(NCFormat(response.total));
                     
                     response.data.forEach(item => {
                         num++ 
@@ -139,7 +139,7 @@
                                 $('<td class="text-[10px]">').text(item.NHF),
                                 $('<td class="text-[10px]">').text(item.NSIFT),
                                 $('<td class="text-[10px]">').text(item.other_deduction),
-                                $('<td class="text-[10px]">').text(item.total_due),
+                                $('<td class="text-[10px]">').text(NCFormat(item.total_due)),
                                 $('<td class="text-[10px]">').text(item.net_pay),
                                 $('<td class="text-[10px] text-bold">').text(item.account_no),
                                 $('<td class="text-[10px]">').text(item.account_name),
@@ -179,7 +179,7 @@
                             const row = $('<tr id="row">').append(
                                 $('<td class="text-[10px]">').html(num),
                                 $('<td class="text-[10px]">').text(item.month_year),
-                                $('<td class="text-[10px]">').text(item.total),
+                                $('<td class="text-[10px]">').text(NCFormat(item.total)),
                                 $('<td class="text-[10px] w-3">').append('<a onclick="showPayroll(\'' + item.month_year + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">View</a>'),
                                // $('<td class="text-[10px] w-3">').append('<a onclick="ApprovePayroll(\'' + item.month_year + '\',\'' + item.total + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">Approve</a>'),
                                
@@ -273,7 +273,7 @@
                                     $('<td class="text-[10px]">').text(item.dateG),
                                     $('<td class="text-[10px]">').text(item.employee_name),
                                     $('<td class="text-[10px]">').text(item.gross_pay),
-                                    $('<td class="text-[10px]">').text(item.total_due),
+                                    $('<td class="text-[10px]">').text(NCFormat(item.total_due)),
                                     $('<td class="text-[10px]">').text(item.net_pay),
                                      
                                 );

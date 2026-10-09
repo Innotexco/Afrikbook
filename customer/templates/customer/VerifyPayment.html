@@ -148,7 +148,7 @@
                             const row = $('<tr id="row">').append(
                                 $('<td class="text-[10px]">').html(num),
                                 $('<td class="text-[10px]">').text(item.month_year),
-                                $('<td class="text-[10px]">').text(item.total),
+                                $('<td class="text-[10px]">').text(NCFormat(item.total)),
                                 $('<td class="text-[10px] w-3">').append('<a onclick="showPayroll(\'' + item.month_year + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">View</a>'),
                                 $('<td class="text-[10px] w-3">').append('<a onclick="ApprovePayroll(\'' + item.month_year + '\',\'' + item.total + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">Approve</a>'),
                                

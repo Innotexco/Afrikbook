@@ -186,7 +186,7 @@
                                 $('<td class="text-[10px]">').text(item.item_name),
                                 $('<td class="text-[10px]">').text(item.vendor_name),
                                 $('<td class="text-[10px]">').text(item.qty),
-                                $('<td class="text-[10px]">').text(item.amount),
+                                $('<td class="text-[10px]">').text(NCFormat(item.amount)),
                                 $('<td class="text-[10px]">').text(item.Userlogin),
                                 $('<td class="text-[10px] flex gap-2">')
                                 .append(
@@ -267,7 +267,7 @@
                                         $('<td class="text-[10px]">').text(item.item_name),
                                         $('<td class="text-[10px]">').text(item.vendor_name),
                                         $('<td class="text-[10px]">').text(item.qty),
-                                        $('<td class="text-[10px]">').text(item.amount),
+                                        $('<td class="text-[10px]">').text(NCFormat(item.amount)),
                                         $('<td class="text-[10px]">').text(item.Userlogin),
                                         $('<td class="text-[10px]">').append('<a onclick="showModal(\'' + item.invoiceID + '\', \'' + item.cusID + '\')" class="flex items-center justify-center text-blue-500 border px-3 bg-gray-50 cursor-pointer"  aria-label="Edit">View</a>'),
                                     
@@ -348,9 +348,9 @@
                                         $('<td class="text-[10px]">').text(item.invoiceID),
                                         $('<td class="text-[10px]">').text(item.cusID),
                                         $('<td class="text-[10px]">').text(item.item_name),
-                                        $('<td class="text-[10px]">').text(item.unit_p),
+                                        $('<td class="text-[10px]">').text(NCFormat(item.unit_p)),
                                         $('<td class="text-[10px]">').text(item.qty),
-                                        $('<td class="text-[10px]">').text(item.amount),
+                                        $('<td class="text-[10px]">').text(NCFormat(item.amount)),
                                         //$('<td class="text-[10px]">').append('<a onclick="showEditDateModal(\'' + item.cusID + '\', \'' + item.item_name + '\', \'' + item.unit_p + '\', \'' + item.invoice_date + '\', \'' + item.invoiceID + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer"  aria-label="Edit">Edit</a>'),
                                     );
                                     

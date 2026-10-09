@@ -266,9 +266,9 @@
                                 $('<td class="text-[10px]">').html(num),
                                 $('<td class="text-[10px]">').text(item.invoiceID),
                                 $('<td class="text-[10px]">').text(item.vendor_name),
-                                $('<td class="text-[10px]">').text(item.amount),
-                                $('<td class="text-[10px]">').text(item.amount_paid),
-                                $('<td class="text-[10px]">').text(item.amount_expected - item.amount_paid),
+                                $('<td class="text-[10px]">').text(NCFormat(item.amount)),
+                                $('<td class="text-[10px]">').text(NCFormat(item.amount_paid)),
+                                $('<td class="text-[10px]">').text(NCFormat(item.amount_expected - item.amount_paid)),
                                 $('<td class="text-[10px]">').append('<a onclick="showModal(\'' + item.invoiceID + '\')" class="flex items-center justify-center text-blue-500"  aria-label="Edit"> <svg\
                                     class="w-5 h-5"\
                                     aria-hidden="true"\
@@ -341,9 +341,9 @@
                                     $('<td class="text-[10px]">').html(num),
                                     $('<td class="text-[10px]">').text(item.invoiceID),
                                     $('<td class="text-[10px]">').text(item.vendor_name),
-                                    $('<td class="text-[10px]">').text(item.amount),
-                                    $('<td class="text-[10px]">').text(item.amount_paid),
-                                    $('<td class="text-[10px]">').text(item.amount_expected - item.amount_paid),
+                                    $('<td class="text-[10px]">').text(NCFormat(item.amount)),
+                                    $('<td class="text-[10px]">').text(NCFormat(item.amount_paid)),
+                                    $('<td class="text-[10px]">').text(NCFormat(item.amount_expected - item.amount_paid)),
                                     $('<td class="text-[10px]">').append('<a onclick="showModal(\'' + item.invoiceID + '\')" class="flex items-center justify-center text-blue-500"  aria-label="Edit"> <svg\
                                     class="w-5 h-5"\
                                     aria-hidden="true"\
@@ -407,9 +407,9 @@
                                         $('<td class="text-[10px]">').text(item.invoice_date),
                                         $('<td class="text-[10px]">').text(item.cusID),
                                         $('<td class="text-[10px]">').text(item.item_name),
-                                        $('<td class="text-[10px]">').text(item.unit_p),
+                                        $('<td class="text-[10px]">').text(NCFormat(item.unit_p)),
                                         $('<td class="text-[10px]">').text(item.qty),
-                                        $('<td class="text-[10px]">').text(item.amount),
+                                        $('<td class="text-[10px]">').text(NCFormat(item.amount)),
                                         $('<td class="text-[10px]">').append('<a onclick="showEditDateModal(\'' + item.cusID + '\', \'' + item.item_name + '\', \'' + item.unit_p + '\', \'' + item.invoice_date + '\', \'' + item.invoiceID + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer"  aria-label="Edit">Edit</a>'),
                                     );
                                     

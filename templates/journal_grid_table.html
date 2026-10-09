@@ -138,11 +138,12 @@
 
         // Recalculate total cleanly after removal
         var sum = 0;
+        var _n = (v) => (typeof parseMoney === "function" ? parseMoney(v) : (parseFloat(String(v||"").replace(/,/g,"")) || 0));
         $('input[name="dbt[]"]').each(function() {
-            var val = parseFloat($(this).val());
+            var val = _n($(this).val());
             if (!isNaN(val)) sum += val;
         });
-        $('#total-d').val(sum.toFixed(2));
+        $('#total-d').val(typeof formatMoney === "function" ? formatMoney(sum) : sum.toFixed(2));
 
         // Renumber remaining rows
         $('#journal_row_add tr').each(function(index) {
@@ -160,14 +161,14 @@
 
         // Loop through the input elements and add their values to the sum
         for (let i = 0; i < creditInput.length; i++) {
-            const inputValue = parseFloat(creditInput[i].value);
+            const inputValue = (typeof parseMoney === "function" ? parseMoney(creditInput[i].value) : parseFloat(String(creditInput[i].value||"").replace(/,/g,"")));
             if (!isNaN(inputValue)) {
                 sum += inputValue;
             }
         }
         // Display the sum in a result div
         const Total_c = document.getElementById("total-c");
-        Total_c.value = sum
+        Total_c.value = typeof formatMoney === "function" ? formatMoney(sum) : sum
     })
     /*$(document).on('input', '#dbt',function(event){
         const debitInput = document.getElementsByName("dbt[]");
@@ -190,11 +191,12 @@
 
     $(document).on('input', 'input[name="dbt[]"]', function() {
         var sum = 0;
+        var _n = (v) => (typeof parseMoney === "function" ? parseMoney(v) : (parseFloat(String(v||"").replace(/,/g,"")) || 0));
         $('input[name="dbt[]"]').each(function() {
-            var val = parseFloat($(this).val());
+            var val = _n($(this).val());
             if (!isNaN(val)) sum += val;
         });
-        $('#total-d').val(sum.toFixed(2));
+        $('#total-d').val(typeof formatMoney === "function" ? formatMoney(sum) : sum.toFixed(2));
     });
 
      

@@ -164,7 +164,7 @@
                                     $('<td class="text-[10px]">').text(item.dateG),
                                     $('<td class="text-[10px]">').text(item.employee_name),
                                     $('<td class="text-[10px]">').text(item.gross_pay),
-                                    $('<td class="text-[10px]">').text(item.total_due),
+                                    $('<td class="text-[10px]">').text(NCFormat(item.total_due)),
                                     $('<td class="text-[10px]">').text(item.net_pay),  
                                 );
                                 table.append(row);

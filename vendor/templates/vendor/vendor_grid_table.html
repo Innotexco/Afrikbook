@@ -38,8 +38,9 @@
         }
         const subTotal = document.getElementById("sub-total");
         const total = document.getElementById("total");
-        if (subTotal) subTotal.value = sum.toFixed(2);
-        if (total) total.value = sum.toFixed(2);
+        const shown = typeof formatMoney === "function" ? formatMoney(sum) : sum.toFixed(2);
+        if (subTotal) subTotal.value = shown;
+        if (total) total.value = shown;
         return sum;
     }
 
@@ -51,10 +52,13 @@
         const amountEl = $row.find('input[name="amount[]"]');
         const line = Math.max(0, (unit - discount) * (qty > 0 ? qty : 0));
         // If qty empty/0 but unit set, show unit as amount when qty is 1 default — keep 0 when qty blank
+        function moneyVal(n) {
+            return typeof formatMoney === "function" ? formatMoney(n) : n.toFixed(2);
+        }
         if (qty > 0) {
-            amountEl.val(line.toFixed(2));
+            amountEl.val(moneyVal(line));
         } else if (unit > 0) {
-            amountEl.val((unit - discount).toFixed(2));
+            amountEl.val(moneyVal(unit - discount));
         } else {
             amountEl.val("");
         }
@@ -180,8 +184,8 @@
                             if (data.name) name.val(data.name)
                             purchaseP.val(purchasePrice)
                             qty.val(1)
-                            unit.val(purchasePrice)
-                            amount.val(num(purchasePrice).toFixed(2))
+                            unit.val(typeof formatMoney === "function" ? formatMoney(purchasePrice) : purchasePrice)
+                            amount.val(typeof formatMoney === "function" ? formatMoney(purchasePrice) : num(purchasePrice).toFixed(2))
 
                             sumAmounts();
 

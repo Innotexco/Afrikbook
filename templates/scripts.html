@@ -702,10 +702,11 @@
 
         if(discount == ''){discount=0.0}
         if(sub_total == ''){sub_total=0.0}
-       
-        sum = parseFloat(sub_total)  + parseFloat(discount)  
+
+        const _num = (v) => (typeof parseMoney === "function" ? parseMoney(v) : (parseFloat(String(v||"").replace(/,/g,"")) || 0));
+        sum = _num(sub_total)  + _num(discount)
                           
-        $("#total").val(sum);
+        $("#total").val(typeof formatMoney === "function" ? formatMoney(sum) : sum);
     }
     
 
@@ -769,9 +770,10 @@
                     var cost = $("#shipping_cost").val();
                     var total = $("#total").val();
                     if(cost != ''){
-                        let sum2 = parseFloat(total)  - parseFloat(cost) 
+                        const _n = (v) => (typeof parseMoney === "function" ? parseMoney(v) : (parseFloat(String(v||"").replace(/,/g,"")) || 0));
+                        let sum2 = _n(total)  - _n(cost)
                         $("#shipping_cost").val('')
-                        $("#total").val(sum2);
+                        $("#total").val(typeof formatMoney === "function" ? formatMoney(sum2) : sum2);
                         done = true
                     }
                 }
@@ -808,13 +810,14 @@
                     // console.log("dis "+discount)
                     // console.log("total "+total)
                     if(response.data){
+                      const _n = (v) => (typeof parseMoney === "function" ? parseMoney(v) : (parseFloat(String(v||"").replace(/,/g,"")) || 0));
                       let sum = 0
                       let cost = 0
-                      if(shipping_cost == 0.0){
-                          sum = parseFloat(shipping_cost)  + parseFloat(sub_total)  + parseFloat(discount)  + parseFloat(response.data)
-                          cost = parseFloat(shipping_cost) + parseFloat(response.data)
-                          $("#shipping_cost").val(cost)
-                          $("#total").val(sum);
+                      if(_n(shipping_cost) == 0.0){
+                          sum = _n(shipping_cost)  + _n(sub_total)  + _n(discount)  + _n(response.data)
+                          cost = _n(shipping_cost) + _n(response.data)
+                          $("#shipping_cost").val(typeof formatMoney === "function" ? formatMoney(cost) : cost)
+                          $("#total").val(typeof formatMoney === "function" ? formatMoney(sum) : sum);
                       }else{
                            sum_all_item_cost()
                            //sum = parseFloat(shipping_cost)  + parseFloat(sub_total)  + parseFloat(discount)  + parseFloat(response.data)

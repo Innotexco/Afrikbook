@@ -91,13 +91,13 @@
                             price = data.selling_price || data.unit;
                         }
                         
-                        unit.val(price);
+                        unit.val(typeof formatMoney === "function" ? formatMoney(price) : price);
                         
                         // Recalculate amount (comma-safe)
                         const qtyVal = num(qty.val());
                         const discountVal = num(discount.val());
                         const amountVal = (qtyVal * num(price)) - discountVal;
-                        amount.val(amountVal.toFixed(2));
+                        amount.val(typeof formatMoney === "function" ? formatMoney(amountVal) : amountVal.toFixed(2));
                         
                         sun_T();
                     }
@@ -175,8 +175,8 @@ $(document).on('change', '#select-item', function(event) {
                     name.val(data.name);
                     purchaseP.val(data.purchase);
                     qty.val(1);
-                    unit.val(price);
-                    amount.val(price);
+                    unit.val(typeof formatMoney === "function" ? formatMoney(price) : price);
+                    amount.val(typeof formatMoney === "function" ? formatMoney(price) : price);
 
                     sun_T();
 
@@ -232,8 +232,7 @@ $(document).on('change', '#select-item', function(event) {
         const amount = row.find('input[name="amount[]"]');
         
         const calculatedAmount = (qty * unit) - discount;
-        // Plain number only — never insert thousand-separator commas here
-        amount.val(calculatedAmount.toFixed(2));
+        amount.val(typeof formatMoney === "function" ? formatMoney(calculatedAmount) : calculatedAmount.toFixed(2));
         
         sun_T();   
     });
@@ -252,11 +251,11 @@ $(document).on('change', '#select-item', function(event) {
                 sum += inputValue;
             }
         }
-        // Display the sum in a result div — plain numbers for live calc / submit
         const subTotal = document.getElementById("sub-total");
         const total = document.getElementById("total");
-        if (subTotal) subTotal.value = sum.toFixed(2);
-        if (total) total.value = sum.toFixed(2);
+        const shown = typeof formatMoney === "function" ? formatMoney(sum) : sum.toFixed(2);
+        if (subTotal) subTotal.value = shown;
+        if (total) total.value = shown;
     }
 
     function if_shipping_method(itemId, qty){
@@ -401,8 +400,9 @@ function DoCalculation(unit_p, discount_p, value, amount, subTotal, total, allAm
                 sum += inputValue;
             }
         }
-        if (subTotal) subTotal.value = sum.toFixed(2);
-        if (total) total.value = sum.toFixed(2);
+        const shown = typeof formatMoney === "function" ? formatMoney(sum) : sum.toFixed(2);
+        if (subTotal) subTotal.value = shown;
+        if (total) total.value = shown;
     }else if(isNaN(discount_p) || discount_p === 0){
         amount.val((unit_p * value).toFixed(2))
             let sum = 0;
@@ -412,8 +412,9 @@ function DoCalculation(unit_p, discount_p, value, amount, subTotal, total, allAm
                     sum += inputValue;
                 }
             }
-            if (subTotal) subTotal.value = sum.toFixed(2);
-            if (total) total.value = sum.toFixed(2);
+            const shown = typeof formatMoney === "function" ? formatMoney(sum) : sum.toFixed(2);
+            if (subTotal) subTotal.value = shown;
+            if (total) total.value = shown;
     }
     
 }
@@ -478,29 +479,16 @@ $(document).on("input", "#discount", function (e) {
 
 //<!---  MAIN ITEM GRID TOTAL DISCOUNT ---->
 $(document).on("input", "#total-discount", function (e) {
-        const value =  $(this).val();
-        //console.log(value)
-        
+        const discountVal = num($(this).val());
         const subTotal = document.getElementById("sub-total");
         const total = document.getElementById("total");
-
-        const subTotal_v = parseInt(subTotal.val());
-       
-        if(value > 0){
-            if(!isNaN(subTotal_v)){
-                total.val(subTotal_v - value)  
-            }
-        }else{
-             unit_p = parseInt(unit.val())
-             const qty_p = parseInt(qty.val());
-             if(!isNaN(unit_p)){
-
-                total.val(subTotal_v)   
-            }else{
-                
-            }
+        const subTotal_v = num(subTotal && subTotal.value);
+        const shown = (n) => (typeof formatMoney === "function" ? formatMoney(n) : Number(n).toFixed(2));
+        if (discountVal > 0 && !isNaN(subTotal_v)) {
+            if (total) total.value = shown(subTotal_v - discountVal);
+        } else if (total) {
+            total.value = shown(subTotal_v);
         }
-        
 });
 
 

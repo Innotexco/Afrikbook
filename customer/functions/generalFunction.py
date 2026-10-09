@@ -2,7 +2,7 @@ from customer.models import *
 import decimal, uuid
 from decimal import Decimal
 from Stock.models import CreateOutletStockIn, CreateOutletStockInLog, CreateStockIn, CreateStockInLog
-from django.db.models import Q
+from django.db.models import Q, F
 from django.db import connections, transaction
 
 
@@ -14,6 +14,49 @@ def exclude_returned_or_cancelled_invoices(qs):
         | Q(invoice_state__iexact='Cancelled')
         | Q(invoice_state__iexact='Returned')
     )
+
+
+def returned_or_cancelled_invoice_tokens(db, customer_id=None):
+    """Original and *_returned invoice IDs that Customer Ledger must hide."""
+    inv_qs = customer_invoice.objects.using(db).filter(
+        Q(invoiceID__icontains='returned')
+        | Q(cancellation_status='1')
+        | Q(invoice_state__iexact='Cancelled')
+        | Q(invoice_state__iexact='Returned')
+    )
+    if customer_id:
+        inv_qs = inv_qs.filter(cusID__iexact=customer_id)
+
+    tokens = set()
+    for invoice_id in inv_qs.values_list('invoiceID', flat=True):
+        _orig, _returned, pair = _returned_invoice_tokens(invoice_id)
+        tokens.update(pair)
+    return tokens
+
+
+def exclude_returned_or_cancelled_receivables(qs, db, customer_id=None):
+    """Drop AR rows that belong to returned or cancelled invoices.
+
+    Customer Ledger lists open invoices only. The detail statement must omit
+    the matching receivable history (retagged *_returned tokens, original
+    tokens still sitting on a cancelled invoice, and Return Inward reversing
+    rows) so those invoices do not appear or change opening/closing.
+    """
+    filtered = qs.exclude(token_id__icontains='returned').exclude(
+        description__icontains='Return Inward'
+    )
+    tokens = returned_or_cancelled_invoice_tokens(db, customer_id)
+    if tokens:
+        filtered = filtered.exclude(token_id__in=list(tokens))
+    return filtered
+
+
+def customer_ledger_entries_qs(db, customer_id):
+    """Receivable rows for one customer, excluding returned/cancelled invoices."""
+    qs = receivable.objects.using(db).filter(customer_id__iexact=customer_id)
+    return exclude_returned_or_cancelled_receivables(
+        qs, db, customer_id
+    ).order_by('date', 'id')
 
 
 
@@ -208,6 +251,8 @@ def CreditReceivable(request, db, cus, refund_date, Gdescription, p_method, acco
 
 
 PAYMENT_DEBIT_PREFIXES = ("Payment Received", "Discount Allowed")
+AGED_PAYMENT_PREFIXES = PAYMENT_DEBIT_PREFIXES
+CANCELLED_PAYMENT_MARK = " [cancelled]"
 
 
 def spurious_payment_debit_qs(db):
@@ -216,6 +261,219 @@ def spurious_payment_debit_qs(db):
     for prefix in PAYMENT_DEBIT_PREFIXES:
         lookup |= Q(description__startswith=prefix)
     return receivable.objects.using(db).filter(type="Debit").filter(lookup)
+
+
+def _aged_payment_prefix_q():
+    lookup = Q()
+    for prefix in AGED_PAYMENT_PREFIXES:
+        lookup |= Q(description__istartswith=prefix)
+    return lookup
+
+
+def aged_receivable_payment_qs(db, invoice_id=None, customer_id=None):
+    """Credits posted by Aged Receivables Pay Now (payment or discount)."""
+    qs = (
+        receivable.objects.using(db)
+        .filter(type__iexact="Credit")
+        .filter(_aged_payment_prefix_q())
+        .exclude(description__icontains="[cancelled]")
+    )
+    if invoice_id:
+        qs = qs.filter(token_id=invoice_id)
+    if customer_id:
+        qs = qs.filter(customer_id__iexact=customer_id)
+    return qs.order_by("date", "id")
+
+
+def serialize_aged_payments(db, invoice_id, customer_id=None):
+    rows = []
+    for row in aged_receivable_payment_qs(db, invoice_id, customer_id):
+        desc = row.description or ""
+        kind = "Discount" if desc.lower().startswith("discount allowed") else "Payment"
+        rows.append({
+            "id": row.id,
+            "date": row.date.strftime("%Y-%m-%d") if hasattr(row.date, "strftime") else str(row.date or ""),
+            "description": desc,
+            "kind": kind,
+            "payment_method": row.payment_method or "",
+            "account_posted": row.account_posted or "",
+            "amount": str(row.amount or 0),
+        })
+    return rows
+
+
+def aged_open_or_cancellable_invoice_qs(db):
+    """Open invoices plus fully paid invoices that still have cancellable Pay Now credits."""
+    tokens = list(
+        aged_receivable_payment_qs(db)
+        .exclude(token_id__isnull=True)
+        .exclude(token_id="")
+        .values_list("token_id", flat=True)
+        .distinct()
+    )
+    return exclude_returned_or_cancelled_invoices(
+        customer_invoice.objects.using(db).filter(
+            Q(amount_paid__lt=F("amount_expected")) | Q(invoiceID__in=tokens)
+        )
+    )
+
+
+def _chart_for_account_posted(db, account_posted):
+    from customer.functions.gl import get_chart
+    from account.models import chart_of_account
+
+    text = (account_posted or "").strip()
+    if not text:
+        return None
+    acc = get_chart(db, text)
+    if acc is not None:
+        return acc
+    if text.isdigit():
+        return chart_of_account.objects.using(db).filter(id=int(text)).first()
+    return chart_of_account.objects.using(db).filter(account_id=text).first()
+
+
+def _mark_aged_payment_cancelled(db, row):
+    desc = row.description or ""
+    if "[cancelled]" in desc.lower():
+        return
+    mark = CANCELLED_PAYMENT_MARK
+    max_len = 255
+    if len(desc) + len(mark) > max_len:
+        desc = desc[: max_len - len(mark)]
+    row.description = desc + mark
+    row.save(using=db)
+
+
+def cancel_aged_receivable_payment(request, db, payment_id, customer_code, invoice_id):
+    """Reverse one Aged Receivables Pay Now credit.
+
+    Restores invoice amount_paid, posts a Payment Cancelled AR Debit, reverses
+    the original CreateLog series row, restores customer balance when needed,
+    and unwinds loan allocations from that payment.
+    """
+    from datetime import date as date_cls
+    from account.models import account_log, chart_of_account
+
+    try:
+        payment_id = int(payment_id)
+    except (TypeError, ValueError):
+        return {"ok": False, "error": "Invalid payment."}
+
+    customer_code = (customer_code or "").strip()
+    invoice_id = (invoice_id or "").strip()
+    if not customer_code or not invoice_id:
+        return {"ok": False, "error": "Customer or invoice missing."}
+
+    try:
+        cus = customer_table.objects.using(db).get(customer_code=customer_code)
+    except customer_table.DoesNotExist:
+        return {"ok": False, "error": f"Customer '{customer_code}' not found."}
+
+    today = date_cls.today()
+
+    with transaction.atomic(using=db):
+        row = (
+            receivable.objects.using(db)
+            .select_for_update()
+            .filter(
+                id=payment_id,
+                customer_id__iexact=customer_code,
+                token_id=invoice_id,
+            )
+            .first()
+        )
+        if row is None:
+            return {"ok": False, "error": "Payment not found on this invoice."}
+        if (row.type or "").lower() != "credit":
+            return {"ok": False, "error": "Only received payments can be cancelled."}
+        desc = row.description or ""
+        if "[cancelled]" in desc.lower():
+            return {"ok": False, "error": "This payment is already cancelled."}
+        if not desc.lower().startswith(tuple(p.lower() for p in AGED_PAYMENT_PREFIXES)):
+            return {"ok": False, "error": "This entry was not received from Aged Receivables."}
+
+        amount = Decimal(str(row.amount or 0))
+        if amount <= 0:
+            return {"ok": False, "error": "Payment amount is zero."}
+
+        cancel_desc = f"Payment Cancelled - Invoice {invoice_id} (#{row.id})"
+        DebitReceivable(
+            request, db, cus, today, cancel_desc,
+            row.payment_method or "Cash",
+            row.account_posted or "",
+            amount,
+            invoiceID=invoice_id,
+        )
+        _mark_aged_payment_cancelled(db, row)
+
+        invs = list(
+            customer_invoice.objects.using(db)
+            .select_for_update()
+            .filter(invoiceID=invoice_id, cusID=customer_code)
+        )
+        if invs:
+            current_paid = Decimal(str(invs[0].amount_paid or 0))
+            new_paid = current_paid - amount
+            if new_paid < 0:
+                new_paid = Decimal("0.00")
+            for line in invs:
+                line.amount_paid = new_paid
+                line.save(using=db)
+
+        if (row.payment_method or "").strip() == "Customer Balance":
+            if hasattr(cus, "balance"):
+                cus.balance = Decimal(str(cus.balance or 0)) + amount
+            else:
+                cus.Balance = Decimal(str(getattr(cus, "Balance", 0) or 0)) + amount
+            cus.save(using=db)
+
+        account = _chart_for_account_posted(db, row.account_posted)
+        if account is not None:
+            CreateLog(db, account, -amount, txn_date=today, user=request.user.username)
+            account_log.objects.using(db).create(
+                transaction_source="Payment Cancelled",
+                amount=amount,
+                date=today,
+                account=account.account_id,
+                account_type=account.account_type,
+                Userlogin=request.user.username,
+            )
+        else:
+            account_log.objects.using(db).create(
+                transaction_source="Payment Cancelled",
+                amount=amount,
+                date=today,
+                account=row.account_posted or "",
+                account_type="",
+                Userlogin=request.user.username,
+            )
+
+        try:
+            from journal.fuctions.loan_schedule import reverse_aged_loan_repayment
+            reverse_aged_loan_repayment(
+                db,
+                invoice_id=invoice_id,
+                amount=amount,
+                customer_id=customer_code,
+                userlogin=getattr(request.user, "username", ""),
+            )
+        except Exception:
+            import traceback
+            traceback.print_exc()
+
+        recompute_receivable_running_balances(db, [cus.customer_code])
+
+        expected = Decimal(str(invs[0].amount_expected or 0)) if invs else Decimal("0.00")
+        paid = Decimal(str(invs[0].amount_paid or 0)) if invs else Decimal("0.00")
+        return {
+            "ok": True,
+            "amount": str(amount),
+            "amount_paid": str(paid),
+            "amount_expected": str(expected),
+            "balance": str(expected - paid),
+            "payments": serialize_aged_payments(db, invoice_id, customer_code),
+        }
 
 
 def recompute_receivable_running_balances(db, customer_ids=None):

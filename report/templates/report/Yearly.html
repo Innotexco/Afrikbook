@@ -184,7 +184,7 @@
                                     $('<td class="text-[10px]">').text(item.invoice_date),
                                     $('<td class="text-[10px]">').text(item.invoiceID),
                                     $('<td class="text-[10px]">').text(item.Gdescription),
-                                    $('<td class="text-[10px]">').text(parseFloat(item.amount_expected) + parseFloat(item.amount_paid)),
+                                    $('<td class="text-[10px]">').text(NCFormat((parseFloat(item.amount_expected)||0) + (parseFloat(item.amount_paid)||0))),
                                     $('<td class="text-[10px]">').text(item.customer_name),
                                     $('<td class="text-[10px]">').text(item.payment_method),
                                     $('<td class="text-[10px]">').append('<a onclick="showModal(\'' + item.invoiceID + '\', \'' + item.cusID + '\')" class="flex items-center justify-center text-blue-500 border px-3 bg-gray-50 cursor-pointer"  aria-label="Edit">View</a>'),

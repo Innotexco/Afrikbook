@@ -333,12 +333,18 @@
 
 
         function money(value) {
-            const num = Number(value);
+            if (typeof window.parseMoney === "function") {
+                return window.parseMoney(value);
+            }
+            const num = Number(String(value == null ? "" : value).replace(/,/g, "").replace(/[₦$£€\s]/g, ""));
             if (!Number.isFinite(num)) return 0;
             return Math.round(num * 100) / 100;
         }
 
-        function formatMoney(value) {
+        function showMoney(value) {
+            if (typeof window.formatMoney === "function") {
+                return window.formatMoney(value);
+            }
             return money(value).toFixed(2);
         }
 
@@ -357,10 +363,10 @@
                 return;
             }
 
-            document.getElementById('previewInterest').textContent = formatMoney(interestAmount);
-            document.getElementById('previewTotal').textContent = formatMoney(total);
+            document.getElementById('previewInterest').textContent = showMoney(interestAmount);
+            document.getElementById('previewTotal').textContent = showMoney(total);
             document.getElementById('previewMonths').textContent = String(months);
-            document.getElementById('previewMonthly').textContent = formatMoney(monthly);
+            document.getElementById('previewMonthly').textContent = showMoney(monthly);
             preview.classList.remove('hidden');
         }
 

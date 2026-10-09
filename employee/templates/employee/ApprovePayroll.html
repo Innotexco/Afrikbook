@@ -144,7 +144,7 @@
                 let executed = false
                 if(response.data.length > 0){
                     my_modal_payroll.showModal()
-                    $("#total").val(response.total);
+                    $("#total").val(NCFormat(response.total));
                     $("#payroll-print-total").text(response.total);
                     //console.log(response.data)
                     response.data.forEach(item => {
@@ -170,7 +170,7 @@
                                 $('<td class="text-[10px] border border-slate-300 px-1">').text(item.NHF),
                                 $('<td class="text-[10px] border border-slate-300 px-1">').text(item.NSIFT),
                                 $('<td class="text-[10px] border border-slate-300 px-1">').text(item.other_deduction),
-                                $('<td class="text-[10px] border border-slate-300 px-1">').text(item.total_due),
+                                $('<td class="text-[10px] border border-slate-300 px-1">').text(NCFormat(item.total_due)),
                                 $('<td class="text-[10px] border border-slate-300 px-1">').text(item.net_pay),
                                 $('<td class="text-[10px] w-3 border border-slate-300 px-1 payroll-edit-col no-print">').append(
                                     '<a href="javascript:void(0)" onclick="showEditModal(\'' + item.id + '\',\'' + item.staffID + '\')" class="no-print flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-2" aria-label="Edit">Edit</a>'
@@ -272,7 +272,7 @@
                             const row = $('<tr id="row">').append(
                                 $('<td class="text-[10px]">').html(num),
                                 $('<td class="text-[10px]">').text(item.month_year),
-                                $('<td class="text-[10px]">').text(item.total),
+                                $('<td class="text-[10px]">').text(NCFormat(item.total)),
                                 $('<td class="text-[10px] w-3">').append('<a onclick="showPayroll(\'' + item.month_year + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">View</a>'),
                                 $('<td class="text-[10px] w-3">').append('<a onclick="ApprovePayroll(\'' + item.month_year + '\',\'' + item.total + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">Approve</a>'),
                                
@@ -355,7 +355,7 @@
                                     $('<td class="text-[10px]">').text(item.dateG),
                                     $('<td class="text-[10px]">').text(item.employee_name),
                                     $('<td class="text-[10px]">').text(item.gross_pay),
-                                    $('<td class="text-[10px]">').text(item.total_due),
+                                    $('<td class="text-[10px]">').text(NCFormat(item.total_due)),
                                     $('<td class="text-[10px]">').text(item.net_pay),
                                      
                                 );

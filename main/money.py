@@ -20,6 +20,9 @@ _MONEY_WITH_COMMA = re.compile(
 _PLAIN_NUMBER = re.compile(r"^-?\d+(\.\d+)?$")
 
 
+_THOUSANDS = re.compile(r"^-?\d{1,3}(,\d{3})+(\.\d+)?$")
+
+
 def strip_money_commas(value: Any) -> Any:
     """
     If *value* is a string that looks like a number with thousand separators,
@@ -35,20 +38,21 @@ def strip_money_commas(value: Any) -> Any:
     if not raw or "," not in raw:
         return value
 
-    # Keep only leading minus, digits, commas, and one decimal point for the test
     cleaned = (
         raw.replace("₦", "")
-        .replace("N", "")
         .replace("$", "")
         .replace("£", "")
         .replace("€", "")
         .replace(" ", "")
         .strip()
     )
-    # If after removing commas it is a plain number, accept it
-    no_commas = cleaned.replace(",", "")
-    if _PLAIN_NUMBER.fullmatch(no_commas):
-        return no_commas
+    if cleaned.startswith("N") and len(cleaned) > 1 and cleaned[1].isdigit():
+        cleaned = cleaned[1:]
+    if cleaned.startswith("-N") and len(cleaned) > 2 and cleaned[2].isdigit():
+        cleaned = "-" + cleaned[2:]
+
+    if _THOUSANDS.fullmatch(cleaned) or _MONEY_WITH_COMMA.fullmatch(raw) or _MONEY_WITH_COMMA.fullmatch(cleaned):
+        return cleaned.replace(",", "")
     return value
 
 

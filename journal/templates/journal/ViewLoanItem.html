@@ -221,8 +221,8 @@
                         <td class="text-[10px] px-4">{{ forloop.counter }}</td>
                         <td class="text-[10px] px-4">{{ log.date }}</td>
                         <td class="text-[10px] px-4">{{ log.description }}</td>
-                        <td class="text-[10px] px-4">{{ log.amount_borrowed }}</td>
-                        <td class="text-[10px] px-4">{{ log.balance_left }}</td>
+                        <td class="text-[10px] px-4">{{ log.amount_borrowed|money }}</td>
+                        <td class="text-[10px] px-4">{{ log.balance_left|money }}</td>
                         <td class="text-[10px] px-4">{{ log.status|default:"—" }}</td>
                     </tr>
                     {% endfor %}

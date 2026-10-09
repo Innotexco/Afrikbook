@@ -145,7 +145,7 @@
                         $("#phone").html(data.customer.phone);
                         $("#email").html(data.customer.email);
                         $("#address").html(data.customer.address);
-                        $("#balance").html(data.customer.balance);
+                        $("#balance").html(NCFormat(data.customer.balance));
                         // populate hidden balance value for sufficiency check
                         $("#customer_balance_val").val(data.customer.balance);
 
@@ -172,22 +172,22 @@
                                     $('<input type="text" readonly>').val(item.qty).addClass('block w-full px-2 h-4 text-[10px] focus:outline-none text-slate-600')
                                 ),
                                 $('<td class="border border-slate-300 py-0 text-[10px]">').append(
-                                    $('<input type="text" readonly>').val(item.unit_p).addClass('block w-full px-2 h-4 text-[10px] focus:outline-none text-slate-600')
+                                    $('<input type="text" readonly>').val(NCFormat(item.unit_p)).addClass('block w-full px-2 h-4 text-[10px] focus:outline-none text-slate-600')
                                 ),
                                 $('<td class="border border-slate-300 py-0 text-[10px]">').append(
-                                    $('<input type="text" readonly>').val(item.discount).addClass('block w-full px-2 h-4 text-[10px] focus:outline-none text-slate-600')
+                                    $('<input type="text" readonly>').val(NCFormat(item.discount)).addClass('block w-full px-2 h-4 text-[10px] focus:outline-none text-slate-600')
                                 ),
                                 $('<td class="border border-slate-300 py-0 text-[10px]">').append(
-                                    $('<input type="text" readonly>').val(item.unit_p * item.qty).addClass('block w-full px-2 h-4 text-[10px] focus:outline-none text-slate-600')
+                                    $('<input type="text" readonly>').val(NCFormat(item.unit_p * item.qty)).addClass('block w-full px-2 h-4 text-[10px] focus:outline-none text-slate-600')
                                 ),
                             );
                             table.append(row);
 
                             if (!executed) {
                                 // ── Populate invoice summary fields ──────────
-                                $('#total').val(item.amount_expected);
-                                $('#amount_paid').val(item.amount_paid);
-                                $('#total-cost').val(item.amount_expected - item.amount_paid);
+                                $('#total').val(NCFormat(item.amount_expected));
+                                $('#amount_paid').val(NCFormat(item.amount_paid));
+                                $('#total-cost').val(NCFormat(item.amount_expected - item.amount_paid));
                                 $("#date").html(item.invoice_date);
                                 $("#invoice").html(item.invoiceID);
                                 $("#code").html(item.cusID);
@@ -196,6 +196,9 @@
                                 executed = true;
                             }
                         });
+                        if (typeof renderAgedPayments === "function") {
+                            renderAgedPayments(data.payments || []);
+                        }
                     }
                 },
                 error: function() {
@@ -227,7 +230,9 @@
                         const loanDetailBase = "{% url 'journal:ViewLoanItem' 0 %}";
                         response.serializer_data.forEach(function(item) {
                             num++;
-                            const outstanding = (parseFloat(item.amount_expected) - parseFloat(item.amount_paid)).toFixed(2);
+                            const outstanding = (typeof parseMoney === "function"
+                                ? parseMoney(item.amount_expected) - parseMoney(item.amount_paid)
+                                : (parseFloat(item.amount_expected) - parseFloat(item.amount_paid)));
                             //const viewLoanHtml = item.loan_id
                                // ? '<a href="' + loanDetailBase.replace('/0/', '/' + item.loan_id + '/') + '" class="flex items-center justify-center text-green-500" aria-label="View Loan">' + loanEye + '</a>'
                                // : '<a href="#" class="flex items-center justify-center text-gray-400 cursor-not-allowed pointer-events-none" aria-label="View Loan" aria-disabled="true">' + loanEye + '</a>';
@@ -238,9 +243,9 @@
                                 $('<td class="text-[10px] px-4">').text(item.customer_name),
                                 $('<td class="text-[10px] px-4">').text(item.invoiceID),
                                 $('<td class="text-[10px] px-4">').text(item.Gdescription),
-                                $('<td class="text-[10px] px-4">').text(item.amount_paid),
-                                $('<td class="text-[10px] px-4">').text(item.amount_expected),
-                                $('<td class="text-[10px] text-red-600 px-4">').text(outstanding),
+                                $('<td class="text-[10px] px-4">').text(NCFormat(item.amount_paid)),
+                                $('<td class="text-[10px] px-4">').text(NCFormat(item.amount_expected)),
+                                $('<td class="text-[10px] text-red-600 px-4">').text(NCFormat(outstanding)),
                                 $('<td class="text-[10px] px-4">').append(
                                     '<a onclick="showModal(\'' + item.invoiceID + '\', \'' + item.cusID + '\')" class="items-center justify-center text-blue-500" aria-label="View"><svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"><path d="M10 3C5.5 3 2.1 6.2 1 10c1.1 3.8 4.5 7 9 7s7.9-3.2 9-7c-1.1-3.8-4.5-7-9-7zm0 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8a3 3 0 100 6 3 3 0 000-6z"></path></svg></a>'
                                 ),

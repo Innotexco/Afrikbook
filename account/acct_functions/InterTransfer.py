@@ -68,7 +68,8 @@ def new_inter(request):
         date_tx = request.POST.get('date_tx')
         description = request.POST.get('description')
         paid_from = request.POST.get('paid_from')
-        amount = request.POST.get('amount')
+        from main.money import strip_money_commas
+        amount = strip_money_commas(request.POST.get('amount'))
         received_in = request.POST.get('received_in')
         token_id = request.POST.get('token_id')
         user = request.POST.get('user')
@@ -130,7 +131,8 @@ def add_new_sales(request):
     discount = request.POST.getlist('discount[]')
     amount = request.POST.getlist('amount[]')
     vat = request.POST['vat'][:-1]
-    total = float(request.POST['total'])
+    from main.money import parse_money
+    total = float(parse_money(request.POST['total']))
     
     if invoice_state:
         invoice_state = "Pending"

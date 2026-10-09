@@ -150,7 +150,7 @@
                                     $('<td class="text-[10px]">').text(item.date),
                                     $('<td class="text-[10px]">').text(item.invoice_no),
                                     $('<td class="text-[10px]">').text(item.narration),
-                                    $('<td class="text-[10px]">').text(item.total),
+                                    $('<td class="text-[10px]">').text(NCFormat(item.total)),
                                     $('<td class="text-[10px]">').text(item.transaction_type),
                                     $('<td class="text-[10px] bg-gray-50 w-3">').append('<a href="/ViewJournalItem/'+item.invoice_no+'/" class="flex items-center justify-center text-blue-500 border px-3"  aria-label="Edit">View</a>'),
                                         

@@ -50,8 +50,9 @@ def create_new_loan(request, db):
             return None
 
         try:
-            amount_borrowed = decimal.Decimal(amount_borrowed)
-        except:
+            from main.money import parse_money
+            amount_borrowed = parse_money(amount_borrowed)
+        except Exception:
             messages.error(request, "Invalid amount")
             return None
 
@@ -283,7 +284,8 @@ def update_existing_loan(request, db, loan):
         if interest and not apply_interest:
             interest = None
         try:
-            amount_borrowed = decimal.Decimal(amount_borrowed)
+            from main.money import parse_money
+            amount_borrowed = parse_money(amount_borrowed)
         except Exception:
             messages.error(request, "Invalid amount")
             return None

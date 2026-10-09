@@ -202,7 +202,7 @@
                                 $('<td class="text-[10px]">').text(item.month_year),
                                 $('<td class="text-[10px]">').text(item.employee),
                                 $('<td class="text-[10px]">').text(item.gross_pay),
-                                $('<td class="text-[10px]">').text(item.total_due),
+                                $('<td class="text-[10px]">').text(NCFormat(item.total_due)),
                                 $('<td class="text-[10px]">').text(item.net_pay),
                                 $('<td class="text-[10px] bg-gray-50 w-3">').append('<a onclick="showPayroll(\''+ item.month_year + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">View</a>')
                             );
@@ -271,7 +271,7 @@
                                 $('<td class="text-[10px]">').text(item.NHF),
                                 $('<td class="text-[10px]">').text(item.NSIFT),
                                 $('<td class="text-[10px]">').text(item.other_deduction),
-                                $('<td class="text-[10px]">').text(item.total_due),
+                                $('<td class="text-[10px]">').text(NCFormat(item.total_due)),
                                 $('<td class="text-[10px]">').text(item.net_pay),
                                // $('<td class="text-[10px] w-3">').append('<a onclick="showEditModal(\'' + item.id + '\',\'' + item.staffID + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">Edit</a>'),
                                

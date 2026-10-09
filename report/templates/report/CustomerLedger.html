@@ -168,9 +168,9 @@
                                 $('<td class="text-[10px] px-4">').text(num),
                                 $('<td class="text-[10px] px-4">').text(item.cusID),
                                 $('<td class="text-[10px] px-4">').text(item.customer_name),
-                                $('<td class="text-[10px] px-4">').text(item.amount_expected),
-                                $('<td class="text-[10px] px-4">').text(item.amount_paid),
-                                $('<td class="text-[10px] px-4">').text(item.balance),
+                                $('<td class="text-[10px] px-4">').text(NCFormat(item.amount_expected)),
+                                $('<td class="text-[10px] px-4">').text(NCFormat(item.amount_paid)),
+                                $('<td class="text-[10px] px-4">').text(NCFormat(item.balance)),
                                 $('<td class="text-[10px] px-4 bg-gray-50 w-3 text-center">').append(
                                     '<a href="/view-customer-ledger/'+item.cusID+'/'+item.invoiceID+'" target="_blank" class="text-blue-500 border px-4" aria-label="View">View</a>'
                                 )

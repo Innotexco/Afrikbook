@@ -137,7 +137,7 @@
                     $("#name").text(data.customer.name)
                     $("#phone_no").text(data.customer.phone)
                     $("#code").text(data.customer.customer_code)
-                    $("#balance").text(data.customer.balance)
+                    $("#balance").text(NCFormat(data.customer.balance))
                 }
 
                 const table = $('#view_customer_details tbody')
@@ -155,7 +155,7 @@
                                 $('<td class="text-[10px]">').html(num),
                                 $('<td class="text-[10px]">').text(item.invoice_date),
                                 $('<td class="text-[10px]">').text(item.invoiceID),
-                                $('<td class="text-[10px]">').text(item.amount),
+                                $('<td class="text-[10px]">').text(NCFormat(item.amount)),
                                 $('<td class="text-[10px]">').text(item.Gdescription)
                                
                             );

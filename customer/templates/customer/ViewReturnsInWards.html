@@ -183,7 +183,7 @@
                                     $('<td class="text-[10px]">').html(num),
                                     $('<td class="text-[10px]">').text(item.invoice_date),
                                     $('<td class="text-[10px]">').text(item.customer_name),
-                                    $('<td class="text-[10px]">').text(item.amount),
+                                    $('<td class="text-[10px]">').text(NCFormat(item.amount)),
                                     //$('<td class="text-[10px]">').text(item.Gdescription)
                                     $('<td class="text-[10px] bg-gray-50 w-3">').append('<a href="/ViewReturnItem/'+item.cusID+'/'+item.invoiceID+'/" class="text-blue-500 border px-3"  aria-label="Edit">View</a>'),
                                     $('<td class="text-[10px] w-3">').append('<a onclick="showChangeDateModal(\'' + item.cusID + '\',\'' + item.invoiceID + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">Edit</a>'),

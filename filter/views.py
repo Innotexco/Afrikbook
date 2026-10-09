@@ -9,7 +9,11 @@ from Stock.models import Item
 from .function.date import convertDate
 from decimal import Decimal
 from main.utils import paginate_queryset, pagination_meta
-from customer.functions.generalFunction import exclude_returned_or_cancelled_invoices
+from customer.functions.generalFunction import (
+    exclude_returned_or_cancelled_invoices,
+    customer_ledger_entries_qs,
+    aged_open_or_cancellable_invoice_qs,
+)
 
 
 
@@ -287,12 +291,8 @@ def aged_receivable_filter_by_date(request):
 
     apply_loan_charges_to_receivables(db)
 
-    # Open invoices only — hide returns and cancellations (same rules as page load)
-    base_qs = exclude_returned_or_cancelled_invoices(
-        customer_invoice.objects.using(db).filter(
-            Q(amount_paid__lt=F('amount_expected')) & filter_conditions
-        )
-    )
+    # Open invoices, plus fully paid invoices that still have cancellable Pay Now credits
+    base_qs = aged_open_or_cancellable_invoice_qs(db).filter(filter_conditions)
 
     loan_id_by_ref = dict(
         loan_account.objects.using(db)
@@ -575,10 +575,7 @@ def customer_ledger_filter_by_date(request):
     start_date = convertDate(start_date_str, start_date_str)[0] if start_date_str else None
     end_date = convertDate(end_date_str, end_date_str)[0] if end_date_str else None
 
-    entries_qs = receivable.objects.using(db).filter(
-        customer_id__iexact=cusID
-    ).order_by('date', 'id')
-
+    entries_qs = customer_ledger_entries_qs(db, cusID)
     ledger = compute_customer_ledger(entries_qs, start_date, end_date)
 
     serialized = [

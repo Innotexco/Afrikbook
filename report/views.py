@@ -28,6 +28,7 @@ from django.contrib.auth.decorators import login_required
 from routers.page_permission import  urls_name
 from datetime import date
 from filter.function.date import convertDate
+from main.money import parse_money
 
 import logging
 
@@ -1258,11 +1259,7 @@ def AgedReceivables(request):
     apply_loan_charges_to_receivables(db)
 
     # ── Deduplicate by invoiceID and pre-calculate outstanding ───────────
-    raw_aged = exclude_returned_or_cancelled_invoices(
-        customer_invoice.objects.using(db).filter(
-            amount_paid__lt=F('amount_expected')
-        )
-    ).order_by('invoiceID', 'id')
+    raw_aged = aged_open_or_cancellable_invoice_qs(db).order_by('invoiceID', 'id')
     
     loan = loan_account.objects.using(db).all()
     loan_id_by_ref = {}
@@ -1283,14 +1280,31 @@ def AgedReceivables(request):
     amount_total = sum(inv.outstanding for inv in aged_list)
 
     if request.method == "POST":
-        discount        = Decimal(request.POST.get("Discount", 0))
-        cost            = Decimal(request.POST.get("cost", 0))
+        if request.POST.get("action") == "cancel_payment":
+            result = cancel_aged_receivable_payment(
+                request, db,
+                request.POST.get("payment_id"),
+                request.POST.get("customer"),
+                request.POST.get("invoice"),
+            )
+            if result.get("ok"):
+                payload = dict(result)
+                payload["success"] = True
+                payload.pop("ok", None)
+                return JsonResponse(payload)
+            return JsonResponse(
+                {"success": False, "error": result.get("error") or "Could not cancel payment"},
+                status=400,
+            )
+
+        discount        = parse_money(request.POST.get("Discount", 0))
+        cost            = parse_money(request.POST.get("cost", 0))
         customer        = request.POST.get("customer")
         invoice         = request.POST.get("invoice")
         payment_method  = request.POST.get("payment_method", "Cash")
         account_ID      = request.POST.get("transfer_account")
-        transfer_amount = Decimal(request.POST.get("transfer_amount", 0))
-        cash_amount     = Decimal(request.POST.get("cash_amount", 0))
+        transfer_amount = parse_money(request.POST.get("transfer_amount", 0))
+        cash_amount     = parse_money(request.POST.get("cash_amount", 0))
         today           = datetime.now()
 
         try:
@@ -1499,12 +1513,17 @@ def get_invoice_details(request):
     customer = request.GET.get('customer')
     invoice = request.GET.get('invoice')
     db = AfrikBookDB(request)
-    inv = customer_invoice.objects.using(db).get(invoiceID=invoice, cusID=customer)
+    inv = customer_invoice.objects.using(db).filter(invoiceID=invoice, cusID=customer).first()
+    if inv is None:
+        return JsonResponse({'success': False, 'error': 'Invoice not found'}, status=404)
+    expected = Decimal(str(inv.amount_expected or 0))
+    paid = Decimal(str(inv.amount_paid or 0))
     return JsonResponse({
         'success': True,
-        'total': str(inv.total_amount),
-        'amount_paid': str(inv.amount_paid),
-        'balance': str(inv.total_amount - inv.amount_paid)
+        'total': str(expected),
+        'amount_paid': str(paid),
+        'balance': str(expected - paid),
+        'payments': serialize_aged_payments(db, invoice, customer),
     })
 
 @login_required(login_url='/')
@@ -1565,14 +1584,14 @@ def AgedPayable(request):
     amount_total = sum(inv.outstanding for inv in aged_list)
 
     if request.method == "POST":
-        discount        = Decimal(str(request.POST.get("Discount", 0) or 0))
-        cost            = Decimal(str(request.POST.get("cost", 0) or 0))
+        discount        = parse_money(request.POST.get("Discount", 0))
+        cost            = parse_money(request.POST.get("cost", 0))
         vendor          = request.POST.get("vendor")
         invoice         = request.POST.get("invoice")
         payment_method  = request.POST.get("payment_method", "Cash")
         account_ID      = request.POST.get("transfer_account")
-        transfer_amount = Decimal(str(request.POST.get("transfer_amount", 0) or 0))
-        cash_amount     = Decimal(str(request.POST.get("cash_amount", 0) or 0))
+        transfer_amount = parse_money(request.POST.get("transfer_amount", 0))
+        cash_amount     = parse_money(request.POST.get("cash_amount", 0))
         payment_date_str = request.POST.get("payment_date")
         if payment_date_str:
             try:
@@ -1747,7 +1766,8 @@ def GetCustomerDetailsAndInvoice(request, code, cusID):
                 "address": getattr(customer, 'address', ''),
                 "balance": str(getattr(customer, 'balance', getattr(customer, 'Balance', 0))),
             },
-            "invoice": serialized_inv
+            "invoice": serialized_inv,
+            "payments": serialize_aged_payments(db, code, cusID),
         }
         return JsonResponse(data)
     except customer_table.DoesNotExist:
@@ -1984,9 +2004,7 @@ def ViewCustomerLedger(request, code, invoice):
         start_date = convertDate(start_date_str, start_date_str)[0] if start_date_str else None
         end_date = convertDate(end_date_str, end_date_str)[0] if end_date_str else None
 
-        entries_qs = receivable.objects.using(db).filter(
-            customer_id__iexact=code
-        ).order_by('date', 'id')
+        entries_qs = customer_ledger_entries_qs(db, code)
         ledger = compute_customer_ledger(entries_qs, start_date, end_date)
 
         context.update({

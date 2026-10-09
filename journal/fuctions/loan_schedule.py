@@ -15,9 +15,13 @@ def _money(value):
     if value is None:
         return ZERO
     try:
-        return Decimal(str(value)).quantize(TWOPLACES, rounding=ROUND_HALF_UP)
-    except (InvalidOperation, TypeError, ValueError):
-        return ZERO
+        from main.money import parse_money
+        return parse_money(value)
+    except Exception:
+        try:
+            return Decimal(str(value).replace(",", "")).quantize(TWOPLACES, rounding=ROUND_HALF_UP)
+        except (InvalidOperation, TypeError, ValueError):
+            return ZERO
 
 
 def _parse_date(value):
@@ -530,6 +534,73 @@ def credit_loan_receivable(db, loan, amount, userlogin=''):
         amount=amount,
         account=account.account_id,
         account_type=account.account_type,
+        Userlogin=userlogin or "",
+    )
+
+
+def reverse_aged_loan_repayment(db, invoice_id, amount, customer_id=None, userlogin=""):
+    """Undo Aged Receivable loan allocations, newest first, up to amount."""
+    remaining = _money(amount)
+    if remaining <= ZERO or not invoice_id:
+        return ZERO
+
+    ensure_loan_tables(db)
+    loan = find_loan_for_invoice(db, invoice_id, customer_id)
+    if not loan:
+        return ZERO
+
+    repayments = list(
+        loan_repayment.objects.using(db)
+        .filter(invoice_id=str(invoice_id), source="aged_receivable")
+        .order_by("-id")
+    )
+    reversed_total = ZERO
+    for rep in repayments:
+        if remaining <= ZERO:
+            break
+        take = min(_money(rep.amount), remaining)
+        inst = loan_installment.objects.using(db).filter(id=rep.installment_id).first()
+        if inst:
+            inst.amount_paid = max(ZERO, _money(inst.amount_paid) - take)
+            inst.save(using=db)
+        leftover = _money(rep.amount) - take
+        if leftover <= ZERO:
+            rep.delete()
+        else:
+            rep.amount = leftover
+            rep.save(using=db)
+        reversed_total += take
+        remaining -= take
+
+    if reversed_total > ZERO:
+        _debit_loan_receivable(db, loan, reversed_total, userlogin)
+        refresh_loan_balance(db, loan)
+    return reversed_total
+
+
+def _debit_loan_receivable(db, loan, amount, userlogin=""):
+    """Reverse credit_loan_receivable: Dr 1100-LoanReceivable, Cr 1002-Receivable."""
+    amount = _money(amount)
+    if amount <= ZERO:
+        return
+
+    from account.models import account_log, chart_of_account
+    from customer.functions.gl import AR_ID, get_chart_any, post_double_entry
+
+    account_id = (loan.account_debited or "").strip() or "1100-LoanReceivable"
+    try:
+        loan_acc = chart_of_account.objects.using(db).get(account_id=account_id)
+    except chart_of_account.DoesNotExist:
+        loan_acc = get_chart_any(db, "1100-LoanReceivable")
+    ar = get_chart_any(db, AR_ID)
+    if loan_acc is None or ar is None:
+        return
+    post_double_entry(db, loan_acc, ar, amount, user=userlogin)
+    account_log.objects.using(db).create(
+        transaction_source="Loan Repayment Cancelled",
+        amount=amount,
+        account=loan_acc.account_id,
+        account_type=loan_acc.account_type,
         Userlogin=userlogin or "",
     )
 

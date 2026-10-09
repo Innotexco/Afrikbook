@@ -198,6 +198,12 @@
 {% csrf_token %}
 
 <script>
+    function _money(v) {
+        if (typeof window.parseMoney === "function") return window.parseMoney(v);
+        var n = parseFloat(String(v == null ? "" : v).replace(/,/g, "").replace(/[₦$£€\s]/g, ""));
+        return isFinite(n) ? n : 0;
+    }
+
     // ── Show/hide fields based on payment method ──────────────────────────────
     $("#payment_method").on("change", function () {
         const method         = $(this).val();
@@ -221,9 +227,9 @@
 
     // ── Split validation ──────────────────────────────────────────────────────
     $("#transfer_amount, #cash_amount").on("input", function () {
-        const payment  = parseFloat($("#payment_amount").val()) || 0;
-        const transfer = parseFloat($("#transfer_amount").val()) || 0;
-        const cash     = parseFloat($("#cash_amount").val()) || 0;
+        const payment  = _money($("#payment_amount").val()) || 0;
+        const transfer = _money($("#transfer_amount").val()) || 0;
+        const cash     = _money($("#cash_amount").val()) || 0;
         const valid    = Math.abs((transfer + cash) - payment) < 0.01;
         valid ? $("#split_error").hide() : $("#split_error").show();
         updatePayButton();
@@ -231,10 +237,10 @@
 
     // ── Remaining balance display ─────────────────────────────────────────────
     function updateRemainingBalance() {
-        const total    = parseFloat($("#total").val()) || 0;
-        const paid     = parseFloat($("#amount_paid").val()) || 0;
-        const discount = parseFloat($("#Discount").val()) || 0;
-        const payment  = parseFloat($("#payment_amount").val()) || 0;
+        const total    = _money($("#total").val()) || 0;
+        const paid     = _money($("#amount_paid").val()) || 0;
+        const discount = _money($("#Discount").val()) || 0;
+        const payment  = _money($("#payment_amount").val()) || 0;
 
         let remaining = total - (paid + payment + discount);
         if (remaining < 0) remaining = 0;
@@ -255,10 +261,10 @@
 
     // ── Pay button gate ───────────────────────────────────────────────────────
     function updatePayButton() {
-        const total    = parseFloat($("#total").val()) || 0;
-        const paid     = parseFloat($("#amount_paid").val()) || 0;
-        const discount = parseFloat($("#Discount").val()) || 0;
-        const payment  = parseFloat($("#payment_amount").val()) || 0;
+        const total    = _money($("#total").val()) || 0;
+        const paid     = _money($("#amount_paid").val()) || 0;
+        const discount = _money($("#Discount").val()) || 0;
+        const payment  = _money($("#payment_amount").val()) || 0;
         const method   = $("#payment_method").val();
         const remaining = total - paid;
 
@@ -271,8 +277,8 @@
             }
         }
         if (method === "Transfer and Cash" && payment > 0) {
-            const transfer = parseFloat($("#transfer_amount").val()) || 0;
-            const cash     = parseFloat($("#cash_amount").val()) || 0;
+            const transfer = _money($("#transfer_amount").val()) || 0;
+            const cash     = _money($("#cash_amount").val()) || 0;
             valid = valid && Math.abs((transfer + cash) - payment) < 0.01;
         }
 
@@ -287,14 +293,14 @@
 
     // ── Submit ────────────────────────────────────────────────────────────────
     $("#pay").on("click", function () {
-        const payment  = parseFloat($("#payment_amount").val()) || 0;
-        const discount = parseFloat($("#Discount").val()) || 0;
+        const payment  = _money($("#payment_amount").val()) || 0;
+        const discount = _money($("#Discount").val()) || 0;
         const vendor   = $("#code").text().trim();
         const invoice  = $("#invoice").text().trim();
         const method   = $("#payment_method").val();
         const account  = $("#transfer_account").val() || "";
-        const transfer = parseFloat($("#transfer_amount").val()) || 0;
-        const cash     = parseFloat($("#cash_amount").val()) || 0;
+        const transfer = _money($("#transfer_amount").val()) || 0;
+        const cash     = _money($("#cash_amount").val()) || 0;
 
         if (payment <= 0 && discount <= 0) {
             alertify.error("Enter a payment amount, a discount, or both.");
@@ -341,11 +347,9 @@
                         success: function (res) {
                             if (res.serialized_data && res.serialized_data.length) {
                                 const item = res.serialized_data[0];
-                                $("#total").val(item.amount_expected);
-                                $("#amount_paid").val(item.amount_paid);
-                                $("#total-cost").val(
-                                    (parseFloat(item.amount_expected) - parseFloat(item.amount_paid)).toFixed(2)
-                                );
+                                $("#total").val(NCFormat(item.amount_expected));
+                                $("#amount_paid").val(NCFormat(item.amount_paid));
+                                $("#total-cost").val(NCFormat(item.amount_expected - item.amount_paid));
                                 $("#payment_amount").val(0);
                                 $("#Discount").val(0);
                                 $("#transfer_amount").val(0);

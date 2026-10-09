@@ -206,7 +206,7 @@
                                 $('<td class="px-4 text-sm">').text(item.invoiceID),
                                 $('<td class="px-4 text-sm">').text(item.customer_name),
                                 $('<td class="px-4 text-sm">').text(item.Gdescription),
-                                $('<td class="px-4 text-sm">').text(item.amount_expected),
+                                $('<td class="px-4 text-sm">').text(NCFormat(item.amount_expected)),
                                 $('<td class="px-4 text-sm">').text(item.invoice_state),
                                 // $('<td class="text-[10px] flex justify-cente items-center">').html(
                                 //     `<input type="checkbox" onchange="Confirm('${item.invoiceID}')" value="" class="m-1 peer${item.invoiceID}" {% if invoice.invoice_state == "1" %} checked {% endif %}>`

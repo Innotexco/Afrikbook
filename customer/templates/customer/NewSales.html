@@ -397,7 +397,7 @@
                 runcheck();
             } else {
                 if(payment_method == "Customer Balance"){
-                    if(parseFloat(customer_bal) < amount){
+                    if(_num(customer_bal) < amount){
                         if (credit_sales){
                             runcheck();
                         } else{

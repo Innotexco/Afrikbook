@@ -125,7 +125,7 @@
                             {{display.item_name}}
                         </td> {% endcomment %}
                         <td class="px-4 text-[10px]">
-                            {{display.amount_expected}}
+                            {{display.amount_expected|money}}
                         </td>
                         <td class="text-[10px] text-center">
                             <a onclick="showModal('{{display.invoiceID}}')"
@@ -270,7 +270,7 @@
                                 $('<td class="text-[10px] px-4">').text(formatInvoiceDate(item.invoice_date)),
                                 $('<td class="text-[10px] px-4">').text(item.invoiceID),
                                 $('<td class="text-[10px] px-4">').text(item.customer_name),
-                                $('<td class="text-[10px] px-4">').text(item.amount_expected),
+                                $('<td class="text-[10px] px-4">').text(NCFormat(item.amount_expected)),
                                 $('<td class="text-[10px] px-4 text-center">').append(`
                                     <a onclick="showModal('${item.invoiceID}')"
                                     class="inline-flex items-center justify-center mx-auto text-green-600 cursor-pointer"
@@ -347,7 +347,7 @@
                                 $('<td class="text-[10px]">').text(item.invoiceID),
                                 $('<td class="text-[10px]">').text(item.customer_name),
                                 $('<td class="text-[10px]">').text(item.item_name),
-                                $('<td class="text-[10px]">').text(item.amount_expected),
+                                $('<td class="text-[10px]">').text(NCFormat(item.amount_expected)),
                                 // VIEW
                                 $('<td class="text-[10px]">').append(`
                                     <a onclick="showModal('${item.invoiceID}')"
