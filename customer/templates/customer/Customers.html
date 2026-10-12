@@ -102,7 +102,7 @@
             
             $.ajax({
                 // url: '/customer/'+ id + '/',
-                url: `/customer/${id}/`,
+                url: `/customer/${encodeURIComponent(id)}/`,
                 method: 'GET',
                 
                 success: function(data){

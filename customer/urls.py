@@ -21,7 +21,7 @@ urlpatterns = [
     path('RefundCustomer', views.RefundCustomer, name='RefundCustomer'),
     path('view-returns-inwards', views.ViewReturnsInWards, name='ViewReturnsInWards'),
     path('ReturnInward', views.ReturnInward, name='ReturnInward'),
-    path('ViewReturnItem/<int:code>/<str:invoice>/', views.ViewCustomerReturnedItem, name='ViewReturnItem'),
+    path('ViewReturnItem/<str:code>/<str:invoice>/', views.ViewCustomerReturnedItem, name='ViewReturnItem'),
     path('ReturnInwwardChangeDate/', views.ReturnedInwardChangeDate, name='ReturnInwwardChangeDate'),
     path('ChangeReturnInwardDate/', views.ChangeReturnInwardDate, name='ChangeReturnInwardDate'),
 
@@ -47,9 +47,9 @@ urlpatterns = [
     path('Verify', views.Verify, name='Verify'),#ajax
 
     path('get_customer_category/<int:customer_id>/', views.get_customer_category, name='get_customer_category'), #ajax
-    path('get_customer/<int:id>/', views.GetCustomerDetails, name='customer-details'), #ajax
+    path('get_customer/<str:id>/', views.GetCustomerDetails, name='customer-details'), #ajax
     path('get_vendor/<str:id>/', views.GetVendorDetails, name='vendor-details'), #ajax
-    path('customer/<int:id>/', views.ViewCustomerDetails, name='customer-details'), #ajax
+    path('customer/<str:id>/', views.ViewCustomerDetails, name='customer-details'), #ajax
     path('get_items/<str:item_id>/', views.GetItemDetails, name='item-details'), #ajax
     path('get_return_items/<str:invoice>/<int:item_id>/', views.GetReturnItemDetails, name='item-get_return_items'), #ajax
     path('invoice/<int:invoice_id>/', views.GetInvoiceDetails, name='invoice'), #ajax  
@@ -58,7 +58,7 @@ urlpatterns = [
 
     path('get_items_qty', views.CheckItemQty, name='item-qty'), #ajax
     path('Stockget_items_qty', views.StockCheckItemQty, name='Stockitem-qty'), #ajax
-    path('get_customer_balance/<int:id>/', views.GetCustomerBalance, name='customer-balance'), #ajax
+    path('get_customer_balance/<str:id>/', views.GetCustomerBalance, name='customer-balance'), #ajax
     path('get_customer_or_vendor_balance', views.GetCustomer_or_VendorBalance, name='get_customer_or_vendor_balance'), #ajax
     path('invoiceExist/<int:invoiceID>/', invoiceExist, name='invoiceExist'), #ajax
     path('CancelSales', views.CancelSales, name='CancelSales'), #ajax

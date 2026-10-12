@@ -86,7 +86,7 @@
                         </td>
                         <td class="text-[10px]">
                             <div class="flex items-center justify-between">
-                                <a href="/ViewReturnItem/{{ display.cusID }}/{{ display.invoiceID }}/"
+                                <a href="{% url 'customer:ViewReturnItem' display.cusID display.invoiceID %}"
                                        class="flex items-center justify-center text-blue-500"
                                        aria-label="View">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -185,7 +185,7 @@
                                     $('<td class="text-[10px]">').text(item.customer_name),
                                     $('<td class="text-[10px]">').text(NCFormat(item.amount)),
                                     //$('<td class="text-[10px]">').text(item.Gdescription)
-                                    $('<td class="text-[10px] bg-gray-50 w-3">').append('<a href="/ViewReturnItem/'+item.cusID+'/'+item.invoiceID+'/" class="text-blue-500 border px-3"  aria-label="Edit">View</a>'),
+                                    $('<td class="text-[10px] bg-gray-50 w-3">').append('<a href="/ViewReturnItem/'+encodeURIComponent(item.cusID)+'/'+encodeURIComponent(item.invoiceID)+'/" class="text-blue-500 border px-3"  aria-label="Edit">View</a>'),
                                     $('<td class="text-[10px] w-3">').append('<a onclick="showChangeDateModal(\'' + item.cusID + '\',\'' + item.invoiceID + '\')" class="flex items-center justify-center text-blue-500 border bg-gray-50 cursor-pointer px-3"  aria-label="Edit">Edit</a>'),
                                    
                                 );

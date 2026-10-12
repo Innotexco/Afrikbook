@@ -19,6 +19,29 @@ def AfrikBookDB(request):
     return db
 
 
+def find_customer(db, code):
+    """Resolve a customer by customer_code (keep leading zeros) or numeric pk."""
+    if code is None:
+        return None
+    key = str(code).strip()
+    if not key:
+        return None
+    qs = customer_table.objects.using(db)
+    customer = qs.filter(customer_code=key).first()
+    if customer is not None:
+        return customer
+    if key.isdigit():
+        customer = qs.filter(id=int(key)).first()
+        if customer is not None:
+            return customer
+        if len(key) < 7:
+            padded = key.zfill(7)
+            customer = qs.filter(customer_code=padded).first()
+            if customer is not None:
+                return customer
+    return None
+
+
 
 
 def generate_dummy_password(length=12):

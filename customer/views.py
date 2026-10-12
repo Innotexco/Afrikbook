@@ -58,43 +58,33 @@ def Customers(request):
 @urls_name(name="Customer")
 def ViewCustomerDetails(request, id):
     db = request.user.company_id.db_name
-    
-    try:
-        customer = customer_table.objects.using(db).get(customer_code=id)
-        invoice = customer_invoice.objects.using(db).filter(cusID=id).values('invoiceID').distinct()
-    #    invoice = list(customer_invoice.objects.filter(cusID=id).values())
-    
-    #    invoices = customer_invoice.objects.filter(cusID=id).values()
-
-        unique_invoice = []
-        for i in invoice:
-           new_data = customer_invoice.objects.using(db).filter(cusID=id, invoiceID=i['invoiceID']).values()#.order_by('invoice_date')
-
-           if new_data.exists():
-               unique_invoice.append(new_data.first())
-
-        try:
-            credit = receivable.objects.using(db).filter(customer_id=id, type="Credit").aggregate(total=Sum('amount'))['total'] or 0.00
-            debit = receivable.objects.using(db).filter(customer_id=id, type="Debit").aggregate(total=Sum('amount'))['total'] or 0.00
-            balance = Decimal(credit) - Decimal(debit)
-            
-      
-        except receivable.DoesNotExist:
-            balance = "0.00"
-
-        data = {
-            'customer': {
-                'name': customer.name,
-                'phone': customer.phone,
-                'code': customer.customer_code,
-                'balance': format(balance, ".2f"),
-            },
-            'invoices': list(unique_invoice),
-        }
-       
-        return JsonResponse(data)
-    except customer_table.DoesNotExist: 
+    customer = find_customer(db, id)
+    if customer is None:
         return JsonResponse({'error': 'Item not found'}, status=404)
+
+    code = customer.customer_code
+    invoice = customer_invoice.objects.using(db).filter(cusID=code).values('invoiceID').distinct()
+
+    unique_invoice = []
+    for i in invoice:
+        new_data = customer_invoice.objects.using(db).filter(cusID=code, invoiceID=i['invoiceID']).values()
+        if new_data.exists():
+            unique_invoice.append(new_data.first())
+
+    credit = receivable.objects.using(db).filter(customer_id=code, type="Credit").aggregate(total=Sum('amount'))['total'] or 0.00
+    debit = receivable.objects.using(db).filter(customer_id=code, type="Debit").aggregate(total=Sum('amount'))['total'] or 0.00
+    balance = decimal.Decimal(credit) - decimal.Decimal(debit)
+
+    data = {
+        'customer': {
+            'name': customer.name,
+            'phone': customer.phone,
+            'code': customer.customer_code,
+            'balance': format(balance, ".2f"),
+        },
+        'invoices': list(unique_invoice),
+    }
+    return JsonResponse(data)
     
 
 
@@ -1073,36 +1063,31 @@ def get_customer_category(request, customer_id):
 
 def GetCustomerDetails(request, id):
     db = request.user.company_id.db_name
-    cusID = request.GET.get("cusID")
-    
-    lookup = Q(id__iexact=cusID) | Q(customer_code__iexact=cusID)
-    try:
-       customer = customer_table.objects.using(db).get(lookup)
-       data = {
-            'name': customer.name,
-            'phone': customer.phone,
-            'email': customer.email,
-            'category': customer.category,
-            'code': customer.customer_code,
-            'company': customer.company_name,
-            'instant_email': customer.instant_email,
-            'balance': customer.Balance
-        }
-       return JsonResponse(data)
-    except customer_table.DoesNotExist: 
+    cusID = request.GET.get("cusID") or id
+    customer = find_customer(db, cusID)
+    if customer is None:
         return JsonResponse({'error': 'Item not found'}, status=404)
+    data = {
+        'name': customer.name,
+        'phone': customer.phone,
+        'email': customer.email,
+        'category': customer.category,
+        'code': customer.customer_code,
+        'company': customer.company_name,
+        'instant_email': customer.instant_email,
+        'balance': customer.Balance
+    }
+    return JsonResponse(data)
     
     
 def GetCustomerBalance(request, id):
     db = request.user.company_id.db_name
-    try:
-        credit = receivable.objects.using(db).filter(customer_id=id, type="Credit").aggregate(total=Sum('amount'))['total'] or 0.00
-        debit = receivable.objects.using(db).filter(customer_id=id, type="Debit").aggregate(total=Sum('amount'))['total'] or 0.00
-        data = Decimal(credit) - Decimal(debit)
-        return JsonResponse(data, safe=False)
-        
-    except receivable.DoesNotExist: 
-        return JsonResponse({'error': 'Customer not found'}, status=404)
+    customer = find_customer(db, id)
+    customer_id = customer.customer_code if customer is not None else str(id).strip()
+    credit = receivable.objects.using(db).filter(customer_id=customer_id, type="Credit").aggregate(total=Sum('amount'))['total'] or 0.00
+    debit = receivable.objects.using(db).filter(customer_id=customer_id, type="Debit").aggregate(total=Sum('amount'))['total'] or 0.00
+    data = decimal.Decimal(credit) - decimal.Decimal(debit)
+    return JsonResponse(data, safe=False)
     
 def GetCustomer_or_VendorBalance(request,):
     db = request.user.company_id.db_name
@@ -1192,24 +1177,14 @@ def ViewCustomerReturnedItem(request, code, invoice):
     invoices = []
 
     if code:
-        try:
-            code_int = int(code)
-        except ValueError:
-            code_int = None
-
-        lookups = Q()
-        if code_int is not None:
-            lookups |= Q(id=code_int) | Q(customer_code=code_int)
-
-        customer = customer_table.objects.using(db).filter(lookups).first()
+        customer = find_customer(db, code)
         if customer is None:
             messages.error(request, f"Customer with {code} and {invoice} does not exist")
             return redirect('customer:ViewReturnsInWards')
-        else:
-            invoice1 = customer_invoice.objects.using(db).filter(cusID=customer.customer_code, invoiceID=invoice).first()
-            invoices = customer_invoice.objects.using(db).filter(cusID=customer.customer_code, invoiceID=invoice)
+        invoice1 = customer_invoice.objects.using(db).filter(cusID=customer.customer_code, invoiceID=invoice).first()
+        invoices = customer_invoice.objects.using(db).filter(cusID=customer.customer_code, invoiceID=invoice)
 
-    context = { 
+    context = {
         "customer": customer,
         "invoice": invoice1,
         "invoices": invoices
@@ -1221,29 +1196,24 @@ def ReturnedInwardChangeDate(request):
     db = request.user.company_id.db_name
     code = request.GET.get('cusID')
     invoiceID = request.GET.get('invoiceID')
-    try:
-        lookups = Q(id__iexact=code) | Q(customer_code__iexact=code)
-   
-        customer = customer_table.objects.using(db).get(lookups)
-    
-        invoice = customer_invoice.objects.using(db).filter(cusID=customer.pk, invoiceID=invoiceID).values().first()
-      
-        # serialized_data = list(invoice)
-        data = {
-            'customer': {
-                'company': customer.company_name,
-                'phone': customer.phone,
-                'email': customer.email,
-                'code': customer.customer_code,
-                # 'address': customer.address,
-                'balance': customer.Balance,
-            },
-            'invoice': invoice,
-        }  
-        return JsonResponse(data)
-        
-    except customer_table.DoesNotExist: 
+    customer = find_customer(db, code)
+    if customer is None:
         return JsonResponse({'error': 'Item not found'}, status=404)
+
+    invoice = customer_invoice.objects.using(db).filter(
+        cusID=customer.customer_code, invoiceID=invoiceID
+    ).values().first()
+    data = {
+        'customer': {
+            'company': customer.company_name,
+            'phone': customer.phone,
+            'email': customer.email,
+            'code': customer.customer_code,
+            'balance': customer.Balance,
+        },
+        'invoice': invoice,
+    }
+    return JsonResponse(data)
     
 
 def ChangeReturnInwardDate(request):
