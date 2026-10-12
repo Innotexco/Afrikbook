@@ -1,9 +1,15 @@
 from decimal import Decimal
+from types import SimpleNamespace
 
 from django.http import QueryDict
 from django.test import RequestFactory, SimpleTestCase
 
 from main.money import format_money, parse_money, sanitize_mapping, strip_money_commas
+from customer.functions.generalFunction import (
+    combine_available_customer_funds,
+    customer_wallet_balance,
+    set_customer_wallet,
+)
 
 
 class MoneyHelpersTests(SimpleTestCase):
@@ -55,4 +61,29 @@ class MoneyHelpersTests(SimpleTestCase):
         self.assertEqual(parse_money(payload["cost"]), Decimal("2411975.00"))
         self.assertEqual(parse_money(payload["transfer_amount"]), Decimal("1200000.50"))
         self.assertEqual(parse_money(payload["cash_amount"]), Decimal("1211974.50"))
+
+
+class CustomerBalanceHelpersTests(SimpleTestCase):
+    def test_wallet_reads_mixed_case_balance_field(self):
+        cus = SimpleNamespace(Balance=Decimal("125000.00"))
+        self.assertEqual(customer_wallet_balance(cus), Decimal("125000.00"))
+
+    def test_available_uses_unallocated_when_wallet_is_zero(self):
+        self.assertEqual(
+            combine_available_customer_funds(Decimal("0.00"), Decimal("12682325.00")),
+            Decimal("12682325.00"),
+        )
+
+    def test_available_does_not_double_count_wallet_and_deposits(self):
+        self.assertEqual(
+            combine_available_customer_funds(Decimal("125000.00"), Decimal("125000.00")),
+            Decimal("125000.00"),
+        )
+
+    def test_set_wallet_writes_balance_field(self):
+        cus = SimpleNamespace(Balance=Decimal("0.00"))
+        set_customer_wallet(cus, Decimal("5000.00"))
+        self.assertEqual(cus.Balance, Decimal("5000.00"))
+        set_customer_wallet(cus, Decimal("-10.00"))
+        self.assertEqual(cus.Balance, Decimal("0.00"))
 

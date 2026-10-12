@@ -2,7 +2,7 @@ from customer.models import *
 import decimal, uuid
 from decimal import Decimal
 from Stock.models import CreateOutletStockIn, CreateOutletStockInLog, CreateStockIn, CreateStockInLog
-from django.db.models import Q, F
+from django.db.models import Q, F, Sum
 from django.db import connections, transaction
 
 
@@ -250,6 +250,113 @@ def CreditReceivable(request, db, cus, refund_date, Gdescription, p_method, acco
     create_receivable.save(using=db)
 
 
+def customer_wallet_balance(customer):
+    """Prepaid wallet on customer_table.Balance (field name is mixed-case)."""
+    return Decimal(str(getattr(customer, "Balance", 0) or 0))
+
+
+def combine_available_customer_funds(wallet, unallocated):
+    """Spendable Customer Balance is the larger of the wallet and unallocated deposits."""
+    wallet = Decimal(str(wallet or 0))
+    unallocated = Decimal(str(unallocated or 0))
+    if wallet < 0:
+        wallet = Decimal("0.00")
+    if unallocated < 0:
+        unallocated = Decimal("0.00")
+    return wallet if wallet >= unallocated else unallocated
+
+
+def _unallocated_customer_rows(db, customer_code):
+    return receivable.objects.using(db).filter(customer_id=customer_code).filter(
+        Q(token_id__isnull=True) | Q(token_id="")
+    ).exclude(description__icontains="[cancelled]")
+
+
+def unallocated_customer_funds(db, customer_code):
+    """Net opening-balance / deposit credits that are not yet tied to an invoice."""
+    qs = _unallocated_customer_rows(db, customer_code)
+    credit = qs.filter(type__iexact="Credit").aggregate(total=Sum("amount"))["total"] or 0
+    debit = qs.filter(type__iexact="Debit").aggregate(total=Sum("amount"))["total"] or 0
+    net = Decimal(str(credit)) - Decimal(str(debit))
+    return net if net > 0 else Decimal("0.00")
+
+
+def available_customer_funds(db, customer):
+    """Amount that can be used as payment method Customer Balance."""
+    return combine_available_customer_funds(
+        customer_wallet_balance(customer),
+        unallocated_customer_funds(db, customer.customer_code),
+    )
+
+
+def set_customer_wallet(customer, amount, db=None):
+    """Write customer_table.Balance and persist when a db alias is given."""
+    value = Decimal(str(amount or 0))
+    if value < 0:
+        value = Decimal("0.00")
+    customer.Balance = value
+    if db:
+        customer.save(using=db)
+    return customer.Balance
+
+
+def apply_customer_balance_payment(
+    request, db, cus, today, description, account_id, amount,
+    invoice_id, invoice_total, current_paid,
+):
+    """Apply wallet / unallocated deposits to an invoice.
+
+    Unallocated credits (empty token_id) are retagged onto the invoice so the
+    deposit is not posted twice. Any leftover is a new Payment Received credit.
+    Returns the amount newly posted to receivable (not merely allocated).
+    """
+    remaining = Decimal(str(amount or 0))
+    if remaining <= 0:
+        return Decimal("0.00")
+
+    newly_posted = Decimal("0.00")
+    credits = list(
+        _unallocated_customer_rows(db, cus.customer_code)
+        .filter(type__iexact="Credit")
+        .order_by("date", "id")
+    )
+    for row in credits:
+        if remaining <= 0:
+            break
+        row_amt = Decimal(str(row.amount or 0))
+        if row_amt <= 0:
+            continue
+        if row_amt <= remaining:
+            row.token_id = invoice_id
+            row.payment_method = "Customer Balance"
+            desc = (row.description or "").strip()
+            if not desc.lower().startswith("payment received"):
+                row.description = description
+            row.save(using=db)
+            remaining -= row_amt
+        else:
+            row.amount = row_amt - remaining
+            row.save(using=db)
+            CreditReceivable(
+                request, db, cus, today, description,
+                "Customer Balance", account_id, remaining,
+                invoice_id, invoice_total, current_paid,
+            )
+            newly_posted += remaining
+            remaining = Decimal("0.00")
+            break
+
+    if remaining > 0:
+        CreditReceivable(
+            request, db, cus, today, description,
+            "Customer Balance", account_id, remaining,
+            invoice_id, invoice_total, current_paid,
+        )
+        newly_posted += remaining
+
+    return newly_posted
+
+
 PAYMENT_DEBIT_PREFIXES = ("Payment Received", "Discount Allowed")
 AGED_PAYMENT_PREFIXES = PAYMENT_DEBIT_PREFIXES
 CANCELLED_PAYMENT_MARK = " [cancelled]"
@@ -430,11 +537,7 @@ def cancel_aged_receivable_payment(request, db, payment_id, customer_code, invoi
                 line.save(using=db)
 
         if (row.payment_method or "").strip() == "Customer Balance":
-            if hasattr(cus, "balance"):
-                cus.balance = Decimal(str(cus.balance or 0)) + amount
-            else:
-                cus.Balance = Decimal(str(getattr(cus, "Balance", 0) or 0)) + amount
-            cus.save(using=db)
+            set_customer_wallet(cus, customer_wallet_balance(cus) + amount, db)
 
         account = _chart_for_account_posted(db, row.account_posted)
         if account is not None:

@@ -8,6 +8,7 @@ import decimal, uuid, requests, json
 from main.models import User, company_table
 from customer.functions.generalFunction import *
 from customer.functions.gl import get_chart
+from main.money import parse_money
 from client.models import client_companies
 from django.views.decorators.csrf import csrf_exempt
 import os
@@ -182,7 +183,7 @@ def cus_open_balance(request, db):
         date = request.POST["date"]
         customer_id = request.POST["cusID"]
         transaction_type = request.POST["transaction_type"]
-        amount = request.POST["amount"]
+        amount = parse_money(request.POST["amount"])
         operating_acc = request.POST["operating_acc"]
         description = request.POST["description"]
 
@@ -202,9 +203,9 @@ def cus_open_balance(request, db):
                     # credit_account.save()
                     CreateLog(db, credit_account, amount)
 
-                    # customer balance
-                    # cus.Balance = cus.Balance + decimal.Decimal(amount)
-                    # cus.save()
+                    set_customer_wallet(
+                        cus, customer_wallet_balance(cus) - decimal.Decimal(amount), db
+                    )
 
                      #get customer last recievable balance 
                     if receivable.objects.using(db).filter(customer_id=cus.customer_code).exists():
@@ -249,9 +250,9 @@ def cus_open_balance(request, db):
                     credit_account.actual_balance =+ decimal.Decimal(amount)
                     # credit_account.save()
                     CreateLog(db, credit_account, amount)
-                    # customer balance
-                    # cus.Balance = cus.Balance + decimal.Decimal(amount)
-                    # cus.save()
+                    set_customer_wallet(
+                        cus, customer_wallet_balance(cus) + decimal.Decimal(amount), db
+                    )
 
                     #get customer last recievable balance 
                     if receivable.objects.using(db).filter(customer_id=cus.customer_code).exists():
@@ -301,7 +302,7 @@ def refund_customer(request, db):
         date = request.POST["date"]
         operating_acc = request.POST.get("account")
         customer_id = request.POST["customer_id"]
-        amount = request.POST["amount"]
+        amount = parse_money(request.POST["amount"])
         description = request.POST["description"]
 
 
@@ -314,9 +315,9 @@ def refund_customer(request, db):
                 cus = customer_table.objects.using(db).get(id=customer_id)
                 # cus_incentive.save()
 
-                # customer = customer_table.objects.get(id=customer_id)
-                cus.Balance = cus.Balance + decimal.Decimal(amount)
-                # cus.save()
+                set_customer_wallet(
+                    cus, customer_wallet_balance(cus) + decimal.Decimal(amount), db
+                )
 
                 credit_account = get_chart(db, operating_acc)
                 if credit_account is None:

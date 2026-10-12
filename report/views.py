@@ -19,6 +19,7 @@ from account.models import account_log, chart_of_account
 from journal.models import loan_account
 from journal.fuctions.loan_schedule import allocate_loan_repayment, apply_loan_charges_to_receivables
 from customer.functions.generalFunction import *
+from customer.functions.customer import find_customer
 from customer.functions.gl import SALES_ID, RETURN_IN_ID, VAT_ID
 from Stock.functions.functionHub.functionHub import resolve_item_name
 from account.models import Expenses_account, Income_account, Assets_account, Liability_account, Equity_account
@@ -1311,19 +1312,15 @@ def AgedReceivables(request):
             if not customer or not invoice:
                 return JsonResponse({"success": False, "error": "Customer or Invoice missing"}, status=400)
 
-            try:
-                cus = customer_table.objects.using(db).get(customer_code=customer)
-            except customer_table.DoesNotExist:
+            cus = find_customer(db, customer)
+            if cus is None:
                 return JsonResponse({"success": False, "error": f"Customer '{customer}' not found"}, status=404)
 
-            try:
-                inv = customer_invoice.objects.using(db).filter(invoiceID=invoice, cusID=customer).first()
-            except customer_invoice.DoesNotExist:
-                return JsonResponse({"success": False, "error": f"Invoice '{invoice}' not found"}, status=404)
-            
-            try:
-                invs = customer_invoice.objects.using(db).filter(invoiceID=invoice,cusID=customer)
-            except customer_invoice.DoesNotExist:
+            invs = customer_invoice.objects.using(db).filter(
+                invoiceID=invoice, cusID=cus.customer_code
+            )
+            inv = invs.first()
+            if inv is None:
                 return JsonResponse({"success": False, "error": f"Invoice '{invoice}' not found"}, status=404)
 
             invoice_total = Decimal(str(inv.amount_expected))
@@ -1331,13 +1328,15 @@ def AgedReceivables(request):
             Gdescription  = f"Payment Received - Invoice {invoice}"
 
             # ── Customer Balance validation (before any entries) ──────────────────
+            available_before = available_customer_funds(db, cus)
             if payment_method == "Customer Balance":
-                customer_balance = Decimal(str(getattr(cus, 'balance', getattr(cus, 'Balance', 0))))
-                total_payment = cost + discount
-                if customer_balance < total_payment:
+                if available_before < cost:
                     return JsonResponse({
                         "success": False,
-                        "error": f"Insufficient customer balance. Available: ₦{customer_balance:,.2f}, Required: ₦{total_payment:,.2f}"
+                        "error": (
+                            f"Insufficient customer balance. "
+                            f"Available: ₦{available_before:,.2f}, Required: ₦{cost:,.2f}"
+                        )
                     }, status=400)
                     
             # ── Validate payment + discount don't exceed remaining balance ────────
@@ -1361,12 +1360,13 @@ def AgedReceivables(request):
             if payment_method == "Customer Balance":
                 if cost > 0:
                     sales_account = chart_of_account.objects.using(db).get(account_id='4001-Sales')
-                    CreditReceivable(
+                    newly_posted = apply_customer_balance_payment(
                         request, db, cus, today, Gdescription,
-                        "Customer Balance", sales_account.account_id, cost,
-                        invoice, invoice_total, current_paid
+                        sales_account.account_id, cost,
+                        invoice, invoice_total, current_paid,
                     )
-                    CreateLog(db, sales_account, cost)
+                    if newly_posted > 0:
+                        CreateLog(db, sales_account, newly_posted)
 
             elif account_ID:
                 try:
@@ -1433,12 +1433,8 @@ def AgedReceivables(request):
             # inv.save(using=db)
 
             if payment_method == "Customer Balance" and cost > 0:
-                total_payment = cost + discount
-                if hasattr(cus, 'balance'):
-                    cus.balance = Decimal(str(cus.balance)) - total_payment
-                else:
-                    cus.Balance = Decimal(str(cus.Balance)) - total_payment
-                cus.save(using=db)
+                set_customer_wallet(cus, available_before - cost, db)
+                recompute_receivable_running_balances(db, [cus.customer_code])
 
             repay_amount = (cost or Decimal('0')) + (discount or Decimal('0'))
             if repay_amount > 0:
@@ -1740,38 +1736,37 @@ def AgedPayable(request):
 
 def GetCustomerDetailsAndInvoice(request, code, cusID):
     db = AfrikBookDB(request)
-    try:
-        customer = customer_table.objects.using(db).get(customer_code=cusID)
-        invoices = customer_invoice.objects.using(db).filter(
-            Q(cusID=cusID) & Q(invoiceID=code)
-        ).values()
-
-        loan = loan_account.objects.using(db).filter(reference=code).first()
-        loan_id = loan.id if loan else None
-
-        serialized_inv = []
-        for inv in invoices:
-            inv['invoice_date'] = inv['invoice_date'].strftime('%Y-%m-%d') if inv.get('invoice_date') else ''
-            inv['loan_id'] = loan_id  
-            serialized_inv.append(inv)
-
-        data = {
-            "customer": {
-                "company": getattr(customer, 'company_name', customer.name),
-                "code": customer.customer_code,
-                "customer_id": customer.customer_code,
-                "description": getattr(customer, 'description', ''),
-                "phone": customer.phone,
-                "email": customer.email,
-                "address": getattr(customer, 'address', ''),
-                "balance": str(getattr(customer, 'balance', getattr(customer, 'Balance', 0))),
-            },
-            "invoice": serialized_inv,
-            "payments": serialize_aged_payments(db, code, cusID),
-        }
-        return JsonResponse(data)
-    except customer_table.DoesNotExist:
+    customer = find_customer(db, cusID)
+    if customer is None:
         return JsonResponse({'error': 'Customer not found'}, status=404)
+    invoices = customer_invoice.objects.using(db).filter(
+        Q(cusID=customer.customer_code) & Q(invoiceID=code)
+    ).values()
+
+    loan = loan_account.objects.using(db).filter(reference=code).first()
+    loan_id = loan.id if loan else None
+
+    serialized_inv = []
+    for inv in invoices:
+        inv['invoice_date'] = inv['invoice_date'].strftime('%Y-%m-%d') if inv.get('invoice_date') else ''
+        inv['loan_id'] = loan_id  
+        serialized_inv.append(inv)
+
+    data = {
+        "customer": {
+            "company": getattr(customer, 'company_name', customer.name),
+            "code": customer.customer_code,
+            "customer_id": customer.customer_code,
+            "description": getattr(customer, 'description', ''),
+            "phone": customer.phone,
+            "email": customer.email,
+            "address": getattr(customer, 'address', ''),
+            "balance": str(available_customer_funds(db, customer)),
+        },
+        "invoice": serialized_inv,
+        "payments": serialize_aged_payments(db, code, customer.customer_code),
+    }
+    return JsonResponse(data)
     
     
     

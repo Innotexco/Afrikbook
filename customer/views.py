@@ -15,6 +15,7 @@ from .functions.salesorder import *
 from .functions.newsalesfunc import *
 from .functions.returninwards import *
 from .functions.verifypayment import *
+from .functions.generalFunction import available_customer_funds
 from django.db.models import Q, Sum
 from Stock.models import Item, CreateStockIn
 from settings.models import *
@@ -71,9 +72,7 @@ def ViewCustomerDetails(request, id):
         if new_data.exists():
             unique_invoice.append(new_data.first())
 
-    credit = receivable.objects.using(db).filter(customer_id=code, type="Credit").aggregate(total=Sum('amount'))['total'] or 0.00
-    debit = receivable.objects.using(db).filter(customer_id=code, type="Debit").aggregate(total=Sum('amount'))['total'] or 0.00
-    balance = decimal.Decimal(credit) - decimal.Decimal(debit)
+    balance = available_customer_funds(db, customer)
 
     data = {
         'customer': {
@@ -1080,7 +1079,7 @@ def GetCustomerDetails(request, id):
         'code': customer.customer_code,
         'company': customer.company_name,
         'instant_email': customer.instant_email,
-        'balance': customer.Balance
+        'balance': str(available_customer_funds(db, customer)),
     }
     return JsonResponse(data)
     
@@ -1088,27 +1087,22 @@ def GetCustomerDetails(request, id):
 def GetCustomerBalance(request, id):
     db = request.user.company_id.db_name
     customer = find_customer(db, id)
-    customer_id = customer.customer_code if customer is not None else str(id).strip()
-    credit = receivable.objects.using(db).filter(customer_id=customer_id, type="Credit").aggregate(total=Sum('amount'))['total'] or 0.00
-    debit = receivable.objects.using(db).filter(customer_id=customer_id, type="Debit").aggregate(total=Sum('amount'))['total'] or 0.00
-    data = decimal.Decimal(credit) - decimal.Decimal(debit)
-    return JsonResponse(data, safe=False)
+    if customer is None:
+        return JsonResponse(decimal.Decimal('0.00'), safe=False)
+    return JsonResponse(available_customer_funds(db, customer), safe=False)
     
 def GetCustomer_or_VendorBalance(request,):
     db = request.user.company_id.db_name
     cusID = request.GET.get("ID")
     accountType = request.GET.get("type")
     if accountType == "Customer":
-        id = customer_table.objects.using(db).get(id=cusID).customer_code
-        try:
-            credit = receivable.objects.using(db).filter(customer_id=id, type="Credit").aggregate(total=Sum('amount'))['total'] or 0.00
-            debit = receivable.objects.using(db).filter(customer_id=id, type="Debit").aggregate(total=Sum('amount'))['total'] or 0.00
-            data = Decimal(credit) - Decimal(debit)
-            return JsonResponse(data, safe=False)
-            
-        except receivable.DoesNotExist: 
-            
-            return JsonResponse({'error': 'Customer not found'}, status=404)
+        customer = find_customer(db, cusID)
+        if customer is None:
+            try:
+                customer = customer_table.objects.using(db).get(id=cusID)
+            except (customer_table.DoesNotExist, ValueError, TypeError):
+                return JsonResponse({'error': 'Customer not found'}, status=404)
+        return JsonResponse(available_customer_funds(db, customer), safe=False)
     elif accountType == "Vendor":
         
         id = vendor_table.objects.using(db).get(id=cusID).custID
