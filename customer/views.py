@@ -166,6 +166,11 @@ def delete_customer(request, id):
 @urls_name(name="Customer")
 def CusOpenBalance(request):
     db = request.user.company_id.db_name
+    from main.functions.company.company import dedupe_chart_account_id
+    try:
+        dedupe_chart_account_id(db, '2003-Payable')
+    except Exception:
+        pass
     customers = customer_table.objects.using(db).all()
     accounts = chart_of_account.objects.using(db).all()
     if request.method == "POST":

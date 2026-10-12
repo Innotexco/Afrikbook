@@ -96,10 +96,19 @@ def series_model_name(series_name):
 def get_chart(db, account_id):
     if not account_id:
         return None
+    key = str(account_id).strip()
+    if not key:
+        return None
     try:
-        return chart_of_account.objects.using(db).get(account_id=str(account_id).strip())
+        return chart_of_account.objects.using(db).get(account_id=key)
     except chart_of_account.DoesNotExist:
         return None
+    except chart_of_account.MultipleObjectsReturned:
+        qs = chart_of_account.objects.using(db).filter(account_id=key).order_by('id')
+        for acc in qs:
+            if acc.account_id == key:
+                return acc
+        return qs.first()
 
 
 def get_chart_any(db, *account_ids):

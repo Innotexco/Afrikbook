@@ -485,6 +485,52 @@ def create_profile(request, loginuser):
 
 
 
+def dedupe_chart_account_id(db, account_id):
+    """Keep one chart row for account_id. Merge actual_balance, then delete extras."""
+    if not account_id:
+        return 0
+    key = str(account_id).strip()
+    rows = list(
+        chart_of_account.objects.using(db)
+        .filter(account_id__iexact=key)
+        .order_by('id')
+    )
+    if not rows:
+        return 0
+
+    keep = None
+    for row in rows:
+        if (row.series_name or '').strip().lower() == 'liability':
+            keep = row
+            break
+    if keep is None:
+        keep = rows[0]
+
+    extra_balance = 0
+    deleted = 0
+    for row in rows:
+        if row.pk == keep.pk:
+            continue
+        extra_balance += row.actual_balance or 0
+        row.delete()
+        deleted += 1
+
+    dirty = False
+    if keep.account_id != key:
+        keep.account_id = key
+        dirty = True
+    series = (keep.series_name or '').strip().lower()
+    if series in ('liablity', 'liability') and keep.series_name != 'Liability':
+        keep.series_name = 'Liability'
+        dirty = True
+    if extra_balance:
+        keep.actual_balance = (keep.actual_balance or 0) + extra_balance
+        dirty = True
+    if dirty:
+        keep.save(using=db)
+    return deleted
+
+
 def default_account(request, db):
     accounts = [
         # ── Income ───────────────────────────────────────────────────────────
@@ -835,113 +881,23 @@ def default_account(request, db):
     ]
 
     for acc in accounts:
-        try:
-            chart_of_account.objects.using(db).get(
-                account_id       = acc['account_id'],
-                series_name      = acc['series_name'],
-                account_type     = acc['account_type'],
-                account_bankname = acc['account_bankname']
-            )
-        except chart_of_account.DoesNotExist:
-            chart_of_account.objects.using(db).create(
-                account_id       = acc['account_id'],
-                series_name      = acc['series_name'],
-                account_type     = acc['account_type'],
-                account_bankname = acc['account_bankname'],
-                status           = 'Active'
-            )
+        existing = (
+            chart_of_account.objects.using(db)
+            .filter(account_id=acc['account_id'])
+            .order_by('id')
+            .first()
+        )
+        if existing is not None:
+            continue
+        chart_of_account.objects.using(db).create(
+            account_id       = acc['account_id'],
+            series_name      = acc['series_name'],
+            account_type     = acc['account_type'],
+            account_bankname = acc['account_bankname'],
+            status           = 'Active'
+        )
 
-
-# def default_account(request, db):
-   
-#     accounts = [
-#         {
-#             'account_id': "6001-Salary",
-#             'series_name': "Expenses",
-#             'account_type': "Payable",
-#             'account_bankname': "Salary Account"
-
-#         },
-#         {
-#             'account_id': "6002-Vat",
-#             'series_name': "Expenses",
-#             'account_type': "Payable",
-#             'account_bankname': "Vat Account"
-
-#         },
-#         {
-#             'account_id': "6002-Vat",
-#             'series_name': "Expenses",
-#             'account_type': "Payable",
-#             'account_bankname': "Vat Account"
-
-#         },
-#         {
-#             'account_id': "6002-Vat",
-#             'series_name': "Expenses",
-#             'account_type': "Payable",
-#             'account_bankname': "Vat Account"
-
-#         },
-#         {
-#             'account_id': "2001-ReturnInward",
-#             'series_name': "Liability",
-#             'account_type': "Cash",
-#             'account_bankname': "Return Inward"
-
-#         },
-#         {
-#             'account_id': "2002-Purchase",
-#             'series_name': "Liability",
-#             'account_type': "Cash",
-#             'account_bankname': "Purchase Account"
-
-#         },
-#         {
-#             'account_id': "2003-Payable",
-#             'series_name': "Liability",
-#             'account_type': "Payable",
-#             'account_bankname': "Account Payable"
-
-#         },
-#         {
-#             'account_id': "1001-ReturnOutward",
-#             'series_name': "Assets",
-#             'account_type': "Cash",
-#             'account_bankname': "Return Outward"
-
-#         },
-#         {
-#             'account_id': "1002-Receivable",
-#             'series_name': "Assets",
-#             'account_type': "Receivable",
-#             'account_bankname': "Account Receivable"
-
-#         },
-#         {
-#             'account_id': "4001-Sales",
-#             'series_name': "Income",
-#             'account_type': "Cash",
-#             'account_bankname': "Sales Account"
-
-#         },
-        
-       
-        
-        
-       
-#     ]
-  
-#     for acc in accounts:
-#         account_id   = acc['account_id']
-#         series_name  = acc['series_name']
-#         account_type = acc['account_type']
-#         bank         = acc['account_bankname']
-        
-#         try:
-#             account = chart_of_account.objects.using(db).get(account_id=account_id, series_name=series_name, account_type=account_type, account_bankname=bank)
-#         except chart_of_account.DoesNotExist:
-#             chart_of_account.objects.using(db).create(account_id=account_id, series_name=series_name, account_type=account_type, account_bankname=bank, status="Active")
+    dedupe_chart_account_id(db, '2003-Payable')
 
 
 

@@ -123,6 +123,11 @@ def ViewChartOfAccount(request):
         rebuild_loan_receivable_balance(db)
     except Exception:
         pass
+    from main.functions.company.company import dedupe_chart_account_id
+    try:
+        dedupe_chart_account_id(db, '2003-Payable')
+    except Exception:
+        pass
     account_chart = chart_of_account.objects.using(db).all().order_by('account_id')
     page_obj = paginate_queryset(request, account_chart, per_page=20)
 

@@ -7,6 +7,7 @@ from django.http import JsonResponse, HttpResponse
 import decimal, uuid, requests, json
 from main.models import User, company_table
 from customer.functions.generalFunction import *
+from customer.functions.gl import get_chart
 from client.models import client_companies
 from django.views.decorators.csrf import csrf_exempt
 import os
@@ -190,10 +191,13 @@ def cus_open_balance(request, db):
         
         if customer_id and operating_acc != "":
             cus = customer_table.objects.using(db).get(id=customer_id)
+            credit_account = get_chart(db, operating_acc)
+            if credit_account is None:
+                messages.error(request, "Selected operating account was not found")
+                return
             if str(transaction_type).lower() == "debit":
                 if receivable_form.is_valid():
                     # credit selected account
-                    credit_account = chart_of_account.objects.using(db).get(account_id=operating_acc)
                     credit_account.actual_balance =+ decimal.Decimal(amount)
                     # credit_account.save()
                     CreateLog(db, credit_account, amount)
@@ -242,7 +246,6 @@ def cus_open_balance(request, db):
             elif str(transaction_type).lower() == "credit":
                 if receivable_form.is_valid():
                     # credit selected account
-                    credit_account = chart_of_account.objects.using(db).get(account_id=operating_acc)
                     credit_account.actual_balance =+ decimal.Decimal(amount)
                     # credit_account.save()
                     CreateLog(db, credit_account, amount)
@@ -315,7 +318,10 @@ def refund_customer(request, db):
                 cus.Balance = cus.Balance + decimal.Decimal(amount)
                 # cus.save()
 
-                credit_account = chart_of_account.objects.using(db).get(account_id=operating_acc)
+                credit_account = get_chart(db, operating_acc)
+                if credit_account is None:
+                    messages.error(request, "Selected operating account was not found")
+                    return
                 credit_account.actual_balance =- decimal.Decimal(amount)
                 # credit_account.save()
                 CreateLog(db, credit_account, amount)

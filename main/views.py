@@ -151,6 +151,10 @@ def Login(request):
                         except Exception as e:
                             print(f"Migration error for {db_name}: {e}")
                             pass
+                    try:
+                        dedupe_chart_account_id(db_name, '2003-Payable')
+                    except Exception:
+                        pass
      
                     try:
                         billing = Billing.objects.get(company=company)
