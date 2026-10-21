@@ -876,11 +876,47 @@ function updateTemplateIndicators(template) {
 const PDF_A4_CONTAINERS = new Set(['vsl', 'vsq']);
 const PDF_A4_LANDSCAPE_CONTAINERS = new Set(['payroll_print']);
 
+const PDF_INVOICE_CONTAINERS = new Set(['vsl', 'vsq', 'sales_table', 'purchase_table', 'sq', 'so', 'pq']);
+const PDF_INVOICE_TYPE_RE = /^(Invoice|Sales Quote|Purchase Invoice|Sales Order|Purchase Quote)$/i;
+
 const PDF_DOC_TYPES = {
     vsl: 'Invoice',
     vsq: 'Sales Quote',
     sales_table: 'Invoice',
     purchase_table: 'Purchase Invoice',
+    sq: 'Sales Quote',
+    so: 'Sales Order',
+    pq: 'Purchase Quote',
+    cl: 'Customer Ledger',
+    vcl: 'Customer Ledger',
+    vl: 'Vendor Ledger',
+    vvl: 'Vendor Ledger',
+    pl: 'Purchase Ledger',
+    vpl: 'Purchase Ledger',
+    sl: 'Sales Ledger',
+    receive: 'Receivables',
+    agr: 'Aged Receivables',
+    agrv: 'Aged Receivables',
+    payable: 'Payables',
+    agp: 'Aged Payables',
+    agpv: 'Aged Payables',
+    pi: 'Purchase Invoices',
+    payroll: 'Payroll Report',
+    payroll_print: 'Payroll',
+    wsl: 'Warehouse Stock Level',
+    adj: 'Stock Adjustment History',
+    stock_table: 'Warehouse Stockin Report',
+    journal: 'Journal Entry',
+    history: 'Subscription History',
+    sub: 'Subscription',
+    sumdaily: 'Daily Sales Report',
+    summonthly: 'Monthly Sales Report',
+    sumquaterly: 'Quarterly Sales Report',
+    sumyearly: 'Yearly Sales Report',
+    daily: 'Daily Sales Report',
+    monthly: 'Monthly Sales Report',
+    yearly: 'Yearly Sales Report',
+    quaterly: 'Quarterly Sales Report',
 };
 
 function sanitizePdfNamePart(value, fallback) {
@@ -914,6 +950,169 @@ function formatPdfFilenameDate(value) {
     return '';
 }
 
+function looksLikePdfDate(value) {
+    const s = String(value == null ? '' : value).trim();
+    return /^\d{4}-\d{2}-\d{2}/.test(s) || /^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/.test(s);
+}
+
+function isPlaceholderFilter(text, value) {
+    const t = String(text || '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+    const v = String(value == null ? '' : value).trim();
+    if (!t && !v) return true;
+    if (/^(select |choose )/.test(t) || t.indexOf('choose') !== -1) return true;
+    if (t === 'month' || t === 'year') return true;
+    if (!v && /^all /.test(t)) return true;
+    return false;
+}
+
+function selectedDisplayValue(el) {
+    if (!el) return '';
+    if (el.tagName === 'SELECT') {
+        const opt = el.options[el.selectedIndex];
+        if (!opt || opt.disabled) return '';
+        let text = (opt.textContent || opt.innerText || '').trim();
+        const value = (opt.value || '').trim();
+        if (isPlaceholderFilter(text, value)) return '';
+        text = text.replace(/\s*\([^)]*\)\s*$/, '').trim();
+        if (value && text.indexOf(value + '_') === 0) {
+            text = text.slice(value.length + 1).trim();
+        }
+        return text || value;
+    }
+    const value = (el.value || '').trim();
+    if (isPlaceholderFilter(value, value)) return '';
+    return value;
+}
+
+function controlFilenameValue(el) {
+    if (!el) return '';
+    if (el.type === 'hidden') return '';
+    if (el.tagName === 'SELECT') return selectedDisplayValue(el);
+    const raw = (el.value || '').trim();
+    if (!raw || isPlaceholderFilter(raw, raw)) return '';
+    if (el.type === 'date' || looksLikePdfDate(raw)) {
+        return formatPdfFilenameDate(raw) || sanitizePdfNamePart(raw, '');
+    }
+    return sanitizePdfNamePart(raw, '');
+}
+
+function getFilterControl(idOrName) {
+    return document.getElementById(idOrName) || document.querySelector('[name="' + idOrName + '"]');
+}
+
+function firstFilterControl(ids) {
+    for (let i = 0; i < ids.length; i++) {
+        const el = getFilterControl(ids[i]);
+        if (el) return el;
+    }
+    return null;
+}
+
+function addPdfFilenamePart(parts, value) {
+    const clean = sanitizePdfNamePart(value, '');
+    if (!clean) return;
+    const key = clean.toLowerCase();
+    if (parts.some(function (part) { return part.toLowerCase() === key; })) return;
+    parts.push(clean);
+}
+
+function pageReportTitle() {
+    const spans = document.querySelectorAll('a.flex.items-center.justify-between .flex.items-center > span');
+    for (let i = 0; i < spans.length; i++) {
+        if (spans[i].closest('dialog')) continue;
+        let text = (spans[i].textContent || '').trim();
+        if (!text || /^home$/i.test(text)) continue;
+        text = text.replace(/\s+[—–-]\s+.*$/, '').trim();
+        if (text.length > 2 && text.length < 80) return text;
+    }
+    const heading = document.querySelector('#printContent h1, h1');
+    if (heading && !heading.closest('dialog')) {
+        let text = (heading.textContent || '').replace(/\s+/g, ' ').trim();
+        text = text.replace(/\s+REPORT$/i, '');
+        if (text) {
+            return text.replace(/\w\S*/g, function (word) {
+                return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+            });
+        }
+    }
+    return '';
+}
+
+function breadcrumbPartyName() {
+    const spans = document.querySelectorAll('a.flex.items-center.justify-between .flex.items-center > span');
+    for (let i = 0; i < spans.length; i++) {
+        if (spans[i].closest('dialog')) continue;
+        const text = (spans[i].textContent || '').trim();
+        const match = text.match(/[—–]\s*(.+)$/);
+        if (match && match[1].trim()) return match[1].trim();
+    }
+    return '';
+}
+
+function reportPdfRecordType(div) {
+    const el = document.getElementById(div);
+    if (el) {
+        const attr = el.getAttribute('data-pdf-type');
+        if (attr && !PDF_INVOICE_TYPE_RE.test(attr)) return attr;
+        if (attr && !isInvoicePdfDocument(div)) return attr;
+    }
+    const crumb = pageReportTitle();
+    if (crumb) return crumb;
+    if (PDF_DOC_TYPES[div]) return PDF_DOC_TYPES[div];
+    return 'Report';
+}
+
+function collectReportPdfFilters() {
+    const parts = [];
+    addPdfFilenamePart(parts, breadcrumbPartyName());
+
+    const partyIds = ['customer_id', 'vendor_id', 'Vendor', 'Supplier', 'cusID'];
+    partyIds.forEach(function (id) {
+        addPdfFilenamePart(parts, controlFilenameValue(getFilterControl(id)));
+    });
+
+    ['item', 'selectItem', 'item_filter', 'searchitem'].forEach(function (id) {
+        addPdfFilenamePart(parts, controlFilenameValue(getFilterControl(id)));
+    });
+
+    ['outlet_filter', 'warehouse_filter', 'searchoutlet'].forEach(function (id) {
+        addPdfFilenamePart(parts, controlFilenameValue(getFilterControl(id)));
+    });
+
+    ['invoice_id', 'invoiceID', 'invoiceid'].forEach(function (id) {
+        addPdfFilenamePart(parts, controlFilenameValue(getFilterControl(id)));
+    });
+
+    ['invoice_state', 'payment_method', 'type', 'Operator', 'duration', 'monthly', 'Quaterly', 'Yearly', 'month', 'year'].forEach(function (id) {
+        addPdfFilenamePart(parts, controlFilenameValue(getFilterControl(id)));
+    });
+
+    const fromEl = firstFilterControl(['from', 'fromdate', 'fromDate', 'start_date', 'day']);
+    const toEl = firstFilterControl(['to', 'todate', 'toDate', 'end_date']);
+    const fromVal = controlFilenameValue(fromEl);
+    const toVal = controlFilenameValue(toEl);
+    if (fromVal && toVal && fromVal !== toVal) {
+        addPdfFilenamePart(parts, fromVal + ' to ' + toVal);
+    } else {
+        addPdfFilenamePart(parts, fromVal || toVal);
+    }
+
+    return parts;
+}
+
+function joinPdfFilename(parts) {
+    let name = parts.filter(Boolean).join('_');
+    if (name.length > 180) name = name.slice(0, 180);
+    return name + '.pdf';
+}
+
+function isInvoicePdfDocument(div) {
+    if (PDF_INVOICE_CONTAINERS.has(String(div))) return true;
+    const el = document.getElementById(div);
+    const type = (el && el.getAttribute('data-pdf-type')) || PDF_DOC_TYPES[div] || '';
+    return PDF_INVOICE_TYPE_RE.test(type);
+}
+
 function setPdfDocumentMeta(div, customer, dateValue, invoiceType) {
     const el = document.getElementById(div);
     if (!el) return;
@@ -922,7 +1121,7 @@ function setPdfDocumentMeta(div, customer, dateValue, invoiceType) {
     if (invoiceType) el.setAttribute('data-pdf-type', invoiceType);
 }
 
-function buildDocumentPdfFilename(div) {
+function buildInvoicePdfFilename(div) {
     const el = document.getElementById(div);
     let name = (el && el.getAttribute('data-pdf-customer')) || '';
     let dateVal = (el && el.getAttribute('data-pdf-date')) || '';
@@ -944,6 +1143,20 @@ function buildDocumentPdfFilename(div) {
 
     const datePart = formatPdfFilenameDate(dateVal) || formatPdfFilenameDate(new Date());
     return name + '_' + datePart + '_' + type + '.pdf';
+}
+
+function buildReportPdfFilename(div) {
+    const type = sanitizePdfNamePart(reportPdfRecordType(div), 'Report');
+    const parts = collectReportPdfFilters();
+    addPdfFilenamePart(parts, type);
+    return joinPdfFilename(parts.length ? parts : [type]);
+}
+
+function buildDocumentPdfFilename(div) {
+    if (isInvoicePdfDocument(div)) {
+        return buildInvoicePdfFilename(div);
+    }
+    return buildReportPdfFilename(div);
 }
 
 // Updated generatePDF function with 2 template support
@@ -1158,7 +1371,8 @@ window.pdfGenerator = {
     generatePDF: generatePDF,
     loadUserPdfTemplate: loadUserPdfTemplate,
     switchTemplate: switchTemplateForCurrentPDF,
-    currentTemplate: () => userPdfTemplate
+    currentTemplate: () => userPdfTemplate,
+    buildDocumentPdfFilename: buildDocumentPdfFilename
 };
 
     

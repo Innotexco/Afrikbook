@@ -516,12 +516,14 @@
         // Function to print the content
         function printContent() {
             var contentToPrint = $('#printContent').html();
+            var pdfName = (typeof buildDocumentPdfFilename === 'function' && buildDocumentPdfFilename('printContent')) || 'Report.pdf';
+            var printTitle = String(pdfName).replace(/\.pdf$/i, '').replace(/&/g, '&amp;');
             
             // Use template literals to create the HTML structure
             var printDocument = `
                 <html>
                     <head>
-                        <title>Print Document</title>
+                        <title>${printTitle}</title>
                         <!-- Include additional head content if needed -->
                         <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet">
                         <link href="https://unpkg.com/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
