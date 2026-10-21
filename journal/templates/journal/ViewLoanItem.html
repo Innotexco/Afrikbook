@@ -29,7 +29,7 @@
         <div class="px-6 py-5 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div>
                 <p class="text-xs uppercase tracking-wide text-slate-300">Total loaned amount</p>
-                <p class="text-3xl font-semibold mt-1">{{ schedule.totals.total_amount|floatformat:2 }}</p>
+                <p class="text-3xl font-semibold mt-1">{{ schedule.totals.total_amount|money }}</p>
                 <p class="text-xs text-slate-300 mt-1">{{ loan_item.description }}</p>
             </div>
             {% if loan_item.status|lower == 'paid' %}
@@ -41,19 +41,19 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 px-6 py-4 bg-slate-700/60 text-sm">
             <div>
                 <span class="block text-xs text-slate-300">Principal</span>
-                <span class="font-medium">{{ schedule.totals.principal|floatformat:2 }}</span>
+                <span class="font-medium">{{ schedule.totals.principal|money }}</span>
             </div>
             <div>
                 <span class="block text-xs text-slate-300">Interest ({{ schedule.totals.interest_rate|floatformat:2 }}%)</span>
-                <span class="font-medium">{{ schedule.totals.interest_amount|floatformat:2 }}</span>
+                <span class="font-medium">{{ schedule.totals.interest_amount|money }}</span>
             </div>
             <div>
                 <span class="block text-xs text-slate-300">Amount Paid</span>
-                <span class="font-medium">{{ schedule.paid_total|floatformat:2 }}</span>
+                <span class="font-medium">{{ schedule.paid_total|money }}</span>
             </div>
             <div>
                 <span class="block text-xs text-slate-300">Balance Left</span>
-                <span class="font-medium">{{ schedule.balance_left|floatformat:2 }}</span>
+                <span class="font-medium">{{ schedule.balance_left|money }}</span>
             </div>
         </div>
     </div>
@@ -128,25 +128,25 @@
                 <div class="p-4 space-y-2 text-sm">
                     <div class="flex justify-between">
                         <span class="text-gray-500">Amount due</span>
-                        <span class="font-medium text-slate-800">{{ card.amount_due|floatformat:2 }}</span>
+                        <span class="font-medium text-slate-800">{{ card.amount_due|money }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-500">Interest</span>
-                        <span class="font-medium text-slate-800">{{ card.interest_portion|floatformat:2 }}</span>
+                        <span class="font-medium text-slate-800">{{ card.interest_portion|money }}</span>
                     </div>
                     {% if card.extended_interest > 0 %}
                     <div class="flex justify-between">
                         <span class="text-gray-500">Extended interest</span>
-                        <span class="font-medium text-red-700">{{ card.extended_interest|floatformat:2 }}</span>
+                        <span class="font-medium text-red-700">{{ card.extended_interest|money }}</span>
                     </div>
                     {% endif %}
                     <div class="flex justify-between">
                         <span class="text-gray-500">Amount paid</span>
-                        <span class="font-medium text-slate-800">{{ card.amount_paid|floatformat:2 }}</span>
+                        <span class="font-medium text-slate-800">{{ card.amount_paid|money }}</span>
                     </div>
                     <div class="flex justify-between pt-2 border-t border-gray-100">
                         <span class="text-gray-500">Outstanding</span>
-                        <span class="font-semibold {% if card.unpaid > 0 %}text-red-600{% else %}text-green-600{% endif %}">{{ card.unpaid|floatformat:2 }}</span>
+                        <span class="font-semibold {% if card.unpaid > 0 %}text-red-600{% else %}text-green-600{% endif %}">{{ card.unpaid|money }}</span>
                     </div>
                     {% if card.payments %}
                     <div class="pt-3 mt-2 border-t border-gray-100">
@@ -155,7 +155,7 @@
                             {% for payment in card.payments %}
                             <li class="relative pl-4 text-xs text-slate-600">
                                 <span class="absolute left-0 top-1.5 w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                                <p class="font-medium text-slate-800">{{ payment.amount|floatformat:2 }}</p>
+                                <p class="font-medium text-slate-800">{{ payment.amount|money }}</p>
                                 <p>{{ payment.date }}{% if payment.payment_method %} · {{ payment.payment_method }}{% endif %}</p>
                                 {% if payment.invoice_id %}<p class="text-gray-400">Invoice {{ payment.invoice_id }}</p>{% endif %}
                             </li>
@@ -184,15 +184,15 @@
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-sm border-b border-gray-100 pb-3 last:border-0 last:pb-0">
                     <div>
                         <p class="font-medium text-slate-800">Month {{ item.month_number }} · due {{ item.due_date }}</p>
-                        <p class="text-xs text-gray-500">Unpaid {{ item.unpaid|floatformat:2 }} × {{ item.rate|floatformat:2 }}%</p>
+                        <p class="text-xs text-gray-500">Unpaid {{ item.unpaid|money }} × {{ item.rate|floatformat:2 }}%</p>
                     </div>
-                    <p class="font-semibold text-red-700">{{ item.charge|floatformat:2 }}</p>
+                    <p class="font-semibold text-red-700">{{ item.charge|money }}</p>
                 </div>
                 {% endfor %}
             </div>
             <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-200 text-sm">
                 <span class="font-medium text-slate-700">Total extended interest</span>
-                <span class="text-lg font-semibold text-red-700">{{ schedule.extended_total|floatformat:2 }}</span>
+                <span class="text-lg font-semibold text-red-700">{{ schedule.extended_total|money }}</span>
             </div>
         </div>
     </div>

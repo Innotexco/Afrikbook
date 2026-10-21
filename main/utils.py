@@ -1,4 +1,7 @@
 import json
+import re
+from datetime import date, datetime
+
 from Stock.models import Item
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
@@ -29,6 +32,50 @@ def paginate_queryset(request, queryset, per_page=DEFAULT_PAGE_SIZE):
         return paginator.page(1)
     except EmptyPage:
         return paginator.page(paginator.num_pages)
+
+
+_UNSAFE_FILENAME = re.compile(r'[\\/:*?"<>|\x00-\x1f]+')
+
+
+def document_pdf_filename(party_name, doc_date, invoice_type="Invoice"):
+    """
+    PDF / email attachment name: nameofcustomer_date_invoice type.pdf
+    Example: Acme Ltd_21-10-2026_Invoice.pdf
+    """
+    def clean(part, fallback):
+        text = _UNSAFE_FILENAME.sub(" ", str(part or "")).strip()
+        text = re.sub(r"\s+", " ", text)
+        return text or fallback
+
+    name = clean(party_name, "Customer")
+    kind = clean(invoice_type, "Invoice")
+    date_str = _pdf_filename_date(doc_date)
+    return f"{name}_{date_str}_{kind}.pdf"
+
+
+def _pdf_filename_date(doc_date):
+    if hasattr(doc_date, "strftime"):
+        try:
+            return doc_date.strftime("%d-%m-%Y")
+        except Exception:
+            pass
+
+    raw = str(doc_date or "").strip()
+    if not raw:
+        return date.today().strftime("%d-%m-%Y")
+
+    match = re.match(r"^(\d{4})-(\d{2})-(\d{2})", raw)
+    if match:
+        return f"{match.group(3)}-{match.group(2)}-{match.group(1)}"
+
+    match = re.match(r"^(\d{1,2})[/-](\d{1,2})[/-](\d{4})", raw)
+    if match:
+        return f"{int(match.group(1)):02d}-{int(match.group(2)):02d}-{match.group(3)}"
+
+    try:
+        return datetime.fromisoformat(raw.replace("Z", "")[:19]).strftime("%d-%m-%Y")
+    except Exception:
+        return date.today().strftime("%d-%m-%Y")
 
 
 def pagination_meta(page_obj):

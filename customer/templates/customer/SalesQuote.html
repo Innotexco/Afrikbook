@@ -178,6 +178,16 @@
                 const customerId = q.customer_id || line.custID || '';
                 const description = q.description || line.Gdescription || '';
 
+                if (typeof setPdfDocumentMeta === 'function') {
+                    setPdfDocumentMeta('vsq', customerName, quoteDate, 'Sales Quote');
+                } else {
+                    $('#vsq').attr({
+                        'data-pdf-customer': customerName,
+                        'data-pdf-date': quoteDate,
+                        'data-pdf-type': 'Sales Quote'
+                    });
+                }
+
                 // Match Sales Ledger invoice header layout
                 var currencySymbol = "{{ profile.currency|default:'' }}";
                 $('#quoteHeader').html(`

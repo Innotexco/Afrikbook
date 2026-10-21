@@ -335,6 +335,13 @@ def send_quote_email_task(
         company_email = company.email if company and company.email else ""
         company_rc = company.Rc if company and company.Rc else ""
 
+        from main.utils import document_pdf_filename
+        attachment_name = document_pdf_filename(
+            customer_name or quote.genby,
+            quote.quote_date,
+            "Sales Quote",
+        )
+
         html_content = render_to_string(
             "customer/quote_pdf.html",
             {
@@ -345,6 +352,7 @@ def send_quote_email_task(
                 "vat_items": vat_items,
                 "vat_total": vat_total,
                 "grand_total": grand_total,
+                "pdf_title": attachment_name[:-4] if attachment_name.endswith(".pdf") else attachment_name,
             },
         )
 
@@ -373,8 +381,7 @@ def send_quote_email_task(
             from_email=_from_email(),
             to=[customer_email],
         )
-        safe_name = str(quote_id).replace("/", "-").replace("\\", "-")
-        email.attach(f"Quote_{safe_name}.pdf", pdf_file, "application/pdf")
+        email.attach(attachment_name, pdf_file, "application/pdf")
         email.send(fail_silently=False)
 
         logger.info(
@@ -463,6 +470,13 @@ def send_invoice_email_task(
             currency,
         )
 
+        from main.utils import document_pdf_filename
+        attachment_name = document_pdf_filename(
+            customer_name or invoice.customer_name,
+            invoice.invoice_date,
+            "Invoice",
+        )
+
         html_content = render_to_string(
             "customer/invoice_pdf.html",
             {
@@ -474,6 +488,7 @@ def send_invoice_email_task(
                 "vat_total": vat_total,
                 "grand_total": grand_total,
                 "balance_due": balance_due,
+                "pdf_title": attachment_name[:-4] if attachment_name.endswith(".pdf") else attachment_name,
             },
         )
         pdf_file = HTML(string=html_content, base_url=pdf_base).write_pdf()
@@ -523,7 +538,7 @@ def send_invoice_email_task(
             to=[customer_email],
         )
         email.attach_alternative(email_html, "text/html")
-        email.attach(f"Invoice_{invoice_id}.pdf", pdf_file, "application/pdf")
+        email.attach(attachment_name, pdf_file, "application/pdf")
         email.send(fail_silently=False)
 
         logger.info(

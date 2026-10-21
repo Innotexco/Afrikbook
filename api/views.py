@@ -1299,8 +1299,14 @@ def download_invoice_pdf_api(request, invoice_id):
         buffer.seek(0)
         
         # Send PDF as downloadable response
+        from main.utils import document_pdf_filename
+        pdf_name = document_pdf_filename(
+            invoice.customer_name,
+            invoice.invoice_date,
+            "Invoice",
+        )
         response = HttpResponse(buffer, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="invoice_{invoice_id}.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="{pdf_name}"'
         
         return response
     

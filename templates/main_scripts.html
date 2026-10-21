@@ -876,6 +876,76 @@ function updateTemplateIndicators(template) {
 const PDF_A4_CONTAINERS = new Set(['vsl', 'vsq']);
 const PDF_A4_LANDSCAPE_CONTAINERS = new Set(['payroll_print']);
 
+const PDF_DOC_TYPES = {
+    vsl: 'Invoice',
+    vsq: 'Sales Quote',
+    sales_table: 'Invoice',
+    purchase_table: 'Purchase Invoice',
+};
+
+function sanitizePdfNamePart(value, fallback) {
+    const text = String(value == null ? '' : value)
+        .replace(/[\\/:*?"<>|]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    return text || fallback || '';
+}
+
+function formatPdfFilenameDate(value) {
+    if (value === null || value === undefined || value === '') return '';
+    if (value instanceof Date && !isNaN(value.getTime())) {
+        const day = String(value.getDate()).padStart(2, '0');
+        const month = String(value.getMonth() + 1).padStart(2, '0');
+        return day + '-' + month + '-' + value.getFullYear();
+    }
+    const s = String(value).trim();
+    let match = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) return match[3] + '-' + match[2] + '-' + match[1];
+    match = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (match) {
+        return String(match[1]).padStart(2, '0') + '-' + String(match[2]).padStart(2, '0') + '-' + match[3];
+    }
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) {
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        return day + '-' + month + '-' + d.getFullYear();
+    }
+    return '';
+}
+
+function setPdfDocumentMeta(div, customer, dateValue, invoiceType) {
+    const el = document.getElementById(div);
+    if (!el) return;
+    if (customer) el.setAttribute('data-pdf-customer', customer);
+    if (dateValue) el.setAttribute('data-pdf-date', dateValue);
+    if (invoiceType) el.setAttribute('data-pdf-type', invoiceType);
+}
+
+function buildDocumentPdfFilename(div) {
+    const el = document.getElementById(div);
+    let name = (el && el.getAttribute('data-pdf-customer')) || '';
+    let dateVal = (el && el.getAttribute('data-pdf-date')) || '';
+    let type = (el && el.getAttribute('data-pdf-type')) || PDF_DOC_TYPES[div] || '';
+
+    if (!name) {
+        const genby = document.getElementById('genby');
+        if (genby && genby.value) name = genby.value;
+    }
+    if (!dateVal) {
+        const dateInput = document.querySelector('input[name="quote_date"], input[name="invoice_date"]');
+        if (dateInput && dateInput.value) dateVal = dateInput.value;
+    }
+    if (!type && name && div === 'sq') type = 'Sales Quote';
+
+    name = sanitizePdfNamePart(name, '');
+    type = sanitizePdfNamePart(type, '');
+    if (!name || !type) return null;
+
+    const datePart = formatPdfFilenameDate(dateVal) || formatPdfFilenameDate(new Date());
+    return name + '_' + datePart + '_' + type + '.pdf';
+}
+
 // Updated generatePDF function with 2 template support
 function generatePDF(div) {
     const templateClass = userPdfTemplate === 'invoice' ? '.template-invoice' : '.template-classic';
@@ -994,7 +1064,7 @@ function generatePDF(div) {
             if (element.contains(footer)) element.removeChild(footer);
         }
 
-        html2pdf(element, getPdfOptions(userPdfTemplate, isA4Page, isLandscape)).then(function(pdf) {
+        html2pdf(element, getPdfOptions(userPdfTemplate, isA4Page, isLandscape, buildDocumentPdfFilename(div))).then(function(pdf) {
             pdf.save();
             setTimeout(restoreElement, 200);
         }).catch(function(err) {
@@ -1006,7 +1076,7 @@ function generatePDF(div) {
 
 // Function to get PDF options based on template
 // isA4Page: portrait A4 with fixed capture width (invoice-style views)
-function getPdfOptions(template, isA4Page, isLandscape) {
+function getPdfOptions(template, isA4Page, isLandscape, filename) {
     const orientation = isLandscape ? 'landscape' : (isA4Page ? 'portrait' : 'landscape');
 
     const base = {
@@ -1027,12 +1097,10 @@ function getPdfOptions(template, isA4Page, isLandscape) {
         },
     };
 
-    if (template === 'invoice') {
-        return Object.assign({}, base, { filename: isLandscape ? 'payroll.pdf' : 'invoice.pdf' });
-    }
-    return Object.assign({}, base, {
-        filename: isLandscape ? 'payroll.pdf' : (isA4Page ? 'invoice.pdf' : 'report.pdf'),
-    });
+    const defaultName = isLandscape
+        ? 'payroll.pdf'
+        : (isA4Page || template === 'invoice' ? 'invoice.pdf' : 'report.pdf');
+    return Object.assign({}, base, { filename: filename || defaultName });
 }
 
 // Function to manually switch template for current PDF only (optional)
@@ -1142,7 +1210,7 @@ window.pdfGenerator = {
                 return;
             }
 
-            const filename = options.filename || (div === 'sq' ? 'sales-quote.pdf' : 'document.pdf');
+            const filename = options.filename || buildDocumentPdfFilename(div) || (div === 'sq' ? 'sales-quote.pdf' : 'document.pdf');
             const subject =
                 options.subject ||
                 (div === 'sq' ? 'Sales Quote from Afrikbook' : 'Document from Afrikbook');

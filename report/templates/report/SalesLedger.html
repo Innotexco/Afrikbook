@@ -429,6 +429,16 @@
                 const customerId = inv.customer_id || line.cusID || '';
                 const invoiceState = inv.invoice_state || line.invoice_state || 'Supplied';
 
+                if (typeof setPdfDocumentMeta === 'function') {
+                    setPdfDocumentMeta('vsl', customerName, invoiceDate, 'Invoice');
+                } else {
+                    $('#vsl').attr({
+                        'data-pdf-customer': customerName,
+                        'data-pdf-date': invoiceDate,
+                        'data-pdf-type': 'Invoice'
+                    });
+                }
+
                 // ── Invoice meta ──────────────────────────────────────────────
                 $('#invoiceHeader').html(`
                     <table style="width:100%;border-collapse:collapse;margin-bottom:8px;background:#f3f4f6;border-bottom:2px solid #9ca3af;">

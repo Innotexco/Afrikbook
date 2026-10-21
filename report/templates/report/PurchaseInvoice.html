@@ -320,6 +320,17 @@
                             if(data.vendor && data.serialized_data.length  > 0){
                               
                                 my_modal_view_purchase.showModal()
+                                const firstLine = data.serialized_data[0] || {};
+                                const vendorName = (data.vendor && (data.vendor.company || data.vendor.name)) || '';
+                                if (typeof setPdfDocumentMeta === 'function') {
+                                    setPdfDocumentMeta('purchase_table', vendorName, firstLine.invoice_date, 'Purchase Invoice');
+                                } else {
+                                    $('#purchase_table').attr({
+                                        'data-pdf-customer': vendorName,
+                                        'data-pdf-date': firstLine.invoice_date || '',
+                                        'data-pdf-type': 'Purchase Invoice'
+                                    });
+                                }
                                 const table = $('#purchseLadgerView tbody'); 
                                 table.empty(); // Clear previous content
                                 var total = parseFloat(data.amount_total)

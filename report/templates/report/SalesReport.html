@@ -398,6 +398,17 @@
                             if(data.customer && data.serialized_data.length  > 0){
 
                                 my_modal_view_sales.showModal()
+                                const firstLine = data.serialized_data[0] || {};
+                                const customerName = (data.customer && (data.customer.company || data.customer.name)) || '';
+                                if (typeof setPdfDocumentMeta === 'function') {
+                                    setPdfDocumentMeta('sales_table', customerName, firstLine.invoice_date, 'Invoice');
+                                } else {
+                                    $('#sales_table').attr({
+                                        'data-pdf-customer': customerName,
+                                        'data-pdf-date': firstLine.invoice_date || '',
+                                        'data-pdf-type': 'Invoice'
+                                    });
+                                }
                                 const table = $('#salesLadgerView tbody'); 
                                 table.empty(); // Clear previous content
                                 var total = parseFloat(data.amount_total)
