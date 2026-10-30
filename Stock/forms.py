@@ -61,6 +61,27 @@ class SubCategoryForm(forms.ModelForm):
     
 
 
+def is_selected_fk(value):
+    text = str(value or "").strip()
+    return text.isdigit()
+
+
+def missing_new_item_required_fields(data, sub_category_required=True):
+    """Return labels of New-Item fields that must be filled before save."""
+    missing = []
+    if not is_selected_fk(data.get("category")):
+        missing.append("Category")
+    if sub_category_required and not is_selected_fk(data.get("sub_category")):
+        missing.append("Sub-category")
+    if not str(data.get("item_name") or "").strip():
+        missing.append("Item Name")
+    if not str(data.get("generated_code") or "").strip():
+        missing.append("Item Code")
+    if not str(data.get("purchase_price") or "").strip():
+        missing.append("Purchase Price")
+    return missing
+
+
 class ItemForm(forms.ModelForm):
     class Meta:
         model = Item

@@ -1040,7 +1040,8 @@ from .models import (
 from .forms import (
     ItemForm, EditItemForm, ItemTagForm, ItemSpecificationForm, 
     ItemDescriptionForm, CategoryForm, CouponForm,
-    ItemBrandForm, ItemColorForm
+    ItemBrandForm, ItemColorForm,
+    missing_new_item_required_fields,
 )
 
 from settings.models import Warehouse, user_account
@@ -1154,55 +1155,73 @@ def NewItem(request):
 
     if request.method == 'POST':
         data = request.POST.copy()
+        choice = (data.get('category') or '').strip()
+        choice2 = (data.get('sub_category') or '').strip()
+        sub_required = False
+        if choice.isdigit():
+            sub_required = Sub_Category.objects.using(db).filter(
+                main_category_id=choice
+            ).exists()
 
-        # Clean and convert all prices, empty values become 0.00
-        data['selling_price'] = clean_amount(data.get('selling_price', '0'))
-        data['retailer_price'] = clean_amount(data.get('retailer_price', '0'))
-        data['wholesale_price'] = clean_amount(data.get('wholesale_price', '0'))
-        data['purchase_price'] = clean_amount(data.get('purchase_price', '0'))
-
-        form = ItemForm(data, request.FILES)
-        choice = data.get('category')
-        choice2 = data.get('sub_category')
-        
-        if form.is_valid():
-            item_inst = form.save(commit=False)
-            item_inst.category_id = choice
-            item_inst.sub_category_id = choice2
-            item_inst.Userlogin = request.user.username
-            
-            # Ensure prices are Decimal and not empty
-            item_inst.selling_price = item_inst.selling_price or Decimal('0.00')
-            item_inst.retailer_price = item_inst.retailer_price or Decimal('0.00')
-            item_inst.wholesale_price = item_inst.wholesale_price or Decimal('0.00')
-            
-            item_inst.save(using=db)
-
-            # Handle attributes
-            attribute_names = request.POST.getlist("name[]")
-            attribute_values = request.POST.getlist("value[]")
-            
-            for name, value in zip(attribute_names, attribute_values):
-                if name.strip() and value.strip():
-                    attr, created = Attribute.objects.using(db).get_or_create(
-                        name=name.strip(),
-                        value=value.strip()
-                    )
-                    item_inst.attribute.add(attr)
-
-            # Create notification
-            items = Item.objects.using(db).get(id=item_inst.id)
-            notify = SetItemNotification(
-                item=items, 
-                Userlogin=request.user.username
+        missing = missing_new_item_required_fields(
+            data, sub_category_required=sub_required
+        )
+        if missing:
+            messages.error(
+                request,
+                "Please fill all required fields: {}.".format(", ".join(missing)),
             )
-            notify.save(using=db)
-            
-            messages.success(request, "Item was created successfully")
-            return redirect('Stock:NewItem')
+            form = ItemForm()
         else:
-            messages.error(request, "Please correct the errors below.")
-            print(form.errors)  # Debug: print form errors
+            # Clean and convert all prices, empty values become 0.00
+            data['selling_price'] = clean_amount(data.get('selling_price', '0'))
+            data['retailer_price'] = clean_amount(data.get('retailer_price', '0'))
+            data['wholesale_price'] = clean_amount(data.get('wholesale_price', '0'))
+            data['purchase_price'] = clean_amount(data.get('purchase_price', '0'))
+            qty_state = (data.get('qty_state') or '').strip()
+            if not qty_state or qty_state == '--Choose An Option--':
+                data['qty_state'] = 'Quantify'
+
+            form = ItemForm(data, request.FILES)
+
+            if form.is_valid():
+                item_inst = form.save(commit=False)
+                item_inst.category_id = choice
+                item_inst.sub_category_id = choice2 if choice2.isdigit() else None
+                item_inst.Userlogin = request.user.username
+
+                # Ensure prices are Decimal and not empty
+                item_inst.selling_price = item_inst.selling_price or Decimal('0.00')
+                item_inst.retailer_price = item_inst.retailer_price or Decimal('0.00')
+                item_inst.wholesale_price = item_inst.wholesale_price or Decimal('0.00')
+
+                item_inst.save(using=db)
+
+                # Handle attributes
+                attribute_names = request.POST.getlist("name[]")
+                attribute_values = request.POST.getlist("value[]")
+
+                for name, value in zip(attribute_names, attribute_values):
+                    if name.strip() and value.strip():
+                        attr, created = Attribute.objects.using(db).get_or_create(
+                            name=name.strip(),
+                            value=value.strip()
+                        )
+                        item_inst.attribute.add(attr)
+
+                # Create notification
+                items = Item.objects.using(db).get(id=item_inst.id)
+                notify = SetItemNotification(
+                    item=items,
+                    Userlogin=request.user.username
+                )
+                notify.save(using=db)
+
+                messages.success(request, "Item was created successfully")
+                return redirect('Stock:NewItem')
+            else:
+                messages.error(request, "Please correct the errors below.")
+                print(form.errors)  # Debug: print form errors
     else:
         form = ItemForm()
 

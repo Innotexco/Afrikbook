@@ -26,17 +26,17 @@
 
     <div class="px-4 py-3 my-5 bg-white rounded-lg shadow-md">
 
-        <form id="itemForm" action="/New-Item" method="POST" enctype="multipart/form-data">
+        <form id="itemForm" action="/New-Item" method="POST" enctype="multipart/form-data" novalidate>
             {% csrf_token %}
             
             <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4 mt-5">
 
                 <label class="block text-sm">
                     <span class="text-gray-700">
-                        Select Category
+                        Select Category <span class="text-red-500">*</span>
                     </span>
                     <select name="category" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="category">
-                        <option>--Choose An Option--</option>
+                        <option value="">--Choose An Option--</option>
                         {% for show_item in item_category %}
                         <option value="{{show_item.id}}">{{ show_item.category_name }}</option>
                         {% endfor %}
@@ -46,10 +46,10 @@
 
                 <label class="block text-sm">
                     <span class="text-gray-700">
-                        Select Sub-Category
+                        Select Sub-Category <span class="text-red-500">*</span>
                     </span>
                     <select id="sub-category" name="sub_category" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600">
-                        <option>---------</option>
+                        <option value="">---------</option>
                         <!-- {% for show_item in sub_category %}
                             <option value="{{show_item.id}}">{{ show_item.name }}</option>
                         {% endfor %} -->
@@ -58,7 +58,7 @@
                 </label>
 
                 <label class="block text-sm">
-                    <span class="text-gray-700">Item Name</span>
+                    <span class="text-gray-700">Item Name <span class="text-red-500">*</span></span>
                     <input 
                         type="text"
                         name="item_name"
@@ -70,7 +70,7 @@
 
                 
                 <label class="block text-sm relative">
-                    <span class="text-gray-700">Generate / Scan Code</span>
+                    <span class="text-gray-700">Generate / Scan Code <span class="text-red-500">*</span></span>
                     <input 
                         type="text"
                         name="generated_code"
@@ -121,7 +121,7 @@
                 </label>
 
                 <label class="block text-sm">
-                    <span class="text-gray-700">Purchase Price</span>
+                    <span class="text-gray-700">Purchase Price <span class="text-red-500">*</span></span>
                     <input 
                         type="text"
                         name="purchase_price"
@@ -181,9 +181,8 @@
                             Quantity Type
                         </span>
                         <select name="qty_state" class="block w-full px-2 mt-1 text-sm border-2 rounded-md focus:border-slate-300 form-select focus:outline-none focus:shadow-outline-green text-slate-600" id="qty_state">
-                            <option selected disabled>--Choose An Option--</option>
-                            <option>Quantify</option>
-                            <option>Unquantify</option>
+                            <option value="Quantify" selected>Quantify</option>
+                            <option value="Unquantify">Unquantify</option>
                             
                         </select>
                         <span class="py-2 text-red-500 errors">{{form.category.errors}}</span>
@@ -378,7 +377,8 @@
             $('#category').change(function() {
                var category = $(this).val();
                var sub_category = $('#sub-category')
-               if(category!= "--Choose An Option--"){
+               sub_category.empty().append('<option value="">---------</option>');
+               if(category && category !== "--Choose An Option--"){
                 $.ajax({
                     url: "/get_sub_category/"+category+"/",
                     method: "GET",
@@ -386,7 +386,7 @@
                         if(response.data && response.data.length > 0){
                             sub_category.empty()
                             sub_category.append(
-                                 '<option>Select Sub Category</option>'
+                                 '<option value="">Select Sub Category</option>'
                                 )
                             response.data.forEach(element => {
                                 
@@ -451,88 +451,73 @@
 <script>
     function getNumericPrice(value) {
         if (!value) return 0;
-        return parseFloat(value.replace(/,/g, '')) || 0;
+        return parseFloat(String(value).replace(/,/g, '')) || 0;
+    }
+
+    function markRequiredField($el, message) {
+        $el.addClass('border-red-500');
+        alertify.error(message);
+        $el.focus();
+        return false;
+    }
+
+    function subCategoryHasChoices() {
+        return $('#sub-category option').filter(function() {
+            return /^\d+$/.test($(this).val());
+        }).length > 0;
     }
 
     function validateItemForm() {
+        $('#itemForm select, #itemForm input, #itemForm textarea').removeClass('border-red-500');
+
         const category = $('#category').val();
-        if (!category || category === "--Choose An Option--") {
-            alertify.error("Please select a Category.");
-            $('#category').focus();
-            return false;
+        if (!category || !/^\d+$/.test(category)) {
+            return markRequiredField($('#category'), "Please select a Category.");
         }
 
         const subCategory = $('#sub-category').val();
-        if (subCategory && subCategory === "---------") {
-            alertify.error("Please select a valid Sub-category.");
-            $('#sub-category').focus();
-            return false;
+        if (subCategoryHasChoices() && (!subCategory || !/^\d+$/.test(subCategory))) {
+            return markRequiredField($('#sub-category'), "Please select a Sub-category.");
         }
 
-        const itemName = $("input[name='item_name']").val().trim();
-        if (!itemName) {
-            alertify.error("Item Name is required.");
-            $("input[name='item_name']").focus();
-            return false;
+        const $itemName = $("input[name='item_name']");
+        if (!$itemName.val() || !$itemName.val().trim()) {
+            return markRequiredField($itemName, "Item Name is required.");
         }
 
-        const generatedCode = $("#randomNumber").val().trim();
-        if (!generatedCode) {
-            alertify.error("Item Code is required. Click 'Generate' or enter a value.");
-            $("#randomNumber").focus();
-            return false;
+        const $generatedCode = $("#randomNumber");
+        if (!$generatedCode.val() || !$generatedCode.val().trim()) {
+            return markRequiredField($generatedCode, "Item Code is required. Click 'Generate' or enter a value.");
         }
 
-        /*const sellingPrice = $("input[name='selling_price']").val();
-        const sellingNumeric = getNumericPrice(sellingPrice);
-        if (!sellingPrice) {
-            alertify.error("Selling Price is required.");
-            $("input[name='selling_price']").focus();
-            return false;
-        }*/
-         if (sellingNumeric <= 0) {
-             alertify.error("Selling Price must be greater than 0.");
-             return false;
-         }
-
-        const purchasePrice = $("input[name='purchase_price']").val();
+        const $purchasePrice = $("input[name='purchase_price']");
+        const purchasePrice = ($purchasePrice.val() || "").trim();
         const purchaseNumeric = getNumericPrice(purchasePrice);
         if (!purchasePrice) {
-            alertify.error("Purchase Price is required.");
-            $("input[name='purchase_price']").focus();
-            return false;
+            return markRequiredField($purchasePrice, "Purchase Price is required.");
         }
-         if (purchaseNumeric < 0) {
-             alertify.error("Purchase Price cannot be negative.");
-             return false;
-         }
-
-        const qtyState = $("#qty_state").val();
-        if (!qtyState || qtyState === "--Choose An Option--") {
-            alertify.error("Please select Quantity Type (Quantify or Unquantify).");
-            $("#qty_state").focus();
-            return false;
+        if (purchaseNumeric < 0) {
+            return markRequiredField($purchasePrice, "Purchase Price cannot be negative.");
         }
 
         let hasIncompleteAttr = false;
         $("input[name='name[]']").each(function(idx) {
-            const nameVal = $(this).val().trim();
-            const valueVal = $("input[name='value[]']").eq(idx).val().trim();
-            
+            const nameVal = ($(this).val() || "").trim();
+            const $value = $("input[name='value[]']").eq(idx);
+            const valueVal = ($value.val() || "").trim();
+
             if (nameVal && !valueVal) {
                 hasIncompleteAttr = true;
-                alertify.error("Please complete both Name and Value for each attribute.");
-                $(this).focus();
+                markRequiredField($value, "Please complete both Name and Value for each attribute.");
                 return false;
             }
             if (!nameVal && valueVal) {
                 hasIncompleteAttr = true;
-                alertify.error("Please complete both Name and Value for each attribute.");
-                $("input[name='value[]']").eq(idx).focus();
+                markRequiredField($(this), "Please complete both Name and Value for each attribute.");
                 return false;
             }
         });
-        
+
         if (hasIncompleteAttr) {
             return false;
         }
@@ -542,8 +527,14 @@
 
     $(document).ready(function() {
         $('#itemForm').on('submit', function(e) {
-            if (!validateItemForm()) {
+            try {
+                if (!validateItemForm()) {
+                    e.preventDefault();
+                    return false;
+                }
+            } catch (err) {
                 e.preventDefault();
+                alertify.error("Please fill all required fields before creating the item.");
                 return false;
             }
             return true;
